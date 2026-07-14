@@ -111,6 +111,52 @@ tr:hover td { background: var(--bg-hover); }
   .table-container table { min-width: 750px; font-size: 10px; }
   #tierOverview .tier-gold, #tierOverview .tier-silver, #tierOverview .tier-bronze { font-size: 13px; }
 }
+/* ========== 个股查询模块 ========== */
+#content-query .q-form { max-width: 640px; margin: 0 auto 16px; }
+#content-query .q-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#content-query .q-input-row select, #content-query .q-input-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 14px; }
+#content-query .q-input-row select { min-width: 80px; }
+#content-query .q-input-row input { flex: 1; min-width: 120px; }
+#content-query .q-input-row input:focus, #content-query .q-input-row select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+#content-query .q-btn { padding: 10px 24px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+#content-query .q-btn:hover { background: #4a90e2; transform: translateY(-1px); }
+#content-query .q-btn.loading { opacity: 0.6; pointer-events: none; }
+#content-query .q-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; justify-content: center; }
+#content-query .q-quick button { padding: 4px 10px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+#content-query .q-quick button:hover { border-color: var(--blue); color: var(--blue); }
+#content-query .q-spinner { display: none; text-align: center; padding: 30px; color: var(--text-dim); }
+#content-query .q-spinner.show { display: block; }
+#content-query .q-spinner::after { content: ''; display: block; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; margin: 10px auto; animation: qSpin 0.8s linear infinite; }
+@keyframes qSpin { to { transform: rotate(360deg); } }
+#content-query .q-error { display: none; text-align: center; padding: 16px; color: var(--red); background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); border-radius: 8px; margin-bottom: 14px; }
+#content-query .q-error.show { display: block; }
+#content-query .q-result { display: none; max-width: 760px; margin: 0 auto; }
+#content-query .q-result.show { display: block; }
+#content-query .q-score-hero { text-align: center; padding: 20px; margin-bottom: 14px; border-radius: 12px; border: 2px solid var(--border); }
+#content-query .q-score-hero .q-big { font-size: 56px; font-weight: 800; line-height: 1; }
+#content-query .q-score-hero .q-tier-badge { display: inline-block; margin-top: 8px; padding: 4px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+#content-query .q-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+#content-query .q-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+#content-query .q-card h3 { font-size: 14px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+#content-query .q-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+#content-query .q-row .q-label { color: var(--text-dim); }
+#content-query .q-row .q-val { font-weight: 600; }
+#content-query .q-row .q-val.up { color: var(--green); }
+#content-query .q-row .q-val.down { color: var(--red); }
+#content-query .q-row .q-val.warn { color: var(--orange); }
+#content-query .q-row .q-val.good { color: var(--green); }
+#content-query .q-bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; }
+#content-query .q-bar-row .q-bar-label { width: 80px; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+#content-query .q-bar-row .q-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+#content-query .q-bar-row .q-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+#content-query .q-phase { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 15px; font-weight: 700; margin: 8px 0; }
+@media (max-width: 480px) {
+  #content-query .q-input-row { flex-direction: column; }
+  #content-query .q-input-row select, #content-query .q-input-row input { width: 100%; }
+  #content-query .q-btn { width: 100%; }
+  #content-query .q-card-grid { grid-template-columns: 1fr; }
+  #content-query .q-score-hero .q-big { font-size: 42px; }
+}
 </style>
 </head>
 <body>
@@ -133,6 +179,7 @@ tr:hover td { background: var(--bg-hover); }
     <div class="tab" id="tab-calendar" onclick="switchTab('calendar')">📅 政策日历</div>
     <div class="tab" id="tab-abnormal" onclick="switchTab('abnormal')">⚠️ 异动监控</div>
     <div class="tab" id="tab-review" onclick="switchTab('review')">📝 收盘复盘</div>
+    <div class="tab" id="tab-query" onclick="switchTab('query')">🔍 个股查询</div>
 </div>
 
 <!-- 梯队总览 -->
@@ -220,6 +267,80 @@ tr:hover td { background: var(--bg-hover); }
     <div class="panel">
         <button id="reviewBtn" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">生成复盘报告</button>
         <pre id="reviewOutput" style="margin-top:12px;background:#0d1117;padding:16px;border-radius:8px;font-size:12px;color:var(--text);white-space:pre-wrap;max-height:60vh;overflow-y:auto"></pre>
+    </div>
+</div>
+
+<!-- 个股查询 -->
+<div class="content tab-content" id="content-query">
+    <div class="q-form">
+        <div class="q-input-row">
+            <select id="qExchange"><option value="sh">沪市 sh</option><option value="sz">深市 sz</option></select>
+            <input type="text" id="qCode" placeholder="股票代码（如 600522）" inputmode="numeric" maxlength="6">
+            <input type="text" id="qName" placeholder="股票名称（选填，自动获取）">
+            <button class="q-btn" id="qBtn" onclick="queryStock()">🔍 查询分析</button>
+        </div>
+        <div class="q-quick">
+            <span style="color:var(--text-dim);font-size:11px;margin-right:4px;line-height:24px">快速查询：</span>
+            <button onclick="quickQuery('sh','600522','中天科技')">中天科技</button>
+            <button onclick="quickQuery('sz','002463','沪电股份')">沪电股份</button>
+            <button onclick="quickQuery('sz','002837','英维克')">英维克</button>
+            <button onclick="quickQuery('sh','600584','长电科技')">长电科技</button>
+            <button onclick="quickQuery('sz','002371','北方华创')">北方华创</button>
+            <button onclick="quickQuery('sh','600519','贵州茅台')">贵州茅台</button>
+        </div>
+    </div>
+    <div class="q-spinner" id="qSpinner">正在获取行情、K线、基本面、资金流向...</div>
+    <div class="q-error" id="qError"></div>
+    <div class="q-result" id="qResult">
+        <div class="q-score-hero" id="qScoreHero">
+            <div style="font-size:13px;color:var(--text-dim)">戴维斯双击综合评分</div>
+            <div class="q-big" id="qBigScore">--</div>
+            <div class="q-tier-badge" id="qTierBadge">--</div>
+            <div style="margin-top:6px;font-size:12px;color:var(--text-dim)" id="qPhaseDesc">--</div>
+        </div>
+        <div class="q-card" style="margin-bottom:10px">
+            <h3>📊 评分明细</h3>
+            <div id="qScoreBars"></div>
+        </div>
+        <div class="q-card-grid">
+            <div class="q-card"><h3>📈 实时行情</h3>
+                <div class="q-row"><span class="q-label">现价</span><span class="q-val" id="qvPrice">--</span></div>
+                <div class="q-row"><span class="q-label">涨跌幅</span><span class="q-val" id="qvChange">--</span></div>
+                <div class="q-row"><span class="q-label">今开/最高/最低</span><span class="q-val" id="qvOHL">--</span></div>
+                <div class="q-row"><span class="q-label">成交额</span><span class="q-val" id="qvAmount">--</span></div>
+                <div class="q-row"><span class="q-label">换手率</span><span class="q-val" id="qvTurnover">--</span></div>
+                <div class="q-row"><span class="q-label">总市值</span><span class="q-val" id="qvMv">--</span></div>
+            </div>
+            <div class="q-card"><h3>🏢 基本面</h3>
+                <div class="q-row"><span class="q-label">动态PE</span><span class="q-val" id="qvPE">--</span></div>
+                <div class="q-row"><span class="q-label">业绩增速</span><span class="q-val" id="qvGrowth">--</span></div>
+                <div class="q-row"><span class="q-label">ROE</span><span class="q-val" id="qvROE">--</span></div>
+                <div class="q-row"><span class="q-label">毛利率</span><span class="q-val" id="qvGross">--</span></div>
+                <div class="q-row"><span class="q-label">负债率</span><span class="q-val" id="qvDebt">--</span></div>
+                <div class="q-row"><span class="q-label">赛道</span><span class="q-val" id="qvSector">--</span></div>
+                <div class="q-row"><span class="q-label">驱动方向</span><span class="q-val" id="qvDirection">--</span></div>
+            </div>
+            <div class="q-card"><h3>📐 技术指标</h3>
+                <div class="q-row"><span class="q-label">当前阶段</span><span class="q-val" id="qvPhase">--</span></div>
+                <div class="q-row"><span class="q-label">MACD</span><span class="q-val" id="qvMACD">--</span></div>
+                <div class="q-row"><span class="q-label">RSI(14)</span><span class="q-val" id="qvRSI">--</span></div>
+                <div class="q-row"><span class="q-label">均线排列</span><span class="q-val" id="qvMA">--</span></div>
+                <div class="q-row"><span class="q-label">趋势</span><span class="q-val" id="qvTrend">--</span></div>
+                <div class="q-row"><span class="q-label">量价信号</span><span class="q-val" id="qvSignal">--</span></div>
+            </div>
+            <div class="q-card"><h3>💰 资金面 & 价格结构</h3>
+                <div class="q-row"><span class="q-label">主力净流入</span><span class="q-val" id="qvFlow">--</span></div>
+                <div class="q-row"><span class="q-label">主力流入占比</span><span class="q-val" id="qvFlowRatio">--</span></div>
+                <div class="q-row"><span class="q-label">支撑价位</span><span class="q-val" id="qvSupport">--</span></div>
+                <div class="q-row"><span class="q-label">距支撑</span><span class="q-val" id="qvSupportDist">--</span></div>
+            </div>
+            <div class="q-card" style="grid-column: 1 / -1">
+                <h3>💡 投资逻辑</h3>
+                <div style="font-size:13px;color:var(--text-dim);line-height:1.8" id="qvReason">--</div>
+                <div style="margin-top:10px" id="qvRisks"></div>
+            </div>
+        </div>
+        <div style="text-align:center;padding:20px;color:var(--text-dim);font-size:11px">数据更新时间：<span id="qUpdateTime">--</span></div>
     </div>
 </div>
 
@@ -1473,6 +1594,298 @@ function switchTab(tabName) {
 }
 
 window.addEventListener('load', init);
+
+// ==================== 个股查询模块 ====================
+let qQueryCode = '', qQueryName = '';
+
+// GBK 解码（兼容手机端）
+async function decodeGBK(resp) {
+    const buf = await resp.arrayBuffer();
+    try { return new TextDecoder('gbk').decode(buf); }
+    catch(e) {
+        return new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result);
+            r.onerror = () => reject(new Error('GBK decode failed'));
+            r.readAsText(new Blob([buf]), 'GBK');
+        });
+    }
+}
+
+async function qFetchQuote(code) {
+    const url = 'https://qt.gtimg.cn/q=' + code;
+    try {
+        let resp = null;
+        try { resp = await fetch(url, { signal: AbortSignal.timeout(6000) }); } catch(e) {}
+        if (!resp) { for (const p of CORS_PROXIES) { try { resp = await fetch(p + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) }); if (resp.ok) break; } catch(e2) {} } }
+        if (!resp || !resp.ok) return null;
+        const text = await decodeGBK(resp);
+        const match = text.match(/v_(\w+)="(.+)"/);
+        if (!match) return null;
+        const f = match[2].split('~');
+        const price = parseFloat(f[3]) || 0, prevClose = parseFloat(f[4]) || 0;
+        return { name: f[1] || qQueryName, price, prevClose, open: parseFloat(f[5]) || 0, high: parseFloat(f[33]) || 0, low: parseFloat(f[34]) || 0, changePct: Math.round((prevClose > 0 ? (price - prevClose) / prevClose * 100 : 0) * 100) / 100, volume: parseInt(f[6]) || 0, amount: parseFloat(f[37]) || 0, pe: parseFloat(f[39]) || 0, totalMv: parseFloat(f[45]) || 0, turnover: parseFloat(f[38]) || 0 };
+    } catch(e) { return null; }
+}
+
+async function qFetchKline(code) {
+    try {
+        const sym = code.substring(2);
+        const resp = await fetchWithProxy(`https://d.10jqka.com.cn/v4/line/hs_${sym}/01/last.js`);
+        if (!resp) return null;
+        const m = (await resp.text()).match(/\(({[\s\S]*})\)/);
+        if (!m) return null;
+        const raw = JSON.parse(m[1]).data || '';
+        const klines = raw.split(';').filter(p => p.trim()).map(p => { const f = p.split(','); return f.length >= 5 ? { date: f[0], open: +f[1], high: +f[2], low: +f[3], close: +f[4], volume: parseInt(f[5]) || 0, amount: parseFloat(f[6]) || 0 } : null; }).filter(k => k);
+        return klines.length >= 60 ? klines : null;
+    } catch(e) { return null; }
+}
+
+async function fetchFundamental(exchange, code) {
+    const fcode = exchange.toUpperCase() + code.substring(2);
+    try {
+        const resp = await fetchWithProxy(`https://emweb.securities.eastmoney.com/PC_HSF10/NewFinanceAnalysis/ZYZBAjaxNew?type=0&code=${fcode}`);
+        if (!resp) return null;
+        const data = (await resp.json()).data;
+        if (!data || !data.length) return null;
+        const latest = data[0], rt = latest.REPORT_TYPE || '';
+        let roe = null, roeAnnual = false;
+        if (rt.includes('年报')) { roe = parseFloat(latest.ROEJQ) || null; roeAnnual = true; }
+        else { const ann = data.find(d => (d.REPORT_TYPE || '').includes('年报')); if (ann) { roe = parseFloat(ann.ROEJQ) || null; roeAnnual = true; } else { roe = Math.round((parseFloat(latest.ROEJQ) || 0) * 4 * 100) / 100; } }
+        return { roe, roeAnnual, grossMargin: parseFloat(latest.XSMLL) || null, debtRatio: parseFloat(latest.ZCFZL) || null, eps: parseFloat(latest.EPSJB) || null, epsGrowth: parseFloat(latest.EPSJBTZ) || null, bps: parseFloat(latest.BPS) || null, revenue: parseFloat(latest.TOTALOPERATEREVE) || null, netProfit: parseFloat(latest.PARENTNETPROFIT) || null, netProfitGrowth: parseFloat(latest.PARENTNETPROFITTZ) || null, reportDate: latest.REPORT_DATE || '', reportType: rt };
+    } catch(e) { return null; }
+}
+
+async function fetchSectorInfo(exchange, code) {
+    const secid = `${exchange === 'sh' ? '1' : '0'}.${code.substring(2)}`;
+    try {
+        const resp = await fetchWithProxy(`https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f100,f127,f128,f129,f162`);
+        if (!resp) return null;
+        const d = (await resp.json()).data;
+        return d ? { name: d.f58 || '', sector: d.f127 || d.f128 || d.f100 || '', pe: parseFloat(d.f162) || 0 } : null;
+    } catch(e) { return null; }
+}
+
+function inferPolicyDirection(sector) {
+    if (!sector) return { direction: '待确认', policyScore: 10, reason: '行业信息未获取' };
+    const s = sector.toLowerCase();
+    const rules = [
+        { keys: ['通信','5g','6g','光纤','光缆','光模块','光通信','数据中心','云计算','服务器','idc','算力'], dir: '数字经济（新基建）', score: 20 },
+        { keys: ['半导体','芯片','集成电路','igbt','晶圆','封测','光刻'], dir: 'AI算力（国产替代）', score: 20 },
+        { keys: ['人工智能','ai','大模型','智能驾驶','自动驾驶','机器人'], dir: 'AI应用（科技主线）', score: 18 },
+        { keys: ['新能源','光伏','风电','储能','锂电','固态电池','钠离子'], dir: '能源转型（双碳）', score: 18 },
+        { keys: ['军工','航空航天','船舶','兵器','雷达','卫星','导航'], dir: '国防安全（军备升级）', score: 17 },
+        { keys: ['医药','生物','制药','器械','医疗','疫苗','cro'], dir: '医药创新（老龄化）', score: 15 },
+        { keys: ['消费','食品','饮料','白酒','家电','乳业','调味'], dir: '消费升级（内需）', score: 14 },
+        { keys: ['汽车','新能源车','零部件','整车'], dir: '新能源车（产业链）', score: 16 },
+        { keys: ['电力','电网','特高压','智能电网','电力设备'], dir: '电力改革（特高压）', score: 16 },
+        { keys: ['软件','信创','国产软件','操作系统','信息安全'], dir: '信创国产化', score: 15 },
+        { keys: ['银行','保险','证券','金融'], dir: '金融改革', score: 12 },
+        { keys: ['地产','房地产','建筑','建材','水泥'], dir: '地产链（稳增长）', score: 11 },
+        { keys: ['化工','有色','钢铁','煤炭','稀土'], dir: '周期资源', score: 12 },
+        { keys: ['环保','碳中和','节能'], dir: '绿色环保', score: 14 },
+    ];
+    for (const r of rules) for (const k of r.keys) if (s.includes(k)) return { direction: r.dir, policyScore: r.score, reason: `行业关键词匹配: ${k}` };
+    return { direction: '待确认（非主线赛道）', policyScore: 10, reason: `行业: ${sector}` };
+}
+
+async function qFetchCapitalFlow(code) {
+    try {
+        const secid = `${code.startsWith('sh') ? '1' : '0'}.${code.substring(2)}`;
+        const resp = await fetchWithProxy(`https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?secid=${secid}&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57&lmt=5&klt=1`);
+        if (!resp) return null;
+        const klines = (await resp.json()).data?.klines;
+        if (klines && klines.length) { const last = klines[klines.length - 1].split(','); return { date: last[0], mainNetInflow: parseFloat(last[1]) || 0, mainInflowRatio: parseFloat(last[6]) || 0 }; }
+    } catch(e) {}
+    return null;
+}
+
+function qCalcScore(quote, klines, macd, rsi, maAlign, phase, trend, signal, capFlow, fund, policy) {
+    let total = 0; const detail = {};
+    detail.policy = (policy && policy.policyScore) ? policy.policyScore : 12; total += detail.policy;
+    const pe = (fund && fund.pe > 0) ? fund.pe : (quote.pe || 0);
+    if (pe > 0 && pe < 15) detail.val = 20; else if (pe < 25) detail.val = 18; else if (pe < 35) detail.val = 14; else if (pe < 50) detail.val = 10; else if (pe < 80) detail.val = 6; else if (pe >= 80) detail.val = 3; else detail.val = 10;
+    total += detail.val;
+    let tech = 0;
+    if (macd && macd.dif > macd.dea && macd.macd > 0) tech += 5; else if (macd && macd.dif > macd.dea) tech += 3;
+    if (rsi !== null && rsi >= 20 && rsi <= 80) tech += 5; else if (rsi !== null && rsi > 80) tech += 3;
+    if (trend.trend === 'up') tech += 5; else if (trend.trend === 'sideways') tech += 3;
+    if (maAlign) tech += maAlign.score; if (phase) tech += (phase.score || 0);
+    detail.tech = tech; total += tech;
+    if (capFlow && capFlow.mainNetInflow > 50000000) detail.cap = 15; else if (capFlow && capFlow.mainNetInflow > 10000000) detail.cap = 12; else if (capFlow && capFlow.mainNetInflow > 0) detail.cap = 8; else if (capFlow && capFlow.mainNetInflow > -10000000) detail.cap = 5; else if (capFlow) detail.cap = 2; else detail.cap = 7;
+    total += detail.cap;
+    let earn = 8;
+    if (fund) {
+        if (fund.roe !== null && fund.roe >= 20) earn += 5; else if (fund.roe !== null && fund.roe >= 15) earn += 4; else if (fund.roe !== null && fund.roe >= 10) earn += 3; else if (fund.roe !== null && fund.roe >= 5) earn += 2; else if (fund.roe !== null) earn += 1;
+        if (fund.epsGrowth !== null && fund.epsGrowth >= 50) earn += 5; else if (fund.epsGrowth !== null && fund.epsGrowth >= 30) earn += 4; else if (fund.epsGrowth !== null && fund.epsGrowth >= 15) earn += 3; else if (fund.epsGrowth !== null && fund.epsGrowth >= 0) earn += 2; else if (fund.epsGrowth !== null) earn += 0;
+        if (fund.debtRatio !== null && fund.debtRatio < 30) earn += 2; else if (fund.debtRatio !== null && fund.debtRatio < 50) earn += 1;
+        if (fund.grossMargin !== null && fund.grossMargin > 30) earn += 2; else if (fund.grossMargin !== null && fund.grossMargin > 20) earn += 1;
+    } else { earn += 4; }
+    detail.earn = Math.min(20, earn); total += detail.earn;
+    return { total: Math.min(100, total), detail };
+}
+
+function qGetTier(score) {
+    if (score >= 65) return { tier: 1, label: '🔥 第一梯队 (S)', cls: 'tier-gold', desc: '核心持仓 · 评分≥65' };
+    if (score >= 45) return { tier: 2, label: '📈 第二梯队 (A)', cls: 'tier-silver', desc: '积极关注 · 评分45-64' };
+    return { tier: 3, label: '👀 第三梯队 (B)', cls: 'tier-bronze', desc: '观察等待 · 评分<45' };
+}
+
+function qRenderResults(quote, klines, macd, rsi, maAlign, phase, trend, signal, support, capFlow, fund, sectorInfo, policy, score) {
+    const cls = quote.changePct > 0 ? 'up' : (quote.changePct < 0 ? 'down' : '');
+    const chg = (quote.changePct > 0 ? '+' : '') + quote.changePct.toFixed(2) + '%';
+    const tier = qGetTier(score.total);
+
+    // Score hero
+    document.getElementById('qBigScore').textContent = score.total;
+    document.getElementById('qBigScore').style.color = score.total >= 75 ? 'var(--green)' : (score.total >= 60 ? '#85b753' : (score.total >= 45 ? 'var(--yellow)' : (score.total >= 30 ? 'var(--orange)' : 'var(--red)')));
+    document.getElementById('qTierBadge').textContent = tier.label;
+    document.getElementById('qTierBadge').className = 'q-tier-badge ' + tier.cls;
+    document.getElementById('qScoreHero').style.borderColor = score.total >= 65 ? '#ffd700' : (score.total >= 45 ? '#c0c0c0' : '#cd7f32');
+
+    // Score bars
+    const detail = score.detail, colors = { policy: '#d2991d', val: '#4ecb71', tech: '#58a6ff', cap: '#bc8cff', earn: '#f0883e' };
+    const labels = { policy: '政策方向', val: '估值水平', tech: '技术面', cap: '资金面', earn: '业绩增速' };
+    const maxes = { policy: 25, val: 20, tech: 20, cap: 15, earn: 20 };
+    document.getElementById('qScoreBars').innerHTML = Object.entries(detail).map(([k, v]) => `<div class="q-bar-row"><span class="q-bar-label">${labels[k] || k}</span><div class="q-bar-track"><div class="q-bar-fill" style="width:${Math.min(100, (v / maxes[k]) * 100)}%;background:${colors[k] || '#888'}"></div></div><span style="width:40px;text-align:right;font-weight:600;color:${colors[k]}">${v}/${maxes[k]}</span></div>`).join('');
+
+    // Phase
+    const pc = phase ? (phase.color || '#888') : '#888';
+    document.getElementById('qPhaseDesc').innerHTML = `<span class="q-phase" style="background:${pc}22;border:2px solid ${pc}${phase && (phase.phase === 'acceleration' || phase.phase === 'exhaustion') ? ';animation: pulse 1.5s infinite' : ''};color:${pc}">${phase ? phase.desc : '--'}</span>`;
+
+    // Real-time
+    document.getElementById('qvPrice').textContent = quote.price.toFixed(2); document.getElementById('qvPrice').className = 'q-val ' + cls;
+    document.getElementById('qvChange').textContent = chg; document.getElementById('qvChange').className = 'q-val ' + cls;
+    document.getElementById('qvOHL').textContent = `${quote.open.toFixed(2)} / ${quote.high.toFixed(2)} / ${quote.low.toFixed(2)}`;
+    document.getElementById('qvAmount').textContent = quote.amount >= 1e8 ? (quote.amount / 1e8).toFixed(2) + '亿' : (quote.amount / 1e4).toFixed(1) + '万';
+    document.getElementById('qvTurnover').textContent = quote.turnover ? quote.turnover.toFixed(2) + '%' : '--';
+    document.getElementById('qvMv').textContent = quote.totalMv >= 1e8 ? (quote.totalMv / 1e8).toFixed(0) + '亿' : '--';
+
+    // Fundamentals
+    const peVal = (fund && fund.pe > 0) ? fund.pe : (quote.pe || 0);
+    document.getElementById('qvPE').textContent = peVal > 0 ? peVal.toFixed(1) : '--';
+    document.getElementById('qvPE').className = 'q-val ' + (peVal > 0 && peVal < 20 ? 'good' : (peVal > 50 ? 'warn' : ''));
+    if (fund) {
+        const g = fund.epsGrowth, gc = g !== null ? (g >= 30 ? 'up' : (g >= 0 ? '' : 'down')) : '';
+        document.getElementById('qvGrowth').innerHTML = g !== null ? `<span class="q-val ${gc}">${g >= 0 ? '+' : ''}${g.toFixed(1)}%</span>` : '--';
+        const rn = fund.roeAnnual ? '' : '<span style="font-size:10px;color:var(--text-dim)"> (估)</span>';
+        document.getElementById('qvROE').innerHTML = fund.roe !== null ? `<span class="q-val ${fund.roe >= 15 ? 'good' : (fund.roe >= 8 ? '' : 'warn')}">${fund.roe.toFixed(2)}%</span>${rn}` : '--';
+        document.getElementById('qvGross').innerHTML = fund.grossMargin !== null ? `<span class="q-val ${fund.grossMargin >= 30 ? 'good' : (fund.grossMargin >= 20 ? '' : 'warn')}">${fund.grossMargin.toFixed(2)}%</span>` : '--';
+        document.getElementById('qvDebt').innerHTML = fund.debtRatio !== null ? `<span class="q-val ${fund.debtRatio < 30 ? 'good' : (fund.debtRatio < 60 ? '' : 'warn')}">${fund.debtRatio.toFixed(2)}%</span>` : '--';
+    } else { ['qvGrowth','qvROE','qvGross','qvDebt'].forEach(id => document.getElementById(id).textContent = '--'); }
+
+    // Sector/Policy
+    document.getElementById('qvSector').textContent = sectorInfo ? sectorInfo.sector : '--';
+    document.getElementById('qvDirection').innerHTML = (sectorInfo && policy) ? `<span class="tag tag-dual">${policy.direction}</span>` : '--';
+
+    // Technical
+    document.getElementById('qvPhase').innerHTML = phase ? `<span style="color:${phase.color};font-weight:700">${phase.desc}</span>` : '--';
+    const ml = macd ? (macd.dif > macd.dea ? (macd.macd > 0 ? '金叉 ↑' : '偏多 ↗') : '死叉 ↓') : '--';
+    const mc = macd ? (macd.dif > macd.dea ? 'var(--green)' : 'var(--red)') : 'var(--text-dim)';
+    document.getElementById('qvMACD').innerHTML = macd ? `<span style="color:${mc};font-weight:600">${ml}</span> <span style="font-size:11px;color:var(--text-dim)">DIF:${macd.dif.toFixed(2)} DEA:${macd.dea.toFixed(2)}</span>` : '--';
+    document.getElementById('qvRSI').innerHTML = rsi !== null ? `<span style="color:${rsi > 70 ? 'var(--red)' : (rsi < 30 ? 'var(--green)' : 'var(--text)')};font-weight:${rsi > 70 || rsi < 30 ? '700' : '400'}">${rsi.toFixed(1)}</span> ${rsi > 70 ? '(超买)' : (rsi < 30 ? '(超卖)' : '')}` : '--';
+    document.getElementById('qvMA').textContent = maAlign ? maAlign.desc : '--';
+    document.getElementById('qvMA').className = 'q-val ' + (maAlign && maAlign.align === 'bullish' ? 'up' : (maAlign && maAlign.align === 'bearish' ? 'down' : ''));
+    document.getElementById('qvTrend').innerHTML = trend.trend === 'up' ? `<span class="tag tag-up">${trend.desc}</span> (${trend.strength}%)` : (trend.trend === 'down' ? `<span class="tag tag-down">${trend.desc}</span> (${trend.strength}%)` : `<span class="tag">${trend.desc}</span>`);
+
+    // Signal
+    const sig = signal; let sH = '<span class="tag">--</span>';
+    if (sig.signal === 'washout') sH = `<span class="tag tag-washout">${sig.desc}</span>`;
+    else if (sig.signal === 'distribute') sH = `<span class="tag tag-distribute">${sig.desc}</span>`;
+    else if (sig.signal === 'accumulate') sH = `<span class="tag tag-accumulate">${sig.desc}</span>`;
+    document.getElementById('qvSignal').innerHTML = sH;
+
+    // Fund flow
+    if (capFlow && capFlow.mainNetInflow) {
+        const v = capFlow.mainNetInflow, clr = v > 0 ? 'var(--green)' : (v < 0 ? 'var(--red)' : 'var(--text-dim)');
+        document.getElementById('qvFlow').innerHTML = Math.abs(v) >= 1e8 ? `<span style="color:${clr};font-weight:600">${v > 0 ? '+' : ''}${(Math.abs(v) / 1e8).toFixed(2)}亿</span>` : `<span style="color:${clr};font-weight:600">${v > 0 ? '+' : ''}${(Math.abs(v) / 1e4).toFixed(1)}万</span>`;
+        document.getElementById('qvFlowRatio').textContent = capFlow.mainInflowRatio ? capFlow.mainInflowRatio.toFixed(2) + '%' : '--';
+    } else { document.getElementById('qvFlow').textContent = '--'; document.getElementById('qvFlowRatio').textContent = '--'; }
+
+    // Support
+    if (support) {
+        document.getElementById('qvSupport').textContent = support.price.toFixed(2);
+        document.getElementById('qvSupportDist').textContent = support.distance.toFixed(1) + '%';
+        document.getElementById('qvSupportDist').className = 'q-val ' + (support.distance > 20 ? 'warn' : (support.distance < 5 ? 'down' : ''));
+    } else { document.getElementById('qvSupport').textContent = '--'; document.getElementById('qvSupportDist').textContent = '--'; }
+
+    // Logic
+    let parts = [];
+    if (policy && policy.direction) parts.push(`📌 政策驱动：${policy.direction}（${policy.reason}）`);
+    if (fund) {
+        if (fund.roe !== null) parts.push(`📊 ROE ${fund.roe.toFixed(2)}%（${fund.roeAnnual ? '年报' : '年化估算'}）`);
+        if (fund.grossMargin !== null) parts.push(`🏭 毛利率 ${fund.grossMargin.toFixed(2)}%`);
+        if (fund.debtRatio !== null) parts.push(`💰 负债率 ${fund.debtRatio.toFixed(2)}%`);
+        if (fund.epsGrowth !== null) parts.push(`📈 EPS增速 ${fund.epsGrowth > 0 ? '+' : ''}${fund.epsGrowth.toFixed(1)}%`);
+        if (fund.reportDate) parts.push(`📅 财报期: ${fund.reportDate.substring(0, 10)}（${fund.reportType}）`);
+    }
+    if (phase && phase.phase === 'acceleration') parts.push('🔥 技术面处于加速段，短线动能强');
+    else if (phase && phase.phase === 'launch') parts.push('🚀 技术面处于启动段，关注突破确认');
+    else if (phase && phase.phase === 'exhaustion') parts.push('⚠️ 技术面处于尾部段，注意追高风险');
+    else if (phase && phase.phase === 'waiting') parts.push('⏳ 技术面处于观望阶段，等待右侧信号');
+    if (!parts.length) parts.push('根据实时行情、技术指标和公开财务数据自动生成分析。');
+    document.getElementById('qvReason').textContent = parts.join('；');
+
+    // Risks
+    let risks = [];
+    if (fund && fund.debtRatio !== null && fund.debtRatio > 60) risks.push(`<span class="tag tag-down">⚠ 高负债率 ${fund.debtRatio.toFixed(1)}%</span>`);
+    if (fund && fund.epsGrowth !== null && fund.epsGrowth < 0) risks.push(`<span class="tag tag-down">📉 EPS负增长 ${fund.epsGrowth.toFixed(1)}%</span>`);
+    if (fund && fund.roe !== null && fund.roe < 5) risks.push(`<span class="tag tag-down">📊 ROE偏低 ${fund.roe.toFixed(2)}%</span>`);
+    if (phase && phase.phase === 'exhaustion') risks.push(`<span class="tag tag-distribute">⚠️ 高位风险</span>`);
+    if (signal && signal.signal === 'distribute') risks.push(`<span class="tag tag-distribute">📤 出货信号</span>`);
+    document.getElementById('qvRisks').innerHTML = risks.length ? '<div style="display:flex;gap:6px;flex-wrap:wrap">' + risks.join('') + '</div>' : '';
+
+    document.getElementById('qUpdateTime').textContent = new Date().toLocaleString('zh-CN');
+    document.getElementById('qResult').classList.add('show');
+}
+
+function qShowError(msg) { const e = document.getElementById('qError'); e.textContent = msg; e.classList.add('show'); document.getElementById('qResult').classList.remove('show'); }
+
+async function queryStock() {
+    const exchange = document.getElementById('qExchange').value, code = document.getElementById('qCode').value.trim();
+    const name = document.getElementById('qName').value.trim();
+    if (!code || code.length !== 6) { qShowError('请输入6位股票代码'); return; }
+    qQueryCode = exchange + code; qQueryName = name || '';
+    document.getElementById('qError').classList.remove('show');
+    document.getElementById('qResult').classList.remove('show');
+    document.getElementById('qSpinner').classList.add('show');
+    document.getElementById('qBtn').classList.add('loading'); document.getElementById('qBtn').textContent = '查询中...';
+
+    try {
+        const [quote, klines, capFlow, fund, sectorInfo] = await Promise.all([
+            qFetchQuote(qQueryCode), qFetchKline(qQueryCode), qFetchCapitalFlow(qQueryCode),
+            fetchFundamental(exchange, qQueryCode), fetchSectorInfo(exchange, qQueryCode)
+        ]);
+        if (!quote || !quote.price) { qShowError('无法获取行情数据，请检查股票代码是否正确'); return; }
+        if (quote.name && quote.name !== '--') { qQueryName = quote.name; document.getElementById('qName').value = quote.name; }
+        if (!klines || klines.length < 60) { qShowError('K线数据不足（需≥60个交易日），无法计算技术指标'); return; }
+
+        const macd = calcMACD(klines), rsi = calcRSI(klines), maAlign = detectMAAlignment(klines);
+        const trend = detectTrend(klines), signal = detectSignal(klines), support = calcSupportPrice(klines);
+        const phase = detectPhase(klines, macd, rsi, maAlign);
+        const policy = inferPolicyDirection(sectorInfo ? sectorInfo.sector : null);
+        const fullFund = { pe: sectorInfo ? sectorInfo.pe : (quote.pe || 0), roe: fund ? fund.roe : null, roeAnnual: fund ? fund.roeAnnual : false, grossMargin: fund ? fund.grossMargin : null, debtRatio: fund ? fund.debtRatio : null, eps: fund ? fund.eps : null, epsGrowth: fund ? fund.epsGrowth : null, bps: fund ? fund.bps : null, reportDate: fund ? fund.reportDate : '', reportType: fund ? fund.reportType : '' };
+        const score = qCalcScore(quote, klines, macd, rsi, maAlign, phase, trend, signal, capFlow, fullFund, policy);
+        qRenderResults(quote, klines, macd, rsi, maAlign, phase, trend, signal, support, capFlow, fullFund, sectorInfo, policy, score);
+    } catch(e) { console.error('查询出错:', e); qShowError('查询出错: ' + e.message); } finally {
+        document.getElementById('qSpinner').classList.remove('show');
+        document.getElementById('qBtn').classList.remove('loading'); document.getElementById('qBtn').textContent = '🔍 查询分析';
+    }
+}
+
+function quickQuery(exchange, code, name) {
+    document.getElementById('qExchange').value = exchange;
+    document.getElementById('qCode').value = code;
+    document.getElementById('qName').value = name;
+    queryStock();
+}
+
+// 查询模块 Enter 键绑定
+document.addEventListener('DOMContentLoaded', () => {
+    const qc = document.getElementById('qCode'), qn = document.getElementById('qName');
+    if (qc) qc.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
+    if (qn) qn.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
+});
 
 </script>
 </body>
