@@ -388,6 +388,199 @@ def search_replacement_candidates(sector, current_codes, count=5):
     return candidates[:count]
 
 
+# ==================== 政策/业绩/日历自动更新 ====================
+
+POLICY_KEYWORDS = [
+    "国务院", "发改委", "工信部", "财政部", "央行", "科技部", "商务部",
+    "特别国债", "减税", "补贴", "降息", "降准", "硬科技", "半导体",
+    "新能源", "储能", "算力", "AI芯片", "机器人", "出口管制",
+    "国产替代", "自主可控", "新质生产力", "数字经济", "碳中和",
+    "数据要素", "低空经济", "量子计算", "人形机器人", "6G",
+]
+
+SECTOR_POLICY_MAP = {
+    "AI算力": {"keywords": ["算力", "AI芯片", "智算", "GPU", "数据中心", "服务器"], "direction": "供需双驱"},
+    "半导体": {"keywords": ["半导体", "芯片", "晶圆", "光刻", "封测", "EDA", "IP", "出口管制", "国产替代"], "direction": "供应端驱动"},
+    "储能": {"keywords": ["储能", "电池", "光伏", "风电", "新能源", "电网", "特高压", "充电桩"], "direction": "供需双驱"},
+    "机器人": {"keywords": ["机器人", "人形机器人", "自动化", "智能制造", "减速器", "伺服"], "direction": "需求端驱动"},
+    "电子材料": {"keywords": ["电子特气", "材料", "稀土", "有色金属", "矿"], "direction": "供应端驱动"},
+}
+
+
+def fetch_policy_news():
+    """从新浪财经滚动新闻获取最新政策新闻"""
+    print("\n   📡 拉取新浪财经快讯 ...")
+    
+    # 新浪财经不同栏目的 lid
+    # 2509: 宏观, 2510: 产业, 2511: 证券, 2512: 国际, 2513: 公司
+    all_news = []
+    lids = ["2509", "2510"]
+    
+    for lid in lids:
+        url = (f"https://feed.mix.sina.com.cn/api/roll/get"
+               f"?pageid=153&lid={lid}&k=&num=25&page=1")
+        try:
+            data = fetch_json(url, timeout=15)
+            if data:
+                items = data.get("result", {}).get("data", [])
+                all_news.extend(items)
+        except Exception:
+            continue
+    
+    if not all_news:
+        print("   ❌ 未获取到新闻")
+        return []
+    
+    print(f"   ✅ 获取到 {len(all_news)} 条快讯")
+    
+    # 去重（按docid）
+    seen = set()
+    unique_news = []
+    for item in all_news:
+        docid = item.get("docid", "")
+        if docid and docid not in seen:
+            seen.add(docid)
+            unique_news.append(item)
+    
+    # 筛选政策相关
+    policy_news = []
+    for item in unique_news:
+        title = item.get("title", "") or ""
+        intro = item.get("intro", "") or ""
+        text = title + " " + intro
+        
+        matched_keywords = [kw for kw in POLICY_KEYWORDS if kw in text]
+        if not matched_keywords:
+            continue
+        
+        ctime = item.get("ctime", "")
+        # ctime 是 Unix 时间戳（秒）
+        try:
+            ts = int(ctime)
+            time_str = datetime.fromtimestamp(ts, CST).strftime("%m-%d %H:%M")
+        except (ValueError, TypeError):
+            time_str = ctime
+        
+        policy_news.append({
+            "title": title,
+            "intro": intro,
+            "keywords": matched_keywords,
+            "time": time_str,
+        })
+    
+    print(f"   🔍 筛选出 {len(policy_news)} 条政策相关快讯")
+    return policy_news
+
+
+def update_policy_directions(config):
+    """更新政策双轮驱动数据"""
+    print("\n📋 第6a步：更新政策双轮驱动 ...")
+    
+    news = fetch_policy_news()
+    if not news:
+        print("   ⚠️ 未获取到政策新闻，保持现有数据")
+        return False
+    
+    # 按赛道归类
+    sector_updates = {}
+    for n in news:
+        # 把 title+intro 拼起来作为匹配文本
+        news_text = n["title"] + " " + n.get("intro", "")
+        for sector_name, sector_info in SECTOR_POLICY_MAP.items():
+            # 赛道关键词在新闻文本中的命中数
+            match_count = sum(1 for sk in sector_info["keywords"] if sk in news_text)
+            if match_count >= 1:
+                if sector_name not in sector_updates:
+                    sector_updates[sector_name] = []
+                sector_updates[sector_name].append(n)
+    
+    if not sector_updates:
+        print("   ⚠️ 无政策新闻匹配现有赛道")
+        return False
+    
+    # 更新 policyDirections
+    pd = config.get("policyDirections", {})
+    changed = False
+    
+    for sector_name, sector_news in sector_updates.items():
+        latest = sector_news[0]  # 最新一条
+        policy_text = f"{latest['title'][:80]}"
+        if latest.get("intro"):
+            policy_text += f" — {latest['intro'][:60]}"
+        
+        for category in ["dualWheel", "supply", "demand"]:
+            for entry in pd.get(category, []):
+                if sector_name in entry.get("name", ""):
+                    old_policy = entry.get("policy", "")
+                    # 只有当新政策与旧政策不同时才更新
+                    if old_policy != policy_text:
+                        entry["policy"] = policy_text
+                        entry["updateTime"] = latest["time"]
+                        print(f"   ✅ 更新: {entry['name']} → {policy_text[:60]}...")
+                        changed = True
+    
+    if not changed:
+        print("   📭 政策方向无变化，保持现有数据")
+    
+    return changed
+
+
+def update_earnings_verified(config):
+    """更新业绩落地状态（根据当前日期判断财报季阶段）"""
+    print("\n💰 第6b步：更新业绩落地状态 ...")
+    
+    now = datetime.now(CST)
+    month = now.month
+    day = now.day
+    
+    # 财报季判断
+    # 中报季: 7月-8月 → 中报密集验证期
+    # 三季报季: 10月 → 三季报验证期
+    # 年报季: 3月-4月 → 年报验证期
+    # 其他时间 → 订单验证期/景气跟踪期
+    
+    if month in (7, 8):
+        if month == 8 and day > 20:
+            season_status = "中报验证收尾期"
+        else:
+            season_status = "中报密集验证期"
+    elif month == 10:
+        season_status = "三季报验证期"
+    elif month in (3, 4):
+        season_status = "年报/一季报验证期"
+    elif month in (9, 11):
+        season_status = "订单验证期"
+    else:
+        season_status = "景气跟踪期"
+    
+    ev = config.get("earningsVerified", [])
+    changed = False
+    
+    for entry in ev:
+        old_status = entry.get("status", "")
+        
+        # 根据赛道类型微调状态
+        name = entry.get("name", "")
+        if season_status == "中报密集验证期":
+            new_status = "中报密集验证期"
+        elif season_status == "年报/一季报验证期":
+            new_status = "年报验证期"
+        else:
+            new_status = season_status
+        
+        if old_status != new_status:
+            entry["status"] = new_status
+            print(f"   ✅ 更新: {name} → {new_status}")
+            changed = True
+    
+    if not changed:
+        print(f"   📭 业绩状态无变化（当前: {season_status}）")
+    else:
+        print(f"   📅 当前财报季: {season_status}")
+    
+    return changed
+
+
 # ==================== 主流程 ====================
 
 def main():
@@ -566,6 +759,17 @@ def main():
     with open(STOCKS_FILE, "w", encoding="utf-8") as f:
         json.dump(config, f, ensure_ascii=False, indent=2)
     print("   ✅ stocks.json 已更新")
+    
+    # ---- 第6a步：更新政策双轮驱动 + 业绩落地 ----
+    policy_changed = update_policy_directions(config)
+    earnings_changed = update_earnings_verified(config)
+    
+    # 如果政策或业绩有变化，重新写 stocks.json
+    if policy_changed or earnings_changed:
+        config["updateTime"] = datetime.now(CST).strftime("%Y-%m-%dT%H:%M:%S+08:00")
+        with open(STOCKS_FILE, "w", encoding="utf-8") as f:
+            json.dump(config, f, ensure_ascii=False, indent=2)
+        print("   ✅ stocks.json 已更新（含政策/业绩）")
     
     # ---- 第7步：重新生成仪表盘 ----
     print("\n🏗️ 第7步：重新生成仪表盘 ...")
