@@ -110,6 +110,18 @@ tr:hover td { background: var(--bg-hover); }
   .stat-card .label { font-size: 10px; }
   .table-container table { min-width: 750px; font-size: 10px; }
   #tierOverview .tier-gold, #tierOverview .tier-silver, #tierOverview .tier-bronze { font-size: 13px; }
+  #reviewTable { font-size: 12px; }
+  #reviewTable th { font-size: 12px; }
+  #reviewTable td { max-width: 260px; line-height: 1.5; }
+  .review-up { color: var(--green); font-weight: 700; }
+  .review-down { color: var(--red); font-weight: 700; }
+  .review-cap-in { color: var(--green); font-weight: 600; }
+  .review-cap-out { color: var(--red); font-weight: 600; }
+  .review-cap-neutral { color: var(--yellow); }
+  .review-action-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
+  .review-action-hold { background: rgba(88,166,255,0.15); color: var(--blue); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(88,166,255,0.3); }
+  .review-action-watch { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
+  .review-action-reduce { background: rgba(248,81,73,0.15); color: var(--red); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(248,81,73,0.3); }
 }
 </style>
 </head>
@@ -217,9 +229,29 @@ tr:hover td { background: var(--bg-hover); }
 <!-- 收盘复盘 -->
 <div class="content tab-content" id="content-review">
     <div class="section-title">📝 收盘复盘</div>
-    <div class="panel">
-        <button id="reviewBtn" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">生成复盘报告</button>
-        <pre id="reviewOutput" style="margin-top:12px;background:#0d1117;padding:16px;border-radius:8px;font-size:12px;color:var(--text);white-space:pre-wrap;max-height:60vh;overflow-y:auto"></pre>
+    <div class="panel" style="margin-bottom:12px">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <button id="reviewBtn" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">一键智能复盘</button>
+            <span id="reviewStatus" style="color:var(--text-dim);font-size:12px">点击按钮即可对30只标的进行智能复盘分析</span>
+        </div>
+    </div>
+    <div id="reviewPanel" style="display:none">
+        <div class="table-container" style="overflow-x:auto">
+            <table id="reviewTable">
+                <thead>
+                    <tr>
+                        <th>标的</th>
+                        <th>涨跌</th>
+                        <th>主力动向</th>
+                        <th style="min-width:200px">涨跌原因</th>
+                        <th style="min-width:180px">次日预判</th>
+                        <th>操作建议</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewTableBody"></tbody>
+            </table>
+        </div>
+        <div id="reviewSummary" style="margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:13px;line-height:1.8"></div>
     </div>
 </div>
 
@@ -1418,49 +1450,534 @@ async function init() {
     calendarTimer = setInterval(renderCalendar, REFRESH_CALENDAR_MS);
 }
 
-// ==================== 收盘复盘 ====================
+// ==================== 收盘复盘(智能分析) ====================
 
-function generateReview() {
-    let review = '';
-    review += `\n========== 收盘复盘 ${new Date().toLocaleDateString('zh-CN')} ==========\n`;
-    
-    // 涨跌统计
-    const upList = [], downList = [];
-    for (const stock of STOCKS) {
-        const d = getStockData(stock.code);
-        if (d.changePct > 3) upList.push({ name: quoteCache[stock.code]?.name || stock.name, pct: d.changePct });
-        if (d.changePct < -3) downList.push({ name: quoteCache[stock.code]?.name || stock.name, pct: d.changePct });
+function analyzeStockReason(data) {
+    const { changePct, quote, capFlow, signal, trend, stock } = data;
+    const ind = trendCache[data.code] || {};
+    const macd = ind.macd;
+    const rsi = ind.rsi;
+    const maAlign = ind.maAlign;
+    const phase = ind.phase;
+    const kdj30 = ind.kdj && ind.kdj.m30 ? ind.kdj.m30.v : null;
+    const kdj5 = ind.kdj && ind.kdj.m5 ? ind.kdj.m5.v : null;
+    const turnover = quote.turnover || 0;
+    const vol = quote.volume || 0;
+    const amt = quote.amount || 0;
+    const isUp = changePct > 0;
+    const isBig = Math.abs(changePct) >= 3;
+    const isHuge = Math.abs(changePct) >= 5;
+    const capIn = capFlow && capFlow.mainNetInflow > 0;
+    const capOut = capFlow && capFlow.mainNetInflow < 0;
+    const capBig = capFlow && Math.abs(capFlow.mainNetInflow) >= 10000000;
+    const volHigh = turnover > 3; // 高换手
+
+    const reasons = [];
+
+    if (isUp) {
+        if (isBig && capIn && capBig) {
+            reasons.push('主力大幅抢筹，资金涌入推动股价');
+        } else if (isBig && capIn) {
+            reasons.push('资金小幅流入，买盘积极，推动上涨');
+        } else if (isBig && capOut) {
+            reasons.push('主力出货但散户接力，放量滞涨，需警惕');
+        } else if (isBig && !capFlow) {
+            reasons.push('放量大涨，买盘强劲，资金数据待确认');
+        }
+
+        if (macd && macd.dif > macd.dea && macd.macd > 0) {
+            reasons.push('MACD金叉且红柱放大，技术面强势');
+        } else if (macd && macd.dif > macd.dea) {
+            reasons.push('MACD金叉，多头趋势确立');
+        }
+        if (maAlign && maAlign.align === 'bullish') {
+            reasons.push('均线多头排列，中期趋势向好');
+        } else if (maAlign && maAlign.align === 'short_bullish') {
+            reasons.push('短期均线多头，短期强势');
+        }
+        if (phase && phase.phase === 'acceleration') {
+            reasons.push('处于加速段（主升浪），趋势强化');
+        } else if (phase && phase.phase === 'launch') {
+            reasons.push('处于启动段，刚脱离底部');
+        }
+        if (rsi !== null && rsi > 70) {
+            reasons.push('RSI超买，短期涨幅过大，注意获利了结');
+        }
+        if (kdj30 !== null && kdj30 < 30) {
+            reasons.push('KDJ30分钟超卖后反弹，技术性修复');
+        }
+        if (signal && signal.signal === 'accumulate') {
+            reasons.push('量价出现吸筹信号，资金在低位收集筹码');
+        }
+        if (volHigh && !capIn) {
+            reasons.push('高换手但资金未明显流入，游资主导行情');
+        }
+        // 基本面逻辑
+        if (stock.reason && stock.reason.includes('AI')) {
+            reasons.push('AI算力产业链持续受到资金关注');
+        } else if (stock.reason && stock.reason.includes('光')) {
+            reasons.push('光通信/光模块景气度上行，订单饱满');
+        } else if (stock.sector && stock.sector.includes('半导体')) {
+            reasons.push('半导体国产化进程加速，国产替代逻辑支撑');
+        } else if (stock.sector && stock.sector.includes('储')) {
+            reasons.push('储能/电力设备需求旺盛，政策驱动');
+        }
+    } else {
+        // 下跌
+        if (isBig && capOut && capBig) {
+            reasons.push('主力资金大幅出逃，恐慌性抛售导致大跌');
+        } else if (isBig && capOut) {
+            reasons.push('资金持续流出，抛压较重，短线承压');
+        } else if (isBig && capIn) {
+            reasons.push('主力逢低买入，但卖盘更强，关注是否吸筹');
+        } else if (isBig && !capFlow) {
+            reasons.push('放量下跌，资金数据待确认，短线承压');
+        }
+
+        if (macd && macd.dif < macd.dea && macd.macd < 0) {
+            reasons.push('MACD死叉且绿柱放大，技术面走弱');
+        } else if (macd && macd.dif < macd.dea) {
+            reasons.push('MACD死叉，空头趋势形成');
+        }
+        if (maAlign && maAlign.align === 'bearish') {
+            reasons.push('均线空头排列，中期趋势走弱');
+        } else if (maAlign && maAlign.align === 'short_bearish') {
+            reasons.push('短期均线空头，短线偏弱');
+        }
+        if (phase && phase.phase === 'exhaustion') {
+            reasons.push('处于尾部段，高位滞涨后回调');
+        }
+        if (rsi !== null && rsi < 30) {
+            reasons.push('RSI超卖，短期跌幅过大，存在反弹需求');
+        }
+        if (kdj30 !== null && kdj30 > 80) {
+            reasons.push('KDJ30分钟超买后回落，技术性回调');
+        }
+        if (signal && signal.signal === 'distribute') {
+            reasons.push('量价出现出货信号，主力在高位派发筹码');
+        } else if (signal && signal.signal === 'washout') {
+            reasons.push('出现洗盘信号，短期急跌但量能萎缩，不必恐慌');
+        }
+        if (!isBig && Math.abs(changePct) < 1 && volHigh) {
+            reasons.push('高换手但小跌，大概率在洗盘');
+        }
     }
-    
-    review += `\n📈 涨幅>3%: ${upList.length}只\n`;
-    upList.sort((a, b) => b.pct - a.pct);
-    upList.forEach(s => { review += `  ${s.name}: +${s.pct.toFixed(2)}%\n`; });
-    
-    review += `\n📉 跌幅>3%: ${downList.length}只\n`;
-    downList.sort((a, b) => a.pct - b.pct);
-    downList.forEach(s => { review += `  ${s.name}: ${s.pct.toFixed(2)}%\n`; });
-    
-    // 异动汇总
-    if (abnormalLog.length > 0) {
-        review += `\n⚠️ 今日异动:\n`;
-        abnormalLog.slice(0, 20).forEach(item => {
-            review += `  ${item.time} ${item.stock} ${item.type}: ${item.detail}\n`;
-        });
+
+    // 通用的技术/资金原因
+    if (reasons.length === 0) {
+        if (Math.abs(changePct) < 0.5) {
+            reasons.push('盘中窄幅波动，多空力量均衡，无明显方向');
+        } else if (isUp) {
+            reasons.push('跟随大盘或板块小幅上涨，无独立行情');
+        } else {
+            reasons.push('跟随大盘或板块小幅下跌，无独立利空');
+        }
     }
-    
-    review += `\n==========================================\n`;
-    return review;
+
+    return reasons.slice(0, 3).join('；');
 }
 
-// 收盘复盘按钮
+function analyzeCapitalFlow(data) {
+    const { capFlow, changePct, quote } = data;
+    if (!capFlow) return { text: '观望', cls: 'review-cap-neutral', detail: '暂无资金数据' };
+    const flow = capFlow.mainNetInflow;
+    const ratio = capFlow.mainInflowRatio || 0;
+    const absFlow = Math.abs(flow);
+    const turnover = quote.turnover || 0;
+
+    // 主力大幅进入
+    if (flow > 10000000 && changePct > 2) {
+        return { text: '主力大幅进入', cls: 'review-cap-in', detail: `主力净流入+${(flow/10000).toFixed(0)}万，资金抢筹明显` };
+    }
+    // 主力进入
+    if (flow > 5000000) {
+        return { text: '主力进入', cls: 'review-cap-in', detail: `主力净流入+${(flow/10000).toFixed(0)}万` };
+    }
+    // 主力吸筹
+    if (flow > 0 && turnover > 3 && changePct > 0) {
+        return { text: '主力吸筹', cls: 'review-cap-in', detail: `高换手+资金流入，疑似主力在收集筹码` };
+    }
+    // 主力大幅出货
+    if (flow < -10000000 && changePct < -1) {
+        return { text: '主力大幅出货', cls: 'review-cap-out', detail: `主力净流出${(Math.abs(flow)/10000).toFixed(0)}万，资金出逃` };
+    }
+    // 主力出货
+    if (flow < -5000000) {
+        return { text: '主力出货', cls: 'review-cap-out', detail: `主力净流出${(Math.abs(flow)/10000).toFixed(0)}万` };
+    }
+    // 高换手出货
+    if (flow < -2000000 && turnover > 3) {
+        return { text: '主力出货', cls: 'review-cap-out', detail: `高换手+资金流出，主力在派发` };
+    }
+    // 观望
+    if (absFlow < 1000000) {
+        return { text: '观望', cls: 'review-cap-neutral', detail: '资金进出不明显，主力无大动作' };
+    }
+    // 小量流入
+    if (flow > 0) {
+        return { text: '资金小幅流入', cls: 'review-cap-in', detail: `主力净流入+${(flow/10000).toFixed(0)}万` };
+    }
+    return { text: '资金小幅流出', cls: 'review-cap-out', detail: `主力净流出${(Math.abs(flow)/10000).toFixed(0)}万` };
+}
+
+function predictNextDay(data) {
+    const { changePct, quote, trend, signal, stock } = data;
+    const ind = trendCache[data.code] || {};
+    const macd = ind.macd;
+    const rsi = ind.rsi;
+    const maAlign = ind.maAlign;
+    const phase = ind.phase;
+    const capFlow = data.capFlow;
+    const capIn = capFlow && capFlow.mainNetInflow > 5000000;
+    const capOut = capFlow && capFlow.mainNetInflow < -5000000;
+    const price = quote.price || 0;
+
+    const predictions = [];
+
+    // 1. 趋势判断
+    if (trend.trend === 'up' && !capOut) {
+        predictions.push('短期趋势向上');
+    } else if (trend.trend === 'down' && !capIn) {
+        predictions.push('短期趋势向下');
+    } else if (trend.trend === 'sideways') {
+        predictions.push('维持震荡格局');
+    }
+
+    // 2. 超买/超卖判断
+    if (rsi !== null) {
+        if (rsi > 75) {
+            predictions.push('RSI超买，短期有回调压力');
+        } else if (rsi > 65) {
+            predictions.push('RSI偏高，短期不宜追');
+        } else if (rsi < 25) {
+            predictions.push('RSI超卖，短期有反弹机会');
+        } else if (rsi < 40 && capIn) {
+            predictions.push('RSI偏低，若资金持续流入有望反弹');
+        }
+    }
+
+    // 3. MACD判断
+    if (macd) {
+        if (macd.dif > macd.dea && macd.macd > 0) {
+            predictions.push('MACD红柱放大，动能增强');
+        } else if (macd.dif > macd.dea) {
+            predictions.push('MACD金叉延续，偏强');
+        } else if (macd.dif < macd.dea && macd.macd < 0) {
+            predictions.push('MACD绿柱放大，动能减弱');
+        } else if (macd.dif < macd.dea) {
+            predictions.push('MACD死叉，偏弱');
+        }
+    }
+
+    // 4. 阶段判断
+    if (phase) {
+        if (phase.phase === 'acceleration') {
+            predictions.push('主升浪中，惯性上冲概率较大');
+        } else if (phase.phase === 'launch') {
+            predictions.push('刚启动，仍有上行空间');
+        } else if (phase.phase === 'exhaustion') {
+            predictions.push('尾部段，随时可能回调');
+        }
+    }
+
+    // 5. 资金判断
+    if (capIn) {
+        predictions.push('主力资金流入，有望延续强势');
+    } else if (capOut) {
+        predictions.push('主力资金流出，短线承压');
+    }
+
+    // 6. 信号判断
+    if (signal) {
+        if (signal.signal === 'accumulate') {
+            predictions.push('量价出现吸筹信号，短期企稳概率高');
+        } else if (signal.signal === 'distribute') {
+            predictions.push('量价出现出货信号，短期需谨慎');
+        } else if (signal.signal === 'washout') {
+            predictions.push('疑似洗盘，若企稳则有望反弹');
+        }
+    }
+
+    // 7. 均线判断
+    if (maAlign) {
+        if (maAlign.align === 'bullish') {
+            predictions.push('均线多头排列，中期趋势向好');
+        } else if (maAlign.align === 'bearish') {
+            predictions.push('均线空头排列，中期趋势偏弱');
+        } else if (maAlign.align === 'mixed') {
+            predictions.push('均线交织，方向未明');
+        }
+    }
+
+    // 综合总结
+    if (predictions.length === 0) {
+        return '维持当前走势，方向不明，需进一步观察';
+    }
+
+    // 取最重要的3个预测合并
+    const top3 = predictions.slice(0, 3);
+    if (top3.length === 1) return top3[0] + '，';
+    if (top3.length === 2) return top3.join('，') + '，次日大概率' + (changePct > 0 ? '延续偏强' : '延续偏弱') + '。';
+    return top3[0] + '，' + top3[1] + '，' + top3[2] + '。';
+}
+
+function getActionAdvice(data) {
+    const { changePct, quote, trend, signal, stock } = data;
+    const ind = trendCache[data.code] || {};
+    const rsi = ind.rsi;
+    const macd = ind.macd;
+    const maAlign = ind.maAlign;
+    const phase = ind.phase;
+    const capFlow = data.capFlow;
+    const capIn = capFlow && capFlow.mainNetInflow > 5000000;
+    const capOut = capFlow && capFlow.mainNetInflow < -5000000;
+    const score = calcCompositeScore(data);
+    const price = quote.price || 0;
+    const turnover = quote.turnover || 0;
+
+    // 判断逻辑：综合评分+技术+资金+趋势
+    let advice = '观望';
+    let reason = '';
+    let cls = 'review-action-watch';
+
+    // 强烈买入信号
+    if (score.total >= 70 && capIn && trend.trend === 'up' && (!rsi || rsi < 70) && (!phase || phase.phase !== 'exhaustion')) {
+        advice = '买入';
+        cls = 'review-action-buy';
+        reason = `综合评分${score.total}分，主力大幅流入，趋势向上，多头共振，建议积极介入。`;
+    }
+    // 买入信号
+    else if (score.total >= 55 && capIn && (!rsi || rsi < 70)) {
+        advice = '买入';
+        cls = 'review-action-buy';
+        reason = `综合评分${score.total}分，资金流入，技术面向好，可适量介入。`;
+    }
+    // 持有信号
+    else if (score.total >= 55 && trend.trend === 'up' && (!rsi || rsi < 75)) {
+        advice = '持有';
+        cls = 'review-action-hold';
+        reason = `综合评分${score.total}分，趋势向好，继续持有。`;
+    }
+    // 减仓信号（高位出货）
+    else if (capOut && rsi > 70 && phase && phase.phase === 'exhaustion') {
+        advice = '减仓';
+        cls = 'review-action-reduce';
+        reason = `RSI超买(${rsi.toFixed(1)})，主力出货，处于尾部段，建议减仓止盈。`;
+    }
+    // 减仓信号（趋势转弱）
+    else if (score.total < 40 && capOut && trend.trend === 'down') {
+        advice = '减仓';
+        cls = 'review-action-reduce';
+        reason = `评分偏低(${score.total}分)，资金流出，趋势走弱，建议减仓。`;
+    }
+    // 减仓信号（技术破位）
+    else if (macd && macd.dif < macd.dea && maAlign && maAlign.align === 'bearish' && capOut) {
+        advice = '减仓';
+        cls = 'review-action-reduce';
+        reason = 'MACD死叉+均线空头+资金流出，技术破位，建议减仓。';
+    }
+    // 观望（方向不明）
+    else if (trend.trend === 'sideways' && (!capIn && !capOut)) {
+        advice = '观望';
+        cls = 'review-action-watch';
+        reason = '震荡整理，无明确方向，等待突破信号。';
+    }
+    // 观望（超涨）
+    else if (rsi > 75 && !capIn) {
+        advice = '观望';
+        cls = 'review-action-watch';
+        reason = `RSI超买(${rsi.toFixed(1)})，但资金未跟进，不宜追高。`;
+    }
+    // 观望（超跌）
+    else if (rsi !== null && rsi < 25 && !capIn) {
+        advice = '观望';
+        cls = 'review-action-watch';
+        reason = `RSI超卖(${rsi.toFixed(1)})，但资金未流入，等待企稳信号。`;
+    }
+    // 默认：根据评分和趋势
+    else if (score.total >= 60) {
+        advice = '持有';
+        cls = 'review-action-hold';
+        reason = `综合评分${score.total}分，基本面良好，趋势尚可，建议持有。`;
+    } else if (score.total < 45) {
+        advice = '观望';
+        cls = 'review-action-watch';
+        reason = `评分偏低(${score.total}分)，短期风险较大，观望为主。`;
+    } else {
+        advice = '观望';
+        cls = 'review-action-watch';
+        reason = '多空交织，方向不明，建议观望。';
+    }
+
+    return { advice, cls, reason };
+}
+
+function generateReview() {
+    const tbody = document.getElementById('reviewTableBody');
+    tbody.innerHTML = '';
+
+    const rows = [];
+    for (const stock of STOCKS) {
+        const data = getStockData(stock.code);
+        const quote = data.quote;
+        const changePct = data.changePct || 0;
+        const capAnalysis = analyzeCapitalFlow(data);
+        const reason = analyzeStockReason(data);
+        const prediction = predictNextDay(data);
+        const action = getActionAdvice(data);
+
+        const nameHTML = `<div style="display:flex;align-items:center;gap:6px">
+            <div style="font-weight:700;font-size:13px">${stock.name}</div>
+            <div style="font-size:11px;color:var(--text-dim)">${stock.code.substring(2)}</div>
+            <div style="font-size:11px;color:var(--text-dim)">${stock.sector}</div>
+        </div>`;
+
+        const chgCls = changePct > 0 ? 'review-up' : (changePct < 0 ? 'review-down' : '');
+        const chgHTML = `<div class="${chgCls}">${changePct > 0 ? '+' : ''}${changePct.toFixed(2)}%</div>`;
+
+        const capHTML = `<div>
+            <div class="${capAnalysis.cls}">${capAnalysis.text}</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:2px">${capAnalysis.detail}</div>
+        </div>`;
+
+        const reasonHTML = `<div style="font-size:12px;line-height:1.6">${reason}</div>`;
+        const predHTML = `<div style="font-size:12px;line-height:1.6">${prediction}</div>`;
+        const actionHTML = `<div style="display:flex;flex-direction:column;gap:4px">
+            <span class="${action.cls}">${action.advice}</span>
+            <span style="font-size:11px;color:var(--text-dim)">${action.reason}</span>
+        </div>`;
+
+        rows.push({
+            changePct,
+            html: `<tr>
+                <td>${nameHTML}</td>
+                <td>${chgHTML}</td>
+                <td>${capHTML}</td>
+                <td>${reasonHTML}</td>
+                <td>${predHTML}</td>
+                <td>${actionHTML}</td>
+            </tr>`
+        });
+    }
+
+    // 按涨跌幅排序，涨幅大的在前
+    rows.sort((a, b) => b.changePct - a.changePct);
+    rows.forEach(r => { tbody.innerHTML += r.html; });
+
+    // 汇总统计
+    const upCount = rows.filter(r => r.changePct > 0).length;
+    const downCount = rows.filter(r => r.changePct < 0).length;
+    const strongUp = rows.filter(r => r.changePct > 3).length;
+    const strongDown = rows.filter(r => r.changePct < -3).length;
+
+    // 统计买入/减仓建议数量
+    let buyCount = 0, holdCount = 0, reduceCount = 0, watchCount = 0;
+    for (const stock of STOCKS) {
+        const data = getStockData(stock.code);
+        const a = getActionAdvice(data);
+        if (a.advice === '买入') buyCount++;
+        else if (a.advice === '持有') holdCount++;
+        else if (a.advice === '减仓') reduceCount++;
+        else watchCount++;
+    }
+
+    const summaryHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:24px;font-weight:800;color:var(--green)">${upCount}</div>
+                <div style="font-size:12px;color:var(--text-dim)">上涨</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:24px;font-weight:800;color:var(--red)">${downCount}</div>
+                <div style="font-size:12px;color:var(--text-dim)">下跌</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:24px;font-weight:800;color:var(--green)">${strongUp}</div>
+                <div style="font-size:12px;color:var(--text-dim)">强势上涨(>3%)</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:24px;font-weight:800;color:var(--red)">${strongDown}</div>
+                <div style="font-size:12px;color:var(--text-dim)">强势下跌(<-3%)</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--green)">
+                <div style="font-size:24px;font-weight:800;color:var(--green)">${buyCount}</div>
+                <div style="font-size:12px;color:var(--green)">建议买入</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--blue)">
+                <div style="font-size:24px;font-weight:800;color:var(--blue)">${holdCount}</div>
+                <div style="font-size:12px;color:var(--blue)">建议持有</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--red)">
+                <div style="font-size:24px;font-weight:800;color:var(--red)">${reduceCount}</div>
+                <div style="font-size:12px;color:var(--red)">建议减仓</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+                <div style="font-size:24px;font-weight:800;color:var(--text-dim)">${watchCount}</div>
+                <div style="font-size:12px;color:var(--text-dim)">建议观望</div>
+            </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8">
+            <strong>复盘说明：</strong>以上分析基于实时行情数据、技术指标（MACD/KDJ/RSI/均线）、资金流向及量价信号综合研判。仅供参考，不构成投资建议。个股走势受市场情绪、宏观政策等多重因素影响，请结合实际情况审慎决策。<br>
+            复盘时间：${new Date().toLocaleString('zh-CN')}
+        </div>
+    `;
+
+    document.getElementById('reviewSummary').innerHTML = summaryHTML;
+    document.getElementById('reviewPanel').style.display = 'block';
+
+    // 更新状态
+    const today = new Date().toLocaleDateString('zh-CN');
+    document.getElementById('reviewStatus').textContent = `今日(${today})复盘已完成，${buyCount}只买入 · ${holdCount}只持有 · ${reduceCount}只减仓 · ${watchCount}只观望`;
+
+    // 保存今日复盘标记
+    try { localStorage.setItem('stockReviewDate', today); } catch(e) {}
+}
+
+// 检查是否需要自动复盘（每天14:00后）
+function checkAutoReview() {
+    const now = new Date();
+    const hour = now.getHours();
+    const today = now.toLocaleDateString('zh-CN');
+    let lastReview = '';
+    try { lastReview = localStorage.getItem('stockReviewDate') || ''; } catch(e) {}
+
+    // 14:00后且今日未复盘，自动触发
+    if (hour >= 14 && lastReview !== today) {
+        console.log('到达自动复盘时间，正在生成...');
+        generateReview();
+    }
+}
+
+// 收盘复盘按钮 + 自动复盘检查
 document.addEventListener('DOMContentLoaded', () => {
     const reviewBtn = document.getElementById('reviewBtn');
     if (reviewBtn) {
         reviewBtn.addEventListener('click', () => {
-            const review = generateReview();
-            document.getElementById('reviewOutput').textContent = review;
+            reviewBtn.textContent = '分析中...';
+            reviewBtn.disabled = true;
+            setTimeout(() => {
+                generateReview();
+                reviewBtn.textContent = '一键智能复盘';
+                reviewBtn.disabled = false;
+            }, 500); // 小延迟确保UI更新
         });
     }
+
+    // 检查是否已复盘
+    const today = new Date().toLocaleDateString('zh-CN');
+    let lastReview = '';
+    try { lastReview = localStorage.getItem('stockReviewDate') || ''; } catch(e) {}
+    if (lastReview === today) {
+        const reviewStatus = document.getElementById('reviewStatus');
+        if (reviewStatus) reviewStatus.textContent = '今日已复盘，可点击下方按钮重新生成';
+    }
+
+    // 每分钟检查一次是否需要自动复盘
+    setInterval(checkAutoReview, 60000);
+    // 页面加载后立即检查一次
+    setTimeout(checkAutoReview, 3000);
 });
 
 // 切换标签
