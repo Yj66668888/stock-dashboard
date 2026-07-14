@@ -132,6 +132,7 @@ tr:hover td { background: var(--bg-hover); }
 </style>
 </head>
 <body>
+<noscript><div style="padding:20px;color:var(--red);text-align:center">⚠️ 请启用JavaScript以查看仪表盘</div></noscript>
 <div class="header">
     <div>
         <h1>🔬 戴维斯双击 · 实时仪表盘</h1>
@@ -142,6 +143,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0714-2235</span>
     </div>
 </div>
 
@@ -2093,7 +2095,25 @@ function switchTab(tabName) {
     document.getElementById('content-' + tabName).classList.add('active');
 }
 
-window.addEventListener('load', init);
+window.addEventListener('load', () => {
+    try {
+        init().catch(e => {
+            console.error('Init failed:', e);
+            const msg = document.getElementById('initMsg');
+            if (msg) msg.textContent = '⚠️ 加载失败，请稍后刷新';
+        });
+    } catch(e) {
+        console.error('Fatal init error:', e);
+        document.body.innerHTML += '<div style=\"padding:20px;color:var(--red);text-align:center\">⚠️ 页面加载失败，请刷新重试</div>';
+    }
+});
+
+window.onerror = function(msg, url, line, col, error) {
+    const el = document.getElementById('initMsg');
+    if (el) el.textContent = '⚠️ JS错误: ' + (msg || '').toString().substring(0, 30);
+    console.error('Global error:', msg, url, line, col);
+    return false;
+};
 
 </script>
 </body>
