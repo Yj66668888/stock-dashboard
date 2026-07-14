@@ -232,7 +232,7 @@ tr:hover td { background: var(--bg-hover); }
     <div class="panel" style="margin-bottom:12px">
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
             <button id="reviewBtn" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">一键智能复盘</button>
-            <span id="reviewStatus" style="color:var(--text-dim);font-size:12px">点击按钮即可对30只标的进行智能复盘分析</span>
+            <span id="reviewStatus" style="color:var(--text-dim);font-size:12px">每天14:30自动复盘，也可点击按钮手动生成</span>
         </div>
     </div>
     <div id="reviewPanel" style="display:none">
@@ -1935,17 +1935,18 @@ function generateReview() {
     try { localStorage.setItem('stockReviewDate', today); } catch(e) {}
 }
 
-// 检查是否需要自动复盘（每天14:00后）
+// 检查是否需要自动复盘（每天14:30后自动触发，14:40前完成）
 function checkAutoReview() {
     const now = new Date();
     const hour = now.getHours();
+    const minute = now.getMinutes();
     const today = now.toLocaleDateString('zh-CN');
     let lastReview = '';
     try { lastReview = localStorage.getItem('stockReviewDate') || ''; } catch(e) {}
 
-    // 14:00后且今日未复盘，自动触发
-    if (hour >= 14 && lastReview !== today) {
-        console.log('到达自动复盘时间，正在生成...');
+    // 14:30后且今日未复盘，自动触发
+    if ((hour > 14 || (hour === 14 && minute >= 30)) && lastReview !== today) {
+        console.log('到达自动复盘时间(14:30)，正在生成...');
         generateReview();
     }
 }
