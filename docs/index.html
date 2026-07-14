@@ -295,8 +295,7 @@ async function fetchQuotes() {
             }
         }
         if (!resp || !resp.ok) return;
-        const buf = await resp.arrayBuffer();
-        const text = new TextDecoder('gbk').decode(buf);
+        const text = await resp.text();
         const lines = text.split('\n').filter(l => l.includes('='));
         for (const line of lines) {
             const match = line.match(/v_(\w+)="(.+)"/);
