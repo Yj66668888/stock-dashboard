@@ -295,7 +295,21 @@ async function fetchQuotes() {
             }
         }
         if (!resp || !resp.ok) return;
-        const text = await resp.text();
+        // 手动 GBK 解码 — 浏览器 resp.text() 不会自动按 Content-Type 的 charset 解码
+        const buf = await resp.arrayBuffer();
+        let text;
+        try {
+            text = new TextDecoder('gbk').decode(buf);
+        } catch(e) {
+            // iOS Safari 不支持 TextDecoder('gbk')，用 FileReader 兜底
+            const blob = new Blob([buf]);
+            text = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('GBK decode failed'));
+                reader.readAsText(blob, 'GBK');
+            });
+        }
         const lines = text.split('\n').filter(l => l.includes('='));
         for (const line of lines) {
             const match = line.match(/v_(\w+)="(.+)"/);
