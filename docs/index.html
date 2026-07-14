@@ -289,6 +289,7 @@ tr:hover td { background: var(--bg-hover); }
     </div>
     <div class="q-spinner" id="qSpinner">正在获取行情、K线、基本面、资金流向...</div>
     <div class="q-error" id="qError"></div>
+    <div id="qDbg" style="text-align:center;padding:8px;font-size:12px;color:var(--text-dim)">JS加载中...</div>
     <div class="q-result" id="qResult">
         <div class="q-score-hero" id="qScoreHero">
             <div style="font-size:13px;color:var(--text-dim)">戴维斯双击综合评分</div>
@@ -1934,7 +1935,10 @@ async function searchStockByName(name) {
 }
 
 async function queryStock() {
-    const input = document.getElementById('qSearch').value.trim();
+    const btn = document.getElementById('qBtn');
+    const searchInput = document.getElementById('qSearch');
+    if (!searchInput) { if (btn) btn.textContent = '错误: 找不到搜索框元素'; return; }
+    const input = searchInput.value.trim();
     if (!input) { qShowError('请输入股票代码或名称'); return; }
     let resolved;
     try { resolved = await resolveStock(input); } catch(e) { qShowError(e.message); return; }
@@ -1976,6 +1980,15 @@ function quickQuery(code) {
 document.addEventListener('DOMContentLoaded', () => {
     const qs = document.getElementById('qSearch');
     if (qs) qs.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
+    // 调试: 显示JS加载状态
+    const dbg = document.getElementById('qDbg');
+    if (dbg) dbg.textContent = 'JS已加载 ✓ 输入代码或名称后点查询';
+});
+
+// 全局错误捕获
+window.addEventListener('error', function(e) {
+    const dbg = document.getElementById('qDbg');
+    if (dbg) dbg.textContent = 'JS错误: ' + (e.message || '未知错误') + ' (行' + (e.lineno || '?') + ')';
 });
 
 </script>
