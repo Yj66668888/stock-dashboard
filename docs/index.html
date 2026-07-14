@@ -81,6 +81,24 @@ tr:hover td { background: var(--bg-hover); }
 .tier-bronze { color: #cd7f32; }
 #tierOverview { transition: opacity 0.3s; }
 
+  #reviewTable { font-size: 11px; table-layout: fixed; width: 100%; }
+  #reviewTable th { font-size: 11px; padding: 6px 4px; }
+  #reviewTable td { padding: 6px 4px; line-height: 1.4; white-space: normal; word-break: break-word; overflow-wrap: break-word; vertical-align: top; font-size: 11px; }
+  .review-up { color: var(--green); font-weight: 700; }
+  .review-down { color: var(--red); font-weight: 700; }
+  .review-cap-in { color: var(--green); font-weight: 600; }
+  .review-cap-out { color: var(--red); font-weight: 600; }
+  .review-cap-neutral { color: var(--yellow); }
+  .review-action-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
+  .review-action-hold { background: rgba(88,166,255,0.15); color: var(--blue); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(88,166,255,0.3); }
+  .review-action-watch { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
+  .review-action-reduce { background: rgba(248,81,73,0.15); color: var(--red); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(248,81,73,0.3); }
+  .review-invest-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
+  .review-invest-avoid { background: rgba(248,81,73,0.15); color: var(--red); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(248,81,73,0.3); }
+  .review-invest-short-avoid { background: rgba(210,168,45,0.15); color: var(--orange); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(210,168,45,0.3); }
+  .review-invest-long-avoid { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
+  .review-invest-watch { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
+
 /* ========== 移动端适配 ========== */
 @media (max-width: 900px) {
   .header { flex-direction: column; gap: 8px; }
@@ -110,22 +128,6 @@ tr:hover td { background: var(--bg-hover); }
   .stat-card .label { font-size: 10px; }
   .table-container table { min-width: 750px; font-size: 10px; }
   #tierOverview .tier-gold, #tierOverview .tier-silver, #tierOverview .tier-bronze { font-size: 13px; }
-  #reviewTable { font-size: 11px; table-layout: fixed; width: 100%; }
-  #reviewTable th { font-size: 11px; padding: 6px 4px; }
-  #reviewTable td { padding: 6px 4px; line-height: 1.4; white-space: normal; word-break: break-word; overflow-wrap: break-word; vertical-align: top; font-size: 11px; }
-  .review-up { color: var(--green); font-weight: 700; }
-  .review-down { color: var(--red); font-weight: 700; }
-  .review-cap-in { color: var(--green); font-weight: 600; }
-  .review-cap-out { color: var(--red); font-weight: 600; }
-  .review-cap-neutral { color: var(--yellow); }
-  .review-action-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
-  .review-action-hold { background: rgba(88,166,255,0.15); color: var(--blue); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(88,166,255,0.3); }
-  .review-action-watch { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
-  .review-action-reduce { background: rgba(248,81,73,0.15); color: var(--red); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(248,81,73,0.3); }
-  .review-invest-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
-  .review-invest-avoid { background: rgba(248,81,73,0.15); color: var(--red); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(248,81,73,0.3); }
-  .review-invest-short-avoid { background: rgba(210,168,45,0.15); color: var(--orange); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(210,168,45,0.3); }
-  .review-invest-long-avoid { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
 }
 </style>
 </head>
@@ -663,7 +665,7 @@ function detectPhase(klines, macd, rsi, maAlign) {
     const ma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
     const ma60 = prices.slice(-60).reduce((a, b) => a + b, 0) / 60;
     const high60 = Math.max(...prices.slice(-60));
-    const diff = macd.dif, dea = macd.dea, bar = macd.bar;
+    const diff = macd.dif, dea = macd.dea;
 
     // 辅助：判断MACD是否刚金叉（最近5个交易日内）
     const macdCross = diff !== undefined && dea !== undefined && diff > dea;
@@ -1856,7 +1858,7 @@ function getActionAdvice(data) {
         }
     }
     // 4. 长期内不建议购买：基本面有隐患，即使短期走好也不具备长期价值
-    else if (score.total < 50 && (maAlign && maAlign.align === 'bearish') || (macd && macd.dif < 0 && macd.dea < 0)) {
+    else if (score.total < 50 && ((maAlign && maAlign.align === 'bearish') || (macd && macd.dif < 0 && macd.dea < 0))) {
         investAdvice = '长期内不建议购买';
         investCls = 'review-invest-long-avoid';
         if (score.total < 40) {
