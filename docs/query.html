@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戴维斯双击 · 个股深度查询</title>
+<style>
+:root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-hover: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d2991d;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #f0883e;
+    --pink: #ff7b72;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.6; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1a2332, #0d1b2a); border-bottom: 2px solid var(--blue); padding: 16px 20px; text-align: center; }
+.header h1 { font-size: 20px; color: var(--blue); }
+.header .subtitle { color: var(--text-dim); font-size: 12px; margin-top: 4px; }
+.form-area { max-width: 600px; margin: 20px auto; padding: 0 16px; }
+.input-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.input-group select, .input-group input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 14px; }
+.input-group select { min-width: 70px; }
+.input-group input { flex: 1; min-width: 120px; }
+.input-group input:focus, .input-group select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+.btn-query { padding: 10px 24px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-query:hover { background: #4a90e2; transform: translateY(-1px); }
+.btn-query:active { transform: translateY(0); }
+.btn-query.loading { opacity: 0.6; pointer-events: none; }
+.quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.quick-btns button { padding: 4px 10px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+.quick-btns button:hover { border-color: var(--blue); color: var(--blue); }
+
+/* Result area */
+.result { max-width: 700px; margin: 0 auto 40px; padding: 0 16px; display: none; }
+.result.show { display: block; }
+
+/* Score card */
+.score-hero { text-align: center; padding: 20px; margin-bottom: 16px; border-radius: 12px; border: 2px solid var(--border); }
+.score-hero .big-score { font-size: 56px; font-weight: 800; line-height: 1; }
+.score-hero .tier-badge { display: inline-block; margin-top: 8px; padding: 4px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+.tier-gold { background: rgba(255,215,0,0.15); color: #ffd700; text-shadow: 0 0 6px rgba(255,215,0,0.3); }
+.tier-silver { background: rgba(192,192,192,0.15); color: #c0c0c0; }
+.tier-bronze { background: rgba(205,127,50,0.15); color: #cd7f32; }
+
+/* Info cards */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.card h3 { font-size: 14px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.card h3 .icon { margin-right: 6px; }
+.data-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+.data-row .label { color: var(--text-dim); }
+.data-row .value { font-weight: 600; }
+.data-row .value.up { color: var(--green); }
+.data-row .value.down { color: var(--red); }
+.data-row .value.warn { color: var(--orange); }
+.data-row .value.good { color: var(--green); }
+
+/* Score breakdown */
+.bar-row { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; }
+.bar-row .bar-label { width: 80px; color: var(--text-dim); text-align: right; flex-shrink: 0; }
+.bar-row .bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-row .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+/* Phase badge */
+.phase-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 700; margin: 8px 0; }
+
+/* Loading */
+.spinner { display: none; text-align: center; padding: 30px; color: var(--text-dim); }
+.spinner.show { display: block; }
+.spinner::after { content: ''; display: block; width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; margin: 10px auto; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg { display: none; text-align: center; padding: 20px; color: var(--red); background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); border-radius: 8px; margin-bottom: 16px; }
+.error-msg.show { display: block; }
+
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tag-up { background: rgba(63,185,80,0.2); color: var(--green); }
+.tag-down { background: rgba(248,81,73,0.2); color: var(--red); }
+.tag-washout { background: rgba(188,140,255,0.2); color: var(--purple); }
+.tag-distribute { background: rgba(255,123,114,0.2); color: var(--pink); }
+.tag-accumulate { background: rgba(88,166,255,0.2); color: var(--blue); }
+.tag-dual { background: rgba(210,153,29,0.2); color: var(--yellow); }
+.tag-davis { background: rgba(63,185,80,0.15); color: var(--green); }
+
+@media (max-width: 480px) {
+    .header h1 { font-size: 16px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .score-hero .big-score { font-size: 42px; }
+    .input-group { flex-direction: column; }
+    .input-group select, .input-group input { width: 100%; }
+    .btn-query { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🔬 戴维斯双击 · 个股深度查询</h1>
+    <div class="subtitle">输入股票代码+名称，一键获取戴维斯双击完整分析</div>
+</div>
+
+<div class="form-area">
+    <div class="input-group">
+        <select id="exchangeSelect">
+            <option value="sh">沪市 sh</option>
+            <option value="sz">深市 sz</option>
+        </select>
+        <input type="text" id="codeInput" placeholder="股票代码（如 600522）" inputmode="numeric" maxlength="6">
+        <input type="text" id="nameInput" placeholder="股票名称（选填，自动获取）">
+        <button class="btn-query" id="queryBtn" onclick="queryStock()">🔍 查询分析</button>
+    </div>
+    <div class="quick-btns">
+        <span style="color:var(--text-dim);font-size:11px;margin-right:4px;line-height:24px">快速查询：</span>
+        <button onclick="quickQuery('sh','600522','中天科技')">中天科技</button>
+        <button onclick="quickQuery('sz','002463','沪电股份')">沪电股份</button>
+        <button onclick="quickQuery('sz','002837','英维克')">英维克</button>
+        <button onclick="quickQuery('sh','600584','长电科技')">长电科技</button>
+        <button onclick="quickQuery('sz','002371','北方华创')">北方华创</button>
+        <button onclick="quickQuery('sh','600519','贵州茅台')">贵州茅台</button>
+    </div>
+</div>
+
+<div class="spinner" id="spinner">正在获取行情、K线、基本面、资金流向...</div>
+<div class="error-msg" id="errorMsg"></div>
+
+<div class="result" id="result">
+    <!-- Score Hero -->
+    <div class="score-hero" id="scoreHero">
+        <div style="font-size:13px;color:var(--text-dim)">戴维斯双击综合评分</div>
+        <div class="big-score" id="bigScore">--</div>
+        <div class="tier-badge" id="tierBadge">--</div>
+        <div style="margin-top:6px;font-size:12px;color:var(--text-dim)" id="phaseDesc">--</div>
+    </div>
+
+    <!-- Score Breakdown -->
+    <div class="card" style="margin-bottom:12px">
+        <h3><span class="icon">📊</span>评分明细</h3>
+        <div id="scoreBars"></div>
+    </div>
+
+    <!-- Grid -->
+    <div class="card-grid">
+        <!-- Real-time -->
+        <div class="card">
+            <h3><span class="icon">📈</span>实时行情</h3>
+            <div class="data-row"><span class="label">现价</span><span class="value" id="vPrice">--</span></div>
+            <div class="data-row"><span class="label">涨跌幅</span><span class="value" id="vChangePct">--</span></div>
+            <div class="data-row"><span class="label">今开/最高/最低</span><span class="value" id="vOHL">--</span></div>
+            <div class="data-row"><span class="label">成交额</span><span class="value" id="vAmount">--</span></div>
+            <div class="data-row"><span class="label">换手率</span><span class="value" id="vTurnover">--</span></div>
+            <div class="data-row"><span class="label">总市值</span><span class="value" id="vMv">--</span></div>
+        </div>
+
+        <!-- Fundamentals -->
+        <div class="card">
+            <h3><span class="icon">🏢</span>基本面</h3>
+            <div class="data-row"><span class="label">动态PE</span><span class="value" id="vPE">--</span></div>
+            <div class="data-row"><span class="label">业绩增速</span><span class="value" id="vGrowth">--</span></div>
+            <div class="data-row"><span class="label">ROE</span><span class="value" id="vROE">--</span></div>
+            <div class="data-row"><span class="label">毛利率</span><span class="value" id="vGross">--</span></div>
+            <div class="data-row"><span class="label">负债率</span><span class="value" id="vDebt">--</span></div>
+            <div class="data-row"><span class="label">赛道</span><span class="value" id="vSector">--</span></div>
+            <div class="data-row"><span class="label">驱动方向</span><span class="value" id="vDirection">--</span></div>
+        </div>
+
+        <!-- Technical -->
+        <div class="card">
+            <h3><span class="icon">📐</span>技术指标</h3>
+            <div class="data-row"><span class="label">当前阶段</span><span class="value" id="vPhase">--</span></div>
+            <div class="data-row"><span class="label">MACD</span><span class="value" id="vMACD">--</span></div>
+            <div class="data-row"><span class="label">RSI(14)</span><span class="value" id="vRSI">--</span></div>
+            <div class="data-row"><span class="label">均线排列</span><span class="value" id="vMA">--</span></div>
+            <div class="data-row"><span class="label">趋势</span><span class="value" id="vTrend">--</span></div>
+            <div class="data-row"><span class="label">量价信号</span><span class="value" id="vSignal">--</span></div>
+        </div>
+
+        <!-- Fund flow -->
+        <div class="card">
+            <h3><span class="icon">💰</span>资金面 & 价格结构</h3>
+            <div class="data-row"><span class="label">主力净流入</span><span class="value" id="vFlow">--</span></div>
+            <div class="data-row"><span class="label">主力流入占比</span><span class="value" id="vFlowRatio">--</span></div>
+            <div class="data-row"><span class="label">支撑价位</span><span class="value" id="vSupport">--</span></div>
+            <div class="data-row"><span class="label">距支撑</span><span class="value" id="vSupportDist">--</span></div>
+        </div>
+
+        <!-- Logic -->
+        <div class="card" style="grid-column: 1 / -1">
+            <h3><span class="icon">💡</span>投资逻辑</h3>
+            <div style="font-size:13px;color:var(--text-dim);line-height:1.8" id="vReason">--</div>
+            <div style="margin-top:10px" id="vRisks"></div>
+        </div>
+    </div>
+
+    <!-- Refresh info -->
+    <div style="text-align:center;padding:20px;color:var(--text-dim);font-size:11px">
+        数据更新时间：<span id="updateTime">--</span>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+const CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?',
+    'https://api.codetabs.com/v1/proxy/?quest='
+];
+
+let queryCode = '';
+let queryName = '';
+
+// ==================== GBK 解码（兼容手机端） ====================
+async function decodeGBK(resp) {
+    const buf = await resp.arrayBuffer();
+    try {
+        return new TextDecoder('gbk').decode(buf);
+    } catch(e) {
+        // iOS Safari 等不支持 TextDecoder('gbk')，fallback 到 FileReader
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('GBK decode failed'));
+            reader.readAsText(new Blob([buf]), 'GBK');
+        });
+    }
+}
+
+// ==================== 行情获取 ====================
+async function fetchWithProxy(url) {
+    try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (resp.ok) return resp;
+    } catch(e) {}
+    for (const proxy of CORS_PROXIES) {
+        try {
+            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+            if (resp.ok) return resp;
+        } catch(e) {}
+    }
+    return null;
+}
+
+async function fetchQuote(code) {
+    const url = 'https://qt.gtimg.cn/q=' + code;
+    try {
+        let resp = null;
+        try { resp = await fetch(url, { signal: AbortSignal.timeout(6000) }); } catch(e) {}
+        if (!resp) {
+            for (const proxy of CORS_PROXIES) {
+                try { resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) }); if (resp.ok) break; } catch(e2) {}
+            }
+        }
+        if (!resp || !resp.ok) return null;
+        const text = await decodeGBK(resp);
+        const match = text.match(/v_(\w+)="(.+)"/);
+        if (!match) return null;
+        const fields = match[2].split('~');
+        const price = parseFloat(fields[3]) || 0;
+        const prevClose = parseFloat(fields[4]) || 0;
+        const changePct = prevClose > 0 ? ((price - prevClose) / prevClose * 100) : 0;
+        return {
+            name: fields[1] || queryName,
+            price: price,
+            prevClose: prevClose,
+            open: parseFloat(fields[5]) || 0,
+            high: parseFloat(fields[33]) || 0,
+            low: parseFloat(fields[34]) || 0,
+            changePct: Math.round(changePct * 100) / 100,
+            volume: parseInt(fields[6]) || 0,
+            amount: parseFloat(fields[37]) || 0,
+            pe: parseFloat(fields[39]) || 0,
+            totalMv: parseFloat(fields[45]) || 0,
+            turnover: parseFloat(fields[38]) || 0
+        };
+    } catch(e) {
+        console.error('行情获取失败:', e);
+        return null;
+    }
+}
+
+// ==================== K线获取 ====================
+async function fetchKline(code) {
+    try {
+        const sym = code.substring(2);
+        const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/01/last.js`;
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const text = await resp.text();
+        const m = text.match(/\(({[\s\S]*})\)/);
+        if (!m) return null;
+        const data = JSON.parse(m[1]);
+        const raw = data?.data || '';
+        if (!raw) return null;
+        const points = raw.split(';').filter(p => p.trim());
+        const klines = points.map(p => {
+            const f = p.split(',');
+            if (f.length < 5) return null;
+            return {
+                date: f[0],
+                open: parseFloat(f[1]) || 0,
+                high: parseFloat(f[2]) || 0,
+                low: parseFloat(f[3]) || 0,
+                close: parseFloat(f[4]) || 0,
+                volume: parseInt(f[5]) || 0,
+                amount: parseFloat(f[6]) || 0
+            };
+        }).filter(k => k !== null);
+        return klines.length >= 60 ? klines : null;
+    } catch(e) { return null; }
+}
+
+// ==================== 基本面数据（F10 财务接口） ====================
+async function fetchFundamental(exchange, code) {
+    const sym = code.substring(2);
+    const fcode = exchange.toUpperCase() + sym;
+    // F10 主要财务指标接口，取最近5期
+    const url = `https://emweb.securities.eastmoney.com/PC_HSF10/NewFinanceAnalysis/ZYZBAjaxNew?type=0&code=${fcode}`;
+    try {
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const result = await resp.json();
+        const data = result?.data;
+        if (!data || data.length === 0) return null;
+
+        // data 按 REPORT_DATE 降序排列，第一项是最新财报
+        const latest = data[0];
+        const reportType = latest.REPORT_TYPE || '';
+
+        // ROE: 优先取年报数据，否则用季报 * 季度系数估算
+        let roe = null;
+        let roeAnnual = false;
+        if (reportType.includes('年报')) {
+            roe = parseFloat(latest.ROEJQ) || null;
+            roeAnnual = true;
+        } else {
+            // 查找最近一份年报
+            const annual = data.find(d => (d.REPORT_TYPE || '').includes('年报'));
+            if (annual) {
+                roe = parseFloat(annual.ROEJQ) || null;
+                roeAnnual = true;
+            } else {
+                // 用最近季报估算年化
+                const qroe = parseFloat(latest.ROEJQ) || 0;
+                roe = Math.round(qroe * 4 * 100) / 100;
+                roeAnnual = false;
+            }
+        }
+
+        return {
+            roe: roe,
+            roeAnnual: roeAnnual,
+            grossMargin: parseFloat(latest.XSMLL) || null,
+            debtRatio: parseFloat(latest.ZCFZL) || null,
+            eps: parseFloat(latest.EPSJB) || null,
+            epsGrowth: parseFloat(latest.EPSJBTZ) || null,
+            bps: parseFloat(latest.BPS) || null,
+            revenue: parseFloat(latest.TOTALOPERATEREVE) || null,
+            netProfit: parseFloat(latest.PARENTNETPROFIT) || null,
+            netProfitGrowth: parseFloat(latest.PARENTNETPROFITTZ) || null,
+            reportDate: latest.REPORT_DATE || '',
+            reportType: reportType
+        };
+    } catch(e) {
+        console.error('基本面获取失败:', e);
+        return null;
+    }
+}
+
+// ==================== 行业/赛道获取 ====================
+async function fetchSectorInfo(exchange, code) {
+    const sym = code.substring(2);
+    const market = exchange === 'sh' ? '1' : '0';
+    const secid = `${market}.${sym}`;
+    const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f100,f127,f128,f129,f162`;
+    try {
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const result = await resp.json();
+        const d = result?.data;
+        if (!d) return null;
+        return {
+            name: d.f58 || '',
+            sector: d.f127 || d.f128 || d.f100 || '',
+            pe: parseFloat(d.f162) || 0
+        };
+    } catch(e) {
+        console.error('行业获取失败:', e);
+        return null;
+    }
+}
+
+// ==================== 赛道 → 政策方向映射 ====================
+function inferPolicyDirection(sector) {
+    if (!sector) return { direction: '待确认', policyScore: 10, reason: '行业信息未获取' };
+    const s = sector.toLowerCase();
+    const rules = [
+        { keys: ['通信', '5g', '6g', '光纤', '光缆', '光模块', '光通信', '数据中心', '云计算', '服务器', 'idc', '算力'], dir: '数字经济（新基建）', score: 20 },
+        { keys: ['半导体', '芯片', '集成电路', 'igbt', '晶圆', '封测', '光刻'], dir: 'AI算力（国产替代）', score: 20 },
+        { keys: ['人工智能', 'ai', '大模型', '智能驾驶', '自动驾驶', '机器人'], dir: 'AI应用（科技主线）', score: 18 },
+        { keys: ['新能源', '光伏', '风电', '储能', '锂电', '固态电池', '钠离子'], dir: '能源转型（双碳）', score: 18 },
+        { keys: ['军工', '航空航天', '船舶', '兵器', '雷达', '卫星', '导航'], dir: '国防安全（军备升级）', score: 17 },
+        { keys: ['医药', '生物', '制药', '器械', '医疗', '疫苗', 'cro'], dir: '医药创新（老龄化）', score: 15 },
+        { keys: ['消费', '食品', '饮料', '白酒', '家电', '乳业', '调味'], dir: '消费升级（内需）', score: 14 },
+        { keys: ['汽车', '新能源车', '零部件', '整车'], dir: '新能源车（产业链）', score: 16 },
+        { keys: ['电力', '电网', '特高压', '智能电网', '电力设备'], dir: '电力改革（特高压）', score: 16 },
+        { keys: ['软件', '信创', '国产软件', '操作系统', '信息安全'], dir: '信创国产化', score: 15 },
+        { keys: ['银行', '保险', '证券', '金融'], dir: '金融改革', score: 12 },
+        { keys: ['地产', '房地产', '建筑', '建材', '水泥'], dir: '地产链（稳增长）', score: 11 },
+        { keys: ['化工', '有色', '钢铁', '煤炭', '稀土'], dir: '周期资源', score: 12 },
+        { keys: ['环保', '碳中和', '节能'], dir: '绿色环保', score: 14 },
+    ];
+    for (const rule of rules) {
+        for (const key of rule.keys) {
+            if (s.includes(key)) return { direction: rule.dir, policyScore: rule.score, reason: `行业关键词匹配: ${key}` };
+        }
+    }
+    return { direction: '待确认（非主线赛道）', policyScore: 10, reason: `行业: ${sector}` };
+}
+
+// ==================== 资金流向 ====================
+async function fetchCapitalFlow(code) {
+    try {
+        const sym = code.substring(2);
+        const market = code.startsWith('sh') ? '1' : '0';
+        const secid = `${market}.${sym}`;
+        const url = `https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?secid=${secid}&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57&lmt=5&klt=1`;
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const result = await resp.json();
+        const klines = result?.data?.klines;
+        if (klines && klines.length > 0) {
+            const last = klines[klines.length - 1].split(',');
+            return {
+                date: last[0],
+                mainNetInflow: parseFloat(last[1]) || 0,
+                mainInflowRatio: parseFloat(last[6]) || 0
+            };
+        }
+    } catch(e) {}
+    return null;
+}
+
+// ==================== 技术指标计算 ====================
+function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function calcEMA(data, n) {
+    const k = 2 / (n + 1);
+    let ema = data[0];
+    const result = [ema];
+    for (let i = 1; i < data.length; i++) {
+        ema = data[i] * k + ema * (1 - k);
+        result.push(ema);
+    }
+    return result;
+}
+
+function calcMACD(klines) {
+    const closes = klines.map(k => k.close);
+    const emaFast = calcEMA(closes, 12);
+    const emaSlow = calcEMA(closes, 26);
+    const dif = [];
+    for (let i = 0; i < closes.length; i++) dif.push(emaFast[i] - emaSlow[i]);
+    const deaArr = calcEMA(dif, 9);
+    const result = [];
+    for (let i = 9; i < dif.length; i++) {
+        result.push({
+            dif: Math.round(dif[i] * 1000) / 1000,
+            dea: Math.round(deaArr[i] * 1000) / 1000,
+            macd: Math.round(2 * (dif[i] - deaArr[i]) * 1000) / 1000
+        });
+    }
+    return result.length > 0 ? result[result.length - 1] : null;
+}
+
+function calcRSI(klines) {
+    const closes = klines.map(k => k.close);
+    const n = 14;
+    let gains = 0, losses = 0;
+    for (let i = 1; i <= n; i++) {
+        const diff = closes[i] - closes[i - 1];
+        if (diff > 0) gains += diff;
+        else losses += Math.abs(diff);
+    }
+    let avgGain = gains / n;
+    let avgLoss = losses / n;
+    for (let i = n + 1; i < closes.length; i++) {
+        const diff = closes[i] - closes[i - 1];
+        const gain = diff > 0 ? diff : 0;
+        const loss = diff < 0 ? Math.abs(diff) : 0;
+        avgGain = (avgGain * (n - 1) + gain) / n;
+        avgLoss = (avgLoss * (n - 1) + loss) / n;
+    }
+    const rs = avgLoss === 0 ? 99 : avgGain / avgLoss;
+    return Math.round((100 - 100 / (1 + rs)) * 10) / 10;
+}
+
+function detectMAAlignment(klines) {
+    const closes = klines.map(k => k.close);
+    const ma5 = avg(closes.slice(-5));
+    const ma10 = avg(closes.slice(-10));
+    const ma20 = avg(closes.slice(-20));
+    const ma60 = avg(closes.slice(-60));
+    if (ma5 > ma10 && ma10 > ma20 && ma20 > ma60) return { align: 'bullish', desc: '多头排列', score: 5 };
+    if (ma5 < ma10 && ma10 < ma20 && ma20 < ma60) return { align: 'bearish', desc: '空头排列', score: 0 };
+    if (ma5 > ma10 && ma10 > ma20) return { align: 'short_bullish', desc: '短期多头', score: 3 };
+    if (ma5 < ma10 && ma10 < ma20) return { align: 'short_bearish', desc: '短期空头', score: 1 };
+    return { align: 'mixed', desc: '均线交织', score: 2 };
+}
+
+function detectTrend(klines) {
+    const recent = klines.slice(-20);
+    const closes = recent.map(k => k.close);
+    const ma5 = closes.slice(-5).reduce((a, b) => a + b, 0) / 5;
+    const ma10 = closes.slice(-10).reduce((a, b) => a + b, 0) / 10;
+    const ma20 = closes.reduce((a, b) => a + b, 0) / 20;
+    const priceChange = (closes[closes.length - 1] - closes[0]) / closes[0];
+    const trendUp = ma5 > ma10 && ma10 > ma20;
+    const trendDown = ma5 < ma10 && ma10 < ma20;
+    const strength = Math.round(Math.abs(priceChange) * 1000) / 10;
+    if (trendUp) return { trend: 'up', strength, desc: '上涨段' };
+    if (trendDown) return { trend: 'down', strength, desc: '下跌段' };
+    return { trend: 'sideways', strength, desc: '震荡' };
+}
+
+function detectSignal(klines) {
+    const recent = klines.slice(-10);
+    const prices = recent.map(k => k.close);
+    const volumes = recent.map(k => k.volume);
+    const lastPrice = prices[prices.length - 1];
+    const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+    const lastVol = volumes[volumes.length - 1];
+    const volRatio = lastVol / avgVol;
+    const priceChange = (lastPrice - prices[0]) / prices[0];
+    const lastChange = (prices[prices.length - 1] - prices[prices.length - 2]) / prices[prices.length - 2];
+    if (volRatio > 2 && lastChange < -0.02) return { signal: 'distribute', desc: '出货(放量下跌)' };
+    if (volRatio > 2.5 && Math.abs(lastChange) < 0.01 && priceChange > 0.05) return { signal: 'distribute', desc: '出货(高位滞涨)' };
+    if (volRatio < 0.5 && priceChange < -0.02 && lastChange < -0.01) return { signal: 'washout', desc: '洗盘(缩量下跌)' };
+    if (priceChange > 0.03 && lastChange < -0.02 && volRatio < 0.7) return { signal: 'washout', desc: '洗盘(涨后急跌)' };
+    if (volRatio > 1.5 && lastChange > 0.02 && priceChange < 0.05) return { signal: 'accumulate', desc: '吸筹(放量上涨)' };
+    if (volRatio < 0.6 && priceChange > 0.03) return { signal: 'accumulate', desc: '吸筹(缩量拉升)' };
+    return { signal: 'normal', desc: '--' };
+}
+
+function calcSupportPrice(klines) {
+    const closes = klines.map(k => k.close);
+    const lows = klines.map(k => k.low);
+    const curPrice = closes[closes.length - 1];
+    const minLow = Math.min(...lows.slice(-30));
+    const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const std = Math.sqrt(closes.slice(-20).reduce((s, c) => s + (c - ma20) ** 2, 0) / 20);
+    const bbLower = ma20 - 2 * std;
+    const priceBins = {};
+    for (const c of closes) {
+        const bin = Math.round(c * 100) / 100;
+        priceBins[bin] = (priceBins[bin] || 0) + 1;
+    }
+    let maxCount = 0, maxPrice = curPrice;
+    for (const [price, count] of Object.entries(priceBins)) {
+        if (count > maxCount) { maxCount = count; maxPrice = parseFloat(price); }
+    }
+    const support = minLow * 0.35 + ma20 * 0.25 + bbLower * 0.20 + maxPrice * 0.20;
+    const distance = ((curPrice - support) / curPrice) * 100;
+    return { price: Math.round(support * 100) / 100, distance: Math.round(distance * 100) / 100 };
+}
+
+function detectPhase(klines, macd, rsi, maAlign) {
+    if (!macd || rsi === null || !maAlign) return { phase: 'unknown', desc: '数据不足' };
+    const prices = klines.map(k => k.close);
+    const curPrice = prices[prices.length - 1];
+    const ma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const ma60 = klines.length >= 60 ? prices.slice(-60).reduce((a, b) => a + b, 0) / 60 : ma20;
+    const high60 = Math.max(...prices.slice(-Math.min(60, prices.length)));
+    const diff = macd.dif, dea = macd.dea;
+    const macdCross = diff > dea;
+    const priceVsMA60 = (curPrice - ma60) / ma60;
+    const priceVsHigh60 = curPrice / high60;
+
+    // 尾部段
+    if (rsi > 72 && priceVsHigh60 > 0.92) return { phase: 'exhaustion', desc: '尾部（超买高位）', color: '#ff6b6b', score: 0 };
+    if (diff < dea && diff > 0 && rsi > 55) return { phase: 'exhaustion', desc: '尾部（MACD转弱）', color: '#ff6b6b', score: 1 };
+    if (priceVsHigh60 > 0.88 && rsi < 65 && macdCross) return { phase: 'exhaustion', desc: '尾部（量价背离）', color: '#ff8c42', score: 2 };
+
+    // 加速段
+    if ((maAlign.align === 'bullish' || maAlign.align === 'short_bullish') && rsi >= 55 && rsi <= 75 && macdCross && diff > 0) {
+        return { phase: 'acceleration', desc: '加速（主升浪）', color: '#4ecb71', score: 5 };
+    }
+    if (macdCross && diff > 0.5 && rsi > 58 && priceVsMA60 > 0.05) {
+        return { phase: 'acceleration', desc: '加速（趋势强化）', color: '#4ecb71', score: 4 };
+    }
+
+    // 启动段
+    if (macdCross && diff < 0.8 && rsi >= 40 && rsi <= 65 && priceVsMA60 > -0.08 && maAlign.align !== 'bearish') {
+        return { phase: 'launch', desc: '启动（底部反转）', color: '#58a6ff', score: 3 };
+    }
+    if (maAlign.align === 'mixed' && macdCross && rsi > 45 && priceVsMA60 > -0.05) {
+        return { phase: 'launch', desc: '启动（平台突破）', color: '#58a6ff', score: 3 };
+    }
+    if (maAlign.align === 'bearish' && rsi > 35 && rsi < 52 && macdCross) {
+        return { phase: 'launch', desc: '启动（空翻多）', color: '#58a6ff', score: 2 };
+    }
+
+    if (maAlign.align === 'bearish') return { phase: 'waiting', desc: '观望（空头）', color: '#888', score: 0 };
+    if (rsi < 40) return { phase: 'waiting', desc: '观望（弱势）', color: '#888', score: 1 };
+    return { phase: 'transition', desc: '震荡蓄势', color: '#d2a82d', score: 2 };
+}
+
+// ==================== 综合评分 ====================
+function calcScore(quote, klines, macd, rsi, maAlign, phase, trend, signal, capFlow, fund, policy) {
+    let total = 0;
+    const detail = {};
+
+    // 1. 政策方向 (基于行业自动识别)
+    if (policy && policy.policyScore) {
+        detail.policy = policy.policyScore;
+    } else {
+        detail.policy = 12;
+    }
+    total += detail.policy;
+
+    // 2. 估值评分
+    const pe = fund && fund.pe > 0 ? fund.pe : (quote.pe || 0);
+    if (pe > 0 && pe < 15) detail.val = 20;
+    else if (pe >= 15 && pe < 25) detail.val = 18;
+    else if (pe >= 25 && pe < 35) detail.val = 14;
+    else if (pe >= 35 && pe < 50) detail.val = 10;
+    else if (pe >= 50 && pe < 80) detail.val = 6;
+    else if (pe >= 80) detail.val = 3;
+    else detail.val = 10;
+    total += detail.val;
+
+    // 3. 技术面
+    let tech = 0;
+    if (macd && macd.dif > macd.dea && macd.macd > 0) tech += 5;
+    else if (macd && macd.dif > macd.dea) tech += 3;
+    if (rsi !== null && rsi >= 20 && rsi <= 80) tech += 5;
+    else if (rsi !== null && rsi > 80) tech += 3;
+    if (trend.trend === 'up') tech += 5;
+    else if (trend.trend === 'sideways') tech += 3;
+    if (maAlign) tech += maAlign.score;
+    if (phase) tech += (phase.score || 0);
+    detail.tech = tech; total += tech;
+
+    // 4. 资金面
+    if (capFlow && capFlow.mainNetInflow > 50000000) detail.cap = 15;
+    else if (capFlow && capFlow.mainNetInflow > 10000000) detail.cap = 12;
+    else if (capFlow && capFlow.mainNetInflow > 0) detail.cap = 8;
+    else if (capFlow && capFlow.mainNetInflow > -10000000) detail.cap = 5;
+    else if (capFlow) detail.cap = 2;
+    else detail.cap = 7;
+    total += detail.cap;
+
+    // 5. 业绩增速（基于真实ROE和EPS增速）
+    let earn = 8; // base
+    if (fund) {
+        if (fund.roe !== null && fund.roe >= 20) earn += 5;
+        else if (fund.roe !== null && fund.roe >= 15) earn += 4;
+        else if (fund.roe !== null && fund.roe >= 10) earn += 3;
+        else if (fund.roe !== null && fund.roe >= 5) earn += 2;
+        else if (fund.roe !== null) earn += 1;
+
+        if (fund.epsGrowth !== null && fund.epsGrowth >= 50) earn += 5;
+        else if (fund.epsGrowth !== null && fund.epsGrowth >= 30) earn += 4;
+        else if (fund.epsGrowth !== null && fund.epsGrowth >= 15) earn += 3;
+        else if (fund.epsGrowth !== null && fund.epsGrowth >= 0) earn += 2;
+        else if (fund.epsGrowth !== null) earn += 0;
+
+        if (fund.debtRatio !== null && fund.debtRatio < 30) earn += 2;
+        else if (fund.debtRatio !== null && fund.debtRatio < 50) earn += 1;
+
+        if (fund.grossMargin !== null && fund.grossMargin > 30) earn += 2;
+        else if (fund.grossMargin !== null && fund.grossMargin > 20) earn += 1;
+    } else {
+        earn += 4; // 无数据时给中间分
+    }
+    detail.earn = Math.min(20, earn);
+    total += detail.earn;
+
+    return { total: Math.min(100, total), detail };
+}
+
+function getTier(score) {
+    if (score >= 65) return { tier: 1, label: '🔥 第一梯队 (S)', cls: 'tier-gold', desc: '核心持仓 · 评分≥65' };
+    if (score >= 45) return { tier: 2, label: '📈 第二梯队 (A)', cls: 'tier-silver', desc: '积极关注 · 评分45-64' };
+    return { tier: 3, label: '👀 第三梯队 (B)', cls: 'tier-bronze', desc: '观察等待 · 评分<45' };
+}
+
+// ==================== 渲染 ====================
+function renderResults(quote, klines, macd, rsi, maAlign, phase, trend, signal, support, capFlow, fund, sectorInfo, policy, score) {
+    const changeCls = quote.changePct > 0 ? 'up' : (quote.changePct < 0 ? 'down' : '');
+    const changeStr = (quote.changePct > 0 ? '+' : '') + quote.changePct.toFixed(2) + '%';
+
+    // Score hero
+    const tier = getTier(score.total);
+    document.getElementById('bigScore').textContent = score.total;
+    document.getElementById('bigScore').style.color = score.total >= 75 ? 'var(--green)' : (score.total >= 60 ? '#85b753' : (score.total >= 45 ? 'var(--yellow)' : (score.total >= 30 ? 'var(--orange)' : 'var(--red)')));
+    document.getElementById('tierBadge').textContent = tier.label;
+    document.getElementById('tierBadge').className = 'tier-badge ' + tier.cls;
+    document.getElementById('scoreHero').style.borderColor = score.total >= 65 ? '#ffd700' : (score.total >= 45 ? '#c0c0c0' : '#cd7f32');
+
+    // Score bars
+    const bars = document.getElementById('scoreBars');
+    const detail = score.detail;
+    const colors = { policy: '#d2991d', val: '#4ecb71', tech: '#58a6ff', cap: '#bc8cff', earn: '#f0883e' };
+    const labels = { policy: '政策方向', val: '估值水平', tech: '技术面', cap: '资金面', earn: '业绩增速' };
+    const maxes = { policy: 25, val: 20, tech: 20, cap: 15, earn: 20 };
+    bars.innerHTML = Object.entries(detail).map(([k, v]) => {
+        const pct = Math.min(100, (v / maxes[k]) * 100);
+        return `<div class="bar-row">
+            <span class="bar-label">${labels[k] || k}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[k] || '#888'}"></div></div>
+            <span style="width:40px;text-align:right;font-weight:600;color:${colors[k]}">${v}/${maxes[k]}</span>
+        </div>`;
+    }).join('');
+
+    // Phase description
+    const phaseText = phase ? phase.desc : '--';
+    const phaseColor = phase ? (phase.color || '#888') : '#888';
+    document.getElementById('phaseDesc').innerHTML = `<span class="phase-badge" style="background:${phaseColor}22;border:2px solid ${phaseColor}${phase.phase === 'acceleration' || phase.phase === 'exhaustion' ? ';animation: pulse 1.5s infinite' : ''};color:${phaseColor}">${phaseText}</span>`;
+
+    // Real-time
+    document.getElementById('vPrice').textContent = quote.price.toFixed(2);
+    document.getElementById('vPrice').className = 'value ' + changeCls;
+    document.getElementById('vChangePct').textContent = changeStr;
+    document.getElementById('vChangePct').className = 'value ' + changeCls;
+    document.getElementById('vOHL').textContent = `${quote.open.toFixed(2)} / ${quote.high.toFixed(2)} / ${quote.low.toFixed(2)}`;
+    document.getElementById('vAmount').textContent = quote.amount >= 100000000 ? (quote.amount / 100000000).toFixed(2) + '亿' : (quote.amount / 10000).toFixed(1) + '万';
+    document.getElementById('vTurnover').textContent = quote.turnover ? quote.turnover.toFixed(2) + '%' : '--';
+    document.getElementById('vMv').textContent = quote.totalMv >= 100000000 ? (quote.totalMv / 100000000).toFixed(0) + '亿' : '--';
+
+    // Fundamentals
+    const peVal = (fund && fund.pe > 0) ? fund.pe : (quote.pe || 0);
+    document.getElementById('vPE').textContent = peVal > 0 ? peVal.toFixed(1) : '--';
+    document.getElementById('vPE').className = 'value ' + (peVal > 0 && peVal < 20 ? 'good' : (peVal > 50 ? 'warn' : ''));
+
+    if (fund) {
+        const epsG = fund.epsGrowth;
+        if (fund.epsGrowth !== null) {
+            const gCls = epsG >= 30 ? 'up' : (epsG >= 0 ? '' : 'down');
+            const gSign = epsG >= 0 ? '+' : '';
+            document.getElementById('vGrowth').innerHTML = `<span class="value ${gCls}">${gSign}${epsG.toFixed(1)}%</span>`;
+        } else {
+            document.getElementById('vGrowth').textContent = '--';
+        }
+
+        if (fund.roe !== null) {
+            const roeCls = fund.roe >= 15 ? 'good' : (fund.roe >= 8 ? '' : 'warn');
+            const roeNote = fund.roeAnnual ? '' : '<span style="font-size:10px;color:var(--text-dim)"> (估)</span>';
+            document.getElementById('vROE').innerHTML = `<span class="value ${roeCls}">${fund.roe.toFixed(2)}%</span>${roeNote}`;
+        } else {
+            document.getElementById('vROE').textContent = '--';
+        }
+
+        if (fund.grossMargin !== null) {
+            const gmCls = fund.grossMargin >= 30 ? 'good' : (fund.grossMargin >= 20 ? '' : 'warn');
+            document.getElementById('vGross').innerHTML = `<span class="value ${gmCls}">${fund.grossMargin.toFixed(2)}%</span>`;
+        } else {
+            document.getElementById('vGross').textContent = '--';
+        }
+
+        if (fund.debtRatio !== null) {
+            const drCls = fund.debtRatio < 30 ? 'good' : (fund.debtRatio < 60 ? '' : 'warn');
+            document.getElementById('vDebt').innerHTML = `<span class="value ${drCls}">${fund.debtRatio.toFixed(2)}%</span>`;
+        } else {
+            document.getElementById('vDebt').textContent = '--';
+        }
+    } else {
+        document.getElementById('vGrowth').textContent = '--';
+        document.getElementById('vROE').textContent = '--';
+        document.getElementById('vGross').textContent = '--';
+        document.getElementById('vDebt').textContent = '--';
+    }
+
+    // Sector & Policy
+    const sector = sectorInfo ? sectorInfo.sector : '--';
+    document.getElementById('vSector').textContent = sector;
+    if (sector !== '--' && policy) {
+        document.getElementById('vDirection').innerHTML = `<span class="tag tag-dual">${policy.direction}</span>`;
+    } else {
+        document.getElementById('vDirection').textContent = sector !== '--' ? policy?.direction || '待确认' : '--';
+    }
+
+    // Technical
+    document.getElementById('vPhase').innerHTML = phase ? `<span style="color:${phase.color};font-weight:700">${phase.desc}</span>` : '--';
+    const macdLabel = macd ? (macd.dif > macd.dea ? (macd.macd > 0 ? '金叉 ↑' : '偏多 ↗') : '死叉 ↓') : '--';
+    const macdColor = macd ? (macd.dif > macd.dea ? 'var(--green)' : 'var(--red)') : 'var(--text-dim)';
+    document.getElementById('vMACD').innerHTML = macd ? `<span style="color:${macdColor};font-weight:600">${macdLabel}</span> <span style="font-size:11px;color:var(--text-dim)">DIF:${macd.dif.toFixed(2)} DEA:${macd.dea.toFixed(2)}</span>` : '--';
+    document.getElementById('vRSI').innerHTML = rsi !== null ? `<span style="color:${rsi > 70 ? 'var(--red)' : (rsi < 30 ? 'var(--green)' : 'var(--text)')};font-weight:${rsi > 70 || rsi < 30 ? '700' : '400'}">${rsi.toFixed(1)}</span> ${rsi > 70 ? '(超买)' : (rsi < 30 ? '(超卖)' : '')}` : '--';
+    document.getElementById('vMA').textContent = maAlign ? maAlign.desc : '--';
+    document.getElementById('vMA').className = 'value ' + (maAlign && maAlign.align === 'bullish' ? 'up' : (maAlign && maAlign.align === 'bearish' ? 'down' : ''));
+    document.getElementById('vTrend').innerHTML = trend.trend === 'up' ? `<span class="tag tag-up">${trend.desc}</span> (${trend.strength}%)` : (trend.trend === 'down' ? `<span class="tag tag-down">${trend.desc}</span> (${trend.strength}%)` : `<span class="tag">${trend.desc}</span>`);
+
+    // Signal
+    const sig = signal;
+    let sigHTML = '<span class="tag">--</span>';
+    if (sig.signal === 'washout') sigHTML = `<span class="tag tag-washout">${sig.desc}</span>`;
+    if (sig.signal === 'distribute') sigHTML = `<span class="tag tag-distribute">${sig.desc}</span>`;
+    if (sig.signal === 'accumulate') sigHTML = `<span class="tag tag-accumulate">${sig.desc}</span>`;
+    document.getElementById('vSignal').innerHTML = sigHTML;
+
+    // Fund flow
+    if (capFlow && capFlow.mainNetInflow) {
+        const v = capFlow.mainNetInflow;
+        const clr = v > 0 ? 'var(--green)' : (v < 0 ? 'var(--red)' : 'var(--text-dim)');
+        const sign = v > 0 ? '+' : '';
+        const abs = Math.abs(v);
+        document.getElementById('vFlow').innerHTML = abs >= 100000000 ? `<span style="color:${clr};font-weight:600">${sign}${(abs/100000000).toFixed(2)}亿</span>` : `<span style="color:${clr};font-weight:600">${sign}${(abs/10000).toFixed(1)}万</span>`;
+        document.getElementById('vFlowRatio').textContent = capFlow.mainInflowRatio ? capFlow.mainInflowRatio.toFixed(2) + '%' : '--';
+    } else {
+        document.getElementById('vFlow').textContent = '--';
+        document.getElementById('vFlowRatio').textContent = '--';
+    }
+
+    // Support
+    if (support) {
+        document.getElementById('vSupport').textContent = support.price.toFixed(2);
+        document.getElementById('vSupportDist').textContent = support.distance.toFixed(1) + '%';
+        document.getElementById('vSupportDist').className = 'value ' + (support.distance > 20 ? 'warn' : (support.distance < 5 ? 'down' : ''));
+    } else {
+        document.getElementById('vSupport').textContent = '--';
+        document.getElementById('vSupportDist').textContent = '--';
+    }
+
+    // Logic
+    let logicParts = [];
+    if (policy && policy.direction) {
+        logicParts.push(`📌 政策驱动：${policy.direction}（${policy.reason}）`);
+    }
+    if (fund) {
+        if (fund.roe !== null) logicParts.push(`📊 ROE ${fund.roe.toFixed(2)}%（${fund.roeAnnual ? '年报' : '年化估算'}）`);
+        if (fund.grossMargin !== null) logicParts.push(`🏭 毛利率 ${fund.grossMargin.toFixed(2)}%`);
+        if (fund.debtRatio !== null) logicParts.push(`💰 负债率 ${fund.debtRatio.toFixed(2)}%`);
+        if (fund.epsGrowth !== null) logicParts.push(`📈 EPS增速 ${fund.epsGrowth > 0 ? '+' : ''}${fund.epsGrowth.toFixed(1)}%`);
+        if (fund.reportDate) logicParts.push(`📅 财报期: ${fund.reportDate.substring(0, 10)}（${fund.reportType}）`);
+    }
+    if (phase && phase.phase === 'acceleration') logicParts.push('🔥 技术面处于加速段，短线动能强');
+    else if (phase && phase.phase === 'launch') logicParts.push('🚀 技术面处于启动段，关注突破确认');
+    else if (phase && phase.phase === 'exhaustion') logicParts.push('⚠️ 技术面处于尾部段，注意追高风险');
+    else if (phase && phase.phase === 'waiting') logicParts.push('⏳ 技术面处于观望阶段，等待右侧信号');
+
+    if (logicParts.length === 0) {
+        logicParts.push('这是一只自定义查询的股票，以上数据根据实时行情、技术指标和公开财务数据自动生成。');
+    }
+    document.getElementById('vReason').textContent = logicParts.join('；');
+
+    // Risks
+    let risks = [];
+    if (fund && fund.debtRatio !== null && fund.debtRatio > 60) {
+        risks.push(`<span class="tag tag-down">⚠ 高负债率 ${fund.debtRatio.toFixed(1)}%</span>`);
+    }
+    if (fund && fund.epsGrowth !== null && fund.epsGrowth < 0) {
+        risks.push(`<span class="tag tag-down">📉 EPS负增长 ${fund.epsGrowth.toFixed(1)}%</span>`);
+    }
+    if (fund && fund.roe !== null && fund.roe < 5) {
+        risks.push(`<span class="tag tag-down">📊 ROE偏低 ${fund.roe.toFixed(2)}%</span>`);
+    }
+    if (phase && phase.phase === 'exhaustion') {
+        risks.push(`<span class="tag tag-distribute">⚠️ 高位风险</span>`);
+    }
+    if (signal && (signal.signal === 'distribute')) {
+        risks.push(`<span class="tag tag-distribute">📤 出货信号</span>`);
+    }
+    document.getElementById('vRisks').innerHTML = risks.length > 0 ? '<div style="display:flex;gap:6px;flex-wrap:wrap">' + risks.join('') + '</div>' : '';
+
+    document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN');
+    document.getElementById('result').classList.add('show');
+}
+
+function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    document.getElementById('result').classList.remove('show');
+}
+
+// ==================== 主查询流程 ====================
+async function queryStock() {
+    const exchange = document.getElementById('exchangeSelect').value;
+    const code = document.getElementById('codeInput').value.trim();
+    const name = document.getElementById('nameInput').value.trim();
+
+    if (!code || code.length !== 6) {
+        showError('请输入6位股票代码');
+        return;
+    }
+
+    queryCode = exchange + code;
+    queryName = name || '';
+
+    // Reset
+    document.getElementById('errorMsg').classList.remove('show');
+    document.getElementById('result').classList.remove('show');
+    document.getElementById('spinner').classList.add('show');
+    document.getElementById('queryBtn').classList.add('loading');
+    document.getElementById('queryBtn').textContent = '查询中...';
+
+    try {
+        // 并行获取行情、K线、资金流向、基本面、行业信息
+        const exchange = document.getElementById('exchangeSelect').value;
+        const [quote, klines, capFlow, fund, sectorInfo] = await Promise.all([
+            fetchQuote(queryCode),
+            fetchKline(queryCode),
+            fetchCapitalFlow(queryCode),
+            fetchFundamental(exchange, queryCode),
+            fetchSectorInfo(exchange, queryCode)
+        ]);
+
+        if (!quote || !quote.price) {
+            showError('无法获取行情数据，请检查股票代码是否正确');
+            return;
+        }
+
+        // 从行情中获取名称
+        if (quote.name && quote.name !== '--') {
+            queryName = quote.name;
+            document.getElementById('nameInput').value = quote.name;
+        }
+
+        if (!klines || klines.length < 60) {
+            showError('K线数据不足（需要至少60个交易日的数据），无法计算技术指标');
+            return;
+        }
+
+        // 计算技术指标
+        const macd = calcMACD(klines);
+        const rsi = calcRSI(klines);
+        const maAlign = detectMAAlignment(klines);
+        const trend = detectTrend(klines);
+        const signal = detectSignal(klines);
+        const support = calcSupportPrice(klines);
+        const phase = detectPhase(klines, macd, rsi, maAlign);
+
+        // 推断政策方向
+        const policy = inferPolicyDirection(sectorInfo ? sectorInfo.sector : null);
+
+        // 合并基本面数据（PE 来自 sectorInfo / 财务数据来自 fund）
+        const fullFund = {
+            pe: sectorInfo ? sectorInfo.pe : (quote.pe || 0),
+            roe: fund ? fund.roe : null,
+            roeAnnual: fund ? fund.roeAnnual : false,
+            grossMargin: fund ? fund.grossMargin : null,
+            debtRatio: fund ? fund.debtRatio : null,
+            eps: fund ? fund.eps : null,
+            epsGrowth: fund ? fund.epsGrowth : null,
+            bps: fund ? fund.bps : null,
+            reportDate: fund ? fund.reportDate : '',
+            reportType: fund ? fund.reportType : ''
+        };
+
+        // 计算综合评分（使用真实基本面数据）
+        const score = calcScore(quote, klines, macd, rsi, maAlign, phase, trend, signal, capFlow, fullFund, policy);
+
+        // 渲染结果
+        renderResults(quote, klines, macd, rsi, maAlign, phase, trend, signal, support, capFlow, fullFund, sectorInfo, policy, score);
+
+    } catch(e) {
+        console.error('查询出错:', e);
+        showError('查询出错: ' + e.message);
+    } finally {
+        document.getElementById('spinner').classList.remove('show');
+        document.getElementById('queryBtn').classList.remove('loading');
+        document.getElementById('queryBtn').textContent = '🔍 查询分析';
+    }
+}
+
+function quickQuery(exchange, code, name) {
+    document.getElementById('exchangeSelect').value = exchange;
+    document.getElementById('codeInput').value = code;
+    document.getElementById('nameInput').value = name;
+    queryStock();
+}
+
+// Enter键触发查询
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('codeInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') queryStock();
+    });
+    document.getElementById('nameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') queryStock();
+    });
+});
+</script>
+</body>
+</html>
