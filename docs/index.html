@@ -1958,7 +1958,8 @@ async function queryStock() {
         if (quote.name && quote.name !== '--') qQueryName = quote.name;
         if (!klines || klines.length < 60) { qShowError('K线数据不足（需≥60个交易日），无法计算技术指标'); return; }
 
-        const macd = calcMACD(klines), rsi = calcRSI(klines), maAlign = detectMAAlignment(klines);
+        const macd = calcMACD(klines), rsiArr = calcRSI(klines), maAlign = detectMAAlignment(klines);
+        const rsi = rsiArr && rsiArr.length > 0 ? rsiArr[rsiArr.length - 1] : null;
         const trend = detectTrend(klines), signal = detectSignal(klines), support = calcSupportPrice(klines);
         const phase = detectPhase(klines, macd, rsi, maAlign);
         const policy = inferPolicyDirection(sectorInfo ? sectorInfo.sector : null);
