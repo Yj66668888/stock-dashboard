@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>政策双轮驱动 + 戴维斯双击 — 选股策略框架</title>
+<style>
+  :root {
+    --color-bg: #fff;
+    --color-surface: #f7f8f9;
+    --color-text: #1a1a1a;
+    --color-text-secondary: #5f5e5a;
+    --color-border: #e5e5e5;
+    --color-accent: #185FA5;
+    --color-supply: #3B6D11;
+    --color-demand: #185FA5;
+    --color-davis: #854F0B;
+    --color-intersection: #534AB7;
+    --color-danger: #A32D2D;
+    --color-warning: #BA7517;
+    --color-success: #3B6D11;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-surface);
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+    background: var(--color-bg);
+    min-height: 100vh;
+  }
+
+  .hero {
+    padding: 48px 0 32px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 40px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero .subtitle {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    font-weight: 400;
+  }
+
+  .hero .meta {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .hero .meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .hero .badge {
+    display: inline-block;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--color-border);
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 32px 0 12px;
+  }
+
+  p {
+    margin-bottom: 14px;
+    color: var(--color-text);
+  }
+
+  .note {
+    background: #F8F4E8;
+    border-left: 3px solid var(--color-warning);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    color: #5a3e0b;
+    margin: 20px 0;
+  }
+
+  .highlight {
+    background: #E8F0FE;
+    border-left: 3px solid var(--color-accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    margin: 20px 0;
+  }
+
+  .danger {
+    background: #FCEBEB;
+    border-left: 3px solid var(--color-danger);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    margin: 20px 0;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 680px) {
+    .two-col { grid-template-columns: 1fr; }
+    .page { padding: 20px 16px 60px; }
+    .hero h1 { font-size: 22px; }
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .card li {
+    font-size: 14px;
+    padding: 4px 0;
+    color: var(--color-text-secondary);
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+
+  .icon-supply::before { background: var(--color-supply); }
+  .icon-davis::before { background: var(--color-davis); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  th {
+    background: var(--color-surface);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    color: var(--color-text);
+  }
+
+  tr:hover td {
+    background: #fafbfc;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .tag-high { background: #EAF3DE; color: #27500A; }
+  .tag-mid { background: #FAEEDA; color: #633806; }
+  .tag-risk { background: #FCEBEB; color: #791F1F; }
+
+  .step-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 12px 0;
+  }
+
+  .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-content strong {
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .step-content span {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+
+  .formula {
+    display: block;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-accent);
+    padding: 16px;
+    background: #F0F4FB;
+    border-radius: 8px;
+    margin: 20px 0;
+    letter-spacing: 0.02em;
+  }
+
+  .checklist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin: 12px 0;
+    list-style: none;
+    padding: 0;
+  }
+
+  @media (max-width: 680px) {
+    .checklist { grid-template-columns: 1fr; }
+  }
+
+  .checklist li {
+    font-size: 14px;
+    padding: 6px 0;
+    padding-left: 22px;
+    position: relative;
+    color: var(--color-text-secondary);
+  }
+
+  .checklist li::before {
+    content: '✕';
+    position: absolute;
+    left: 0;
+    font-size: 12px;
+    color: var(--color-danger);
+    font-weight: 700;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 36px 0;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  .pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="badge">选股策略框架</div>
+    <h1>政策双轮驱动 + 戴维斯双击<br>选股策略</h1>
+    <p class="subtitle">自上而下定方向，自下而上选个股——用政策找方向，用财务找时机，用仓位控风险。</p>
+    <div class="meta">
+      <span><span class="pulse"></span> 策略构建</span>
+      <span>2026年7月</span>
+      <span>适用市场：A股 / 港股 / 美股中概</span>
+    </div>
+  </section>
+
+  <!-- 一、策略逻辑 -->
+  <h2>一、策略核心逻辑</h2>
+
+  <p>本策略构建在<strong>两个独立但可叠加的逻辑层</strong>之上，目标是筛选出同时具备"政策推动力"和"估值修复力"的标的——这种<strong>三重共振</strong>区间的标的，赔率最高、安全边际最大。</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h4 style="color: var(--color-supply);">逻辑层一：供需双轮驱动</h4>
+      <ul>
+        <li class="icon-supply"><strong>供给端：</strong>政策限产、行业整合出清、产能优化</li>
+        <li class="icon-supply"><strong>需求端：</strong>政策刺激消费、以旧换新、扩大内需</li>
+        <li class="icon-supply"><strong>双击信号：</strong>量价齐升、格局改善、龙头集中度提升</li>
+        <li class="icon-supply"><strong>典型案例：</strong>供给侧改革后的煤炭/钢铁（2016-2018）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color: var(--color-davis);">逻辑层二：戴维斯双击</h4>
+      <ul>
+        <li class="icon-davis"><strong>盈利上修：</strong>EPS 超预期增长，业绩持续兑现</li>
+        <li class="icon-davis"><strong>估值扩张：</strong>市场重估 PE/PB，预期差修复</li>
+        <li class="icon-davis"><strong>核心公式：</strong>股价涨幅 = EPS 增长 × PE 扩张倍数</li>
+        <li class="icon-davis"><strong>必要前提：</strong>当前估值处于历史低位 + 盈利拐点确认</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="highlight">
+    <strong>策略精髓：</strong>先用政策窗口定位有<strong>供需格局改善潜力</strong>的行业（行业筛选），再在行业内部找到<strong>低估值 + 业绩拐点 + 催化剂</strong>的个股（公司筛选）。两者叠加区 = 最优击球区。
+  </div>
+
+  <div class="formula">
+    最优标的 = 供给端收缩 ∩ 需求端扩张 ∩ 低估值业绩拐点
+  </div>
+
+  <!-- 二、量化筛选标准 -->
+  <h2>二、戴维斯双击量化筛选标准</h2>
+  <p>五个维度量化打分，<strong>五项均满足 → 纳入候选池</strong>；满足前4项（催化剂缺失）→ 观察池，等确认信号。</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>① 低估值底线</h4>
+      <table style="margin: 0; font-size: 13px;">
+        <tr><td>PE</td><td>&lt; 行业均值 × 0.7</td></tr>
+        <tr><td>PB</td><td>&lt; 1.5（周期）/ &lt; 3（成长）</td></tr>
+        <tr><td>股价回撤</td><td>距历史高点 ≥ 40%</td></tr>
+        <tr><td>EV/EBITDA</td><td>低于同业中位数</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4>② 业绩拐点信号</h4>
+      <table style="margin: 0; font-size: 13px;">
+        <tr><td>毛利率</td><td>连续 2 季度回升</td></tr>
+        <tr><td>分析师预期</td><td>连续上调 EPS 预测</td></tr>
+        <tr><td>净利润</td><td>同比由负转正</td></tr>
+        <tr><td>经营现金流</td><td>由负转正趋势</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4>③ 盈利加速器</h4>
+      <table style="margin: 0; font-size: 13px;">
+        <tr><td>营收增速</td><td>连续 2 个季度加速</td></tr>
+        <tr><td>ROE</td><td>底部回升趋势确认</td></tr>
+        <tr><td>利润弹性</td><td>净利润增速 &gt; 营收增速</td></tr>
+        <tr><td>运营效率</td><td>存货/应收增速 &lt; 收入增速</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h4>④ 资产负债表健康</h4>
+      <table style="margin: 0; font-size: 13px;">
+        <tr><td>资产负债率</td><td>&lt; 60%（非金融企业）</td></tr>
+        <tr><td>有息负债/EBITDA</td><td>&lt; 3x</td></tr>
+        <tr><td>商誉/总资产</td><td>&lt; 10%</td></tr>
+        <tr><td>流动比率</td><td>&gt; 1.2（流动性安全）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 16px;">
+    <h4>⑤ 催化剂识别（触发买入时点）</h4>
+    <table style="margin: 0; font-size: 13px;">
+      <tr><td style="width: 140px;">政策催化剂</td><td>新政策落地 / 补贴清单公布 / 行业标准升级 / 进口替代加速</td></tr>
+      <tr><td>业绩催化剂</td><td>重大订单签订 / 产能达产释放 / 新产品放量</td></tr>
+      <tr><td>市场催化剂</td><td>行业景气指数触底回升 / 机构持仓占比触底反转 / 分析师覆盖启动</td></tr>
+      <tr><td>估值催化剂</td><td>同行业可比公司估值提升 / 公司回购 / 大股东增持</td></tr>
+    </table>
+  </div>
+
+  <!-- 三、重点方向 -->
+  <h2>三、当前具备双轮驱动潜力的方向</h2>
+  <p class="note"><strong>声明：</strong>以下方向基于2026年宏观政策逻辑推导，仅供研究参考，不构成投资建议。具体标的需结合上述五项量化标准逐一筛选。</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>方向</th>
+        <th>供给端逻辑</th>
+        <th>需求端逻辑</th>
+        <th>双击潜力</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>家电 / 消费电子</strong></td>
+        <td>落后产能出清，龙头集中度持续提升</td>
+        <td>以旧换新补贴持续，出口拉动</td>
+        <td><span class="tag tag-high">高</span></td>
+      </tr>
+      <tr>
+        <td><strong>工程机械</strong></td>
+        <td>海外产能布局完成，国内过剩整合</td>
+        <td>基建补短板 + 海外新兴市场需求</td>
+        <td><span class="tag tag-high">高</span></td>
+      </tr>
+      <tr>
+        <td><strong>半导体（国产替代）</strong></td>
+        <td>先进制程差异化，落后品类整合</td>
+        <td>国产化率提升 + AI 算力需求</td>
+        <td><span class="tag tag-mid">中高</span></td>
+      </tr>
+      <tr>
+        <td><strong>医疗器械</strong></td>
+        <td>集采出清低质产品，格局改善</td>
+        <td>医保扩容，消费医疗复苏</td>
+        <td><span class="tag tag-mid">中高</span></td>
+      </tr>
+      <tr>
+        <td><strong>猪周期（养殖）</strong></td>
+        <td>产能去化基本到位</td>
+        <td>消费回暖，猪价上行周期</td>
+        <td><span class="tag tag-high">高</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 四、排雷清单 -->
+  <h2>四、排雷清单 — 这些标的不碰</h2>
+
+  <div class="danger">
+    <p style="margin-bottom: 8px;"><strong>以下特征的标的直接排除，不进入候选池：</strong></p>
+  </div>
+
+  <ul class="checklist">
+    <li>政策利好已被充分定价，PE 高于历史 80% 分位</li>
+    <li>供给端没有实质性出清，行业 CR5 &lt; 30%</li>
+    <li>需求端依赖一次性补贴，无持续需求支撑</li>
+    <li>资产负债率 &gt; 70%，经营性现金流持续为负</li>
+    <li>大股东持续减持 / 商誉超过净资产 30%</li>
+    <li>近一年内发生过财务造假 / 审计意见非标</li>
+    <li>市值 &lt; 50 亿 RMB（流动性不足，机构不碰）</li>
+    <li>日均换手率 &lt; 0.3%（流动性枯竭风险）</li>
+  </ul>
+
+  <!-- 五、仓位管理 -->
+  <h2>五、仓位管理原则</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>标的类型</th>
+        <th>单票仓位上限</th>
+        <th>操作原则</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>三重共振</strong>（双轮+双击均满足）</td>
+        <td>≤ 15%</td>
+        <td>分批建仓，季报验证后加仓</td>
+      </tr>
+      <tr>
+        <td><strong>双轮驱动但尚未双击</strong></td>
+        <td>≤ 8%</td>
+        <td>等业绩拐点确认后再加</td>
+      </tr>
+      <tr>
+        <td><strong>纯主题 / 政策预期</strong></td>
+        <td>≤ 5%</td>
+        <td>轻仓博弈，快进快出</td>
+      </tr>
+      <tr>
+        <td><strong>组合总仓位</strong></td>
+        <td>≤ 70%</td>
+        <td>预留 30% 现金应对市场波动</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="highlight">
+    <strong>建仓节奏建议：</strong>第一笔建 30-40%（确认低估值+趋势），等季报/半年报验证业绩拐点后再加 30-40%（戴维斯双击确认），剩余仓位等催化剂事件触发（政策落地/订单公布）。
+  </div>
+
+  <!-- 六、选股操作流程 -->
+  <h2>六、选股操作流程（5步法）</h2>
+
+  <div class="step-row">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <strong>行业扫描</strong>
+      <span>每周浏览国务院/发改委/工信部政策文件 → 锁定有实质性政策支持的行业方向</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <strong>财务初筛</strong>
+      <span>对锁定的行业，用五项量化标准跑全行业数据 → 筛选满足 ≥4 项的标的</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <strong>深度尽调</strong>
+      <span>阅读近 2 期季报/半年报 + 分析师报告 → 验证业绩拐点是否为结构性（而非一次性）</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">4</div>
+    <div class="step-content">
+      <strong>催化剂匹配</strong>
+      <span>确认未来 1-3 个月有无明确的催化剂事件窗口 → 确定买入时点</span>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-num">5</div>
+    <div class="step-content">
+      <strong>仓位部署</strong>
+      <span>按仓位管理原则分批建仓 → 设好止损线（-15%硬止损）→ 季报窗口再评估</span>
+    </div>
+  </div>
+
+  <!-- 七、风险提示 -->
+  <h2>七、主要风险与应对</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>风险类型</th>
+        <th>具体表现</th>
+        <th>应对措施</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>政策落地不及预期</strong></td>
+        <td>文件发了，补贴资金没到位</td>
+        <td>持仓 &lt; 15% 上限，不要等政策兑现才减持</td>
+      </tr>
+      <tr>
+        <td><strong>业绩兑现延迟</strong></td>
+        <td>拐点预期出现，但季报仍亏损</td>
+        <td>以季报/半年报为硬验证窗口，不确认不加仓</td>
+      </tr>
+      <tr>
+        <td><strong>外部冲击</strong></td>
+        <td>汇率剧烈波动 / 地缘冲突 / 流动性收紧</td>
+        <td>保留 30% 现金仓位，-15% 无条件止损</td>
+      </tr>
+      <tr>
+        <td><strong>估值陷阱</strong></td>
+        <td>低估值≠便宜，可能是价值毁灭</td>
+        <td>低估值必须搭配业绩拐点确认，缺一不可</td>
+      </tr>
+      <tr>
+        <td><strong>风格轮动</strong></td>
+        <td>市场偏好偏离价值/周期风格</td>
+        <td>不做短线博弈，坚守策略纪律</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <footer>
+    <p><strong>免责声明：</strong>本策略仅为投资研究框架，不构成任何形式的投资建议。文中提及的任何方向、指标、案例均为逻辑推演和学术讨论，不代表对未来收益的承诺或保证。投资有风险，入市需谨慎。过往业绩不代表未来表现。</p>
+    <p style="margin-top: 8px;">策略构建时间：2026年7月 &nbsp;|&nbsp; 适用市场：A股 / 港股 / 美股中概</p>
+  </footer>
+
+</div>
+</body>
+</html>

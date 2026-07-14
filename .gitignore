@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.DS_Store
+deploy/
+*.log
+/tmp/
+.workbuddy/
+
+# 旧版本/中间文件
+davis_dashboard_v4*.html
+fetch_stocks.py
+fetch_strategy_stocks.js
+gen_dashboard.py
+server.js
+server.py
+server_enc.py
+stocks_data.json
+stocks_data_v4.js

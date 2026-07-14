@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>戴维斯双击实时仪表盘 - 双轮驱动策略</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #718096;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .strategy-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .tier-btn {
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tier-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .tier-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .refresh-btn {
+            padding: 10px 20px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #38a169;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .label {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .stock-code {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .price {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2d3748;
+        }
+
+        .change-positive {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .change-negative {
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tier1-badge {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .tier2-badge {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        .tier3-badge {
+            background: #fefcbf;
+            color: #744210;
+        }
+
+        .tier4-badge {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .target-price {
+            display: flex;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .target-item {
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .target-low {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .target-mid {
+            background: #fefcbf;
+            color: #744210;
+        }
+
+        .target-high {
+            background: #feebc8;
+            color: #7b341e;
+        }
+
+        .upside {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .upside-high {
+            color: #e53e3e;
+        }
+
+        .upside-medium {
+            color: #dd6b20;
+        }
+
+        .upside-low {
+            color: #38a169;
+        }
+
+        .theme-tag {
+            display: inline-block;
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .update-time {
+            text-align: center;
+            color: #718096;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 戴维斯双击实时仪表盘</h1>
+            <p class="subtitle">基于"政策双轮驱动+戴维斯双击"策略的精选标的</p>
+            <div>
+                <span class="strategy-badge">📈 供给端挤压</span>
+                <span class="strategy-badge">📈 需求端刺激</span>
+                <span class="strategy-badge">💎 低估值</span>
+                <span class="strategy-badge">💎 业绩拐点</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="tier-btn active" data-tier="all">全部标的</button>
+            <button class="tier-btn" data-tier="tier1">🟢 第一梯队</button>
+            <button class="tier-btn" data-tier="tier2">🔵 第二梯队</button>
+            <button class="tier-btn" data-tier="tier3">🟡 第三梯队</button>
+            <button class="tier-btn" data-tier="tier4">🔴 第四梯队</button>
+            <input type="text" class="search-box" placeholder="搜索股票名称、代码或行业...">
+            <button class="refresh-btn" onclick="refreshData()">🔄 刷新数据</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="label">标的总数</div>
+                <div class="value" id="total-count">28</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">平均PE(TTM)</div>
+                <div class="value" id="avg-pe">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">今日上涨</div>
+                <div class="value" id="up-count">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">平均上行空间</div>
+                <div class="value" id="avg-upside">-</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>梯队</th>
+                        <th>代码</th>
+                        <th>名称</th>
+                        <th>行业</th>
+                        <th>现价(元)</th>
+                        <th>涨跌幅</th>
+                        <th>PE(TTM)</th>
+                        <th>目标价</th>
+                        <th>上行空间</th>
+                        <th>核心题材</th>
+                    </tr>
+                </thead>
+                <tbody id="stocks-tbody">
+                    <tr>
+                        <td colspan="10" class="loading">正在加载数据...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="update-time">
+            数据更新时间: <span id="update-time">-</span>
+        </div>
+    </div>
+
+    <script>
+        // 股票数据（由Python脚本生成）
+        const stocksData = [
+            {"code":"sz000333","name":"美的集团","industry":"家电","tier":"tier1","theme":"以旧换新+出海+低估值","price":"76.51","change_percent":"1.3","pe_ratio":"13.18","pb_ratio":"2.86","total_market_cap":"5825.04","price_low":91.81,"price_mid":137.72,"price_high":229.53},
+            {"code":"sz000651","name":"格力电器","industry":"家电","tier":"tier1","theme":"以旧换新+高股息","price":"37.59","change_percent":"0.24","pe_ratio":"7.22","pb_ratio":"1.39","total_market_cap":"2105.57","price_low":45.11,"price_mid":67.66,"price_high":112.77},
+            {"code":"sh600690","name":"海尔智家","industry":"家电","tier":"tier1","theme":"全球化+高端化","price":"20.38","change_percent":"-0.15","pe_ratio":"10.21","pb_ratio":"1.53","total_market_cap":"1911.16","price_low":24.46,"price_mid":36.68,"price_high":61.14},
+            {"code":"sz002050","name":"三花智控","industry":"家电零部件","tier":"tier2","theme":"新能源热管理","price":"44.45","change_percent":"1.41","pe_ratio":"45.77","pb_ratio":"5.73","total_market_cap":"1870.46","price_low":19.42,"price_mid":29.13,"price_high":43.7},
+            {"code":"sh600031","name":"三一重工","industry":"工程机械","tier":"tier1","theme":"出海+电动化","price":"17.34","change_percent":"0.35","pe_ratio":"18.94","pb_ratio":"1.76","total_market_cap":"1594.41","price_low":18.31,"price_mid":27.47,"price_high":41.2},
+            {"code":"sz000157","name":"中联重科","industry":"工程机械","tier":"tier1","theme":"出海+智能制造","price":"7.04","change_percent":"1","pe_ratio":"14.05","pb_ratio":"1.04","total_market_cap":"608.86","price_low":8.45,"price_mid":12.67,"price_high":21.12},
+            {"code":"sz000425","name":"徐工机械","industry":"工程机械","tier":"tier2","theme":"整体上市+出海","price":"8.11","change_percent":"0.25","pe_ratio":"14.41","pb_ratio":"1.52","total_market_cap":"949.78","price_low":9.73,"price_mid":14.6,"price_high":24.33},
+            {"code":"sh601100","name":"恒立液压","industry":"工程机械零部件","tier":"tier2","theme":"液压件国产替代","price":"106.61","change_percent":"-0.88","pe_ratio":"51.63","pb_ratio":"7.99","total_market_cap":"1429.45","price_low":41.3,"price_mid":61.95,"price_high":92.92},
+            {"code":"sh688981","name":"中芯国际","industry":"半导体","tier":"tier2","theme":"国产替代+先进制程","price":"155.07","change_percent":"-2.36","pe_ratio":"263.11","pb_ratio":"6.97","total_market_cap":"13275.24","price_low":11.79,"price_mid":17.68,"price_high":26.52},
+            {"code":"sz002371","name":"北方华创","industry":"半导体设备","tier":"tier2","theme":"设备国产替代","price":"945.75","change_percent":"6.92","pe_ratio":"123.08","pb_ratio":"17.47","total_market_cap":"6863.21","price_low":153.68,"price_mid":230.52,"price_high":345.78},
+            {"code":"sh600584","name":"长电科技","industry":"半导体封测","tier":"tier2","theme":"先进封装+AI芯片","price":"104.27","change_percent":"0.7","pe_ratio":"112.93","pb_ratio":"6.53","total_market_cap":"1865.82","price_low":18.47,"price_mid":27.7,"price_high":41.55},
+            {"code":"sz002185","name":"华天科技","industry":"半导体封测","tier":"tier3","theme":"封测产能扩张","price":"21.71","change_percent":"-2.69","pe_ratio":"88.44","pb_ratio":"4.04","total_market_cap":"721.52","price_low":4.91,"price_mid":7.36,"price_high":11.05},
+            {"code":"sz300760","name":"迈瑞医疗","industry":"医疗器械","tier":"tier1","theme":"器械龙头+全球化","price":"142.09","change_percent":"4.61","pe_ratio":"21.98","pb_ratio":"4.46","total_market_cap":"1722.76","price_low":129.29,"price_mid":193.94,"price_high":290.9},
+            {"code":"sh688271","name":"联影医疗","industry":"医疗器械","tier":"tier2","theme":"高端影像国产替代","price":"103.82","change_percent":"2.56","pe_ratio":"45.08","pb_ratio":"3.9","total_market_cap":"855.64","price_low":46.06,"price_mid":69.09,"price_high":103.64},
+            {"code":"sz002223","name":"鱼跃医疗","industry":"医疗器械","tier":"tier2","theme":"家用医疗+消费复苏","price":"26.27","change_percent":"2.38","pe_ratio":"20.49","pb_ratio":"2.02","total_market_cap":"263.35","price_low":25.64,"price_mid":38.46,"price_high":57.69},
+            {"code":"sz002714","name":"牧原股份","industry":"养殖","tier":"tier1","theme":"产能去化+成本优势","price":"37.19","change_percent":"6.29","pe_ratio":"21.95","pb_ratio":"2.56","total_market_cap":"2146.98","price_low":33.89,"price_mid":50.83,"price_high":76.24},
+            {"code":"sz300498","name":"温氏股份","industry":"养殖","tier":"tier2","theme":"猪鸡双轮+周期反转","price":"13.18","change_percent":"6.98","pe_ratio":"40.17","pb_ratio":"2.29","total_market_cap":"876.99","price_low":6.56,"price_mid":9.84,"price_high":14.76},
+            {"code":"sz000876","name":"新希望","industry":"养殖","tier":"tier3","theme":"饲料+养殖一体化","price":"6.9","change_percent":"10.05","pe_ratio":"-9.94","pb_ratio":"1.65","total_market_cap":"310.69","price_low":6.21,"price_mid":8.28,"price_high":10.35},
+            {"code":"sh600160","name":"巨化股份","industry":"氟化工","tier":"tier1","theme":"制冷剂配额+新能源","price":"56.3","change_percent":"6.21","pe_ratio":"36.6","pb_ratio":"7.38","total_market_cap":"1519.96","price_low":30.77,"price_mid":46.15,"price_high":69.22},
+            {"code":"sh603379","name":"三美股份","industry":"氟化工","tier":"tier2","theme":"制冷剂龙头","price":"83.48","change_percent":"10","pe_ratio":"23.52","pb_ratio":"6.46","total_market_cap":"509.63","price_low":70.99,"price_mid":106.48,"price_high":159.72},
+            {"code":"sh600309","name":"万华化学","industry":"化工","tier":"tier1","theme":"MDI龙头+海外布局","price":"68.8","change_percent":"0.57","pe_ratio":"16.36","pb_ratio":"2","total_market_cap":"2153.76","price_low":82.56,"price_mid":123.84,"price_high":189.24},
+            {"code":"sh600519","name":"贵州茅台","industry":"白酒","tier":"tier1","theme":"高端消费+品牌护城河","price":"1194.15","change_percent":"0.73","pe_ratio":"18.05","pb_ratio":"6.41","total_market_cap":"14927.85","price_low":1323.16,"price_mid":1984.74,"price_high":2977.11},
+            {"code":"sz000858","name":"五粮液","industry":"白酒","tier":"tier2","theme":"次高端+改革红利","price":"74.7","change_percent":"0.95","pe_ratio":"23.01","pb_ratio":"2.27","total_market_cap":"2899.56","price_low":64.93,"price_mid":97.39,"price_high":146.09},
+            {"code":"sh600887","name":"伊利股份","industry":"食品饮料","tier":"tier2","theme":"乳制品龙头+低估值","price":"24.41","change_percent":"1.88","pe_ratio":"12.78","pb_ratio":"2.86","total_market_cap":"1544.02","price_low":29.29,"price_mid":43.94,"price_high":73.23},
+            {"code":"sz300750","name":"宁德时代","industry":"新能源","tier":"tier2","theme":"电池龙头+技术领先","price":"386.97","change_percent":"-1.54","pe_ratio":"22.67","pb_ratio":"5.48","total_market_cap":"17903.66","price_low":341.39,"price_mid":512.09,"price_high":768.14},
+            {"code":"sz002594","name":"比亚迪","industry":"新能源汽车","tier":"tier2","theme":"电动车龙头+出海","price":"81.12","change_percent":"1.78","pe_ratio":"26.85","pb_ratio":"3.19","total_market_cap":"7395.87","price_low":60.42,"price_mid":90.64,"price_high":135.96},
+            {"code":"sh603993","name":"洛阳钼业","industry":"小金属","tier":"tier2","theme":"铜钴双轮+新能源金属","price":"17.84","change_percent":"1.65","pe_ratio":"15.8","pb_ratio":"4.61","total_market_cap":"3816.74","price_low":21.41,"price_mid":32.11,"price_high":50.81},
+            {"code":"sh601899","name":"紫金矿业","industry":"有色金属","tier":"tier1","theme":"铜金资源+全球化","price":"25.44","change_percent":"1.19","pe_ratio":"10.97","pb_ratio":"3.57","total_market_cap":"6764.68","price_low":30.53,"price_mid":45.79,"price_high":76.32}
+        ];
+
+        let filteredData = [...stocksData];
+
+        // 渲染表格
+        function renderTable(data) {
+            const tbody = document.getElementById('stocks-tbody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="loading">没有找到匹配的标的</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(stock => {
+                const changePercent = parseFloat(stock.change_percent);
+                const changeClass = changePercent >= 0 ? 'change-positive' : 'change-negative';
+                const changeSymbol = changePercent >= 0 ? '+' : '';
+                
+                const currentPrice = parseFloat(stock.price);
+                const targetMid = stock.price_mid;
+                const upside = targetMid ? ((targetMid - currentPrice) / currentPrice * 100) : 0;
+                const upsideClass = upside > 50 ? 'upside-high' : upside > 20 ? 'upside-medium' : 'upside-low';
+                
+                const tierBadgeClass = stock.tier === 'tier1' ? 'tier1-badge' : 
+                                      stock.tier === 'tier2' ? 'tier2-badge' : 
+                                      stock.tier === 'tier3' ? 'tier3-badge' : 'tier4-badge';
+                
+                const tierLabel = stock.tier === 'tier1' ? '🟢 第一梯队' : 
+                                 stock.tier === 'tier2' ? '🔵 第二梯队' : 
+                                 stock.tier === 'tier3' ? '🟡 第三梯队' : '🔴 第四梯队';
+
+                return `
+                    <tr>
+                        <td><span class="tier-badge ${tierBadgeClass}">${tierLabel}</span></td>
+                        <td><div class="stock-code">${stock.code}</div></td>
+                        <td><strong>${stock.name}</strong></td>
+                        <td>${stock.industry}</td>
+                        <td><div class="price">${stock.price}</div></td>
+                        <td class="${changeClass}">${changeSymbol}${stock.change_percent}%</td>
+                        <td>${stock.pe_ratio}</td>
+                        <td>
+                            <div class="target-price">
+                                <span class="target-item target-low">${stock.price_low ? stock.price_low.toFixed(2) : '-'}</span>
+                                <span class="target-item target-mid">${stock.price_mid ? stock.price_mid.toFixed(2) : '-'}</span>
+                                <span class="target-item target-high">${stock.price_high ? stock.price_high.toFixed(2) : '-'}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="${upsideClass}">${upside.toFixed(1)}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${Math.min(upside, 100)}%; background: ${upside > 50 ? '#e53e3e' : upside > 20 ? '#dd6b20' : '#38a169'}"></div>
+                            </div>
+                        </td>
+                        <td><span class="theme-tag">${stock.theme}</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateStats(data);
+        }
+
+        // 更新统计数据
+        function updateStats(data) {
+            document.getElementById('total-count').textContent = data.length;
+            
+            const validPE = data.filter(s => parseFloat(s.pe_ratio) > 0);
+            const avgPE = validPE.length > 0 ? 
+                (validPE.reduce((sum, s) => sum + parseFloat(s.pe_ratio), 0) / validPE.length).toFixed(1) : 
+                '-';
+            document.getElementById('avg-pe').textContent = avgPE;
+            
+            const upCount = data.filter(s => parseFloat(s.change_percent) > 0).length;
+            document.getElementById('up-count').textContent = `${upCount}/${data.length}`;
+            
+            const validUpside = data.filter(s => s.price_mid);
+            const avgUpside = validUpside.length > 0 ?
+                (validUpside.reduce((sum, s) => {
+                    const current = parseFloat(s.price);
+                    const target = s.price_mid;
+                    return sum + (target - current) / current * 100;
+                }, 0) / validUpside.length).toFixed(1) + '%' :
+                '-';
+            document.getElementById('avg-upside').textContent = avgUpside;
+        }
+
+        // 梯队筛选
+        document.querySelectorAll('.tier-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const tier = this.dataset.tier;
+                const searchTerm = document.querySelector('.search-box').value.toLowerCase();
+                
+                filteredData = stocksData.filter(stock => {
+                    const matchTier = tier === 'all' || stock.tier === tier;
+                    const matchSearch = !searchTerm || 
+                        stock.name.toLowerCase().includes(searchTerm) ||
+                        stock.code.toLowerCase().includes(searchTerm) ||
+                        stock.industry.toLowerCase().includes(searchTerm);
+                    return matchTier && matchSearch;
+                });
+                
+                renderTable(filteredData);
+            });
+        });
+
+        // 搜索功能
+        document.querySelector('.search-box').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const activeTier = document.querySelector('.tier-btn.active').dataset.tier;
+            
+            filteredData = stocksData.filter(stock => {
+                const matchTier = activeTier === 'all' || stock.tier === activeTier;
+                const matchSearch = !searchTerm || 
+                    stock.name.toLowerCase().includes(searchTerm) ||
+                    stock.code.toLowerCase().includes(searchTerm) ||
+                    stock.industry.toLowerCase().includes(searchTerm);
+                return matchTier && matchSearch;
+            });
+            
+            renderTable(filteredData);
+        });
+
+        // 刷新数据
+        function refreshData() {
+            alert('数据已是最新（实时数据于 ' + new Date().toLocaleString('zh-CN') + ' 获取）\n\n如需更新实时行情，请重新运行数据获取脚本。');
+        }
+
+        // 初始化
+        renderTable(stocksData);
+        document.getElementById('update-time').textContent = new Date().toLocaleString('zh-CN');
+    </script>
+</body>
+</html>

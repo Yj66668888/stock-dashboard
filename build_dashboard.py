@@ -1,0 +1,1523 @@
+#!/usr/bin/env python3
+"""生成戴维斯双击实时仪表盘 HTML"""
+
+import json
+import os
+
+WORK_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 读取标的数据
+with open(os.path.join(WORK_DIR, 'stocks.json'), 'r', encoding='utf-8') as f:
+    data = json.load(f)
+    STOCKS = data['stocks']
+
+# ==================== CSS ====================
+CSS = '''
+:root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-hover: #1c2333;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d2991d;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #f0883e;
+    --pink: #ff7b72;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13px; line-height: 1.5; }
+.header { background: linear-gradient(135deg, #1a2332, #0d1b2a); border-bottom: 2px solid var(--blue); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; color: var(--blue); }
+.header .subtitle { color: var(--text-dim); font-size: 12px; margin-left: 8px; }
+.header-right { display: flex; gap: 12px; align-items: center; font-size: 12px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-dot.online { background: var(--green); animation: pulse 2s infinite; }
+.status-dot.offline { background: var(--red); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.tabs { display: flex; gap: 2px; padding: 8px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); }
+.tab { padding: 6px 16px; border-radius: 6px 6px 0 0; cursor: pointer; color: var(--text-dim); border: 1px solid transparent; font-size: 12px; transition: all 0.2s; }
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--bg); color: var(--blue); border-color: var(--border); border-bottom-color: var(--bg); }
+.content { padding: 12px 20px; }
+.section-title { font-size: 15px; color: var(--blue); margin: 12px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.stats-bar { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; min-width: 120px; cursor: pointer; transition: all 0.2s; user-select: none; }
+.stat-card:hover { border-color: var(--blue); background: rgba(88, 166, 255, 0.08); transform: translateY(-1px); }
+.stat-card.active { border-color: var(--blue); background: rgba(88, 166, 255, 0.15); box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
+.stat-card .label { font-size: 11px; color: var(--text-dim); }
+.stat-card .value { font-size: 22px; font-weight: 700; }
+.stat-card .value.up { color: var(--green); }
+.stat-card .value.down { color: var(--red); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { position: sticky; top: 0; background: var(--bg-card); color: var(--text-dim); text-align: left; padding: 8px 6px; font-weight: 600; border-bottom: 2px solid var(--border); z-index: 1; white-space: nowrap; }
+td { padding: 5px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+tr:hover td { background: var(--bg-hover); }
+.flash { animation: flashAnim 1s ease-in-out 3; }
+@keyframes flashAnim { 0%, 100% { background: transparent; } 50% { background: rgba(248, 81, 73, 0.3); } }
+.kdj-flash { animation: kdjFlash 0.6s ease-in-out infinite; background: rgba(248, 81, 73, 0.25) !important; border-radius: 4px; padding: 2px 4px; }
+@keyframes kdjFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.tag-up { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.tag-down { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.tag-washout { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+.tag-distribute { background: rgba(255, 123, 114, 0.2); color: var(--pink); }
+.tag-accumulate { background: rgba(88, 166, 255, 0.2); color: var(--blue); }
+.tag-dual { background: rgba(210, 153, 29, 0.2); color: var(--yellow); }
+.tag-davis { background: rgba(63, 185, 80, 0.15); color: var(--green); border: 1px solid rgba(63, 185, 80, 0.3); }
+.calendar-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+.calendar-card h3 { color: var(--yellow); font-size: 13px; margin-bottom: 6px; }
+.calendar-card .date-tag { background: var(--blue); color: #fff; padding: 1px 8px; border-radius: 4px; font-size: 11px; margin-right: 6px; }
+.calendar-card li { color: var(--text-dim); font-size: 12px; margin-left: 16px; margin-bottom: 4px; }
+.panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+.panel h3 { color: var(--purple); font-size: 14px; margin-bottom: 8px; }
+.abnormal-item { padding: 6px 10px; border-left: 3px solid var(--orange); margin-bottom: 6px; font-size: 12px; background: rgba(240, 136, 62, 0.05); border-radius: 0 4px 4px 0; }
+.tooltip { position: relative; cursor: help; border-bottom: 1px dotted var(--text-dim); }
+.clear { color: var(--text-dim); font-size: 11px; text-align: center; padding: 20px; }
+.refresh-info { color: var(--text-dim); font-size: 11px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.loading-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--blue); width: 0%; transition: width 0.3s; z-index: 999; }
+.loading-bar.active { animation: loadingPulse 1.5s ease-in-out infinite; }
+@keyframes loadingPulse { 0% { width: 10%; } 50% { width: 70%; } 100% { width: 100%; } }
+/* 梯队样式 */
+.tier-gold { color: #ffd700; text-shadow: 0 0 6px rgba(255,215,0,0.3); }
+.tier-silver { color: #c0c0c0; text-shadow: 0 0 4px rgba(192,192,192,0.2); }
+.tier-bronze { color: #cd7f32; }
+#tierOverview { transition: opacity 0.3s; }
+
+/* ========== 移动端适配 ========== */
+@media (max-width: 900px) {
+  .header { flex-direction: column; gap: 8px; }
+  .header-right { flex-wrap: wrap; gap: 6px; }
+  h1 { font-size: 16px !important; }
+  .subtitle { font-size: 11px !important; }
+  .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 6px; }
+  .tab { flex-shrink: 0; font-size: 11px; padding: 6px 10px; }
+  .stats-bar { gap: 8px; }
+  .stat-card { flex: 1 1 0; min-width: 70px; padding: 10px 6px; }
+  .stat-card .value { font-size: 22px; }
+  #tierOverview { flex-direction: column; }
+  .section-title { font-size: 14px; }
+  .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-container table { min-width: 900px; font-size: 11px; }
+  .panel { padding: 10px; }
+  .refresh-info { font-size: 10px; }
+  #initMsg { font-size: 10px; }
+  .content { padding: 8px; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 8px; }
+  h1 { font-size: 14px !important; }
+  .tab { font-size: 10px; padding: 5px 8px; }
+  .stat-card .value { font-size: 18px; }
+  .stat-card .label { font-size: 10px; }
+  .table-container table { min-width: 750px; font-size: 10px; }
+  #tierOverview .tier-gold, #tierOverview .tier-silver, #tierOverview .tier-bronze { font-size: 13px; }
+}
+'''
+
+# ==================== JS PARTS ====================
+
+JS_HEADER = '''
+// ==================== 戴维斯双击 实时仪表盘 ====================
+// 更新时间: ''' + data['updateTime'] + '''
+// 标的数量: ''' + str(len(STOCKS)) + '''
+
+'use strict';
+
+const CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?',
+    'https://api.codetabs.com/v1/proxy/?quest='
+];
+
+const REFRESH_QUOTE_MS = 15000;
+const REFRESH_KDJ_MS = 30000;
+const REFRESH_CALENDAR_MS = 60000;
+
+let quoteCache = {};
+let kdjCache = {};
+let trendCache = {};
+let signalCache = {};
+let supportCache = {};
+let abnormalLog = [];
+let lastUpdateTime = '';
+let capitalFlowCache = {};
+let activeFilter = null; // 当前统计卡片筛选条件
+
+// ==================== 标的数据 ====================
+const STOCKS = ''' + json.dumps(STOCKS, ensure_ascii=False) + ''';
+
+const POLICY_DIRECTIONS = ''' + json.dumps(data['policyDirections'], ensure_ascii=False) + ''';
+
+const EARNINGS_VERIFIED = ''' + json.dumps(data['earningsVerified'], ensure_ascii=False) + ''';
+'''
+
+JS_FETCH = '''
+// ==================== 行情数据获取 ====================
+async function fetchWithProxy(url) {
+    // 直连尝试
+    try {
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (resp.ok) return resp;
+    } catch(e) {}
+
+    // CORS代理fallback
+    for (const proxy of CORS_PROXIES) {
+        try {
+            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+            if (resp.ok) return resp;
+        } catch(e) {}
+    }
+    return null;
+}
+
+async function fetchQuotes() {
+    const codes = STOCKS.map(s => s.code).join(',');
+    const url = 'https://qt.gtimg.cn/q=' + codes;
+    try {
+        // qt.gtimg.cn 支持 CORS，直连优先
+        let resp = null;
+        try {
+            resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        } catch(e) {
+            // 直连失败，走代理
+            for (const proxy of CORS_PROXIES) {
+                try {
+                    resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+                    if (resp.ok) break;
+                } catch(e2) {}
+            }
+        }
+        if (!resp || !resp.ok) return;
+        const buf = await resp.arrayBuffer();
+        const text = new TextDecoder('gbk').decode(buf);
+        const lines = text.split('\\n').filter(l => l.includes('='));
+        for (const line of lines) {
+            const match = line.match(/v_(\\w+)="(.+)"/);
+            if (!match) continue;
+            const fields = match[2].split('~');
+            const code = match[1];
+            const price = parseFloat(fields[3]) || 0;
+            const prevClose = parseFloat(fields[4]) || 0;
+            const changePct = prevClose > 0 ? ((price - prevClose) / prevClose * 100) : 0;
+            quoteCache[code] = {
+                name: fields[1] || '--',
+                price: price,
+                prevClose: prevClose,
+                open: parseFloat(fields[5]) || 0,
+                high: parseFloat(fields[33]) || 0,
+                low: parseFloat(fields[34]) || 0,
+                changePct: Math.round(changePct * 100) / 100,
+                volume: parseInt(fields[6]) || 0,
+                amount: parseFloat(fields[37]) || 0,
+                pe: parseFloat(fields[39]) || 0,
+                totalMv: parseFloat(fields[45]) || 0,
+                turnover: parseFloat(fields[38]) || 0
+            };
+        }
+        lastUpdateTime = new Date().toLocaleTimeString('zh-CN');
+    } catch(e) {
+        console.error('行情获取失败:', e);
+    }
+}
+
+async function fetchKline(code, period, count) {
+    // period: m5, m30, day — 通过CORS代理直连同花顺
+    try {
+        const sym = code.substring(2);
+        // 同花顺周期映射: day→01, 分钟→60
+        const thsPeriod = period === 'day' ? '01' : '60';
+        const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/${thsPeriod}/last.js`;
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const text = await resp.text();
+        // 解析JSONP: quotebridge_v4_line_hs_xxx_01_last({...})
+        const m = text.match(/\(({[\s\S]*})\)/);
+        if (!m) return null;
+        const data = JSON.parse(m[1]);
+        const raw = data?.data || '';
+        if (!raw) return null;
+        const points = raw.split(';').filter(p => p.trim());
+        const klines = points.map(p => {
+            const f = p.split(',');
+            if (f.length < 5) return null;
+            return {
+                date: f[0],
+                open: parseFloat(f[1]) || 0,
+                high: parseFloat(f[2]) || 0,
+                low: parseFloat(f[3]) || 0,
+                close: parseFloat(f[4]) || 0,
+                volume: parseInt(f[5]) || 0,
+                amount: parseFloat(f[6]) || 0
+            };
+        }).filter(k => k !== null);
+        if (klines.length < 9) return null;
+        return klines;
+    } catch(e) {
+        return null;
+    }
+}
+
+async function fetchAllKlines() {
+    const periods = ['m5', 'm30', 'day'];
+    const batchSize = 5;
+    
+    for (const period of periods) {
+        const codes = STOCKS.map(s => s.code);
+        for (let i = 0; i < codes.length; i += batchSize) {
+            const batch = codes.slice(i, i + batchSize);
+            await Promise.all(batch.map(async (code) => {
+                const klines = await fetchKline(code, period, 100);
+                if (klines) {
+                    if (!kdjCache[code]) kdjCache[code] = {};
+                    kdjCache[code][period] = klines;
+                }
+            }));
+            if (i + batchSize < codes.length) {
+                await new Promise(r => setTimeout(r, 100));
+            }
+        }
+        // 渐进式渲染
+        calcAllIndicators();
+        renderAll();
+    }
+}
+
+async function fetchCapitalFlow(code) {
+    try {
+        const sym = code.substring(2);
+        const market = code.startsWith('6') ? '1' : '0';
+        const secid = `${market}.${sym}`;
+        const url = `https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?secid=${secid}&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57&lmt=1&klt=1`;
+        const resp = await fetchWithProxy(url);
+        if (!resp) return null;
+        const result = await resp.json();
+        const klines = result?.data?.klines;
+        if (klines && klines.length > 0) {
+            const last = klines[klines.length - 1].split(',');
+            const data = {
+                date: last[0],
+                mainNetInflow: parseFloat(last[1]) || 0,
+                mainInflowRatio: parseFloat(last[6]) || 0
+            };
+            capitalFlowCache[code] = data;
+            return data;
+        }
+    } catch(e) {}
+    return null;
+}
+
+async function fetchAllCapitalFlows() {
+    const codes = STOCKS.map(s => s.code);
+    const batchSize = 8;
+    for (let i = 0; i < codes.length; i += batchSize) {
+        const batch = codes.slice(i, i + batchSize);
+        await Promise.all(batch.map(code => fetchCapitalFlow(code)));
+        if (i + batchSize < codes.length) await new Promise(r => setTimeout(r, 200));
+    }
+}
+'''
+
+JS_INDICATORS = '''
+// ==================== 技术指标 ====================
+
+function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function calcEMA(data, n) {
+    const k = 2 / (n + 1);
+    let ema = data[0];
+    const result = [ema];
+    for (let i = 1; i < data.length; i++) {
+        ema = data[i] * k + ema * (1 - k);
+        result.push(ema);
+    }
+    return result;
+}
+
+function calcKDJ(klines, n) {
+    n = n || 9;
+    if (!klines || klines.length < n) return null;
+    
+    const result = [];
+    for (let i = n - 1; i < klines.length; i++) {
+        let highestH = -Infinity, lowestL = Infinity;
+        for (let j = i - n + 1; j <= i; j++) {
+            if (klines[j].high > highestH) highestH = klines[j].high;
+            if (klines[j].low < lowestL) lowestL = klines[j].low;
+        }
+        const rsv = ((klines[i].close - lowestL) / (highestH - lowestL)) * 100;
+        const prev = result[result.length - 1] || { k: 50, d: 50 };
+        const k = (2 / 3) * prev.k + (1 / 3) * rsv;
+        const d = (2 / 3) * prev.d + (1 / 3) * k;
+        const j = 3 * k - 2 * d;
+        result.push({ k: Math.round(k * 100) / 100, d: Math.round(d * 100) / 100, j: Math.round(j * 100) / 100, date: klines[i].date });
+    }
+    return result;
+}
+
+function calcMACD(klines, fast, slow, signal) {
+    fast = fast || 12; slow = slow || 26; signal = signal || 9;
+    if (!klines || klines.length < slow + signal) return null;
+    const closes = klines.map(k => k.close);
+    const emaFast = calcEMA(closes, fast);
+    const emaSlow = calcEMA(closes, slow);
+    const dif = [];
+    for (let i = 0; i < closes.length; i++) dif.push(emaFast[i] - emaSlow[i]);
+    const deaArr = calcEMA(dif, signal);
+    const result = [];
+    for (let i = signal; i < dif.length; i++) {
+        const macdVal = 2 * (dif[i] - deaArr[i]);
+        result.push({
+            dif: Math.round(dif[i] * 1000) / 1000,
+            dea: Math.round(deaArr[i] * 1000) / 1000,
+            macd: Math.round(macdVal * 1000) / 1000
+        });
+    }
+    return result;
+}
+
+function calcRSI(klines, n) {
+    n = n || 14;
+    if (!klines || klines.length < n + 1) return null;
+    const closes = klines.map(k => k.close);
+    let gains = 0, losses = 0;
+    for (let i = 1; i <= n; i++) {
+        const diff = closes[i] - closes[i - 1];
+        if (diff > 0) gains += diff;
+        else losses += Math.abs(diff);
+    }
+    let avgGain = gains / n;
+    let avgLoss = losses / n;
+    const result = [Math.round((100 - 100 / (1 + (avgLoss === 0 ? 99 : avgGain / avgLoss))) * 10) / 10];
+    for (let i = n + 1; i < closes.length; i++) {
+        const diff = closes[i] - closes[i - 1];
+        const gain = diff > 0 ? diff : 0;
+        const loss = diff < 0 ? Math.abs(diff) : 0;
+        avgGain = (avgGain * (n - 1) + gain) / n;
+        avgLoss = (avgLoss * (n - 1) + loss) / n;
+        const rs = avgLoss === 0 ? 99 : avgGain / avgLoss;
+        result.push(Math.round((100 - 100 / (1 + rs)) * 10) / 10);
+    }
+    return result;
+}
+
+function detectMAAlignment(klines) {
+    if (!klines || klines.length < 60) return null;
+    const closes = klines.map(k => k.close);
+    const ma5 = avg(closes.slice(-5));
+    const ma10 = avg(closes.slice(-10));
+    const ma20 = avg(closes.slice(-20));
+    const ma60 = avg(closes.slice(-60));
+    if (ma5 > ma10 && ma10 > ma20 && ma20 > ma60) return { align: 'bullish', desc: '多头排列', score: 5 };
+    if (ma5 < ma10 && ma10 < ma20 && ma20 < ma60) return { align: 'bearish', desc: '空头排列', score: 0 };
+    if (ma5 > ma10 && ma10 > ma20) return { align: 'short_bullish', desc: '短期多头', score: 3 };
+    if (ma5 < ma10 && ma10 < ma20) return { align: 'short_bearish', desc: '短期空头', score: 1 };
+    return { align: 'mixed', desc: '均线交织', score: 2 };
+}
+
+function detectTrend(klines) {
+    if (!klines || klines.length < 20) return { trend: 'unknown', strength: 0 };
+    
+    const recent = klines.slice(-20);
+    const closes = recent.map(k => k.close);
+    const ma5 = closes.slice(-5).reduce((a, b) => a + b, 0) / 5;
+    const ma10 = closes.slice(-10).reduce((a, b) => a + b, 0) / 10;
+    const ma20 = closes.reduce((a, b) => a + b, 0) / 20;
+    
+    const priceChange = (closes[closes.length - 1] - closes[0]) / closes[0];
+    const trendUp = ma5 > ma10 && ma10 > ma20;
+    const trendDown = ma5 < ma10 && ma10 < ma20;
+    
+    // 计算趋势强度
+    const strength = Math.abs(priceChange) * 100;
+    
+    if (trendUp) return { trend: 'up', strength: Math.round(strength * 10) / 10, desc: '上涨段' };
+    if (trendDown) return { trend: 'down', strength: Math.round(strength * 10) / 10, desc: '下跌段' };
+    return { trend: 'sideways', strength: Math.round(strength * 10) / 10, desc: '震荡' };
+}
+
+function detectSignal(klines) {
+    // 判断出货/洗盘/吸筹信号
+    if (!klines || klines.length < 10) return { signal: 'normal', desc: '--' };
+    
+    const recent = klines.slice(-10);
+    const prices = recent.map(k => k.close);
+    const volumes = recent.map(k => k.volume);
+    const lastPrice = prices[prices.length - 1];
+    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+    const avgVol = volumes.reduce((a, b) => a + b, 0) / volumes.length;
+    const lastVol = volumes[volumes.length - 1];
+    const volRatio = lastVol / avgVol;
+    const priceChange = (lastPrice - prices[0]) / prices[0];
+    const lastChange = (prices[prices.length - 1] - prices[prices.length - 2]) / prices[prices.length - 2];
+    
+    // 出货信号: 放量下跌/高位放量滞涨
+    if (volRatio > 2 && lastChange < -0.02) return { signal: 'distribute', desc: '出货(放量下跌)' };
+    if (volRatio > 2.5 && Math.abs(lastChange) < 0.01 && priceChange > 0.05) return { signal: 'distribute', desc: '出货(高位滞涨)' };
+    
+    // 洗盘信号: 缩量下跌/急跌后企稳
+    if (volRatio < 0.5 && priceChange < -0.02 && lastChange < -0.01) return { signal: 'washout', desc: '洗盘(缩量下跌)' };
+    if (priceChange > 0.03 && lastChange < -0.02 && volRatio < 0.7) return { signal: 'washout', desc: '洗盘(涨后急跌)' };
+    
+    // 吸筹信号: 缩量上涨/低位放量上涨
+    if (volRatio > 1.5 && lastChange > 0.02 && priceChange < 0.05) return { signal: 'accumulate', desc: '吸筹(放量上涨)' };
+    if (volRatio < 0.6 && priceChange > 0.03) return { signal: 'accumulate', desc: '吸筹(缩量拉升)' };
+    
+    return { signal: 'normal', desc: '--' };
+}
+
+function calcSupportPrice(klines) {
+    if (!klines || klines.length < 30) return null;
+    
+    const closes = klines.map(k => k.close);
+    const lows = klines.map(k => k.low);
+    const curPrice = closes[closes.length - 1];
+    
+    // 方法1: 近期低点 (35%权重)
+    const recentLows = lows.slice(-30);
+    const minLow = Math.min(...recentLows);
+    
+    // 方法2: MA20 (25%权重)
+    const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    
+    // 方法3: 布林下轨 (20%权重)
+    const ma20Full = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const std = Math.sqrt(closes.slice(-20).reduce((s, c) => s + (c - ma20Full) ** 2, 0) / 20);
+    const bbLower = ma20Full - 2 * std;
+    
+    // 方法4: 量价密集区 (20%权重)
+    const priceBins = {};
+    for (const c of closes) {
+        const bin = Math.round(c * 100) / 100;
+        priceBins[bin] = (priceBins[bin] || 0) + 1;
+    }
+    let maxCount = 0, maxPrice = curPrice;
+    for (const [price, count] of Object.entries(priceBins)) {
+        if (count > maxCount) { maxCount = count; maxPrice = parseFloat(price); }
+    }
+    
+    const support = minLow * 0.35 + ma20 * 0.25 + bbLower * 0.20 + maxPrice * 0.20;
+    const distance = ((curPrice - support) / curPrice) * 100;
+    
+    return {
+        price: Math.round(support * 100) / 100,
+        distance: Math.round(distance * 100) / 100,
+        parts: {
+            recentLow: Math.round(minLow * 100) / 100,
+            ma20: Math.round(ma20 * 100) / 100,
+            bbLower: Math.round(bbLower * 100) / 100,
+            denseZone: Math.round(maxPrice * 100) / 100
+        }
+    };
+}
+
+function detectPhase(klines, macd, rsi, maAlign) {
+    // 判断当前处于启动段 / 加速段 / 尾部段
+    // 基于：MACD状态 + RSI位置 + 均线排列 + 价格相对位置
+    if (!klines || klines.length < 30 || !macd || !rsi || !maAlign) return { phase: 'unknown', desc: '数据不足' };
+
+    const prices = klines.map(k => k.close);
+    const curPrice = prices[prices.length - 1];
+    const ma20 = prices.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const ma60 = prices.slice(-60).reduce((a, b) => a + b, 0) / 60;
+    const high60 = Math.max(...prices.slice(-60));
+    const diff = macd.dif, dea = macd.dea, bar = macd.bar;
+
+    // 辅助：判断MACD是否刚金叉（最近5个交易日内）
+    const macdCross = diff !== undefined && dea !== undefined && diff > dea;
+
+    // 价格相对于MA60的位置（破位/正常/高位）
+    const priceVsMA60 = (curPrice - ma60) / ma60;       // 距离MA60的百分比
+    const priceVsHigh60 = curPrice / high60;             // 距离60日高点的比例
+
+    // ===== 尾部段判定（优先级最高）=====
+    // 1) RSI超买 + MACD金叉已久 + 价格高位
+    if (rsi > 72 && priceVsHigh60 > 0.92) return { phase: 'exhaustion', desc: '尾部（超买高位）', color: '#ff6b6b', score: 0 };
+    // 2) MACD高位死叉
+    if (diff !== undefined && dea !== undefined && diff < dea && diff > 0 && rsi > 55) {
+        return { phase: 'exhaustion', desc: '尾部（MACD转弱）', color: '#ff6b6b', score: 1 };
+    }
+    // 3) 高位缩量背离（价格近高但RSI未同步新高）
+    if (priceVsHigh60 > 0.88 && rsi < 65 && macdCross) {
+        return { phase: 'exhaustion', desc: '尾部（量价背离）', color: '#ff8c42', score: 2 };
+    }
+
+    // ===== 加速段判定 =====
+    // 1) 均线多头排列 + RSI强势区 + MACD零轴上发散
+    if ((maAlign.align === 'bullish' || maAlign.align === 'short_bullish') && rsi >= 55 && rsi <= 75 && macdCross && diff > 0) {
+        return { phase: 'acceleration', desc: '加速（主升浪）', color: '#4ecb71', score: 5 };
+    }
+    // 2) MACD零轴上强势 + 价格持续在MA5上方
+    if (macdCross && diff > 0.5 && rsi > 58 && priceVsMA60 > 0.05) {
+        return { phase: 'acceleration', desc: '加速（趋势强化）', color: '#4ecb71', score: 4 };
+    }
+
+    // ===== 启动段判定 =====
+    // 1) MACD刚金叉不久 + RSI从低位回升 + 价格突破MA20
+    if (macdCross && diff < 0.8 && rsi >= 40 && rsi <= 65 && priceVsMA60 > -0.08 && maAlign.align !== 'bearish') {
+        return { phase: 'launch', desc: '启动（底部反转）', color: '#58a6ff', score: 3 };
+    }
+    // 2) 均线收敛后突破 + KDJ金叉
+    if (maAlign.align === 'mixed' && macdCross && rsi > 45 && priceVsMA60 > -0.05) {
+        return { phase: 'launch', desc: '启动（平台突破）', color: '#58a6ff', score: 3 };
+    }
+    // 3) 空头排列末期 + RSI见底回升
+    if (maAlign.align === 'bearish' && rsi > 35 && rsi < 52 && macdCross) {
+        return { phase: 'launch', desc: '启动（空翻多）', color: '#58a6ff', score: 2 };
+    }
+
+    // ===== 其他：震荡 / 观望 =====
+    if (maAlign.align === 'bearish') return { phase: 'waiting', desc: '观望（空头）', color: '#888', score: 0 };
+    if (rsi < 40) return { phase: 'waiting', desc: '观望（弱势）', color: '#888', score: 1 };
+    return { phase: 'transition', desc: '震荡蓄势', color: '#d2a82d', score: 2 };
+}
+
+function calcAllIndicators() {
+    for (const stock of STOCKS) {
+        const code = stock.code;
+        const cache = kdjCache[code];
+        if (!cache) continue;
+        
+        if (!trendCache[code]) trendCache[code] = {};
+        if (!trendCache[code].kdj) trendCache[code].kdj = {};
+        
+        // KDJ融合值: 5分钟用n=3更敏感，30分钟用n=9标准
+        ['m5', 'm30'].forEach(period => {
+            const klines = cache[period];
+            const n = period === 'm5' ? 3 : 9;
+            if (klines && klines.length >= n + 1) {
+                const kdj = calcKDJ(klines, n);
+                if (kdj && kdj.length > 0) {
+                    const last = kdj[kdj.length - 1];
+                    const fused = Math.round((last.k + last.d) / 2 * 100) / 100;
+                    trendCache[code].kdj[period] = { v: fused, k: last.k, d: last.d, j: last.j };
+                }
+            }
+        });
+        
+        // 趋势识别 + 信号检测 + 支撑价位 (基于日线)
+        const dayKlines = cache['day'];
+        if (dayKlines && dayKlines.length >= 60) {
+            trendCache[code].trend = detectTrend(dayKlines);
+            signalCache[code] = detectSignal(dayKlines);
+            supportCache[code] = calcSupportPrice(dayKlines);
+            
+            // MACD (日线)
+            const macdResult = calcMACD(dayKlines);
+            if (macdResult && macdResult.length > 0) {
+                trendCache[code].macd = macdResult[macdResult.length - 1];
+            }
+            
+            // RSI (日线, 14周期)
+            const rsiResult = calcRSI(dayKlines, 14);
+            if (rsiResult && rsiResult.length > 0) {
+                trendCache[code].rsi = rsiResult[rsiResult.length - 1];
+            }
+            
+            // 均线排列 (日线)
+            trendCache[code].maAlign = detectMAAlignment(dayKlines);
+            
+            // 阶段判断（启动/加速/尾部）
+            const phaseResult = detectPhase(dayKlines, trendCache[code].macd, trendCache[code].rsi, trendCache[code].maAlign);
+            if (phaseResult) trendCache[code].phase = phaseResult;
+        }
+    }
+}
+'''
+
+JS_RENDER = '''
+// ==================== 渲染 ====================
+
+function getStockData(code) {
+    const stock = STOCKS.find(s => s.code === code);
+    const quote = quoteCache[code] || {};
+    const ind = trendCache[code] || {};
+    const kdj = ind.kdj || {};
+    const trend = ind.trend || { trend: 'unknown', desc: '--' };
+    const signal = signalCache[code] || { signal: 'normal', desc: '--' };
+    const support = supportCache[code] || null;
+    const capFlow = capitalFlowCache[code] || null;
+    
+    const changePct = quote.changePct || 0;
+    const price = quote.price || 0;
+    const pe = quote.pe || stock.pe;
+    
+    return {
+        code, stock, quote, kdj, trend, signal, support, capFlow,
+        changePct, price, pe
+    };
+}
+
+function kdjCellHTML(kdjVal) {
+    if (!kdjVal) return '<td>--</td>';
+    const val = kdjVal.v;
+    if (val === undefined || val === null) return '<td>--</td>';
+    const cls = val < 20 ? 'kdj-flash' : '';
+    return `<td class="${cls}" style="${val < 20 ? 'font-weight:700;' : ''}">${val.toFixed(1)}</td>`;
+}
+
+// ==================== 综合评分 ====================
+
+function calcCompositeScore(data) {
+    let total = 0;
+    const detail = {};
+
+    // 1. 政策方向评分 (0-25)
+    const dir = data.stock.direction || '';
+    if (dir.includes('供需双驱')) detail.policy = 25;
+    else if (dir.includes('需求端') || dir.includes('供给端')) detail.policy = 18;
+    else detail.policy = 12;
+    total += detail.policy;
+
+    // 2. 估值评分 (0-20): PE越低分越高
+    const pe = data.pe;
+    if (pe > 0 && pe < 20) detail.val = 20;
+    else if (pe >= 20 && pe < 35) detail.val = 16;
+    else if (pe >= 35 && pe < 50) detail.val = 12;
+    else if (pe >= 50 && pe < 80) detail.val = 8;
+    else if (pe >= 80) detail.val = 4;
+    else detail.val = 10;
+    total += detail.val;
+
+    // 3. 业绩增速评分 (0-20)
+    const growth = data.stock.profitGrowth || 0;
+    if (growth >= 80) detail.earn = 20;
+    else if (growth >= 40) detail.earn = 16;
+    else if (growth >= 20) detail.earn = 12;
+    else if (growth >= 0) detail.earn = 8;
+    else detail.earn = 4;
+    total += detail.earn;
+
+    // 3b. 财务质量修正 (ROE + 毛利率 vs 负债率)
+    const roe = data.stock.roe || 0;
+    const gross = data.stock.grossMargin || 0;
+    const debt = data.stock.debtRatio || 50;
+    let finAdj = 0;
+    if (roe >= 20) finAdj += 3;
+    else if (roe >= 12) finAdj += 1;
+    else if (roe < 8) finAdj -= 2;
+    if (gross >= 35) finAdj += 2;
+    else if (gross < 18) finAdj -= 1;
+    if (debt > 60) finAdj -= 2;
+    else if (debt > 50) finAdj -= 1;
+    detail.earn += finAdj;
+    total += finAdj;
+
+    // 4. 技术面评分 (0-20): MACD + KDJ + 趋势 + 均线
+    const ind = trendCache[data.code] || {};
+    let tech = 0;
+    if (ind.macd && ind.macd.dif > ind.macd.dea && ind.macd.macd > 0) tech += 5;
+    else if (ind.macd && ind.macd.dif > ind.macd.dea) tech += 3;
+    const kdj30 = (ind.kdj && ind.kdj.m30) ? ind.kdj.m30.v : null;
+    if (kdj30 !== null && kdj30 >= 20 && kdj30 <= 80) tech += 5;
+    else if (kdj30 !== null && kdj30 > 80) tech += 3;
+    if (data.trend.trend === 'up') tech += 5;
+    else if (data.trend.trend === 'sideways') tech += 3;
+    if (ind.maAlign) tech += ind.maAlign.score;
+    // 阶段评分 (0-5): 启动段+3, 加速段+5, 尾部段+0
+    if (ind.phase) tech += (ind.phase.score || 0);
+    detail.tech = tech;
+    total += tech;
+
+    // 5. 资金面评分 (0-15)
+    const cf = data.capFlow;
+    if (cf && cf.mainNetInflow > 50000000) detail.cap = 15;
+    else if (cf && cf.mainNetInflow > 10000000) detail.cap = 12;
+    else if (cf && cf.mainNetInflow > 0) detail.cap = 8;
+    else if (cf && cf.mainNetInflow > -10000000) detail.cap = 5;
+    else if (cf) detail.cap = 2;
+    else detail.cap = 7;
+    total += detail.cap;
+
+    return { total: Math.min(100, total), detail };
+}
+
+function scoreColor(score) {
+    if (score >= 75) return 'var(--green)';
+    if (score >= 60) return '#85b753';
+    if (score >= 45) return 'var(--yellow)';
+    if (score >= 30) return 'var(--orange)';
+    return 'var(--red)';
+}
+
+function getTier(score) {
+    if (score >= 65) return { tier: 1, label: '🔥 第一梯队', cls: 'tier-gold', short: 'S' };
+    if (score >= 45) return { tier: 2, label: '📈 第二梯队', cls: 'tier-silver', short: 'A' };
+    return { tier: 3, label: '👀 第三梯队', cls: 'tier-bronze', short: 'B' };
+}
+
+function tierCellHTML(score) {
+    const t = getTier(score);
+    return `<td style="text-align:center;font-size:11px;font-weight:700" class="${t.cls}">${t.short}</td>`;
+}
+
+function macdCellHTML(macd) {
+    if (!macd) return '<td>--</td>';
+    const cls = macd.dif > macd.dea ? 'var(--green)' : 'var(--red)';
+    const label = macd.dif > macd.dea ? (macd.macd > 0 ? '金叉' : '偏多') : '死叉';
+    return `<td style="color:${cls};font-size:11px;font-weight:600">${label}</td>`;
+}
+
+function rsiCellHTML(rsi) {
+    if (rsi === undefined || rsi === null) return '<td>--</td>';
+    let style = '';
+    if (rsi > 70) style = 'color:var(--red);font-weight:700';
+    else if (rsi < 30) style = 'color:var(--green);font-weight:700';
+    return `<td style="${style};font-size:11px">${rsi.toFixed(1)}</td>`;
+}
+
+function maAlignHTML(ma) {
+    if (!ma) return '<td>--</td>';
+    const cmap = { bullish: 'var(--green)', short_bullish: '#85b753', mixed: 'var(--yellow)', short_bearish: 'var(--orange)', bearish: 'var(--red)' };
+    return `<td style="color:${cmap[ma.align] || 'var(--text-dim)'};font-size:11px;font-weight:500">${ma.desc}</td>`;
+}
+
+function capitalCellHTML(cf) {
+    if (!cf) return '<td style="font-size:11px">--</td>';
+    const v = cf.mainNetInflow;
+    const clr = v > 0 ? 'var(--green)' : (v < 0 ? 'var(--red)' : 'var(--text-dim)');
+    const sign = v > 0 ? '+' : '';
+    const abs = Math.abs(v);
+    if (abs >= 100000000) return `<td style="color:${clr};font-size:11px">${sign}${(abs/100000000).toFixed(2)}亿</td>`;
+    return `<td style="color:${clr};font-size:11px">${sign}${(abs/10000).toFixed(1)}万</td>`;
+}
+
+function trendTagHTML(trend) {
+    if (!trend || trend.trend === 'unknown') return '<span class="tag">--</span>';
+    if (trend.trend === 'up') return `<span class="tag tag-up">${trend.desc}(${trend.strength}%)</span>`;
+    if (trend.trend === 'down') return `<span class="tag tag-down">${trend.desc}(${trend.strength}%)</span>`;
+    return `<span class="tag">${trend.desc}</span>`;
+}
+
+function signalTagHTML(signal) {
+    if (!signal) return '<span class="tag">--</span>';
+    if (signal.signal === 'washout') return `<span class="tag tag-washout">${signal.desc}</span>`;
+    if (signal.signal === 'distribute') return `<span class="tag tag-distribute">${signal.desc}</span>`;
+    if (signal.signal === 'accumulate') return `<span class="tag tag-accumulate">${signal.desc}</span>`;
+    return '<span class="tag">--</span>';
+}
+
+function directionTagHTML(direction) {
+    if (!direction) return '--';
+    if (direction.includes('供需双驱')) return `<span class="tag tag-dual">${direction}</span>`;
+    if (direction.includes('戴维斯双击')) return `<span class="tag tag-davis">${direction}</span>`;
+    return direction;
+}
+
+function phaseTagHTML(phase) {
+    if (!phase || phase.phase === 'unknown') return '<span class="tag" style="color:var(--text-dim)">--</span>';
+    const style = `color:${phase.color || '#fff'};font-weight:600;font-size:11px`;
+    return `<span class="tag" style="background:${phase.color}22;border:1px solid ${phase.color}44;${style}">${phase.desc}</span>`;
+}
+
+function filterTable(filterType) {
+    if (activeFilter === filterType) { clearFilter(); return; }
+    activeFilter = filterType;
+    const labels = {
+        up: '上涨', down: '下跌', flat: '平盘',
+        kdj5: '5分钟KD超卖', kdj30: '30分钟KD超卖',
+        washout: '洗盘信号', distribute: '出货警告',
+        launch: '🚀 启动段', acceleration: '🔥 加速段', exhaustion: '⚠️ 尾部段'
+    };
+    document.getElementById('filterLabel').textContent = labels[filterType] || filterType;
+    document.getElementById('filterStatus').style.display = 'flex';
+    document.querySelectorAll('.stat-card').forEach(el => {
+        el.classList.toggle('active', el.dataset.filter === filterType);
+    });
+    renderTable();
+}
+
+function clearFilter() {
+    activeFilter = null;
+    document.getElementById('filterStatus').style.display = 'none';
+    document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active'));
+    renderTable();
+}
+
+function renderStats() {
+    const total = STOCKS.length;
+    let upCount = 0, downCount = 0;
+    let kdjAlert5 = 0, kdjAlert30 = 0;
+    let washoutCount = 0, distributeCount = 0;
+    let launchCount = 0, accelCount = 0, exhaustCount = 0;
+    
+    for (const stock of STOCKS) {
+        const d = getStockData(stock.code);
+        if (d.changePct > 0) upCount++;
+        else if (d.changePct < 0) downCount++;
+        
+        if (d.kdj.m5 && d.kdj.m5.v < 20) kdjAlert5++;
+        if (d.kdj.m30 && d.kdj.m30.v < 20) kdjAlert30++;
+        if (d.signal.signal === 'washout') washoutCount++;
+        if (d.signal.signal === 'distribute') distributeCount++;
+
+        const p = (trendCache[stock.code] || {}).phase;
+        if (p && p.phase === 'launch') launchCount++;
+        if (p && p.phase === 'acceleration') accelCount++;
+        if (p && p.phase === 'exhaustion') exhaustCount++;
+    }
+    
+    document.getElementById('statUp').textContent = upCount;
+    document.getElementById('statDown').textContent = downCount;
+    document.getElementById('statFlat').textContent = total - upCount - downCount;
+    document.getElementById('statKdj5').textContent = kdjAlert5;
+    document.getElementById('statKdj30').textContent = kdjAlert30;
+    document.getElementById('statWashout').textContent = washoutCount;
+    document.getElementById('statDistribute').textContent = distributeCount;
+    document.getElementById('statLaunch').textContent = launchCount;
+    document.getElementById('statAccel').textContent = accelCount;
+    document.getElementById('statExhaust').textContent = exhaustCount;
+    document.getElementById('lastUpdate').textContent = '行情: ' + (lastUpdateTime || '更新中...');
+}
+
+function renderTable() {
+    const tbody = document.getElementById('stockTableBody');
+    if (!tbody) return;
+    let html = '';
+    
+    let scoreList = [];
+    for (const stock of STOCKS) {
+        const d = getStockData(stock.code);
+        const score = calcCompositeScore(d);
+        scoreList.push({ code: stock.code, score });
+    }
+    // 按评分降序
+    scoreList.sort((a, b) => b.score.total - a.score.total);
+
+    // 应用统计卡片筛选
+    if (activeFilter) {
+        scoreList = scoreList.filter(({ code }) => {
+            const d = getStockData(code);
+            const ind = trendCache[code] || {};
+            switch (activeFilter) {
+                case 'up': return d.changePct > 0;
+                case 'down': return d.changePct < 0;
+                case 'flat': return d.changePct === 0;
+                case 'kdj5': return d.kdj.m5 && d.kdj.m5.v < 20;
+                case 'kdj30': return d.kdj.m30 && d.kdj.m30.v < 20;
+                case 'washout': return d.signal.signal === 'washout';
+                case 'distribute': return d.signal.signal === 'distribute';
+                case 'launch': return ind.phase && ind.phase.phase === 'launch';
+                case 'acceleration': return ind.phase && ind.phase.phase === 'acceleration';
+                case 'exhaustion': return ind.phase && ind.phase.phase === 'exhaustion';
+                default: return true;
+            }
+        });
+        document.getElementById('filterCount').textContent = scoreList.length;
+    }
+
+    const sortedCodes = scoreList.map(s => s.code);
+    const scoreMap = {};
+    scoreList.forEach(s => { scoreMap[s.code] = s.score; });
+
+    // 梯队统计
+    const tierCounts = { 1: [], 2: [], 3: [] };
+    for (const sc of scoreList) {
+        const t = getTier(sc.score.total);
+        tierCounts[t.tier].push(sc);
+    }
+
+    // 渲染梯队总览
+    renderTierOverview(tierCounts);
+
+    for (const code of sortedCodes) {
+        const stock = STOCKS.find(s => s.code === code);
+        const d = getStockData(code);
+        const changeCls = d.changePct > 0 ? 'up' : (d.changePct < 0 ? 'down' : '');
+        const supportText = d.support ? `${d.support.price.toFixed(2)} (距${d.support.distance.toFixed(1)}%)` : '--';
+        const ind = trendCache[code] || {};
+        const sc = scoreMap[code];
+        const scColor = scoreColor(sc.total);
+        const riskFlags = stock.riskFlags || [];
+        const riskHTML = riskFlags.length > 0 ? ` <span style="color:var(--red);font-size:10px" title="${riskFlags.join(',')}">⚠️</span>` : '';
+        
+        html += `<tr>
+            <td style="font-weight:700;${scColor}">${sc.total}</td>
+            ${tierCellHTML(sc.total)}
+            <td><span style="color:var(--text-dim)">${code.substring(2)}</span></td>
+            <td style="font-weight:600">${quoteCache[code]?.name || stock.name}${riskHTML}</td>
+            <td>${stock.sector}</td>
+            <td>${directionTagHTML(stock.direction)}</td>
+            <td>${phaseTagHTML(ind.phase)}</td>
+            <td style="font-weight:600;color:${changeCls === 'up' ? 'var(--green)' : (changeCls === 'down' ? 'var(--red)' : 'var(--text)')}">${d.price ? d.price.toFixed(2) : '--'}</td>
+            <td style="color:${changeCls === 'up' ? 'var(--green)' : (changeCls === 'down' ? 'var(--red)' : 'var(--text)')}">${d.changePct ? (d.changePct > 0 ? '+' : '') + d.changePct.toFixed(2) + '%' : '--'}</td>
+            <td>${d.pe ? d.pe.toFixed(1) : '--'}</td>
+            ${kdjCellHTML(d.kdj.m5)}
+            ${kdjCellHTML(d.kdj.m30)}
+            ${macdCellHTML(ind.macd)}
+            ${rsiCellHTML(ind.rsi)}
+            ${maAlignHTML(ind.maAlign)}
+            <td>${trendTagHTML(d.trend)}</td>
+            <td>${signalTagHTML(d.signal)}</td>
+            ${capitalCellHTML(d.capFlow)}
+            <td>${supportText}</td>
+            <td style="font-size:11px;color:var(--text-dim);max-width:150px;overflow:hidden;text-overflow:ellipsis">${stock.reason}</td>
+        </tr>`;
+    }
+    
+    tbody.innerHTML = html;
+}
+
+function renderTierOverview(tierCounts) {
+    const el = document.getElementById('tierOverview');
+    if (!el) return;
+    const tiers = [
+        { id: 1, label: '🔥 第一梯队 (S)', desc: '核心持仓 · 评分≥65', cls: 'tier-gold', bg: 'rgba(255,215,0,0.12)', border: '#ffd700' },
+        { id: 2, label: '📈 第二梯队 (A)', desc: '积极关注 · 评分45-64', cls: 'tier-silver', bg: 'rgba(192,192,192,0.12)', border: '#c0c0c0' },
+        { id: 3, label: '👀 第三梯队 (B)', desc: '观察等待 · 评分<45', cls: 'tier-bronze', bg: 'rgba(205,127,50,0.10)', border: '#cd7f32' }
+    ];
+    let html = '';
+    for (const t of tiers) {
+        const stocks = tierCounts[t.id] || [];
+        const names = stocks.map(s => {
+            const st = STOCKS.find(x => x.code === s.code);
+            const q = quoteCache[s.code];
+            return q ? `<span style="color:var(--text)">${q.name}</span><span style="color:${q.changePct > 0 ? 'var(--green)' : (q.changePct < 0 ? 'var(--red)' : 'var(--text-dim)')};margin-left:4px">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(1)}%</span>` : `<span style="color:var(--text-dim)">${st?.name || s.code}</span>`;
+        }).join('<span style="color:var(--text-dim)"> · </span>') || '<span style="color:var(--text-dim)">--</span>';
+        html += `<div style="flex:1;background:${t.bg};border:1px solid ${t.border};border-radius:10px;padding:12px 14px;min-width:0">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px" class="${t.cls}">${t.label}</div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px">${t.desc} · ${stocks.length}只</div>
+            <div style="font-size:11px;line-height:1.7">${names}</div>
+        </div>`;
+    }
+    el.innerHTML = html;
+}
+
+async function renderAll() {
+    renderStats();
+    renderTable();
+    renderDualWheel();
+    renderAbnormalLog();
+}
+
+// ==================== 异动监控 ====================
+
+function checkAbnormal() {
+    for (const stock of STOCKS) {
+        const d = getStockData(stock.code);
+        const name = quoteCache[stock.code]?.name || stock.name;
+        const now = new Date().toLocaleTimeString('zh-CN');
+        
+        // 涨跌幅>5%
+        if (Math.abs(d.changePct) > 5 && d.changePct) {
+            abnormalLog.unshift({
+                time: now,
+                stock: name,
+                code: stock.code.substring(2),
+                type: d.changePct > 0 ? '急涨' : '急跌',
+                detail: `${d.changePct > 0 ? '+' : ''}${d.changePct.toFixed(2)}%`,
+                color: d.changePct > 0 ? 'var(--green)' : 'var(--red)'
+            });
+        }
+        
+        // KDJ超卖
+        ['m5', 'm30'].forEach(period => {
+            const kdj = d.kdj[period];
+            if (kdj && kdj.v < 20) {
+                abnormalLog.unshift({
+                    time: now,
+                    stock: name,
+                    code: stock.code.substring(2),
+                    type: `KD超卖(${period})`,
+                    detail: `KD融合=${kdj.v.toFixed(1)}`,
+                    color: 'var(--red)'
+                });
+            }
+        });
+        
+        // 出货/洗盘信号
+        if (d.signal.signal === 'distribute' || d.signal.signal === 'washout') {
+            abnormalLog.unshift({
+                time: now,
+                stock: name,
+                code: stock.code.substring(2),
+                type: d.signal.signal === 'distribute' ? '出货警告' : '洗盘信号',
+                detail: d.signal.desc,
+                color: d.signal.signal === 'distribute' ? 'var(--pink)' : 'var(--purple)'
+            });
+        }
+    }
+    
+    // 去重（保留最新）
+    const seen = new Set();
+    abnormalLog = abnormalLog.filter(item => {
+        const key = `${item.code}-${item.type}-${item.detail}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+    
+    // 只保留最近200条
+    if (abnormalLog.length > 200) abnormalLog = abnormalLog.slice(0, 200);
+}
+
+function renderAbnormalLog() {
+    const container = document.getElementById('abnormalLog');
+    if (!container) return;
+    if (abnormalLog.length === 0) {
+        container.innerHTML = '<div class="clear">暂无异动记录</div>';
+        return;
+    }
+    container.innerHTML = abnormalLog.slice(0, 50).map(item => 
+        `<div class="abnormal-item">
+            <span style="color:var(--text-dim)">${item.time}</span>
+            <span style="font-weight:600">${item.stock}</span>
+            <span style="color:var(--text-dim)">(${item.code})</span>
+            <span style="color:${item.color};font-weight:600">${item.type}</span>
+            <span style="color:var(--text-dim)">${item.detail}</span>
+        </div>`
+    ).join('');
+}
+'''
+
+JS_DUAL_WHEEL = '''
+// ==================== 政策+供需双轮驱动 ====================
+
+function getStockName(code) {
+    const stock = STOCKS.find(s => s.code === code);
+    if (!stock) return code;
+    return quoteCache[code]?.name || stock.name;
+}
+
+function getStockQuote(code) {
+    const q = quoteCache[code];
+    if (!q || !q.price) return null;
+    const stock = STOCKS.find(s => s.code === code);
+    return {
+        price: q.price.toFixed(2),
+        changePct: q.changePct,
+        pe: q.pe || stock?.pe || 0,
+        cls: q.changePct > 0 ? 'up' : (q.changePct < 0 ? 'down' : '')
+    };
+}
+
+function renderStockChip(code) {
+    const stock = STOCKS.find(s => s.code === code);
+    if (!stock) return '';
+    const q = getStockQuote(code);
+    const name = getStockName(code);
+    const priceText = q ? `${q.price} <span style="color:${q.cls === 'up' ? 'var(--green)' : (q.cls === 'down' ? 'var(--red)' : 'var(--text-dim)')}">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(2)}%</span>` : '<span style="color:var(--text-dim)">--</span>';
+    return `<div style="display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;margin:3px;font-size:12px">
+        <span style="color:var(--text-dim)">${code.substring(2)}</span>
+        <span style="font-weight:600;margin-left:4px">${name}</span>
+        <span style="margin-left:6px">${priceText}</span>
+        <span style="color:var(--text-dim);margin-left:4px;font-size:11px">${stock.sector}</span>
+    </div>`;
+}
+
+function renderDirectionCard(item, type) {
+    const typeColor = type === 'supply' ? 'var(--blue)' : (type === 'demand' ? 'var(--green)' : 'var(--yellow)');
+    const typeLabel = type === 'supply' ? '🔵 供给端驱动' : (type === 'demand' ? '🟢 需求端驱动' : '🟡 供需双轮驱动');
+    const typeIcon = type === 'supply' ? '🔵' : (type === 'demand' ? '🟢' : '🟡');
+
+    const stockChips = (item.stocks || []).map(code => renderStockChip(code)).join('');
+    const stockCount = (item.stocks || []).length;
+
+    return `<div class="direction-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:4px solid ${typeColor};border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+                <h3 style="color:${typeColor};font-size:15px;margin-bottom:6px">${typeIcon} ${item.name}</h3>
+                <div style="font-size:12px;color:var(--text);margin-bottom:6px">
+                    <span style="color:var(--text-dim)">政策催化：</span>${item.policy}
+                </div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+                    <span style="color:var(--text-dim)">驱动逻辑：</span>${item.logic}
+                </div>
+            </div>
+            <span class="tag" style="background:${typeColor}22;color:${typeColor};font-size:11px">${stockCount}只标的</span>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">受益标的（实时行情）：</div>
+            <div>${stockChips || '<span style="color:var(--text-dim);font-size:12px">--</span>'}</div>
+        </div>
+    </div>`;
+}
+
+function renderEarningsCard(item) {
+    const stockChips = (item.stocks || []).map(code => renderStockChip(code)).join('');
+    const stockCount = (item.stocks || []).length;
+
+    const statusColors = {
+        '中报密集验证期': { bg: 'rgba(63,185,80,0.15)', color: 'var(--green)', icon: '📊' },
+        '订单验证期': { bg: 'rgba(88,166,255,0.15)', color: 'var(--blue)', icon: '📋' },
+        '价格传导期': { bg: 'rgba(255,123,114,0.15)', color: 'var(--pink)', icon: '📈' },
+        '招标放量期': { bg: 'rgba(240,136,62,0.15)', color: 'var(--orange)', icon: '🏗️' },
+        '海外放量期': { bg: 'rgba(210,153,29,0.15)', color: 'var(--yellow)', icon: '🌍' }
+    };
+    const statusStyle = statusColors[item.status] || { bg: 'rgba(63,185,80,0.1)', color: 'var(--green)', icon: '✅' };
+
+    return `<div class="direction-card" style="background:linear-gradient(135deg, rgba(63,185,80,0.05), rgba(63,185,80,0.02));border:1px solid var(--green);border-left:4px solid var(--green);border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+            <div>
+                <h3 style="color:var(--green);font-size:15px;margin-bottom:6px">${statusStyle.icon} ${item.name}</h3>
+                <div style="margin-bottom:6px">
+                    <span class="tag" style="background:${statusStyle.bg};color:${statusStyle.color};font-size:11px">${statusStyle.icon} ${item.status}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text);margin-bottom:6px">
+                    <span style="color:var(--text-dim)">业绩验证：</span>${item.policy}
+                </div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+                    <span style="color:var(--text-dim)">落地逻辑：</span>${item.logic}
+                </div>
+            </div>
+            <span class="tag" style="background:rgba(63,185,80,0.2);color:var(--green);font-size:11px">${stockCount}只标的</span>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">业绩落地标的（实时行情）：</div>
+            <div>${stockChips || '<span style="color:var(--text-dim);font-size:12px">--</span>'}</div>
+        </div>
+    </div>`;
+}
+
+function renderDualWheel() {
+    const container = document.getElementById('dualWheelContent');
+    if (!container) return;
+
+    let html = '';
+
+    // 供需双轮驱动（最高优先级）
+    const dualList = POLICY_DIRECTIONS.dualWheel || [];
+    if (dualList.length > 0) {
+        html += `<div class="section-title" style="color:var(--yellow)">🟡 供需双轮驱动 — 政策同时催化供给端 + 需求端（确定性最高）</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">供给端政策（国产替代/补贴降本）+ 需求端政策（采购刺激/基建扩容）= 双轮闭环，业绩弹性最大</div>`;
+        dualList.forEach(item => { html += renderDirectionCard(item, 'dual'); });
+    }
+
+    // 业绩落地行业（中报验证期）
+    const earningsList = EARNINGS_VERIFIED || [];
+    if (earningsList.length > 0) {
+        html += `<div class="section-title" style="color:var(--green)">💰 业绩落地行业 — 政策催化已转化为订单/营收/利润（中报验证）</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">订单已实际落地、营收已开始放量的行业，从"政策预期"阶段进入"业绩兑现"阶段，确定性更高、回调风险更小</div>`;
+        earningsList.forEach(item => {
+            html += renderEarningsCard(item);
+        });
+    }
+
+    // 供给端驱动
+    const supplyList = POLICY_DIRECTIONS.supply || [];
+    if (supplyList.length > 0) {
+        html += `<div class="section-title" style="color:var(--blue)">🔵 供给端驱动 — 政策倒逼国产替代 / 自主可控</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">海外管制收紧 + 政策补贴加码 → 国产替代加速，供给端企业订单确定性提升</div>`;
+        supplyList.forEach(item => { html += renderDirectionCard(item, 'supply'); });
+    }
+
+    // 需求端驱动
+    const demandList = POLICY_DIRECTIONS.demand || [];
+    if (demandList.length > 0) {
+        html += `<div class="section-title" style="color:var(--green)">🟢 需求端驱动 — 政策刺激增量需求 / 新赛道爆发</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">特别国债/补贴/产业政策 → 创造新需求，需求端企业营收弹性释放</div>`;
+        demandList.forEach(item => { html += renderDirectionCard(item, 'demand'); });
+    }
+
+    container.innerHTML = html;
+}
+'''
+
+JS_POLICY = '''
+// ==================== 政策催化日历 ====================
+
+const POLICY_CALENDAR = [
+    { date: '7月13日(周一)', title: '科创板科创成长层正式实施', impact: '★★★★★', sector: '半导体/AI/创新药', detail: '32家未盈利企业划入,利好硬科技估值修复' },
+    { date: '7月13日(周一)', title: '机器人+创新发展大会开幕', impact: '★★★★', sector: '机器人产业链', detail: '人形机器人减速器/伺服/视觉零部件集中展出' },
+    { date: '7月13日(周一)', title: '长鑫存储IPO询价(295亿)', impact: '★★★★★', sector: '存储芯片/设备', detail: '科创板史上第二大IPO,募资扩产国产DRAM' },
+    { date: '7月13日(周一)', title: '商务部:6N高纯电子氦禁止出口', impact: '★★★★★', sector: '电子特气/半导体', detail: '华特气体、金宏气体、九丰能源直接受益' },
+    { date: '7月14日(周二)', title: '8000亿特别国债第三批发行', impact: '★★★★', sector: '储能/特高压/电网', detail: '2000亿定向储能、特高压、算力设备' },
+    { date: '7月15日(周三)', title: 'Q2 GDP/工业/社融/70城房价数据', impact: '★★★★★', sector: '全市场', detail: '重磅经济数据发布,影响宏观预期' },
+    { date: '7月15日(周三)', title: '半年报业绩预告截止日', impact: '★★★★★', sector: '全市场', detail: '业绩暴雷/超预期个股分化加剧' },
+    { date: '7月16日(周四)', title: '长鑫存储IPO申购日', impact: '★★★★', sector: '存储/半导体', detail: '短期分流科技板块资金' },
+    { date: '7月17日(周五)', title: '世界人工智能大会(WAIC)开幕', impact: '★★★★★', sector: 'AI算力/大模型', detail: '国产大模型/3D存储/人形机器人新品首发' },
+    { date: '本周', title: '七部委硬科技三年方案(2026-2028)', impact: '★★★★★', sector: '半导体/AI/航天', detail: '国产AI芯片采购补贴30%,研发费200%加计扣除' },
+    { date: '本周', title: '转融券阶段性收紧(7.11起)', impact: '★★★★', sector: '高位科技股', detail: '做空筹码减少,利好算力/半导体等高成长主线' },
+    { date: '本周', title: '全国用电负荷15.18亿千瓦创新高', impact: '★★★★', sector: '储能/电力/液冷', detail: '高温保供,电网设备/液冷储能需求集中释放' },
+    { date: '7月下旬', title: '美联储议息会议(7.29)', impact: '★★★', sector: '全市场', detail: '市场预期维持利率不变概率63.5%' }
+];
+
+function renderCalendar() {
+    const container = document.getElementById('policyCalendar');
+    if (!container) return;
+    
+    const impactStars = (s) => {
+        const n = (s.match(/★/g) || []).length;
+        return `<span style="color:var(--yellow)">${s}</span>`;
+    };
+    
+    const starCount = (s) => (s.match(/★/g) || []).length;
+    const sorted = [...POLICY_CALENDAR].sort((a, b) => starCount(b.impact) - starCount(a.impact));
+    
+    container.innerHTML = sorted.map(item => 
+        `<div class="calendar-card">
+            <h3><span class="date-tag">${item.date}</span> ${item.title} ${impactStars(item.impact)}</h3>
+            <div style="color:var(--blue);font-size:12px;margin-bottom:4px">📌 受益赛道: ${item.sector}</div>
+            <div style="color:var(--text-dim);font-size:12px">${item.detail}</div>
+        </div>`
+    ).join('');
+}
+'''
+
+JS_MAIN = '''
+// ==================== 主循环 ====================
+
+let quoteTimer = null;
+let kdjTimer = null;
+let calendarTimer = null;
+let kdjLoaded = false;
+
+async function refreshQuotes() {
+    const dot = document.getElementById('statusDot');
+    if (dot) dot.className = 'status-dot online';
+    const msg = document.getElementById('initMsg');
+    if (msg && !lastUpdateTime) msg.textContent = '正在加载行情...';
+    
+    await fetchQuotes();
+    if (lastUpdateTime) {
+        if (msg) msg.textContent = '';
+        checkAbnormal();
+        renderAll();
+    } else {
+        if (msg) msg.textContent = '行情API连接中...';
+    }
+}
+
+async function refreshKDJ() {
+    const msg = document.getElementById('kdjUpdateTime');
+    if (msg) msg.textContent = 'KDJ: 加载中...';
+    
+    await fetchAllKlines();
+    calcAllIndicators();
+    renderAll();
+    if (msg) msg.textContent = 'KDJ: ' + new Date().toLocaleTimeString('zh-CN');
+    kdjLoaded = true;
+}
+
+async function init() {
+    console.log('仪表盘初始化, 标的数:', STOCKS.length);
+    
+    // 1. 先渲染静态数据
+    renderCalendar();
+    renderDualWheel();
+    renderAll();
+    
+    // 2. 优先加载行情
+    await refreshQuotes();
+    
+    // 3. 后台加载K线数据
+    refreshKDJ().then(() => {
+        console.log('KDJ数据加载完成');
+    });
+    
+    // 4. 后台加载资金流向
+    fetchAllCapitalFlows().then(() => {
+        console.log('资金流向加载完成');
+        renderAll();
+    });
+    
+    // 5. 启动定时器
+    quoteTimer = setInterval(refreshQuotes, REFRESH_QUOTE_MS);
+    kdjTimer = setInterval(refreshKDJ, REFRESH_KDJ_MS);
+    calendarTimer = setInterval(renderCalendar, REFRESH_CALENDAR_MS);
+}
+
+// ==================== 收盘复盘 ====================
+
+function generateReview() {
+    let review = '';
+    review += `\\n========== 收盘复盘 ${new Date().toLocaleDateString('zh-CN')} ==========\\n`;
+    
+    // 涨跌统计
+    const upList = [], downList = [];
+    for (const stock of STOCKS) {
+        const d = getStockData(stock.code);
+        if (d.changePct > 3) upList.push({ name: quoteCache[stock.code]?.name || stock.name, pct: d.changePct });
+        if (d.changePct < -3) downList.push({ name: quoteCache[stock.code]?.name || stock.name, pct: d.changePct });
+    }
+    
+    review += `\\n📈 涨幅>3%: ${upList.length}只\\n`;
+    upList.sort((a, b) => b.pct - a.pct);
+    upList.forEach(s => { review += `  ${s.name}: +${s.pct.toFixed(2)}%\\n`; });
+    
+    review += `\\n📉 跌幅>3%: ${downList.length}只\\n`;
+    downList.sort((a, b) => a.pct - b.pct);
+    downList.forEach(s => { review += `  ${s.name}: ${s.pct.toFixed(2)}%\\n`; });
+    
+    // 异动汇总
+    if (abnormalLog.length > 0) {
+        review += `\\n⚠️ 今日异动:\\n`;
+        abnormalLog.slice(0, 20).forEach(item => {
+            review += `  ${item.time} ${item.stock} ${item.type}: ${item.detail}\\n`;
+        });
+    }
+    
+    review += `\\n==========================================\\n`;
+    return review;
+}
+
+// 收盘复盘按钮
+document.addEventListener('DOMContentLoaded', () => {
+    const reviewBtn = document.getElementById('reviewBtn');
+    if (reviewBtn) {
+        reviewBtn.addEventListener('click', () => {
+            const review = generateReview();
+            document.getElementById('reviewOutput').textContent = review;
+        });
+    }
+});
+
+// 切换标签
+function switchTab(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    
+    document.getElementById('tab-' + tabName).classList.add('active');
+    document.getElementById('content-' + tabName).classList.add('active');
+}
+
+window.addEventListener('load', init);
+'''
+
+# ==================== HTML 模板 ====================
+
+HTML_TEMPLATE = f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戴维斯双击 · 实时仪表盘</title>
+<style>{CSS}</style>
+</head>
+<body>
+<div class="header">
+    <div>
+        <h1>🔬 戴维斯双击 · 实时仪表盘</h1>
+        <span class="subtitle">政策供需双轮驱动 | 中报业绩拐点 | {len(STOCKS)}只标的 · 实时监控</span>
+    </div>
+    <div class="header-right">
+        <span class="refresh-info" id="lastUpdate">行情: --</span>
+        <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
+        <span><span class="status-dot" id="statusDot"></span> 实时</span>
+        <span id="initMsg" style="color:var(--yellow)"></span>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" id="tab-main" onclick="switchTab('main')">📊 仪表盘</div>
+    <div class="tab" id="tab-dual" onclick="switchTab('dual')">🚗 政策双轮+业绩落地</div>
+    <div class="tab" id="tab-calendar" onclick="switchTab('calendar')">📅 政策日历</div>
+    <div class="tab" id="tab-abnormal" onclick="switchTab('abnormal')">⚠️ 异动监控</div>
+    <div class="tab" id="tab-review" onclick="switchTab('review')">📝 收盘复盘</div>
+</div>
+
+<!-- 梯队总览 -->
+<div id="tierOverview" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+    <div style="flex:1;text-align:center;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
+        <span style="color:var(--text-dim);font-size:13px">⏳ 梯队加载中...</span>
+    </div>
+</div>
+
+<!-- 仪表盘 -->
+<div class="content tab-content active" id="content-main">
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-card" onclick="filterTable('up')" data-filter="up"><div class="label">上涨</div><div class="value up" id="statUp">--</div></div>
+        <div class="stat-card" onclick="filterTable('down')" data-filter="down"><div class="label">下跌</div><div class="value down" id="statDown">--</div></div>
+        <div class="stat-card" onclick="filterTable('flat')" data-filter="flat"><div class="label">平盘</div><div class="value" id="statFlat">--</div></div>
+        <div class="stat-card" onclick="filterTable('kdj5')" data-filter="kdj5"><div class="label">5分钟KD超卖</div><div class="value down" id="statKdj5">--</div></div>
+        <div class="stat-card" onclick="filterTable('kdj30')" data-filter="kdj30"><div class="label">30分钟KD超卖</div><div class="value down" id="statKdj30">--</div></div>
+        <div class="stat-card" onclick="filterTable('washout')" data-filter="washout"><div class="label">洗盘信号</div><div class="value" id="statWashout" style="color:var(--purple)">--</div></div>
+        <div class="stat-card" onclick="filterTable('distribute')" data-filter="distribute"><div class="label">出货警告</div><div class="value" id="statDistribute" style="color:var(--pink)">--</div></div>
+        <div class="stat-card" onclick="filterTable('launch')" data-filter="launch"><div class="label">🚀 启动段</div><div class="value" id="statLaunch" style="color:#58a6ff">--</div></div>
+        <div class="stat-card" onclick="filterTable('acceleration')" data-filter="acceleration"><div class="label">🔥 加速段</div><div class="value" id="statAccel" style="color:#4ecb71">--</div></div>
+        <div class="stat-card" onclick="filterTable('exhaustion')" data-filter="exhaustion"><div class="label">⚠️ 尾部段</div><div class="value" id="statExhaust" style="color:#ff6b6b">--</div></div>
+    </div>
+    <div id="filterStatus" style="display:none;align-items:center;gap:8px;margin-bottom:10px;font-size:13px">
+        <span style="color:var(--text-dim)">筛选中:</span>
+        <span id="filterLabel" style="color:var(--blue);font-weight:600"></span>
+        <span style="color:var(--text-dim)">(<span id="filterCount">0</span>只)</span>
+        <button onclick="clearFilter()" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 10px;font-size:12px;cursor:pointer">清除筛选</button>
+    </div>
+    <div class="table-container" style="overflow-x:auto;max-height:70vh;overflow-y:auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>评分</th><th>梯队</th><th>代码</th><th>名称</th><th>赛道</th><th>驱动方向</th><th>阶段</th>
+                    <th>现价</th><th>涨跌幅</th><th>PE</th>
+                    <th>5分钟KD</th><th>30分钟KD</th>
+                    <th>MACD</th><th>RSI</th><th>均线</th>
+                    <th>趋势</th><th>量价信号</th><th>主力资金</th>
+                    <th>支撑价位</th><th>逻辑</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 政策双轮驱动 -->
+<div class="content tab-content" id="content-dual">
+    <div class="section-title">🚗 政策 + 供需双轮驱动 + 业绩落地验证</div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;color:var(--text);margin-bottom:8px">
+            <strong style="color:var(--blue)">双轮驱动策略核心：</strong>
+            政策同时作用于<strong style="color:var(--blue)">供给端</strong>（国产替代/自主可控，倒逼产能转移）
+            和<strong style="color:var(--green)">需求端</strong>（基建投资/补贴刺激，创造增量市场），
+            双向闭环推动的赛道确定性最高、业绩弹性最大。
+        </div>
+        <div style="display:flex;gap:16px;font-size:12px;margin-top:8px">
+            <div><span style="color:var(--green)">💰 业绩落地</span> <span style="color:var(--text-dim)">— 订单→营收→利润已兑现，中报集中验证</span></div>
+            <div><span style="color:var(--yellow)">🟡 供需双驱</span> <span style="color:var(--text-dim)">— 两端同时催化 → 弹性最大</span></div>
+            <div><span style="color:var(--blue)">🔵 供给端</span> <span style="color:var(--text-dim)">— 海外管制+政策补贴 → 国产替代加速</span></div>
+            <div><span style="color:var(--green)">🟢 需求端</span> <span style="color:var(--text-dim)">— 特别国债+产业政策 → 新需求爆发</span></div>
+        </div>
+    </div>
+    <div id="dualWheelContent"></div>
+</div>
+
+<!-- 政策日历 -->
+<div class="content tab-content" id="content-calendar">
+    <div class="section-title">📅 本周政策 + 催化日历 (7月13日-18日)</div>
+    <div id="policyCalendar"></div>
+</div>
+
+<!-- 异动监控 -->
+<div class="content tab-content" id="content-abnormal">
+    <div class="section-title">⚠️ 实时异动监控</div>
+    <div class="panel">
+        <h3>异动记录 (自动检测: 涨跌幅>5%、KDJ超卖、出货/洗盘信号)</h3>
+        <div id="abnormalLog"></div>
+    </div>
+</div>
+
+<!-- 收盘复盘 -->
+<div class="content tab-content" id="content-review">
+    <div class="section-title">📝 收盘复盘</div>
+    <div class="panel">
+        <button id="reviewBtn" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px">生成复盘报告</button>
+        <pre id="reviewOutput" style="margin-top:12px;background:#0d1117;padding:16px;border-radius:8px;font-size:12px;color:var(--text);white-space:pre-wrap;max-height:60vh;overflow-y:auto"></pre>
+    </div>
+</div>
+
+<script>
+{JS_HEADER}
+{JS_FETCH}
+{JS_INDICATORS}
+{JS_RENDER}
+{JS_DUAL_WHEEL}
+{JS_POLICY}
+{JS_MAIN}
+</script>
+</body>
+</html>
+'''
+
+# 写入文件
+output_path = os.path.join(WORK_DIR, 'davis_dashboard_v5.html')
+with open(output_path, 'w', encoding='utf-8') as f:
+    f.write(HTML_TEMPLATE)
+
+print(f'Dashboard generated: {output_path}')
+print(f'Stock count: {len(STOCKS)}')
+print(f'File size: {len(HTML_TEMPLATE)} bytes')

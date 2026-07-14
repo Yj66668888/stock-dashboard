@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="view port" content="width=device-width, initial-scale=1.0">
+<title>戴维斯双击全景仪表盘 — 实时行情</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #fff;
+    --border: #e4e6eb;
+    --text: #1a1a2e;
+    --text2: #6b7280;
+    --accent: #185FA5;
+    --green: #059669;
+    --red: #dc2626;
+    --amber: #d97706;
+    --tier1: #dcfce7; --tier1-b: #16a34a;
+    --tier2: #fef9c3; --tier2-b: #a16207;
+    --tier3: #fed7aa; --tier3-b: #c2410c;
+    --tier4: #fee2e2; --tier4-b: #dc2626;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  .page { max-width:1200px; margin:0 auto; padding: 16px 20px 60px; }
+
+  /* Header */
+  .hdr { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px; }
+  .hdr h1 { font-size:20px; font-weight:700; }
+  .hdr .sub { font-size:13px; color:var(--text2); }
+  .hdr-right { display:flex; align-items:center; gap:12px; }
+  .refresh-btn { background:var(--accent); color:#fff; border:none; padding:7px 16px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .refresh-btn:hover { opacity:.85; }
+  .last-update { font-size:12px; color:var(--text2); }
+
+  /* Filter bar */
+  .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .filter-btn { padding:5px 14px; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:13px; cursor:pointer; }
+  .filter-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .search-inp { padding:5px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; width:180px; }
+
+  /* Table */
+  .tbl-wrap { background:#fff; border-radius:10px; border:1px solid var(--border); overflow:hidden; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { background:#f8f9fb; position:sticky; top:0; z-index:2; padding:9px 10px; text-align:left; font-weight:600; color:var(--text2); font-size:12px; border-bottom:2px solid var(--border); white-space:nowrap; }
+  thead th.sortable { cursor:pointer; }
+  thead th.sortable:hover { background:#eef0f5; }
+  tbody td { padding:8px 10px; border-bottom:1px solid #f0f1f4; vertical-align:middle; }
+  tbody tr:hover { background:#f8faff; }
+  .tier-tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+  .tier1 { background:var(--tier1); color:var(--tier1-b); }
+  .tier2 { background:var(--tier2); color:var(--tier2-b); }
+  .tier3 { background:var(--tier3); color:var(--tier3-b); }
+  .tier4 { background:var(--tier4); color:var(--tier4-b); }
+
+  .davis-stars { font-size:13px; white-space:nowrap; }
+  .star-on { color:#f59e0b; }
+  .star-off { color:#d1d5db; }
+
+  .price-up { color:var(--red); font-weight:600; }
+  .price-down { color:var(--green); font-weight:600; }
+  .price-flat { color:var(--text2); }
+
+  .pct-bar-wrap { display:flex; align-items:center; gap:6px; }
+  .pct-bar { height:6px; border-radius:3px; min-width:3px; }
+
+  .notes-cell { max-width:200px; font-size:12px; color:var(--text2); line-height:1.4; }
+
+  .loading-cover { position:absolute; inset:0; background:rgba(255,255,255,.65); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text2); z-index:3; display:none; }
+
+  .stats-row { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat-card { background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px 18px; min-width:140px; }
+  .stat-card .label { font-size:12px; color:var(--text2); margin-bottom:4px; }
+  .stat-card .value { font-size:20px; font-weight:700; }
+
+  .no-data { text-align:center; padding:40px; color:var(--text2); font-size:14px; }
+
+  @media(max-width:768px) {
+    .page { padding:12px; }
+    table { font-size:12px; }
+    thead th, tbody td { padding:6px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hdr">
+    <div>
+      <h1>戴维斯双击全景仪表盘</h1>
+      <div class="sub">63只个股 · 10大行业 · 实时行情 · 数据截止 <span id="dataDate">2026-06-26</span></div>
+    </div>
+    <div class="hdr-right">
+      <span class="last-update" id="lastUpdate">未刷新</span>
+      <button class="refresh-btn" onclick="fetchAllQuotes()">🔄 刷新行情</button>
+    </div>
+  </div>
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="label">第一梯队（双击进行中）</div><div class="value" style="color:var(--tier1-b)" id="cnt1">—</div></div>
+    <div class="stat-card"><div class="label">第二梯队（拐点临近）</div><div class="value" style="color:var(--tier2-b)" id="cnt2">—</div></div>
+    <div class="stat-card"><div class="label">第三梯队（观望验证）</div><div class="value" style="color:var(--tier3-b)" id="cnt3">—</div></div>
+    <div class="stat-card"><div class="label">第四梯队（已过热）</div><div class="value" style="color:var(--tier4-b)" id="cnt4">—</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" data-tier="all" onclick="filterTier('all',this)">全部</button>
+    <button class="filter-btn" data-tier="tier1" onclick="filterTier('tier1',this)">🟢 第一梯队</button>
+    <button class="filter-btn" data-tier="tier2" onclick="filterTier('tier2',this)">🔵 第二梯队</button>
+    <button class="filter-btn" data-tier="tier3" onclick="filterTier('tier3',this)">🟡 第三梯队</button>
+    <button class="filter-btn" data-tier="tier4" onclick="filterTier('tier4',this)">🔴 第四梯队</button>
+    <input class="search-inp" placeholder="搜索股票名/代码/行业..." oninput="searchTable(this.value)">
+  </div>
+
+  <div class="tbl-wrap" style="position:relative;">
+    <div class="loading-cover" id="loadingCover">正在拉取实时行情…</div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>梯队</th>
+          <th>标的</th>
+          <th>代码</th>
+          <th>行业</th>
+          <th class="sortable" onclick="sortTable('price')">现价(元) ↕</th>
+          <th>涨幅% ↕</th>
+          <th>保守价</th>
+          <th>中性价</th>
+          <th>乐观价</th>
+          <th>➡️中性</th>
+          <th>PE(TTM)</th>
+          <th>PE%位</th>
+          <th>戴维斯双击</th>
+          <th>周期位置</th>
+          <th>核心题材</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="no-data" id="noData" style="display:none;">没有匹配的标的</div>
+</div>
+
+<script>
+// ============ 股票数据（从 Excel 提取） ===========
+const STOCKS = [
+  {"seq":1,"name":"三美股份","code":"603379","ws":"sh603379","tier":"tier1","price_static":66.09,"low":53.24,"mid":206.93,"high":329.21,"pe":18.62,"pe_pct":"5.79%","profit":"+165%","roe":"25.1%","cycle":"景气上行中","theme":"制冷剂配额垄断(CR6=90%) · R32十年新高","davis":"★★★★★ 进行中"},
+  {"seq":2,"name":"伊利股份","code":"600887","ws":"sh600887","tier":"tier1","price_static":24.27,"low":22.93,"mid":56.07,"high":77.87,"pe":12.7,"pe_pct":"3.72%","profit":"+63%","roe":"20.3%","cycle":"拐点临近","theme":"原奶十年新低 · 市占率25%+","davis":"★★★★★ 临近"},
+  {"seq":3,"name":"新乳业","code":"002946","ws":"sz002946","tier":"tier1","price_static":13.83,"low":10.93,"mid":22.14,"high":30.75,"pe":15.18,"pe_pct":"0.66%","profit":"+35%","roe":"20.0%","cycle":"拐点临近","theme":"PE百分位近0% · 区域乳企高弹性","davis":"★★★★★ 临近"},
+  {"seq":4,"name":"九丰能源","code":"605090","ws":"sh605090","tier":"tier1","price_static":35.04,"low":29.91,"mid":38.61,"high":59.83,"pe":17.57,"pe_pct":"低位","profit":"-12%","roe":"—","cycle":"等催化","theme":"LNG-BOG提氦 · 氦气营收仅0.72%","davis":"★★★★☆ 等6N"},
+  {"seq":5,"name":"贵州茅台","code":"600519","ws":"sh600519","tier":"tier1","price_static":1168.63,"low":992.61,"mid":1353.92,"high":1985.22,"pe":17.66,"pe_pct":"0.00%","profit":"-7%","roe":"30.5%","cycle":"等风来","theme":"PE创5年历史最低 · 毛利率90.5%","davis":"★★★★☆ 等风来"},
+  {"seq":6,"name":"双环传动","code":"002472","ws":"sz002472","tier":"tier1","price_static":37.15,"low":29.88,"mid":52.88,"high":79.32,"pe":24.87,"pe_pct":"13.48%","profit":"+18%","roe":"12.3%","cycle":"从0到1","theme":"齿轮龙头切入人形机器人","davis":"★★★☆☆ 从0到1"},
+  {"seq":7,"name":"巨化股份","code":"600160","ws":"sh600160","tier":"tier1","price_static":50.95,"low":23.07,"mid":65.64,"high":104.42,"pe":33.13,"pe_pct":"57.49%","profit":"+94%","roe":"19.2%","cycle":"景气上行中","theme":"配额龙头37.6% · AI液冷","davis":"★★★☆☆ 强化中"},
+  {"seq":8,"name":"永和股份","code":"605020","ws":"sh605020","tier":"tier1","price_static":41.22,"low":18.93,"mid":61.9,"high":98.48,"pe":32.67,"pe_pct":"31.75%","profit":"+123%","roe":"10.9%","cycle":"景气上行中","theme":"高弹性+产能扩张 · 净利增速123%","davis":"★★★★☆ 强化中"},
+  {"seq":9,"name":"国电南瑞","code":"600406","ws":"sh600406","tier":"tier1","price_static":22.74,"low":15.54,"mid":24.62,"high":33.57,"pe":21.95,"pe_pct":"0.33%","profit":"+8%","roe":"15.6%","cycle":"低估等招标","theme":"PE 5yr仅0.33%分位 · 研发强度8.5%","davis":"★★★☆☆ 低估等催化"},
+  {"seq":10,"name":"盐湖股份","code":"000792","ws":"sz000792","tier":"tier1","price_static":28.91,"low":29.24,"mid":90.06,"high":143.28,"pe":14.83,"pe_pct":"—","profit":"+110%","roe":"23.1%","cycle":"拐点确认","theme":"锂价二次上行 · 钾肥+锂双轮","davis":"★★★★ 是★"},
+  {"seq":11,"name":"紫金矿业","code":"601899","ws":"sh601899","tier":"tier1","price_static":25.1,"low":23.2,"mid":59.85,"high":87.78,"pe":10.82,"pe_pct":"3.23%","profit":"+72%","roe":"30.8%","cycle":"景气上行","theme":"2026铜缺口83万吨 · 全球化矿业龙头","davis":"★★★★ 是"},
+  {"seq":12,"name":"云铝股份","code":"000807","ws":"sz000807","tier":"tier1","price_static":22.48,"low":25.03,"mid":77.35,"high":113.45,"pe":8.98,"pe_pct":"—","profit":"+106%","roe":"24.4%","cycle":"景气上行","theme":"PEG≈0.08全场最低 · 绿色铝","davis":"★★★★ 是"},
+  {"seq":13,"name":"赤峰黄金","code":"600988","ws":"sh600988","tier":"tier1","price_static":25.93,"low":26.42,"mid":66.05,"high":92.47,"pe":13.74,"pe_pct":"0.00%","profit":"+75%","roe":"25.1%","cycle":"景气上行","theme":"PE 5yr 0%分位 · 金价4200-4850美元","davis":"★★★★ 是★"},
+  {"seq":14,"name":"神火股份","code":"000933","ws":"sz000933","tier":"tier1","price_static":21.41,"low":24.84,"mid":52.9,"high":77.59,"pe":8.62,"pe_pct":"—","profit":"+42%","roe":"20.8%","cycle":"景气上行","theme":"PE仅8.6x · 高股息3.7%","davis":"★★★★ 是"},
+  {"seq":15,"name":"宁德时代","code":"300750","ws":"sz300750","tier":"tier1","price_static":381,"low":307.26,"mid":623.05,"high":872.27,"pe":22.32,"pe_pct":"29.03%","profit":"+46%","roe":"22.1%","cycle":"增速放缓","theme":"动力电池全球份额37% · 固态电池布局","davis":"★★★ 是★"},
+  {"seq":16,"name":"泸州老窖","code":"000568","ws":"sz000568","tier":"tier2","price_static":75.2,"low":101.35,"mid":110.0,"high":202.7,"pe":11.13,"pe_pct":"0.66%","profit":"-26%","roe":"19.3%","cycle":"等风来","theme":"PE仅11倍 · ROE 19%","davis":"★★★ 等风来"},
+  {"seq":17,"name":"山西汾酒","code":"600809","ws":"sh600809","tier":"tier2","price_static":108.1,"low":135.01,"mid":172.28,"high":270.02,"pe":12.01,"pe_pct":"0.08%","profit":"-13%","roe":"24.4%","cycle":"等风来","theme":"PE仅12倍 · 清香型龙头","davis":"★★★ 等风来"},
+  {"seq":18,"name":"中国宏桥","code":"01378.HK","ws":"hk01378","tier":"tier2","price_static":20.14,"low":25.53,"mid":49.78,"high":73.0,"pe":7.89,"pe_pct":"—","profit":"高增","roe":"—","cycle":"景气上行","theme":"PE仅7.89x · 股息率8.19% · 港股","davis":"★★★★ 是"},
+  {"seq":19,"name":"中国铝业","code":"601600","ws":"sh601600","tier":"tier2","price_static":7.64,"low":9.68,"mid":15.98,"high":23.43,"pe":7.89,"pe_pct":"—","profit":"—","roe":"—","cycle":"景气上行","theme":"铝业国家队 · 氧化铝+电解铝一体化","davis":"★★★ 是"},
+  {"seq":20,"name":"山金国际","code":"000975","ws":"sz000975","tier":"tier2","price_static":17.31,"low":18.54,"mid":34.43,"high":48.21,"pe":13.07,"pe_pct":"0.00%","profit":"高增","roe":"22.6%","cycle":"景气上行","theme":"PE 5yr 0%分位 · 海外矿山扩张","davis":"★★★★ 是★"},
+  {"seq":21,"name":"洛阳钼业","code":"603993","ws":"sh603993","tier":"tier2","price_static":15.22,"low":12.79,"mid":24.94,"high":36.58,"pe":11.9,"pe_pct":"—","profit":"高增","roe":"~18%","cycle":"景气上行","theme":"铜+钼+铌双轮 · 刚果金TFM矿放量","davis":"★★★★ 是"},
+  {"seq":22,"name":"西部矿业","code":"601168","ws":"sh601168","tier":"tier2","price_static":26.37,"low":18.56,"mid":40.92,"high":60.01,"pe":14.21,"pe_pct":"—","profit":"+47%","roe":"—","cycle":"景气上行","theme":"净利+47% · 玉龙铜矿扩产","davis":"★★★★ 是"},
+  {"seq":23,"name":"特变电工","code":"600089","ws":"sh600089","tier":"tier2","price_static":22.45,"low":18.31,"mid":44.05,"high":60.06,"pe":18.39,"pe_pct":"81.47%","profit":"+64%","roe":"8.1%","cycle":"5yr偏高","theme":"绝对PE低(18x) · PEG 0.28","davis":"★★★ 是(注意)"},
+  {"seq":24,"name":"国轩高科","code":"002074","ws":"sz002074","tier":"tier2","price_static":26.88,"low":22.85,"mid":59.04,"high":82.66,"pe":21.17,"pe_pct":"5.05%","profit":"+86%","roe":"8.0%","cycle":"低估等固态","theme":"全固态'金石'350Wh/kg · 大众入股","davis":"★★★★ 是★"},
+  {"seq":25,"name":"平高电气","code":"600312","ws":"sh600312","tier":"tier2","price_static":17.34,"low":13.0,"mid":19.46,"high":26.53,"pe":20,"pe_pct":"11.99%","profit":"+2%","roe":"10.1%","cycle":"低估等招标","theme":"特高压GIS龙头 · 二批中标22.22%","davis":"★★★ 观望"},
+  {"seq":26,"name":"许继电气","code":"000400","ws":"sz000400","tier":"tier2","price_static":21.33,"low":15.77,"mid":22.67,"high":31.54,"pe":20.29,"pe_pct":"5.38%","profit":"-2%","roe":"8.7%","cycle":"低估但承压","theme":"PE 5yr仅5.38%分位 · 但业绩承压","davis":"★★☆ 否"},
+  {"seq":27,"name":"牧原股份","code":"002714","ws":"sz002714","tier":"tier2","price_static":33.56,"low":20.33,"mid":15.25,"high":42.35,"pe":19.81,"pe_pct":"周期底部","profit":"亏损","roe":"—","cycle":"临近拐点","theme":"猪价9.51元/kg · 能繁母猪-1.32%","davis":"★★★★ 临近"},
+  {"seq":28,"name":"杭氧股份","code":"002430","ws":"sz002430","tier":"tier3","price_static":29.01,"low":25.24,"mid":44.43,"high":66.64,"pe":28.73,"pe_pct":"—","profit":"—","roe":"9.7%","cycle":"隐藏价值","theme":"提氦设备市占率>80% · BEST核聚变","davis":"★★★★ 隐藏"},
+  {"seq":29,"name":"金石资源","code":"603505","ws":"sh603505","tier":"tier3","price_static":19.01,"low":5.71,"mid":10.21,"high":16.24,"pe":49.98,"pe_pct":"37.30%","profit":"+22%","roe":"16.9%","cycle":"上游","theme":"萤石上游资源垄断","davis":"★★★ 观望"},
+  {"seq":30,"name":"江西铜业","code":"600362","ws":"sh600362","tier":"tier3","price_static":18.59,"low":10.13,"mid":16.71,"high":24.5,"pe":18.36,"pe_pct":"—","profit":"—","roe":"—","cycle":"景气上行","theme":"国内铜冶炼龙头 · 资源自给率偏低","davis":"★★☆ 观望"},
+  {"seq":31,"name":"南山铝业","code":"600219","ws":"sh600219","tier":"tier3","price_static":4.09,"low":3.6,"mid":5.94,"high":8.71,"pe":11.37,"pe_pct":"—","profit":"—","roe":"—","cycle":"景气上行","theme":"股息率10.6% · 航空航天+汽车铝板","davis":"★★☆ 观望"},
+  {"seq":32,"name":"山东黄金","code":"600547","ws":"sh600547","tier":"tier3","price_static":23,"low":15.67,"mid":24.62,"high":34.47,"pe":20.55,"pe_pct":"12.66%","profit":"—","roe":"—","cycle":"景气上行","theme":"国内黄金龙头 · 矿产金产能扩张","davis":"★★☆ 观望"},
+  {"seq":33,"name":"招金黄金","code":"000506","ws":"sz000506","tier":"tier3","price_static":12.17,"low":5.27,"mid":15.04,"high":21.06,"pe":32.36,"pe_pct":"—","profit":"+447%","roe":"39.3%","cycle":"基数效应","theme":"净利+447% · 但主要因去年低基数","davis":"★★☆ 观望"},
+  {"seq":34,"name":"金钼股份","code":"601958","ws":"sh601958","tier":"tier3","price_static":27.13,"low":18.85,"mid":32.84,"high":46.91,"pe":25.91,"pe_pct":"64.02%","profit":"+12%","roe":"17.1%","cycle":"战略资源","theme":"钼价受益钢铁合金需求 · 出口管制催化","davis":"★★☆ 观望"},
+  {"seq":35,"name":"锡业股份","code":"000960","ws":"sz000960","tier":"tier3","price_static":42.58,"low":25.54,"mid":57.21,"high":81.73,"pe":30.01,"pe_pct":"—","profit":"+44%","roe":"—","cycle":"AI驱动","theme":"AI数据中心锡焊料需求","davis":"★★☆ 观望"},
+  {"seq":36,"name":"赣锋锂业","code":"002460","ws":"sz002460","tier":"tier3","price_static":63.38,"low":27.23,"mid":79.88,"high":127.09,"pe":34.91,"pe_pct":"—","profit":"+291%*","roe":"—","cycle":"拐点确认","theme":"净利+291%(基数效应) · 固态电池布局","davis":"★★☆ 观望"},
+  {"seq":37,"name":"天齐锂业","code":"002466","ws":"sz002466","tier":"tier3","price_static":58.92,"low":19.56,"mid":57.38,"high":91.29,"pe":45.18,"pe_pct":"—","profit":"+157%*","roe":"—","cycle":"拐点确认","theme":"SQM股权 · 全球锂矿资源最丰富","davis":"★★☆ 观望"},
+  {"seq":38,"name":"亿纬锂能","code":"300014","ws":"sz300014","tier":"tier3","price_static":62.21,"low":37.1,"mid":56.17,"high":78.64,"pe":30.18,"pe_pct":"45.33%","profit":"+9%","roe":"10.2%","cycle":"增速偏弱","theme":"营收+33%但净利仅+9%","davis":"★★☆ 观望"},
+  {"seq":39,"name":"德业股份","code":"605117","ws":"sh605117","tier":"tier3","price_static":96.49,"low":51.64,"mid":81.05,"high":113.48,"pe":33.63,"pe_pct":"52.69%","profit":"+13%","roe":"31.6%","cycle":"高ROE","theme":"ROE 31.6%极高 · 海外户储爆发","davis":"★★☆ 观望"},
+  {"seq":40,"name":"上能电气","code":"300827","ws":"sz300827","tier":"tier3","price_static":28.73,"low":15.29,"mid":22.08,"high":30.91,"pe":33.83,"pe_pct":"16.71%","profit":"+4%","roe":"11.0%","cycle":"低估低增","theme":"PE 5yr仅17%分位 · 但净利仅+4%","davis":"★★☆ 观望"},
+  {"seq":41,"name":"鹏辉能源","code":"300438","ws":"sz300438","tier":"tier3","price_static":77.3,"low":20.54,"mid":57.06,"high":79.89,"pe":67.73,"pe_pct":"65.92%","profit":"+283%*","roe":"10.1%","cycle":"基数效应","theme":"净利+283%(去年亏2.52亿)","davis":"★★☆ 观望"},
+  {"seq":42,"name":"阳光电源","code":"300274","ws":"sz300274","tier":"tier3","price_static":151.05,"low":103.54,"mid":133.74,"high":201.32,"pe":26.26,"pe_pct":"54.26%","profit":"-7%","roe":"24.5%","cycle":"净利下滑","theme":"储能收入373亿(占42%) · 但净利-7%","davis":"★★☆ 否"},
+  {"seq":43,"name":"冰轮环境","code":"000811","ws":"sz000811","tier":"tier4","price_static":53.12,"low":11.85,"mid":29.44,"high":46.26,"pe":89.68,"pe_pct":"99.92%","profit":"-2.18%","roe":"—","cycle":"严重过热","theme":"氦气压缩机国内垄断 · 核聚变10亿+订单","davis":"❌ 已过热"},
+  {"seq":44,"name":"中国西电","code":"601179","ws":"sh601179","tier":"tier4","price_static":14.88,"low":3.87,"mid":6.58,"high":8.97,"pe":57.72,"pe_pct":"76.76%","profit":"+16%","roe":"5.7%","cycle":"第一轮已走完","theme":"第一轮双击已完成 · 但估值透支","davis":"❌ 已走完"},
+  {"seq":45,"name":"思源电气","code":"002028","ws":"sz002028","tier":"tier4","price_static":175.12,"low":62.38,"mid":139.98,"high":190.88,"pe":42.11,"pe_pct":"88.75%","profit":"+53%","roe":"20.2%","cycle":"已过热","theme":"PE 42x · 5yr 89%分位 · 估值已充分反映","davis":"❌ 已过热"},
+  {"seq":46,"name":"金盘科技","code":"688676","ws":"sh688676","tier":"tier4","price_static":82,"low":21.69,"mid":34.99,"high":47.71,"pe":56.72,"pe_pct":"—","profit":"—","roe":"—","cycle":"估值偏高","theme":"PE 57x · 干式变压器","davis":"❌ 否"},
+  {"seq":47,"name":"北方稀土","code":"600111","ws":"sh600111","tier":"tier4","price_static":47.26,"low":18.94,"mid":33.33,"high":49.99,"pe":62.39,"pe_pct":"—","profit":"—","roe":"—","cycle":"已过热","theme":"稀土龙头 · 但估值已反映涨价","davis":"❌ 否"},
+  {"seq":48,"name":"中国稀土","code":"000831","ws":"sz000831","tier":"tier4","price_static":54.88,"low":5.62,"mid":9.89,"high":14.83,"pe":244.18,"pe_pct":"—","profit":"—","roe":"—","cycle":"严重过热","theme":"PE 244x · 盈利能力极弱","davis":"❌ 否"},
+  {"seq":49,"name":"盛和资源","code":"600392","ws":"sh600392","tier":"tier4","price_static":30.12,"low":14.23,"mid":25.05,"high":37.58,"pe":52.9,"pe_pct":"—","profit":"—","roe":"—","cycle":"已过热","theme":"海外稀土矿权 · 但估值偏高","davis":"❌ 否"},
+  {"seq":50,"name":"多氟多","code":"002407","ws":"sz002407","tier":"tier4","price_static":41.51,"low":6.6,"mid":19.35,"high":30.79,"pe":94.38,"pe_pct":"83.54%","profit":"扭亏","roe":"6.0%","cycle":"已过热","theme":"PE 94x · 5yr 84%分位 · 刚扭亏","davis":"❌ 已过热"},
+  {"seq":51,"name":"凯美特气","code":"002549","ws":"sz002549","tier":"tier4","price_static":18.99,"low":1.71,"mid":5.47,"high":8.2,"pe":277.78,"pe_pct":"97.52%","profit":"+326%","roe":"—","cycle":"高风险","theme":"A股唯一ASML+GIGAPHOTON双认证","davis":"❌ 等产能"},
+  {"seq":52,"name":"华特气体","code":"688268","ws":"sh688268","tier":"tier4","price_static":231.99,"low":24.44,"mid":43.02,"high":64.53,"pe":237.28,"pe_pct":"—","profit":"—","roe":"—","cycle":"已过热","theme":"PE 237x · ASML认证 · YTD+304%","davis":"❌ 已过热"},
+  {"seq":53,"name":"广钢气体","code":"688548","ws":"sh688548","tier":"tier4","price_static":38.74,"low":6.08,"mid":10.71,"high":16.06,"pe":159.22,"pe_pct":"—","profit":"—","roe":"—","cycle":"已过热","theme":"PE 159x · 氦气最纯粹标的","davis":"❌ 已过热"},
+  {"seq":54,"name":"雪人股份","code":"002639","ws":"sz002639","tier":"tier4","price_static":12.78,"low":0.77,"mid":1.49,"high":2.34,"pe":330.1,"pe_pct":"—","profit":"—","roe":"—","cycle":"估值极高","theme":"PE 330x · ITER认证独家","davis":"❌ 否"},
+  {"seq":55,"name":"中际旭创","code":"300308","ws":"sz300308","tier":"tier4","price_static":1300,"low":414.89,"mid":1127.13,"high":1577.98,"pe":94,"pe_pct":"98%","profit":"—","roe":"42%","cycle":"动能减弱","theme":"66元→1300元(19倍)教科书案例","davis":"❌ 已过热"},
+  {"seq":56,"name":"比亚迪","code":"002594","ws":"sz002594","tier":"tier4","price_static":78.2,"low":54.39,"mid":46.08,"high":105.76,"pe":25.88,"pe_pct":"39.54%","profit":"-39%","roe":"11.0%","cycle":"净利暴降","theme":"营收8040亿但净利-39% · 价格战侵蚀利润","davis":"❌ 否"},
+  {"seq":57,"name":"欣旺达","code":"300207","ws":"sz300207","tier":"tier4","price_static":18.4,"low":7.65,"mid":5.42,"high":14.87,"pe":43.31,"pe_pct":"66.67%","profit":"-49%","roe":"3.2%","cycle":"净利暴降","theme":"净利-49% · ROE仅3.2%","davis":"❌ 否"},
+  {"seq":58,"name":"派能科技","code":"688063","ws":"sh688063","tier":"tier4","price_static":52.21,"low":10.65,"mid":16.27,"high":22.78,"pe":88.23,"pe_pct":"—","profit":"—","roe":"—","cycle":"估值极高","theme":"PE 88x · 户储电池","davis":"❌ 否"},
+  {"seq":59,"name":"铜陵有色","code":"000630","ws":"sz000630","tier":"tier4","price_static":6.22,"low":1.96,"mid":3.24,"high":4.75,"pe":31.72,"pe_pct":"—","profit":"—","roe":"—","cycle":"景气上行","theme":"铜冶炼 · 资源自给率低","davis":"❌ 否"},
+  {"seq":60,"name":"云南铜业","code":"000878","ws":"sz000878","tier":"tier4","price_static":15.92,"low":5.57,"mid":7.19,"high":12.25,"pe":28.58,"pe_pct":"73.37%","profit":"-14%","roe":"7.3%","cycle":"景气上行","theme":"铜冶炼 · 资源自给率极低","davis":"❌ 否"},
+  {"seq":61,"name":"厦门钨业","code":"600549","ws":"sh600549","tier":"tier4","price_static":20.5,"low":8.34,"mid":14.28,"high":20.4,"pe":44.22,"pe_pct":"—","profit":"—","roe":"—","cycle":"估值偏高","theme":"钨+锂电材料双轮 · 但估值偏高","davis":"❌ 否"},
+  {"seq":62,"name":"永兴材料","code":"002756","ws":"sz002756","tier":"tier4","price_static":56.53,"low":26.68,"mid":43.05,"high":68.48,"pe":31.78,"pe_pct":"—","profit":"—","roe":"—","cycle":"拐点确认","theme":"云母提锂 · 不锈钢+锂双轮","davis":"❌ 否"},
+  {"seq":63,"name":"中矿资源","code":"002738","ws":"sz002738","tier":"tier4","price_static":53.79,"low":17.27,"mid":33.17,"high":52.78,"pe":46.73,"pe_pct":"66.91%","profit":"+31%","roe":"6.5%","cycle":"拐点确认","theme":"锂矿+铯铷 · 非洲锂矿布局","davis":"❌ 否"}
+];
+
+// ============ 实时行情获取 ===========
+let currentFilter = 'all';
+let currentSearch = '';
+
+function fmtCode(ws) {
+  // sh600519, sz000001, hk00700
+  return ws;
+}
+
+function buildQs() {
+  return STOCKS.map(s => s.ws).join(',');
+}
+
+async function fetchAllQuotes() {
+  const cover = document.getElementById('loadingCover');
+  cover.style.display = 'flex';
+  const qs = buildQs();
+  // Tencent qt.gtimg.cn API
+  const url = `https://qt.gtimg.cn/q=${qs}`;
+  try {
+    const resp = await fetch(url);
+    const text = await resp.text();
+    parseAndUpdate(text);
+  } catch(e) {
+    console.error('Fetch failed:', e);
+    // Fallback: try with JSONP approach
+    fetchWithJsonP(qs);
+    return;
+  }
+  cover.style.display = 'none';
+  document.getElementById('lastUpdate').textContent = '最后刷新：' + new Date().toLocaleTimeString('zh-CN');
+}
+
+function fetchWithJsonP(qs) {
+  const scriptId = 'jsonp_script';
+  const old = document.getElementById(scriptId);
+  if (old) old.remove();
+  const cbName = 'cb_' + Math.random().toString(36).substr(2, 8);
+  window[cbName] = function(text) {
+    parseAndUpdate(text);
+    document.getElementById('loadingCover').style.display = 'none';
+    document.getElementById('lastUpdate').textContent = '最后刷新：' + new Date().toLocaleTimeString('zh-CN');
+    delete window[cbName];
+  };
+  const s = document.createElement('script');
+  s.id = scriptId;
+  s.src = `https://qt.gtimg.cn/q=${qs}&cb=${cbName}`;
+  document.body.appendChild(s);
+}
+
+function parseAndUpdate(text) {
+  // Tencent API returns: v_sh600519="51~600519~贵州茅台~price~change~chgPct~...";
+  const lines = text.split('\n');
+  const priceMap = {};
+  const chgMap = {};
+  const chgPctMap = {};
+  for (const line of lines) {
+    const m = line.match(/v_(\w+)="([^"]+)"/);
+    if (!m) continue;
+    const wsCode = m[1];
+    const fields = m[2].split('~');
+    // fields: [0]type [1]code [2]name [3]price [4]change [5]chgPct [6]open [7]preClose [8]vol [9]time [10]high [11]low ...
+    const price = parseFloat(fields[3]);
+    const chg = parseFloat(fields[4]);
+    const chgPct = parseFloat(fields[5]);
+    if (!isNaN(price)) priceMap[wsCode] = price;
+    if (!isNaN(chg)) chgMap[wsCode] = chg;
+    if (!isNaN(chgPct)) chgPctMap[wsCode] = chgPct;
+  }
+  // Update STOCKS array
+  for (const s of STOCKS) {
+    if (priceMap[s.ws] !== undefined) {
+      s.price_realtime = priceMap[s.ws];
+      s.chg = chgMap[s.ws];
+      s.chgPct = chgPctMap[s.ws];
+    }
+  }
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const noData = document.getElementById('noData');
+  tbody.innerHTML = '';
+
+  let filtered = STOCKS.filter(s => {
+    if (currentFilter !== 'all' && s.tier !== currentFilter) return false;
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      return s.name.toLowerCase().includes(q) || s.code.includes(q) || s.industry.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    noData.style.display = 'block';
+    updateStats();
+    return;
+  }
+  noData.style.display = 'none';
+
+  for (const s of filtered) {
+    const tr = document.createElement('tr');
+
+    const price = s.price_realtime != null ? s.price_realtime : s.price_static;
+    const hasLive = s.price_realtime != null;
+    const liveTag = hasLive ? ' 🟢' : '';
+    const chg = s.chg;
+    const chgPct = s.chgPct;
+    let chgClass = 'price-flat';
+    let chgStr = '';
+    if (chg > 0) chgClass = 'price-up';
+    else if (chg < 0) chgClass = 'price-down';
+    if (chg != null) chgStr = `<span class="${chgClass}">${chg > 0 ? '+' : ''}${chg.toFixed(2)} (${(chgPct * 100).toFixed(2)}%)</span>`;
+    else chgStr = `<span class="price-flat">—</span>`;
+
+    const midUpside = s.mid ? ((s.mid / price - 1) * 100).toFixed(1) : '—';
+    const midUpsideNum = s.mid ? (s.mid / price - 1) * 100 : 0;
+    const upsideColor = midUpsideNum > 100 ? 'var(--red)' : midUpsideNum > 50 ? 'var(--amber)' : 'var(--green)';
+
+    const davisHtml = renderDavis(s.davis);
+
+    const tierLabel = {'tier1':'🟢 第一梯队','tier2':'🔵 第二梯队','tier3':'🟡 第三梯队','tier4':'🔴 第四梯队'}[s.tier];
+    const tierClass = {'tier1':'tier1','tier2':'tier2','tier3':'tier3','tier4':'tier4'}[s.tier];
+
+    tr.innerHTML = `
+      <td>${s.seq}</td>
+      <td><span class="tier-tag ${tierClass}">${tierLabel}</span></td>
+      <td><strong>${s.name}</strong>${liveTag}</td>
+      <td>${s.code}</td>
+      <td>${s.industry}</td>
+      <td><span class="${chgClass}" style="font-weight:600">${price.toFixed(2)}</span>${hasLive ? '<span style="font-size:10px;color:var(--text2)"> 实时</span>' : ''}</td>
+      <td>${chgStr}</td>
+      <td>${s.low || '—'}</td>
+      <td><strong>${s.mid || '—'}</strong></td>
+      <td>${s.high || '—'}</td>
+      <td>
+        <div class="pct-bar-wrap">
+          <div class="pct-bar" style="width:${Math.min(Math.abs(midUpsideNum), 200)}px; background:${upsideColor};"></div>
+          <span style="font-weight:600;color:${upsideColor}">${midUpside !== '—' ? midUpside + '%' : '—'}</span>
+        </div>
+      </td>
+      <td>${s.pe || '—'}</td>
+      <td>${s.pe_pct || '—'}</td>
+      <td>${davisHtml}</td>
+      <td>${s.cycle || '—'}</td>
+      <td class="notes-cell">${s.theme || '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  updateStats();
+}
+
+function renderDavis(d) {
+  if (!d) return '—';
+  let html = '';
+  // Count stars
+  const starMatch = d.match(/★/g);
+  const emptyMatch = d.match(/☆/g);
+  const stars = starMatch ? starMatch.length : 0;
+  const empties = emptyMatch ? emptyMatch.length : 0;
+  for (let i = 0; i < stars; i++) html += '<span class="star-on">★</span>';
+  for (let i = 0; i < empties; i++) html += '<span class="star-off">☆</span>';
+  // Add note
+  const note = d.replace(/[★☆]/g, '').trim();
+  if (note) html += `<span style="font-size:11px;color:var(--text2);margin-left:4px;">${note}</span>`;
+  return html;
+}
+
+function updateStats() {
+  const all = STOCKS;
+  document.getElementById('cnt1').textContent = all.filter(s=>s.tier==='tier1').length;
+  document.getElementById('cnt2').textContent = all.filter(s=>s.tier==='tier2').length;
+  document.getElementById('cnt3').textContent = all.filter(s=>s.tier==='tier3').length;
+  document.getElementById('cnt4').textContent = all.filter(s=>s.tier==='tier4').length;
+}
+
+function filterTier(tier, btn) {
+  currentFilter = tier;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function searchTable(val) {
+  currentSearch = val;
+  renderTable();
+}
+
+// ============ 初始化 ===========
+renderTable();
+// Auto fetch on load
+fetchAllQuotes();
+// Auto refresh every 60 seconds
+setInterval(fetchAllQuotes, 60000);
+</script>
+</body>
+</html>

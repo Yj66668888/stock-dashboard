@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>戴维斯双击全景仪表盘 - 实时KDJ</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: #0a1628;
+  color: #e2e8f0;
+  min-height: 100vh;
+  font-size: 13px;
+}
+
+/* ========== HEADER ========== */
+.header-bar {
+  background: linear-gradient(135deg, #0f2b1d 0%, #0a1628 100%);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #1e293b;
+  flex-wrap: wrap;
+}
+.header-bar h1 {
+  font-size: 22px;
+  color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-bar h1::before { content: "★"; color: #22c55e; font-size: 18px; }
+.live-badge {
+  background: #166534;
+  color: #4ade80;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.live-badge::before {
+  content: ""; width: 8px; height: 8px; background: #22c55e;
+  border-radius: 50%; animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.header-info { color: #64748b; font-size: 12px; margin-left: auto; }
+.next-refresh { color: #94a3b8; font-weight: 600; }
+
+/* ========== STATS ========== */
+.stats-panel {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+  background: #0f172a; border-bottom: 1px solid #1e293b;
+}
+.stat-item {
+  padding: 20px 0; text-align: center; border-right: 1px solid #1e293b;
+}
+.stat-item:last-child { border-right: none; }
+.stat-value { font-size: 32px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: #64748b; }
+.stat-total .stat-value { color: #e2e8f0; }
+.stat-tier1 .stat-value { color: #22c55e; }
+.stat-tier2 .stat-value { color: #3b82f6; }
+.stat-tier3 .stat-value { color: #eab308; }
+.stat-hot .stat-value { color: #ef4444; }
+.stat-kdj .stat-value { color: #f97316; }
+.stat-dual .stat-value { color: #f87171; }
+
+/* ========== CONTAINER ========== */
+.container { padding: 16px 32px 32px; max-width: 1800px; margin: 0 auto; }
+
+/* Tier cards */
+.tier-card {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+}
+.tier-header {
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  transition: background 0.15s;
+}
+.tier-header:hover { background: rgba(255,255,255,0.03); }
+.tier-header .arrow { transition: transform 0.2s; font-size: 12px; color: #64748b; }
+.tier-header.collapsed .arrow { transform: rotate(-90deg); }
+.tier-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tier-title { font-size: 15px; font-weight: 600; }
+.tier-count { color: #64748b; font-size: 13px; }
+.tier-1 .tier-dot { background: #22c55e; }
+.tier-1 .tier-title { color: #4ade80; }
+.tier-2 .tier-dot { background: #3b82f6; }
+.tier-2 .tier-title { color: #60a5fa; }
+.tier-3 .tier-dot { background: #eab308; }
+.tier-3 .tier-title { color: #facc15; }
+.tier-4 .tier-dot { background: #ef4444; }
+.tier-4 .tier-title { color: #f87171; }
+
+.tier-body { overflow-x: auto; }
+.tier-header.collapsed + .tier-body { display: none; }
+
+/* ========== TABLE ========== */
+table {
+  width: 100%; border-collapse: collapse; min-width: 1400px;
+}
+thead th {
+  background: #1a2332; padding: 10px 8px; text-align: center;
+  font-size: 11px; font-weight: 600; color: #94a3b8;
+  border-bottom: 2px solid #1e293b; white-space: nowrap;
+  position: sticky; top: 0; z-index: 1;
+}
+thead th.kdj-col { background: #1a2332; color: #f59e0b; font-size: 12px; }
+tbody td {
+  padding: 8px 6px; text-align: center; border-bottom: 1px solid #1a2332;
+  font-size: 13px; white-space: nowrap; transition: all 0.3s;
+}
+tbody tr:hover { background: rgba(255,255,255,0.03); }
+.stock-name { color: #e2e8f0; font-weight: 600; text-align: left; }
+.stock-code { color: #64748b; font-size: 11px; }
+.stock-theme { color: #64748b; font-size: 11px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+.price-val { font-weight: 700; color: #e2e8f0; }
+.change-up { color: #ef4444; }
+.change-down { color: #22c55e; }
+.change-zero { color: #94a3b8; }
+
+/* Star rating */
+.stars { color: #f59e0b; font-size: 13px; letter-spacing: 1px; }
+
+/* Dual-drive tags */
+.dual-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.dual-both { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.dual-supply { background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.25); }
+.dual-none { background: rgba(100,116,139,0.1); color: #64748b; border: 1px solid rgba(100,116,139,0.2); }
+.dual-cell { text-align: center; }
+
+/* Upside bar */
+.upside-bar {
+  display: inline-block; height: 6px; border-radius: 3px; min-width: 20px;
+  background: #334155; vertical-align: middle; margin-left: 4px;
+}
+.upside-val { font-weight: 600; }
+
+/* KDJ cell */
+.kdj-cell { font-size: 11px; line-height: 1.6; min-width: 80px; }
+.kdj-k { color: #e2e8f0; }
+.kdj-d { color: #3b82f6; }
+.kdj-j { color: #a855f7; }
+.kdj-danger {
+  color: #ef4444 !important;
+  font-weight: 700;
+}
+.kdj-sub { font-size: 10px; color: #64748b; }
+
+/* ====== KDJ < 20 FLASHING ALERT ====== */
+@keyframes kdjFlash {
+  0%, 100% { background-color: rgba(239, 68, 68, 0.08); }
+  50% { background-color: rgba(239, 68, 68, 0.28); }
+}
+.row-kdj-alert {
+  animation: kdjFlash 0.7s ease-in-out infinite !important;
+}
+.row-kdj-alert td {
+  border-bottom-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Alert badge in KDJ column */
+.kdj-alert-badge {
+  display: inline-block;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  animation: kdjBadgeFlash 0.5s ease-in-out infinite;
+  margin-left: 3px;
+}
+@keyframes kdjBadgeFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ====== FILTER BAR ====== */
+.filter-bar {
+  display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 16px; border-radius: 6px; border: 1px solid #334155;
+  background: transparent; color: #94a3b8; cursor: pointer;
+  font-size: 13px; transition: all 0.15s;
+}
+.filter-btn:hover { border-color: #64748b; color: #e2e8f0; }
+.filter-btn.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; }
+.search-input {
+  background: #1a2332; border: 1px solid #334155; border-radius: 6px;
+  padding: 6px 14px; color: #e2e8f0; font-size: 13px; width: 200px;
+  outline: none;
+}
+.search-input:focus { border-color: #3b82f6; }
+.search-input::placeholder { color: #475569; }
+
+/* ====== KDJ STATUS BAR ====== */
+.kdj-status-bar {
+  display: flex; gap: 16px; align-items: center; padding: 10px 20px;
+  background: #0f172a; border-radius: 8px; margin-bottom: 12px;
+  border: 1px solid #1e293b; flex-wrap: wrap;
+}
+.kdj-status-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.kdj-status-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.kdj-status-dot.normal { background: #22c55e; }
+.kdj-status-dot.alert { background: #ef4444; animation: kdjBadgeFlash 0.5s ease-in-out infinite; }
+.kdj-status-dot.loading { background: #eab308; animation: pulse 1.5s infinite; }
+
+/* Loading */
+.loading-row td { text-align: center; color: #64748b; padding: 20px; }
+.spinner {
+  display: inline-block; width: 16px; height: 16px; border: 2px solid #334155;
+  border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.6s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .container { padding: 12px 16px; }
+  .header-bar { padding: 12px 16px; }
+  .stats-panel { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header-bar">
+  <h1>戴维斯双击全景仪表盘</h1>
+  <span class="live-badge">LIVE</span>
+  <span class="header-info">刷新周期: 30秒 | 下次: <span class="next-refresh" id="nextRefresh">--</span> | 最后更新: <span id="lastUpdate">--</span></span>
+  <span class="header-info" style="margin-left:auto;">KDJ参考周期: 9 | 超卖阈值: K/D/J &lt; 20</span>
+</div>
+
+<!-- Stats Panel -->
+<div class="stats-panel">
+  <div class="stat-item stat-total"><div class="stat-value" id="statTotal">28</div><div class="stat-label">总计标的</div></div>
+  <div class="stat-item stat-tier1"><div class="stat-value" id="statTier1">11</div><div class="stat-label">🟢 第一梯队</div></div>
+  <div class="stat-item stat-tier2"><div class="stat-value" id="statTier2">15</div><div class="stat-label">🔵 第二梯队</div></div>
+  <div class="stat-item stat-tier3"><div class="stat-value" id="statTier3">2</div><div class="stat-label">🟡 第三梯队</div></div>
+  <div class="stat-item stat-kdj"><div class="stat-value" id="statKdjAlert">0</div><div class="stat-label">⚠️ KDJ超卖</div></div>
+  <div class="stat-item stat-dual"><div class="stat-value" id="statDualDrive">12</div><div class="stat-label">🔥 双轮驱动</div></div>
+</div>
+
+<!-- Main Container -->
+<div class="container" id="mainContainer">
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-tier="all">全部</button>
+    <button class="filter-btn" data-tier="tier1">🟢 第一梯队</button>
+    <button class="filter-btn" data-tier="tier2">🔵 第二梯队</button>
+    <button class="filter-btn" data-tier="tier3">🟡 第三梯队</button>
+    <button class="filter-btn" data-tier="alert">⚠️ KDJ超卖</button>
+    <button class="filter-btn" data-tier="dual">🔥 双轮驱动</button>
+    <input type="text" class="search-input" id="searchInput" placeholder="搜索股票/代码/行业...">
+  </div>
+
+  <!-- KDJ Status Bar -->
+  <div class="kdj-status-bar" id="kdjStatusBar">
+    <span class="kdj-status-item"><span class="kdj-status-dot loading"></span> KDJ数据加载中...</span>
+    <span style="color:#64748b;font-size:11px;">5分钟 & 30分钟 KDJ 基于9周期EMA平滑计算</span>
+  </div>
+
+  <!-- Tier Tables -->
+  <div id="tablesContainer"></div>
+</div>
+
+<script>
+// ==================== STOCK DATA ====================
+const STOCKS = [
+  {code:"sz000333",name:"美的集团",industry:"家电",tier:"tier1",theme:"以旧换新+出海+低估值",price:76.51,changePct:1.3,price_low:91.81,price_mid:137.72,price_high:229.53,pe:"13.18",pe26e:"10.5",growth26e:"25%",roe:"22%",stars:5,catalyst:"Q2出口超预期",dual:"dual",supply:"龙头集中度↑ 行业整合",demand:"以旧换新补贴"},
+  {code:"sz000651",name:"格力电器",industry:"家电",tier:"tier1",theme:"以旧换新+高股息",price:37.59,changePct:0.24,price_low:45.11,price_mid:67.66,price_high:112.77,pe:"7.22",pe26e:"6.5",growth26e:"15%",roe:"18%",stars:5,catalyst:"高股息+渠道改革",dual:"dual",supply:"渠道改革 落后产能出清",demand:"以旧换新补贴"},
+  {code:"sh600690",name:"海尔智家",industry:"家电",tier:"tier1",theme:"全球化+高端化",price:20.38,changePct:-0.15,price_low:24.46,price_mid:36.68,price_high:61.14,pe:"10.21",pe26e:"9.2",growth26e:"18%",roe:"15%",stars:5,catalyst:"海外市占率提升",dual:"dual",supply:"全球化产能壁垒",demand:"以旧换新+海外扩张"},
+  {code:"sz002050",name:"三花智控",industry:"家电零部件",tier:"tier2",theme:"新能源热管理",price:44.45,changePct:1.41,price_low:19.42,price_mid:29.13,price_high:43.70,pe:"45.77",pe26e:"30",growth26e:"35%",roe:"12%",stars:3,catalyst:"特斯拉机器人",dual:"market",supply:"",demand:""},
+  {code:"sh600031",name:"三一重工",industry:"工程机械",tier:"tier1",theme:"出海+电动化",price:17.34,changePct:0.35,price_low:18.31,price_mid:27.47,price_high:41.20,pe:"18.94",pe26e:"15",growth26e:"25%",roe:"9%",stars:4,catalyst:"海外收入占比40%+",dual:"dual",supply:"过剩产能整合 行业集中",demand:"基建补短板+出海"},
+  {code:"sz000157",name:"中联重科",industry:"工程机械",tier:"tier1",theme:"出海+智能制造",price:7.04,changePct:1,price_low:8.45,price_mid:12.67,price_high:21.12,pe:"14.05",pe26e:"12",growth26e:"20%",roe:"7%",stars:4,catalyst:"新兴市场放量",dual:"dual",supply:"智能化升级 产能优化",demand:"基建投资+新兴市场"},
+  {code:"sz000425",name:"徐工机械",industry:"工程机械",tier:"tier2",theme:"整体上市+出海",price:8.11,changePct:0.25,price_low:9.73,price_mid:14.60,price_high:24.33,pe:"14.41",pe26e:"12",growth26e:"22%",roe:"10%",stars:3,catalyst:"资产注入完成",dual:"dual",supply:"整体上市 资源整合",demand:"基建+矿山需求"},
+  {code:"sh601100",name:"恒立液压",industry:"工程机械零部件",tier:"tier2",theme:"液压件国产替代",price:106.61,changePct:-0.88,price_low:41.30,price_mid:61.95,price_high:92.92,pe:"51.63",pe26e:"35",growth26e:"40%",roe:"15%",stars:4,catalyst:"泵阀突破",dual:"supply",supply:"高端液压件国产替代突破",demand:""},
+  {code:"sh688981",name:"中芯国际",industry:"半导体",tier:"tier2",theme:"国产替代+先进制程",price:155.07,changePct:-2.36,price_low:11.79,price_mid:17.68,price_high:26.52,pe:"263",pe26e:"80",growth26e:"200%",roe:"2%",stars:2,catalyst:"N+2量产",dual:"dual",supply:"大基金扶持 先进制程突破",demand:"国产替代硬需求"},
+  {code:"sz002371",name:"北方华创",industry:"半导体设备",tier:"tier2",theme:"设备国产替代",price:945.75,changePct:6.92,price_low:153.68,price_mid:230.52,price_high:345.78,pe:"123",pe26e:"60",growth26e:"80%",roe:"14%",stars:4,catalyst:"订单爆满",dual:"dual",supply:"设备国产替代 技术攻关",demand:"产业链自主可控需求"},
+  {code:"sh600584",name:"长电科技",industry:"半导体封测",tier:"tier2",theme:"先进封装+AI芯片",price:104.27,changePct:0.7,price_low:18.47,price_mid:27.70,price_high:41.55,pe:"112",pe26e:"50",growth26e:"100%",roe:"6%",stars:3,catalyst:"Chiplet量产",dual:"market",supply:"",demand:""},
+  {code:"sz002185",name:"华天科技",industry:"半导体封测",tier:"tier3",theme:"封测产能扩张",price:21.71,changePct:-2.69,price_low:4.91,price_mid:7.36,price_high:11.05,pe:"88",pe26e:"45",growth26e:"60%",roe:"5%",stars:1,catalyst:"待验证",dual:"market",supply:"",demand:""},
+  {code:"sz300760",name:"迈瑞医疗",industry:"医疗器械",tier:"tier1",theme:"器械龙头+全球化",price:142.09,changePct:4.61,price_low:129.29,price_mid:193.94,price_high:290.90,pe:"21.98",pe26e:"19",growth26e:"18%",roe:"20%",stars:5,catalyst:"海外高端突破",dual:"dual",supply:"集采出清低质 龙头集中",demand:"医保扩容+消费复苏"},
+  {code:"sh688271",name:"联影医疗",industry:"医疗器械",tier:"tier2",theme:"高端影像国产替代",price:103.82,changePct:2.56,price_low:46.06,price_mid:69.09,price_high:103.64,pe:"45.08",pe26e:"35",growth26e:"30%",roe:"9%",stars:3,catalyst:"PET-CT放量",dual:"dual",supply:"高端影像国产替代 进口突破",demand:"分级诊疗+设备更新"},
+  {code:"sz002223",name:"鱼跃医疗",industry:"医疗器械",tier:"tier2",theme:"家用医疗+消费复苏",price:26.27,changePct:2.38,price_low:25.64,price_mid:38.46,price_high:57.69,pe:"20.49",pe26e:"17",growth26e:"22%",roe:"10%",stars:3,catalyst:"CGM获批",dual:"market",supply:"",demand:""},
+  {code:"sz002714",name:"牧原股份",industry:"养殖",tier:"tier1",theme:"产能去化+成本优势",price:37.19,changePct:6.29,price_low:33.89,price_mid:50.83,price_high:76.24,pe:"21.95",pe26e:"10",growth26e:"150%",roe:"12%",stars:5,catalyst:"猪价上行",dual:"supply",supply:"产能去化基本到位",demand:""},
+  {code:"sz300498",name:"温氏股份",industry:"养殖",tier:"tier2",theme:"猪鸡双轮+周期反转",price:13.18,changePct:6.98,price_low:6.56,price_mid:9.84,price_high:14.76,pe:"40.17",pe26e:"15",growth26e:"200%",roe:"6%",stars:4,catalyst:"出栏量恢复",dual:"supply",supply:"产能去化 出栏恢复",demand:""},
+  {code:"sz000876",name:"新希望",industry:"养殖",tier:"tier3",theme:"饲料+养殖一体化",price:6.9,changePct:10.05,price_low:6.21,price_mid:8.28,price_high:10.35,pe:"-9.94",pe26e:"20",growth26e:"扭亏",roe:"-8%",stars:1,catalyst:"需验证",dual:"supply",supply:"产能去化中",demand:""},
+  {code:"sh600160",name:"巨化股份",industry:"氟化工",tier:"tier1",theme:"制冷剂配额+新能源",price:56.3,changePct:6.21,price_low:30.77,price_mid:46.15,price_high:69.22,pe:"36.60",pe26e:"20",growth26e:"60%",roe:"20%",stars:4,catalyst:"R32涨价",dual:"dual",supply:"制冷剂配额制 供给收缩",demand:"空调+新能源需求"},
+  {code:"sh603379",name:"三美股份",industry:"氟化工",tier:"tier2",theme:"制冷剂龙头",price:83.48,changePct:10,price_low:70.99,price_mid:106.48,price_high:159.72,pe:"23.52",pe26e:"18",growth26e:"35%",roe:"27%",stars:4,catalyst:"配额红利",dual:"dual",supply:"配额红利 供给端锁定",demand:"制冷剂需求刚性"},
+  {code:"sh600309",name:"万华化学",industry:"化工",tier:"tier1",theme:"MDI龙头+海外布局",price:68.8,changePct:0.57,price_low:82.56,price_mid:123.84,price_high:189.24,pe:"16.36",pe26e:"14",growth26e:"20%",roe:"12%",stars:4,catalyst:"MDI价格回升",dual:"market",supply:"",demand:""},
+  {code:"sh600519",name:"贵州茅台",industry:"白酒",tier:"tier1",theme:"高端消费+品牌护城河",price:1194.15,changePct:0.73,price_low:1323,price_mid:1985,price_high:2977,pe:"18.05",pe26e:"16",growth26e:"15%",roe:"35%",stars:5,catalyst:"提价预期",dual:"market",supply:"",demand:""},
+  {code:"sz000858",name:"五粮液",industry:"白酒",tier:"tier2",theme:"次高端+改革红利",price:74.7,changePct:0.95,price_low:64.93,price_mid:97.39,price_high:146.09,pe:"23.01",pe26e:"19",growth26e:"18%",roe:"25%",stars:3,catalyst:"渠道理顺",dual:"market",supply:"",demand:""},
+  {code:"sh600887",name:"伊利股份",industry:"食品饮料",tier:"tier2",theme:"乳制品龙头+低估值",price:24.41,changePct:1.88,price_low:29.29,price_mid:43.94,price_high:73.23,pe:"12.78",pe26e:"11",growth26e:"15%",roe:"22%",stars:4,catalyst:"消费复苏",dual:"market",supply:"",demand:""},
+  {code:"sz300750",name:"宁德时代",industry:"新能源",tier:"tier2",theme:"电池龙头+技术领先",price:386.97,changePct:-1.54,price_low:341,price_mid:512,price_high:768,pe:"22.67",pe26e:"18",growth26e:"28%",roe:"24%",stars:3,catalyst:"固态电池",dual:"market",supply:"",demand:""},
+  {code:"sz002594",name:"比亚迪",industry:"新能源汽车",tier:"tier2",theme:"电动车龙头+出海",price:81.12,changePct:1.78,price_low:60.42,price_mid:90.64,price_high:135.96,pe:"26.85",pe26e:"20",growth26e:"35%",roe:"12%",stars:3,catalyst:"海外工厂",dual:"market",supply:"",demand:""},
+  {code:"sh603993",name:"洛阳钼业",industry:"小金属",tier:"tier2",theme:"铜钴双轮+新能源金属",price:17.84,changePct:1.65,price_low:21.41,price_mid:32.11,price_high:50.81,pe:"15.80",pe26e:"13",growth26e:"22%",roe:"29%",stars:3,catalyst:"铜价高位",dual:"market",supply:"",demand:""},
+  {code:"sh601899",name:"紫金矿业",industry:"有色金属",tier:"tier1",theme:"铜金资源+全球化",price:25.44,changePct:1.19,price_low:30.53,price_mid:45.79,price_high:76.32,pe:"10.97",pe26e:"9.5",growth26e:"18%",roe:"33%",stars:4,catalyst:"金铜双牛",dual:"market",supply:"",demand:""}
+];
+
+// Tier labels
+const TIER_LABELS = {
+  tier1: { name: '第一梯队 · 双击进行中', emoji: '🟢', cls: 'tier-1' },
+  tier2: { name: '第二梯队 · 拐点临近', emoji: '🔵', cls: 'tier-2' },
+  tier3: { name: '第三梯队 · 观望验证', emoji: '🟡', cls: 'tier-3' }
+};
+
+// ==================== KDJ CALCULATION ====================
+function calcKDJ(klines, n = 9) {
+  if (!klines || klines.length < n) return null;
+  let k = 50, d = 50;
+  let result = null;
+  for (let i = 0; i < klines.length; i++) {
+    if (i < n - 1) continue;
+    const window = klines.slice(i - n + 1, i + 1);
+    let hh = -Infinity, ll = Infinity;
+    for (const w of window) {
+      hh = Math.max(hh, parseFloat(w[3]));
+      ll = Math.min(ll, parseFloat(w[4]));
+    }
+    const close = parseFloat(klines[i][2]);
+    const rsv = (hh === ll) ? 50 : ((close - ll) / (hh - ll)) * 100;
+    k = 2/3 * k + 1/3 * rsv;
+    d = 2/3 * d + 1/3 * k;
+    const j = 3 * k - 2 * d;
+    result = { k: +k.toFixed(2), d: +d.toFixed(2), j: +j.toFixed(2) };
+  }
+  return result;
+}
+
+function isKDJOversold(kdj) {
+  if (!kdj) return false;
+  return kdj.k < 20 || kdj.d < 20 || kdj.j < 20;
+}
+
+// ==================== DATA FETCHING (Dual mode: proxy first, direct fallback) ====================
+// Mode 1 (local proxy): /api/... -> Python proxy server on same origin -> zero CORS issues
+// Mode 2 (direct): qt.gtimg.cn / ifzq.gtimg.cn -> works cross-origin in most browsers
+
+let liveData = {}; // code -> { price, change, changePct, ... }
+let kdjData = {};  // code -> { m5: {k,d,j}, m30: {k,d,j} }
+let proxyAvailable = null; // null=unknown, true/false
+
+async function checkProxy() {
+  if (proxyAvailable !== null) return proxyAvailable;
+  try {
+    const resp = await fetch('/api/kline?code=sh600519&period=m5&count=1&_=' + Date.now());
+    proxyAvailable = resp.ok;
+  } catch(e) {
+    proxyAvailable = false;
+  }
+  return proxyAvailable;
+}
+
+async function fetchQuotes() {
+  const codes = STOCKS.map(s => s.code).join(',');
+  let text = '';
+  
+  // Try proxy first
+  if (await checkProxy()) {
+    try {
+      const resp = await fetch(`/api/quotes?codes=${encodeURIComponent(codes)}`);
+      text = await resp.text();
+    } catch(e) { /* fall through to direct */ }
+  }
+  
+  // Fallback: direct qt.gtimg.cn (confirmed CORS-friendly)
+  if (!text) {
+    try {
+      const resp = await fetch(`https://qt.gtimg.cn/q=${codes}`);
+      text = await resp.text();
+    } catch(e) {
+      console.error('Quote fetch failed (both proxy and direct):', e);
+      return;
+    }
+  }
+  
+  parseQuotes(text);
+}
+
+function parseQuotes(text) {
+  if (!text) return;
+  const lines = text.split('\n').filter(l => l.trim().startsWith('v_'));
+  for (const line of lines) {
+    const match = line.match(/v_(\w+)="(.+)"/);
+    if (!match) continue;
+    const code = match[1];
+    const fields = match[2].split('~');
+    if (fields.length < 40) continue;
+    
+    const name = fields[1];
+    const price = parseFloat(fields[3]);
+    const prevClose = parseFloat(fields[4]);
+    const changePct = parseFloat(fields[32]);
+    const change = price && prevClose ? (price - prevClose) : 0;
+    
+    liveData[code] = {
+      name, price: price || 0,
+      change: change || 0,
+      changePct: changePct || 0,
+      prevClose: prevClose || 0,
+      updateTime: new Date()
+    };
+  }
+}
+
+// Fetch K-line data: proxy first, direct API fallback
+async function fetchKlineData(code, period, count = 50) {
+  let data = null;
+  
+  // Try local proxy first
+  if (await checkProxy()) {
+    try {
+      const url = `/api/kline?code=${encodeURIComponent(code)}&period=${period}&count=${count}&_=${Date.now()}`;
+      const resp = await fetch(url, { cache: 'no-cache' });
+      if (resp.ok) {
+        data = await resp.json();
+      }
+    } catch(e) { /* fall through */ }
+  }
+  
+  // Fallback: direct ifzq.gtimg.cn
+  if (!data) {
+    try {
+      const url = `https://ifzq.gtimg.cn/appstock/app/kline/mkline?param=${code},${period},,${count}&_=${Date.now()}`;
+      const resp = await fetch(url, { cache: 'no-cache' });
+      if (resp.ok) {
+        data = await resp.json();
+      }
+    } catch(e) {
+      console.error(`Kline fetch failed for ${code}/${period}:`, e);
+      return null;
+    }
+  }
+  
+  if (!data || !data.data) return null;
+  const stockData = data.data[code];
+  return stockData ? stockData[period] : null;
+}
+
+async function fetchAllKDJ() {
+  const results = {};
+  const codes = STOCKS.map(s => s.code);
+  
+  // Fetch in batches of 4 to avoid overwhelming the API
+  const BATCH = 4;
+  for (let i = 0; i < codes.length; i += BATCH) {
+    const batch = codes.slice(i, i + BATCH);
+    const batchPromises = batch.map(async (code) => {
+      try {
+        const [m5, m30] = await Promise.all([
+          fetchKlineData(code, 'm5', 50),
+          fetchKlineData(code, 'm30', 50)
+        ]);
+        const kdj5 = calcKDJ(m5, 9);
+        const kdj30 = calcKDJ(m30, 9);
+        results[code] = { m5: kdj5, m30: kdj30 };
+      } catch(e) {
+        results[code] = { m5: null, m30: null };
+      }
+    });
+    await Promise.allSettled(batchPromises);
+    
+    // Small delay between batches
+    if (i + BATCH < codes.length) {
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+  
+  kdjData = results;
+  return results;
+}
+
+// ==================== RENDER ====================
+function getStarHTML(n) {
+  let s = '';
+  for (let i = 0; i < 5; i++) {
+    s += i < n ? '★' : '☆';
+  }
+  return `<span class="stars">${s}</span>`;
+}
+
+function renderDualDrive(stock) {
+  const t = stock.dual;
+  if (t === 'dual') {
+    return `<span class="dual-tag dual-both" title="供:${stock.supply} | 需:${stock.demand}">🔥 供需双驱动</span>`;
+  }
+  if (t === 'supply') {
+    return `<span class="dual-tag dual-supply" title="供:${stock.supply}">🟡 供给端驱动</span>`;
+  }
+  return `<span class="dual-tag dual-none" title="市场驱动为主">⬜ 市场化</span>`;
+}
+
+function getUpsideHTML(price, target) {
+  if (!price || !target || price <= 0) return '<span class="change-zero">--</span>';
+  const up = ((target - price) / price * 100);
+  const color = up > 200 ? '#4ade80' : up > 100 ? '#86efac' : up > 30 ? '#facc15' : up > 0 ? '#fb923c' : '#ef4444';
+  const barW = Math.min(Math.abs(up) / 3 * 100, 100);
+  return `<span style="color:${color};font-weight:600;">${up >= 0 ? '+' : ''}${up.toFixed(0)}%</span>
+    <span class="upside-bar" style="width:${barW}px;background:${color};"></span>`;
+}
+
+function getChangeClass(v) {
+  if (v > 0) return 'change-up';
+  if (v < 0) return 'change-down';
+  return 'change-zero';
+}
+
+function getChangeSign(v) {
+  return v > 0 ? '+' : '';
+}
+
+function renderKDJCell(kdj) {
+  if (!kdj) return '<span class="kdj-sub">加载中...</span>';
+  const kCls = kdj.k < 20 ? 'kdj-danger' : 'kdj-k';
+  const dCls = kdj.d < 20 ? 'kdj-danger' : 'kdj-d';
+  const jCls = kdj.j < 20 ? 'kdj-danger' : 'kdj-j';
+  const isAlert = isKDJOversold(kdj);
+  return `<span class="${kCls}">K:${kdj.k}</span><br>
+    <span class="${dCls}">D:${kdj.d}</span><br>
+    <span class="${jCls}">J:${kdj.j.toFixed(1)}</span>
+    ${isAlert ? '<span class="kdj-alert-badge">超卖</span>' : ''}`;
+}
+
+function renderRow(stock) {
+  const live = liveData[stock.code] || {};
+  const kdj = kdjData[stock.code] || { m5: null, m30: null };
+  // Fallback to static embedded price if live data not available yet
+  const price = live.price || stock.price || 0;
+  const changePct = live.changePct || stock.changePct || 0;
+  const change = live.change || 0;
+  const hasKDJAlert = isKDJOversold(kdj.m5) || isKDJOversold(kdj.m30);
+  const rowCls = hasKDJAlert ? ' row-kdj-alert' : '';
+  
+  return `<tr class="${rowCls}" data-code="${stock.code}" data-tier="${stock.tier}" data-name="${stock.name}" data-industry="${stock.industry}" data-kdj-alert="${hasKDJAlert ? 1 : 0}" data-dual="${stock.dual}">
+    <td style="color:#64748b;font-size:11px;">${STOCKS.indexOf(stock) + 1}</td>
+    <td>
+      <div class="stock-name">${stock.name}</div>
+      <div class="stock-code">${stock.code.replace('sz','').replace('sh','')}</div>
+    </td>
+    <td>${getStarHTML(stock.stars)}</td>
+    <td class="price-val">${price ? price.toFixed(2) : '--'}</td>
+    <td class="${getChangeClass(changePct)}">${price ? (getChangeSign(changePct) + changePct.toFixed(2) + '%') : '--'}</td>
+    <td style="color:#94a3b8;">${stock.pe}</td>
+    <td style="color:#94a3b8;">${stock.pe26e}</td>
+    <td style="color:#64748b;">${stock.growth26e}</td>
+    <td style="color:#94a3b8;">${stock.roe}</td>
+    <td class="kdj-cell">${renderKDJCell(kdj.m5)}</td>
+    <td class="kdj-cell">${renderKDJCell(kdj.m30)}</td>
+    <td>${getUpsideHTML(price, stock.price_low)}</td>
+    <td>${getUpsideHTML(price, stock.price_mid)}</td>
+    <td>${getUpsideHTML(price, stock.price_high)}</td>
+    <td class="dual-cell">${renderDualDrive(stock)}</td>
+    <td class="stock-theme" title="${stock.catalyst || ''}">${stock.theme}</td>
+  </tr>`;
+}
+
+function renderAll() {
+  const container = document.getElementById('tablesContainer');
+  const tiers = ['tier1', 'tier2', 'tier3'];
+  
+  let html = '';
+  for (const tier of tiers) {
+    const t = TIER_LABELS[tier];
+    const stocks = STOCKS.filter(s => s.tier === tier);
+    if (stocks.length === 0) continue;
+    
+    html += `<div class="tier-card ${t.cls}" data-tier="${tier}">
+      <div class="tier-header" onclick="this.classList.toggle('collapsed')">
+        <span class="arrow">▼</span>
+        <span class="tier-dot"></span>
+        <span class="tier-title">${t.emoji} ${t.name}</span>
+        <span class="tier-count">${stocks.length} 只标的</span>
+      </div>
+      <div class="tier-body">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>名称/代码</th><th>星级</th>
+              <th>现价</th><th>涨跌幅</th>
+              <th>PE(TTM)</th><th>PE 26E</th>
+              <th>26E增速</th><th>ROE</th>
+              <th class="kdj-col">5min KDJ</th>
+              <th class="kdj-col">30min KDJ</th>
+              <th>保守涨幅</th><th>中性涨幅</th><th>乐观涨幅</th>
+              <th>双轮驱动</th>
+              <th>核心题材</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${stocks.map(s => renderRow(s)).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  
+  container.innerHTML = html;
+  applyFilter();
+}
+
+// ==================== FILTER ====================
+let activeFilter = 'all';
+
+function applyFilter() {
+  const searchText = (document.getElementById('searchInput').value || '').toLowerCase();
+  const rows = document.querySelectorAll('tbody tr');
+  const cards = document.querySelectorAll('.tier-card');
+  
+  let visibleCount = 0;
+  cards.forEach(card => {
+    let cardVisible = false;
+    const cardRows = card.querySelectorAll('tbody tr');
+    cardRows.forEach(row => {
+      let show = true;
+      
+      // Tier filter
+      if (activeFilter === 'tier1' && row.dataset.tier !== 'tier1') show = false;
+      if (activeFilter === 'tier2' && row.dataset.tier !== 'tier2') show = false;
+      if (activeFilter === 'tier3' && row.dataset.tier !== 'tier3') show = false;
+      if (activeFilter === 'alert' && row.dataset.kdjAlert !== '1') show = false;
+      if (activeFilter === 'dual' && row.dataset.dual !== 'dual') show = false;
+      
+      // Search filter
+      if (searchText) {
+        const name = (row.dataset.name || '').toLowerCase();
+        const code = (row.dataset.code || '').toLowerCase();
+        const industry = (row.dataset.industry || '').toLowerCase();
+        if (!name.includes(searchText) && !code.includes(searchText) && !industry.includes(searchText)) {
+          show = false;
+        }
+      }
+      
+      row.style.display = show ? '' : 'none';
+      if (show) { visibleCount++; cardVisible = true; }
+    });
+    card.style.display = cardVisible ? '' : 'none';
+  });
+  
+  updateStats();
+}
+
+function updateStats() {
+  let countTotal = 0, countT1 = 0, countT2 = 0, countT3 = 0, countDual = 0;
+  STOCKS.forEach(s => {
+    countTotal++;
+    if (s.tier === 'tier1') countT1++;
+    if (s.tier === 'tier2') countT2++;
+    if (s.tier === 'tier3') countT3++;
+    if (s.dual === 'dual') countDual++;
+  });
+  
+  document.getElementById('statTotal').textContent = countTotal;
+  document.getElementById('statTier1').textContent = countT1;
+  document.getElementById('statTier2').textContent = countT2;
+  document.getElementById('statTier3').textContent = countT3;
+  document.getElementById('statDualDrive').textContent = countDual;
+  
+  // Count KDJ alerts
+  let kdjAlerts = 0;
+  for (const code in kdjData) {
+    const kdj = kdjData[code];
+    if (isKDJOversold(kdj.m5) || isKDJOversold(kdj.m30)) kdjAlerts++;
+  }
+  document.getElementById('statKdjAlert').textContent = kdjAlerts;
+  
+  // Update status bar
+  const statusBar = document.getElementById('kdjStatusBar');
+  const allLoaded = Object.keys(kdjData).length >= STOCKS.length;
+  if (allLoaded) {
+    if (kdjAlerts > 0) {
+      statusBar.innerHTML = `<span class="kdj-status-item"><span class="kdj-status-dot alert"></span> ⚠️ ${kdjAlerts} 只标的KDJ超卖(K/D/J < 20)</span>
+        <span style="color:#f87171;font-size:12px;">请关注闪烁行！</span>`;
+    } else {
+      statusBar.innerHTML = `<span class="kdj-status-item"><span class="kdj-status-dot normal"></span> ✓ 所有标的KDJ正常</span>
+        <span style="color:#64748b;font-size:11px;">5分钟 & 30分钟 KDJ 基于9周期计算</span>`;
+    }
+  } else {
+    const loaded = Object.keys(kdjData).length;
+    statusBar.innerHTML = `<span class="kdj-status-item"><span class="kdj-status-dot loading"></span> KDJ加载中... (${loaded}/${STOCKS.length})</span>
+      <span style="color:#64748b;font-size:11px;"><span class="spinner"></span>正在获取K线数据</span>`;
+  }
+}
+
+// ==================== COUNTDOWN TIMER ====================
+let countdown = 30;
+let countdownInterval = null;
+
+function startCountdown() {
+  clearInterval(countdownInterval);
+  countdown = 30;
+  updateCountdown();
+  countdownInterval = setInterval(() => {
+    countdown--;
+    updateCountdown();
+    if (countdown <= 0) {
+      countdown = 30;
+      refreshAll();
+    }
+  }, 1000);
+}
+
+function updateCountdown() {
+  document.getElementById('nextRefresh').textContent = countdown + 's';
+}
+
+// ==================== REFRESH ALL ====================
+let isRefreshing = false;
+
+async function refreshAll() {
+  if (isRefreshing) return;
+  isRefreshing = true;
+  
+  try {
+    // Fetch quotes and KDJ in parallel
+    await Promise.all([
+      fetchQuotes(),
+      fetchAllKDJ()
+    ]);
+    
+    // Re-render
+    renderAll();
+    
+    const now = new Date();
+    document.getElementById('lastUpdate').textContent = 
+      now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    // Restart countdown
+    startCountdown();
+  } catch(e) {
+    console.error('Refresh failed:', e);
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', async () => {
+  // Render initial table with placeholder data
+  renderAll();
+  
+  // Initial data load
+  document.getElementById('lastUpdate').textContent = '加载中...';
+  await refreshAll();
+  
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      activeFilter = this.dataset.tier;
+      applyFilter();
+    });
+  });
+  
+  // Search input
+  document.getElementById('searchInput').addEventListener('input', applyFilter);
+});
+</script>
+</body>
+</html>
