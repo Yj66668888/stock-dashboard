@@ -274,19 +274,17 @@ tr:hover td { background: var(--bg-hover); }
 <div class="content tab-content" id="content-query">
     <div class="q-form">
         <div class="q-input-row">
-            <select id="qExchange"><option value="sh">沪市 sh</option><option value="sz">深市 sz</option></select>
-            <input type="text" id="qCode" placeholder="股票代码（如 600522）" inputmode="numeric" maxlength="6">
-            <input type="text" id="qName" placeholder="股票名称（选填，自动获取）">
+            <input type="text" id="qSearch" placeholder="股票代码或名称（如 600522 或 沪电股份）" style="flex:1;min-width:0;font-size:14px">
             <button class="q-btn" id="qBtn" onclick="queryStock()">🔍 查询分析</button>
         </div>
         <div class="q-quick">
             <span style="color:var(--text-dim);font-size:11px;margin-right:4px;line-height:24px">快速查询：</span>
-            <button onclick="quickQuery('sh','600522','中天科技')">中天科技</button>
-            <button onclick="quickQuery('sz','002463','沪电股份')">沪电股份</button>
-            <button onclick="quickQuery('sz','002837','英维克')">英维克</button>
-            <button onclick="quickQuery('sh','600584','长电科技')">长电科技</button>
-            <button onclick="quickQuery('sz','002371','北方华创')">北方华创</button>
-            <button onclick="quickQuery('sh','600519','贵州茅台')">贵州茅台</button>
+            <button onclick="quickQuery('600522')">中天科技</button>
+            <button onclick="quickQuery('002463')">沪电股份</button>
+            <button onclick="quickQuery('002837')">英维克</button>
+            <button onclick="quickQuery('600584')">长电科技</button>
+            <button onclick="quickQuery('002371')">北方华创</button>
+            <button onclick="quickQuery('600519')">贵州茅台</button>
         </div>
     </div>
     <div class="q-spinner" id="qSpinner">正在获取行情、K线、基本面、资金流向...</div>
@@ -1903,11 +1901,45 @@ function qRenderResults(quote, klines, macd, rsi, maAlign, phase, trend, signal,
 
 function qShowError(msg) { const e = document.getElementById('qError'); e.textContent = msg; e.classList.add('show'); document.getElementById('qResult').classList.remove('show'); }
 
+async function resolveStock(input) {
+    input = input.trim();
+    if (!input) return null;
+    // 格式1: sh600522 / sz002463
+    const m1 = input.match(/^(sh|sz)([0-9]{6})$/i);
+    if (m1) return { exchange: m1[1].toLowerCase(), code: m1[2], name: '' };
+    // 格式2: 纯6位数字
+    if (/^[0-9]{6}$/.test(input)) {
+        let exchange = 'sz';
+        if (/^(60|68|69)/.test(input)) exchange = 'sh';
+        return { exchange, code: input, name: '' };
+    }
+    // 格式3: 中文/拼音/混合 → 调用搜索
+    return await searchStockByName(input);
+}
+async function searchStockByName(name) {
+    const url = 'https://smartbox.gtimg.cn/s3/?q=' + encodeURIComponent(name) + '&t=gp';
+    let text = null;
+    try { const resp = await fetch(url); if (resp.ok) text = await resp.text(); } catch(e) {}
+    if (!text) {
+        for (const p of CORS_PROXIES) {
+            try { const resp = await fetch(p + encodeURIComponent(url)); if (resp.ok) { text = await resp.text(); break; } } catch(e) {}
+        }
+    }
+    if (!text || !text.includes('~')) throw new Error('未找到股票「' + name + '」，请尝试输入6位代码');
+    const match = text.match(/v_hint="([^"]+)"/);
+    if (!match) throw new Error('搜索解析失败');
+    const parts = match[1].split('~');
+    if (parts.length < 3) throw new Error('搜索结果格式异常');
+    return { exchange: parts[0].toLowerCase(), code: parts[1], name: parts[2] };
+}
+
 async function queryStock() {
-    const exchange = document.getElementById('qExchange').value, code = document.getElementById('qCode').value.trim();
-    const name = document.getElementById('qName').value.trim();
-    if (!code || code.length !== 6) { qShowError('请输入6位股票代码'); return; }
-    qQueryCode = exchange + code; qQueryName = name || '';
+    const input = document.getElementById('qSearch').value.trim();
+    if (!input) { qShowError('请输入股票代码或名称'); return; }
+    let resolved;
+    try { resolved = await resolveStock(input); } catch(e) { qShowError(e.message); return; }
+    if (!resolved) { qShowError('无法解析输入：' + input); return; }
+    qQueryCode = resolved.exchange + resolved.code; qQueryName = resolved.name || '';
     document.getElementById('qError').classList.remove('show');
     document.getElementById('qResult').classList.remove('show');
     document.getElementById('qSpinner').classList.add('show');
@@ -1916,10 +1948,10 @@ async function queryStock() {
     try {
         const [quote, klines, capFlow, fund, sectorInfo] = await Promise.all([
             qFetchQuote(qQueryCode), qFetchKline(qQueryCode), qFetchCapitalFlow(qQueryCode),
-            fetchFundamental(exchange, qQueryCode), fetchSectorInfo(exchange, qQueryCode)
+            fetchFundamental(resolved.exchange, qQueryCode), fetchSectorInfo(resolved.exchange, qQueryCode)
         ]);
-        if (!quote || !quote.price) { qShowError('无法获取行情数据，请检查股票代码是否正确'); return; }
-        if (quote.name && quote.name !== '--') { qQueryName = quote.name; document.getElementById('qName').value = quote.name; }
+        if (!quote || !quote.price) { qShowError('无法获取行情数据，请检查股票代码「' + resolved.code + '」是否正确'); return; }
+        if (quote.name && quote.name !== '--') qQueryName = quote.name;
         if (!klines || klines.length < 60) { qShowError('K线数据不足（需≥60个交易日），无法计算技术指标'); return; }
 
         const macd = calcMACD(klines), rsi = calcRSI(klines), maAlign = detectMAAlignment(klines);
@@ -1935,18 +1967,15 @@ async function queryStock() {
     }
 }
 
-function quickQuery(exchange, code, name) {
-    document.getElementById('qExchange').value = exchange;
-    document.getElementById('qCode').value = code;
-    document.getElementById('qName').value = name;
+function quickQuery(code) {
+    document.getElementById('qSearch').value = code;
     queryStock();
 }
 
 // 查询模块 Enter 键绑定
 document.addEventListener('DOMContentLoaded', () => {
-    const qc = document.getElementById('qCode'), qn = document.getElementById('qName');
-    if (qc) qc.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
-    if (qn) qn.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
+    const qs = document.getElementById('qSearch');
+    if (qs) qs.addEventListener('keydown', e => { if (e.key === 'Enter') queryStock(); });
 });
 
 </script>
