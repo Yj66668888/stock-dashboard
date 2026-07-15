@@ -3341,13 +3341,24 @@ function checkAutoReview() {
     const now = new Date();
     const hour = now.getHours();
     const minute = now.getMinutes();
+    const dayOfWeek = now.getDay(); // 0=周日, 6=周六
     const today = now.toLocaleDateString('zh-CN');
     let lastReview = '';
     try { lastReview = localStorage.getItem('stockReviewDate') || ''; } catch(e) {}
 
+    // 周末不自动复盘
+    if (dayOfWeek === 0 || dayOfWeek === 6) return;
+
     // 14:30后且今日未复盘，自动触发
     if ((hour > 14 || (hour === 14 && minute >= 30)) && lastReview !== today) {
-        console.log('到达自动复盘时间(14:30)，正在生成...');
+        // 数据就绪检查：至少需要行情数据和K线数据
+        const quoteReady = Object.keys(quoteCache).length >= STOCKS.length * 0.8;
+        const kdjReady = Object.keys(trendCache).length >= STOCKS.length * 0.5;
+        if (!quoteReady || !kdjReady) {
+            console.log('自动复盘等待数据加载... 行情:' + Object.keys(quoteCache).length + '/' + STOCKS.length + ' K线:' + Object.keys(trendCache).length + '/' + STOCKS.length);
+            return;
+        }
+        console.log('到达自动复盘时间(14:30)，数据已就绪，正在生成...');
         generateReview();
     }
 }
