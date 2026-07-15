@@ -290,6 +290,7 @@ let supportCache = {};
 let abnormalLog = [];
 let lastUpdateTime = '';
 let capitalFlowCache = {};
+let sectorIndexCache = {}; // 申万一级行业板块指数缓存 {板块名: {pct: 涨跌幅, price: 指数点位}}
 let activeFilter = null; // 当前统计卡片筛选条件
 
 // 板块映射：细分赛道 → 申万一级行业
@@ -437,6 +438,34 @@ async function fetchAllKlines() {
         // 渐进式渲染
         calcAllIndicators();
         renderAll();
+    }
+}
+
+// ==================== 板块指数获取 ====================
+
+async function fetchSectorIndices() {
+    try {
+        // 东方财富申万一级行业板块列表
+        // fs=m:90+t:2 = 申万一级行业
+        const url = 'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=50&po=1&np=1&fltt=2&invt=2&fs=m:90+t:2&fields=f2,f3,f12,f14';
+        const resp = await fetchWithProxy(url);
+        if (!resp) return;
+        const result = await resp.json();
+        const list = result?.data?.diff;
+        if (!list || !Array.isArray(list)) return;
+        const cache = {};
+        for (const item of list) {
+            const name = item.f14; // 板块名称
+            const pct = item.f3;    // 涨跌幅
+            const price = item.f2;  // 最新指数
+            if (name && typeof pct === 'number') {
+                cache[name] = { pct, price };
+            }
+        }
+        sectorIndexCache = cache;
+        console.log(`板块指数更新: ${Object.keys(cache).length}个板块`);
+    } catch(e) {
+        console.error('板块指数获取失败:', e);
     }
 }
 
@@ -1086,6 +1115,12 @@ function renderTable() {
         const riskFlags = stock.riskFlags || [];
         const riskHTML = riskFlags.length > 0 ? ` <span style="color:var(--red);font-size:10px" title="${riskFlags.join(',')}">⚠️</span>` : '';
         const sectorName = SECTOR_MAP[stock.sector] || stock.sector;
+        const sectorIdx = sectorIndexCache[sectorName];
+        const sectorPct = sectorIdx ? sectorIdx.pct : null;
+        const sectorPctColor = sectorPct !== null ? (sectorPct > 0 ? 'var(--red)' : (sectorPct < 0 ? 'var(--green)' : 'var(--text-dim)')) : 'var(--text-dim)';
+        const sectorHTML = sectorPct !== null
+            ? `<div style="font-size:11px;color:var(--blue)">${sectorName}</div><div style="font-size:10px;color:${sectorPctColor};font-weight:600">${sectorPct > 0 ? '+' : ''}${sectorPct.toFixed(2)}%</div>`
+            : `<div style="font-size:11px;color:var(--blue)">${sectorName}</div><div style="font-size:10px;color:var(--text-dim)">--</div>`;
         // 涨跌配色：涨=红、跌=绿（A股惯例）；主力进入+上涨→加粗高亮
         const capIn = d.capFlow && d.capFlow.mainNetInflow > 0;
         const capOut = d.capFlow && d.capFlow.mainNetInflow < 0;
@@ -1099,7 +1134,7 @@ function renderTable() {
             <td><span style="color:var(--text-dim)">${code.substring(2)}</span></td>
             <td style="font-weight:600">${quoteCache[code]?.name || stock.name}${riskHTML}</td>
             <td>${stock.sector}</td>
-            <td style="font-size:11px;color:var(--blue)">${sectorName}</td>
+            <td style="font-size:11px;color:var(--blue)">${sectorHTML}</td>
             <td>${directionTagHTML(stock.direction)}</td>
             <td>${phaseTagHTML(ind.phase)}</td>
             <td style="font-weight:${priceWeight};color:${priceColor};${pctGlow}">${d.price ? d.price.toFixed(2) : '--'}</td>
@@ -1471,10 +1506,18 @@ async function init() {
         renderAll();
     });
     
-    // 5. 启动定时器
+    // 5. 加载板块指数
+    fetchSectorIndices().then(() => {
+        console.log('板块指数加载完成');
+        renderAll();
+    });
+    
+    // 6. 启动定时器
     quoteTimer = setInterval(refreshQuotes, REFRESH_QUOTE_MS);
     kdjTimer = setInterval(refreshKDJ, REFRESH_KDJ_MS);
     calendarTimer = setInterval(renderCalendar, REFRESH_CALENDAR_MS);
+    // 板块指数随行情一起刷新
+    setInterval(fetchSectorIndices, REFRESH_QUOTE_MS);
 }
 
 // ==================== 收盘复盘(智能分析) ====================
