@@ -443,29 +443,80 @@ async function fetchAllKlines() {
 
 // ==================== 板块指数获取 ====================
 
+// JSONP方式获取东方财富板块数据（绕过CORS限制）
+function jsonpRequest(url) {
+    return new Promise((resolve) => {
+        const cbName = '__sectorCB_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+        const script = document.createElement('script');
+        script.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + cbName;
+        script.onerror = () => {
+            delete window[cbName];
+            script.remove();
+            resolve(null);
+        };
+        window[cbName] = (data) => {
+            delete window[cbName];
+            script.remove();
+            resolve(data);
+        };
+        document.head.appendChild(script);
+        // 8秒超时
+        setTimeout(() => {
+            if (window[cbName]) {
+                delete window[cbName];
+                script.remove();
+                resolve(null);
+            }
+        }, 8000);
+    });
+}
+
 async function fetchSectorIndices() {
     try {
-        // 东方财富申万一级行业板块列表
-        // fs=m:90+t:2 = 申万一级行业
+        // JSONP方式直连东方财富申万一级行业板块列表（绕过CORS）
         const url = 'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=50&po=1&np=1&fltt=2&invt=2&fs=m:90+t:2&fields=f2,f3,f12,f14';
-        const resp = await fetchWithProxy(url);
-        if (!resp) return;
-        const result = await resp.json();
+        const result = await jsonpRequest(url);
         const list = result?.data?.diff;
-        if (!list || !Array.isArray(list)) return;
-        const cache = {};
-        for (const item of list) {
-            const name = item.f14; // 板块名称
-            const pct = item.f3;    // 涨跌幅
-            const price = item.f2;  // 最新指数
-            if (name && typeof pct === 'number') {
-                cache[name] = { pct, price };
+        if (list && Array.isArray(list) && list.length > 0) {
+            const cache = {};
+            for (const item of list) {
+                const name = item.f14;
+                const pct = item.f3;
+                const price = item.f2;
+                if (name && typeof pct === 'number') {
+                    cache[name] = { pct, price };
+                }
+            }
+            if (Object.keys(cache).length > 0) {
+                sectorIndexCache = cache;
+                console.log(`板块指数更新(JSONP): ${Object.keys(cache).length}个板块`, Object.keys(cache));
+                return;
             }
         }
-        sectorIndexCache = cache;
-        console.log(`板块指数更新: ${Object.keys(cache).length}个板块`);
+        
+        // Fallback: CORS代理方式
+        const resp = await fetchWithProxy(url);
+        if (resp) {
+            const result2 = await resp.json();
+            const list2 = result2?.data?.diff;
+            if (list2 && Array.isArray(list2) && list2.length > 0) {
+                const cache2 = {};
+                for (const item of list2) {
+                    if (item.f14 && typeof item.f3 === 'number') {
+                        cache2[item.f14] = { pct: item.f3, price: item.f2 };
+                    }
+                }
+                if (Object.keys(cache2).length > 0) {
+                    sectorIndexCache = cache2;
+                    console.log(`板块指数更新(代理): ${Object.keys(cache2).length}个板块`);
+                    return;
+                }
+            }
+        }
+        
+        console.warn('板块指数获取失败: JSONP和代理均无数据');
     } catch(e) {
-        console.error('板块指数获取失败:', e);
+        console.error('板块指数获取异常:', e);
     }
 }
 
