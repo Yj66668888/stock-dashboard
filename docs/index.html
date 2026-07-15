@@ -158,7 +158,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0715-2348</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0716-0007</span>
     </div>
 </div>
 
@@ -283,7 +283,7 @@ tr:hover td { background: var(--bg-hover); }
 
 <!-- 深度分析 -->
 <div class="content tab-content" id="content-deep">
-    <div class="section-title">🔍 深度分析 — 五大维度深度研判</div>
+    <div class="section-title">🔍 深度分析 — 六大维度深度研判</div>
 
     <!-- 1. 预期涨幅完成度 -->
     <div class="panel" style="margin-bottom:12px">
@@ -329,6 +329,15 @@ tr:hover td { background: var(--bg-hover); }
             对五日内涨停个股，深度解析涨停核心驱动逻辑、所属申万板块及赛道
         </div>
         <div id="limitLogicPanel"></div>
+    </div>
+
+    <!-- 6. 起涨时间分析 -->
+    <div class="panel" style="margin-top:12px">
+        <h3>⑥ 起涨时间分析（从起涨点到当前价格耗时）</h3>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
+            起涨点=60日最低价出现日。展示从起涨点到当前价格的交易日数、自然日数、总涨幅、日均涨幅、周均涨幅及上涨速度判定
+        </div>
+        <div class="table-container" style="overflow-x:auto;max-height:50vh;overflow-y:auto" id="riseDurationPanel"></div>
     </div>
 </div>
 
@@ -2496,6 +2505,85 @@ function calcExpectedGain(code) {
     };
 }
 
+// 功能6: 起涨时间分析 — 从开始涨到现在的价格花了多长时间
+function calcRiseDuration(code) {
+    const stock = STOCKS.find(s => s.code === code);
+    if (!stock) return null;
+    const dayKlines = kdjCache[code] && kdjCache[code].day;
+    if (!dayKlines || dayKlines.length < 20) return null;
+    const quote = quoteCache[code];
+    if (!quote || !quote.price) return null;
+
+    // 找60日最低价及其日期（起涨点）
+    const lookback = Math.min(60, dayKlines.length);
+    const recentKlines = dayKlines.slice(-lookback);
+    let basePrice = recentKlines[0].low;
+    let baseDate = recentKlines[0].date;
+    let baseIdx = 0;
+    for (let i = 1; i < recentKlines.length; i++) {
+        if (recentKlines[i].low < basePrice) {
+            basePrice = recentKlines[i].low;
+            baseDate = recentKlines[i].date;
+            baseIdx = i;
+        }
+    }
+
+    const currentPrice = quote.price;
+    const currentGain = ((currentPrice - basePrice) / basePrice) * 100;
+
+    // 交易日数：从起涨点到最新K线的数量
+    const tradingDays = recentKlines.length - 1 - baseIdx;
+
+    // 自然日数
+    let calendarDays = 0;
+    try {
+        const startDate = new Date(baseDate.replace(/-/g, '/'));
+        const now = new Date();
+        calendarDays = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    } catch(e) { calendarDays = tradingDays; }
+
+    // 日均涨幅
+    const dailyGain = tradingDays > 0 ? currentGain / tradingDays : 0;
+
+    // 周均涨幅（5个交易日=1周）
+    const weeklyGain = tradingDays > 0 ? currentGain / (tradingDays / 5) : 0;
+
+    // 起涨日期格式化 (YYYY-MM-DD → MM-DD)
+    const dateStr = typeof baseDate === 'string' ? baseDate.substring(5) : '';
+
+    // 速度判定
+    let speed, speedColor;
+    if (tradingDays <= 0) { speed = '今日起涨'; speedColor = 'var(--blue)'; }
+    else if (tradingDays <= 5) { speed = '急涨'; speedColor = 'var(--red)'; }
+    else if (tradingDays <= 15) { speed = '快涨'; speedColor = 'var(--orange)'; }
+    else if (tradingDays <= 30) { speed = '中速'; speedColor = 'var(--yellow)'; }
+    else { speed = '慢涨'; speedColor = 'var(--text-dim)'; }
+
+    // 趋势状态
+    let trend, trendColor;
+    if (currentGain < 0) { trend = '跌破起涨点'; trendColor = 'var(--green)'; }
+    else if (currentGain < 5) { trend = '刚启动'; trendColor = 'var(--blue)'; }
+    else if (currentGain < 15) { trend = '上涨初期'; trendColor = 'var(--blue)'; }
+    else if (currentGain < 30) { trend = '上涨中期'; trendColor = 'var(--yellow)'; }
+    else if (currentGain < 50) { trend = '上涨后期'; trendColor = 'var(--orange)'; }
+    else { trend = '高位区'; trendColor = 'var(--red)'; }
+
+    return {
+        basePrice: Math.round(basePrice * 100) / 100,
+        baseDate: dateStr,
+        currentPrice: currentPrice,
+        currentGain: Math.round(currentGain * 10) / 10,
+        tradingDays: tradingDays,
+        calendarDays: calendarDays,
+        dailyGain: Math.round(dailyGain * 100) / 100,
+        weeklyGain: Math.round(weeklyGain * 10) / 10,
+        speed: speed,
+        speedColor: speedColor,
+        trend: trend,
+        trendColor: trendColor
+    };
+}
+
 // 功能2: 板块上涨/结束阶段分析
 function analyzeSectorPhase(sectorName) {
     const sectorStocks = STOCKS.filter(s => (SECTOR_MAP[s.sector] || s.sector) === sectorName);
@@ -2784,6 +2872,7 @@ function renderDeepAnalysis() {
     renderLimitStocksPanel();
     renderDownTrendPanel();
     renderLimitLogicPanel();
+    renderRiseDurationPanel();
 }
 
 // 面板1: 预期涨幅完成度
@@ -3027,6 +3116,72 @@ function renderLimitLogicPanel() {
             '<div style="font-size:11px;color:var(--text-dim);margin-top:6px">涨停日期: ' + l.allDates.join('、') + '</div>' +
         '</div>';
     }
+    panel.innerHTML = html;
+}
+
+// 面板6: 起涨时间分析
+function renderRiseDurationPanel() {
+    const panel = document.getElementById('riseDurationPanel');
+    if (!panel) return;
+
+    const rows = [];
+    for (const stock of STOCKS) {
+        const rd = calcRiseDuration(stock.code);
+        if (!rd) continue;
+        const name = (quoteCache[stock.code] && quoteCache[stock.code].name) || stock.name;
+        rows.push({ code: stock.code, name: name, sector: stock.sector, rd: rd });
+    }
+
+    if (rows.length === 0) {
+        panel.innerHTML = '<div class="clear">数据加载中...</div>';
+        return;
+    }
+
+    // 按总涨幅降序
+    rows.sort(function(a, b) { return b.rd.currentGain - a.rd.currentGain; });
+
+    let html = '<table style="font-size:11px;table-layout:fixed;width:100%"><thead><tr>' +
+        '<th style="width:8%">代码</th><th style="width:10%">名称</th>' +
+        '<th style="width:8%">起涨日</th><th style="width:8%">起涨价</th>' +
+        '<th style="width:8%">现价</th><th style="width:9%">总涨幅</th>' +
+        '<th style="width:8%">交易日</th><th style="width:8%">自然日</th>' +
+        '<th style="width:9%">日均涨幅</th><th style="width:8%">速度</th>' +
+        '<th style="width:8%">趋势</th></tr></thead><tbody>';
+
+    for (const r of rows) {
+        const gainColor = r.rd.currentGain > 0 ? 'var(--red)' : 'var(--green)';
+        const daysText = r.rd.tradingDays + '天';
+        const calDaysText = r.rd.calendarDays > 0 ? r.rd.calendarDays + '天' : '--';
+
+        html += '<tr>' +
+            '<td style="font-size:10px;color:var(--text-dim)">' + r.code.substring(2) + '</td>' +
+            '<td style="font-weight:600">' + r.name + '</td>' +
+            '<td style="font-size:10px;color:var(--text-dim)">' + r.rd.baseDate + '</td>' +
+            '<td style="font-size:10px">' + r.rd.basePrice.toFixed(2) + '</td>' +
+            '<td style="font-weight:600">' + r.rd.currentPrice.toFixed(2) + '</td>' +
+            '<td style="color:' + gainColor + ';font-weight:700">' + (r.rd.currentGain > 0 ? '+' : '') + r.rd.currentGain + '%</td>' +
+            '<td style="color:var(--blue);font-weight:600">' + daysText + '</td>' +
+            '<td style="font-size:10px;color:var(--text-dim)">' + calDaysText + '</td>' +
+            '<td style="color:' + (r.rd.dailyGain > 0 ? 'var(--red)' : 'var(--green)') + '">' + (r.rd.dailyGain > 0 ? '+' : '') + r.rd.dailyGain + '%/日</td>' +
+            '<td><span style="color:' + r.rd.speedColor + ';font-weight:600;font-size:10px">' + r.rd.speed + '</span></td>' +
+            '<td><span style="color:' + r.rd.trendColor + ';font-weight:600;font-size:10px">' + r.rd.trend + '</span></td>' +
+        '</tr>';
+    }
+
+    // 汇总统计
+    const totalStocks = rows.length;
+    const avgDays = Math.round(rows.reduce((s, r) => s + r.rd.tradingDays, 0) / totalStocks);
+    const avgGain = (rows.reduce((s, r) => s + r.rd.currentGain, 0) / totalStocks).toFixed(1);
+    const fastCount = rows.filter(r => r.rd.tradingDays <= 5).length;
+    const slowCount = rows.filter(r => r.rd.tradingDays > 30).length;
+
+    html += '</tbody></table>';
+    html += '<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--text-dim);line-height:1.8">' +
+        '📊 <b>汇总</b>：共' + totalStocks + '只 · 平均起涨' + avgDays + '个交易日 · 平均涨幅' + (avgGain > 0 ? '+' : '') + avgGain + '%' +
+        ' · 急涨(≤5日)' + fastCount + '只 · 慢涨(>30日)' + slowCount + '只' +
+        ' · 周均涨幅参考：' + rows.map(r => r.rd).reduce((s, rd) => s + rd.weeklyGain, 0).toFixed(0) / rows.length + '%/周' +
+    '</div>';
+
     panel.innerHTML = html;
 }
 
