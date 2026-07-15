@@ -158,7 +158,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0716-0007</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0716-0130</span>
     </div>
 </div>
 
@@ -418,16 +418,16 @@ const EARNINGS_VERIFIED = [{"name": "AI算力产业链(业绩落地)", "status":
 
 // ==================== 行情数据获取 ====================
 async function fetchWithProxy(url) {
-    // 直连尝试
+    // 直连尝试（缩短超时到3秒）
     try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
         if (resp.ok) return resp;
     } catch(e) {}
 
-    // CORS代理fallback
-    for (const proxy of CORS_PROXIES) {
+    // CORS代理fallback（缩短超时到5秒，最多试2个代理）
+    for (const proxy of CORS_PROXIES.slice(0, 2)) {
         try {
-            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(5000) });
             if (resp.ok) return resp;
         } catch(e) {}
     }
@@ -441,15 +441,15 @@ async function fetchQuotes() {
     // 加入沪指 sh000001
     const url = 'https://qt.gtimg.cn/q=' + codes + ',sh000001';
     try {
-        // qt.gtimg.cn 支持 CORS，直连优先
+        // qt.gtimg.cn 支持 CORS，直连优先（缩短超时到4秒）
         let resp = null;
         try {
-            resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+            resp = await fetch(url, { signal: AbortSignal.timeout(4000) });
         } catch(e) {
-            // 直连失败，走代理
-            for (const proxy of CORS_PROXIES) {
+            // 直连失败，走代理（最多试2个，各5秒超时）
+            for (const proxy of CORS_PROXIES.slice(0, 2)) {
                 try {
-                    resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(8000) });
+                    resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(5000) });
                     if (resp.ok) break;
                 } catch(e2) {}
             }
@@ -531,28 +531,42 @@ async function fetchKline(code, period, count) {
 }
 
 async function fetchAllKlines() {
-    const periods = ['m1', 'm5', 'm30', 'day'];
-    const batchSize = 5;
-    
-    for (const period of periods) {
-        const codes = STOCKS.map(s => s.code);
-        for (let i = 0; i < codes.length; i += batchSize) {
-            const batch = codes.slice(i, i + batchSize);
-            await Promise.all(batch.map(async (code) => {
-                const klines = await fetchKline(code, period, 100);
-                if (klines) {
-                    if (!kdjCache[code]) kdjCache[code] = {};
-                    kdjCache[code][period] = klines;
-                }
-            }));
-            if (i + batchSize < codes.length) {
-                await new Promise(r => setTimeout(r, 100));
+    // 性能优化：m1/m5/m30共用同一份同花顺分钟线数据(同花顺klt=60只返回一种分钟线)
+    // 只请求一次分钟线 + 一次日线，请求数从120减到60
+    const batchSize = 10; // 增大并发数
+    const codes = STOCKS.map(s => s.code);
+
+    // 1. 获取分钟线（m1/m5/m30共用）
+    for (let i = 0; i < codes.length; i += batchSize) {
+        const batch = codes.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (code) => {
+            const klines = await fetchKline(code, 'm5', 100);
+            if (klines) {
+                if (!kdjCache[code]) kdjCache[code] = {};
+                kdjCache[code]['m1'] = klines;
+                kdjCache[code]['m5'] = klines;
+                kdjCache[code]['m30'] = klines;
             }
-        }
-        // 渐进式渲染
-        calcAllIndicators();
-        renderAll();
+        }));
     }
+    // 分钟线获取完，先渲染一次（KDJ/MACD/RSI等指标可用了）
+    calcAllIndicators();
+    renderAll();
+
+    // 2. 获取日线
+    for (let i = 0; i < codes.length; i += batchSize) {
+        const batch = codes.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (code) => {
+            const klines = await fetchKline(code, 'day', 100);
+            if (klines) {
+                if (!kdjCache[code]) kdjCache[code] = {};
+                kdjCache[code]['day'] = klines;
+            }
+        }));
+    }
+
+    calcAllIndicators();
+    renderAll();
 }
 
 // ==================== 板块指数获取 ====================
