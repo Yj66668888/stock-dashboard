@@ -306,20 +306,6 @@ tr:hover td { background: var(--bg-hover); }
         <div id="alertPanel"></div>
     </div>
 
-    <!-- 邮件配置 -->
-    <div class="panel">
-        <h3>📧 邮件通知配置</h3>
-        <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
-            自动邮件需要配合后端服务运行。推荐使用独立Python脚本 <code>alert_monitor.py</code> 独立运行。<br>
-            或者配置邮件转发端点，仪表盘触发预警时自动调用。
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input id="emailEndpoint" placeholder="邮件转发API地址 (可选)" style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12px">
-            <button id="saveEmailConfig" style="background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px">保存配置</button>
-            <button id="testEmail" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px">测试发送</button>
-        </div>
-        <div id="emailStatus" style="margin-top:8px;font-size:11px"></div>
-    </div>
 </div>
 
 <script>
@@ -1448,7 +1434,7 @@ function checkAlerts() {
         alertSentToday = { _day: today };
     }
 
-    // ===== 条件1: 沪指跌幅 > 10点 → 发邮件预警 =====
+    // ===== 条件1: 沪指跌幅 > 10点 → 大盘急跌预警 =====
     const shDrop = shIndexCache.changePoints || 0;
     if (shDrop < -10) {
         const key = 'sh_drop10';
@@ -1460,7 +1446,7 @@ function checkAlerts() {
                 icon: '📉',
                 title: '沪指急跌预警',
                 detail: `上证指数跌${Math.abs(shDrop).toFixed(1)}点 (${shIndexCache.changePct.toFixed(2)}%)，触发大盘急跌预警`,
-                actions: ['发送邮件通知'],
+                actions: ['大盘急跌预警'],
                 time: timeStr
             });
         }
@@ -1488,7 +1474,7 @@ function checkAlerts() {
                     icon: '🔻',
                     title: `${name}(${shortCode}) 减半仓`,
                     detail: `1分钟K值=${kdj.m1.toFixed(1)}, 5分钟K值=${kdj.m5.toFixed(1)}，双双超买(≥80)，建议减半仓`,
-                    actions: ['发送邮件', '减半仓操作'],
+                    actions: ['减半仓操作'],
                     time: timeStr
                 });
             }
@@ -1505,7 +1491,7 @@ function checkAlerts() {
                     icon: '🟢',
                     title: `${name}(${shortCode}) 加仓信号`,
                     detail: `1分钟K值=${kdj.m1.toFixed(1)}, 5分钟K值=${kdj.m5.toFixed(1)}，双双超卖(<20)，建议加仓`,
-                    actions: ['发送邮件', '加仓操作'],
+                    actions: ['加仓操作'],
                     time: timeStr
                 });
             }
@@ -1522,7 +1508,7 @@ function checkAlerts() {
                     icon: '🚨',
                     title: `${name}(${shortCode}) 清仓警告`,
                     detail: `5分钟K值=${kdj.m5.toFixed(1)}, 30分钟K值=${kdj.m30.toFixed(1)}，中短期全部超买(≥80)，建议清仓`,
-                    actions: ['发送邮件', '清仓操作'],
+                    actions: ['清仓操作'],
                     time: timeStr
                 });
             }
@@ -1539,7 +1525,7 @@ function checkAlerts() {
                     icon: '⚠️',
                     title: `${name}(${shortCode}) 逆势减仓`,
                     detail: `沪指跌${Math.abs(shDrop).toFixed(1)}点环境下，个股逆势涨${changePct.toFixed(2)}%且1分K=${kdj.m1.toFixed(1)}超买，建议减仓`,
-                    actions: ['发送邮件', '减仓操作'],
+                    actions: ['减仓操作'],
                     time: timeStr
                 });
             }
@@ -1551,8 +1537,6 @@ function checkAlerts() {
         alertLog = [...newAlerts, ...alertLog].slice(0, 200);
         // 显示Toast通知
         showAlertToast(newAlerts);
-        // 触发邮件（如果有后端）
-        sendAlertEmails(newAlerts);
     }
 
     // 更新预警面板
@@ -1585,28 +1569,6 @@ function showAlertToast(alerts) {
     setTimeout(() => {
         if (container.parentNode) container.remove();
     }, 8000);
-}
-
-function sendAlertEmails(alerts) {
-    // 尝试通过后端发送邮件（如果后端服务在运行）
-    const emailAlerts = alerts.filter(a => a.actions.includes('发送邮件') || a.actions.includes('发送邮件通知'));
-    if (emailAlerts.length === 0) return;
-
-    // 检查是否有配置的邮件服务
-    try {
-        const emailConfig = JSON.parse(localStorage.getItem('alertEmailConfig') || '{}');
-        if (emailConfig.enabled && emailConfig.endpoint) {
-            fetch(emailConfig.endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: emailConfig.email || '87538676@qq.com',
-                    subject: `[股票预警] ${emailAlerts.length}条新预警 - ${new Date().toLocaleString('zh-CN')}`,
-                    alerts: emailAlerts.map(a => ({ icon: a.icon, title: a.title, detail: a.detail, level: a.level }))
-                })
-            }).catch(() => {});
-        }
-    } catch(e) {}
 }
 
 function renderAlertPanel() {
@@ -2660,59 +2622,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkAutoReview, 60000);
     // 页面加载后立即检查一次
     setTimeout(checkAutoReview, 3000);
-
-    // ===== 邮件配置 =====
-    const saveBtn = document.getElementById('saveEmailConfig');
-    const testBtn = document.getElementById('testEmail');
-    const endpointInput = document.getElementById('emailEndpoint');
-    const statusDiv = document.getElementById('emailStatus');
-
-    // 加载已保存配置
-    try {
-        const saved = JSON.parse(localStorage.getItem('alertEmailConfig') || '{}');
-        if (saved.endpoint && endpointInput) endpointInput.value = saved.endpoint;
-    } catch(e) {}
-
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const endpoint = (endpointInput?.value || '').trim();
-            const config = { enabled: !!endpoint, endpoint, email: '87538676@qq.com' };
-            try {
-                localStorage.setItem('alertEmailConfig', JSON.stringify(config));
-                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--green)">✅ 配置已保存</span>';
-            } catch(e) {
-                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">保存失败</span>';
-            }
-        });
-    }
-
-    if (testBtn) {
-        testBtn.addEventListener('click', () => {
-            const endpoint = (endpointInput?.value || '').trim();
-            if (!endpoint) {
-                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--yellow)">请先输入邮件转发API地址</span>';
-                return;
-            }
-            if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--blue)">⏳ 测试发送中...</span>';
-            fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: '87538676@qq.com',
-                    subject: '[测试邮件] 股票预警系统连通性测试',
-                    alerts: [{ icon: '✅', title: '测试邮件', detail: '如果您收到此邮件，说明预警系统配置正确', level: 'info' }]
-                })
-            }).then(r => {
-                if (r.ok) {
-                    if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--green)">✅ 测试邮件已发送，请检查收件箱</span>';
-                } else {
-                    if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">❌ 发送失败 (HTTP ' + r.status + ')</span>';
-                }
-            }).catch(e => {
-                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">❌ 连接失败: ' + e.message + '</span>';
-            });
-        });
-    }
 });
 
 // 切换标签
