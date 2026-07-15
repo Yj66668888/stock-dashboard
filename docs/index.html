@@ -99,6 +99,21 @@ tr:hover td { background: var(--bg-hover); }
   .review-invest-long-avoid { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
   .review-invest-watch { background: rgba(178,178,178,0.1); color: var(--text-dim); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid var(--border); }
 
+/* ========== 预警监控样式 ========== */
+#alertBadge { display: none; background: var(--red); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; align-items: center; justify-content: center; font-weight: 700; animation: pulse 1.5s infinite; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.cond-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 6px; margin-bottom: 4px; font-size: 12px; border: 1px solid transparent; }
+.cond-row.cond-ok { background: rgba(63,185,80,0.05); border-color: rgba(63,185,80,0.2); color: var(--green); }
+.cond-row.cond-danger { background: rgba(248,81,73,0.08); border-color: rgba(248,81,73,0.3); color: var(--red); }
+.cond-row.cond-info { background: rgba(88,166,255,0.08); border-color: rgba(88,166,255,0.3); color: var(--blue); }
+.cond-label { font-weight: 600; min-width: 180px; color: var(--text); }
+.cond-status { font-weight: 700; min-width: 80px; }
+.cond-detail { color: var(--text-dim); font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alert-flash { animation: alertPulse 0.8s ease-in-out infinite; }
+@keyframes alertPulse { 0%, 100% { background: rgba(248,81,73,0.15); } 50% { background: rgba(248,81,73,0.4); } }
+.kdj-hot { color: var(--red); font-weight: 700; }
+.kdj-cold { color: var(--green); font-weight: 700; }
+
 /* ========== 移动端适配 ========== */
 @media (max-width: 900px) {
   .header { flex-direction: column; gap: 8px; }
@@ -143,7 +158,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0714-2235</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0715-1143</span>
     </div>
 </div>
 
@@ -153,6 +168,7 @@ tr:hover td { background: var(--bg-hover); }
     <div class="tab" id="tab-calendar" onclick="switchTab('calendar')">📅 政策日历</div>
     <div class="tab" id="tab-abnormal" onclick="switchTab('abnormal')">⚠️ 异动监控</div>
     <div class="tab" id="tab-review" onclick="switchTab('review')">📝 收盘复盘</div>
+    <div class="tab" id="tab-alert" onclick="switchTab('alert')">🔔 监控预警<span id="alertBadge" style="display:none;margin-left:4px"></span></div>
 </div>
 
 <!-- 梯队总览 -->
@@ -264,6 +280,48 @@ tr:hover td { background: var(--bg-hover); }
     </div>
 </div>
 
+<!-- 监控预警 -->
+<div class="content tab-content" id="content-alert">
+    <!-- 沪指状态 -->
+    <div class="section-title" style="display:flex;align-items:center;gap:8px">
+        🔔 实时预警监控
+        <span id="shIndexDisplay" style="font-size:12px;color:var(--text-dim)">沪指加载中...</span>
+    </div>
+
+    <!-- 条件状态面板 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>📋 预警条件状态</h3>
+        <div id="conditionStatus"></div>
+    </div>
+
+    <!-- 实时KDJ快照 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>📊 实时KDJ快照 (1分钟/5分钟/30分钟K值)</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:50vh;overflow-y:auto" id="kdjSnapshot"></div>
+    </div>
+
+    <!-- 预警历史 -->
+    <div class="panel">
+        <h3>📜 预警历史记录</h3>
+        <div id="alertPanel"></div>
+    </div>
+
+    <!-- 邮件配置 -->
+    <div class="panel">
+        <h3>📧 邮件通知配置</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+            自动邮件需要配合后端服务运行。推荐使用独立Python脚本 <code>alert_monitor.py</code> 独立运行。<br>
+            或者配置邮件转发端点，仪表盘触发预警时自动调用。
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="emailEndpoint" placeholder="邮件转发API地址 (可选)" style="flex:1;min-width:200px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12px">
+            <button id="saveEmailConfig" style="background:var(--blue);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px">保存配置</button>
+            <button id="testEmail" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px">测试发送</button>
+        </div>
+        <div id="emailStatus" style="margin-top:8px;font-size:11px"></div>
+    </div>
+</div>
+
 <script>
 
 // ==================== 戴维斯双击 实时仪表盘 ====================
@@ -329,9 +387,12 @@ async function fetchWithProxy(url) {
     return null;
 }
 
+let shIndexCache = { price: 0, changePct: 0 }; // 沪指数据
+
 async function fetchQuotes() {
     const codes = STOCKS.map(s => s.code).join(',');
-    const url = 'https://qt.gtimg.cn/q=' + codes;
+    // 加入沪指 sh000001
+    const url = 'https://qt.gtimg.cn/q=' + codes + ',sh000001';
     try {
         // qt.gtimg.cn 支持 CORS，直连优先
         let resp = null;
@@ -355,6 +416,17 @@ async function fetchQuotes() {
             if (!match) continue;
             const fields = match[2].split('~');
             const code = match[1];
+            // 沪指单独存储
+            if (code === 'sh000001') {
+                const shPrice = parseFloat(fields[3]) || 0;
+                const shPrev = parseFloat(fields[4]) || 0;
+                shIndexCache = {
+                    price: shPrice,
+                    changePct: shPrev > 0 ? Math.round(((shPrice - shPrev) / shPrev * 100) * 100) / 100 : 0,
+                    changePoints: Math.round((shPrice - shPrev) * 100) / 100
+                };
+                continue;
+            }
             const price = parseFloat(fields[3]) || 0;
             const prevClose = parseFloat(fields[4]) || 0;
             const changePct = prevClose > 0 ? ((price - prevClose) / prevClose * 100) : 0;
@@ -380,36 +452,55 @@ async function fetchQuotes() {
 }
 
 async function fetchKline(code, period, count) {
-    // period: m5, m30, day — 通过CORS代理直连同花顺
+    // 分钟线使用东方财富API(支持不同klt)，日线使用同花顺
     try {
         const sym = code.substring(2);
-        // 同花顺周期映射: day→01, 分钟→60
-        const thsPeriod = period === 'day' ? '01' : '60';
-        const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/${thsPeriod}/last.js`;
+        const market = code.startsWith('6') ? '1' : '0';
+        const secid = `${market}.${sym}`;
+
+        // 日线：同花顺 (稳定可靠)
+        if (period === 'day') {
+            const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/01/last.js`;
+            const resp = await fetchWithProxy(url);
+            if (!resp) return null;
+            const text = await resp.text();
+            const m = text.match(/\(({[\s\S]*})\)/);
+            if (!m) return null;
+            const data = JSON.parse(m[1]);
+            const raw = data?.data || '';
+            if (!raw) return null;
+            const points = raw.split(';').filter(p => p.trim());
+            const klines = points.map(p => {
+                const f = p.split(',');
+                if (f.length < 5) return null;
+                return {
+                    date: f[0], open: parseFloat(f[1]) || 0, high: parseFloat(f[2]) || 0,
+                    low: parseFloat(f[3]) || 0, close: parseFloat(f[4]) || 0,
+                    volume: parseInt(f[5]) || 0, amount: parseFloat(f[6]) || 0
+                };
+            }).filter(k => k !== null);
+            if (klines.length < 9) return null;
+            return klines;
+        }
+
+        // 分钟线：东方财富 (支持m1/m5/m30不同klt)
+        const klt = period === 'm1' ? '1' : (period === 'm5' ? '5' : '30');
+        const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&klt=${klt}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&lmt=${count}`;
         const resp = await fetchWithProxy(url);
         if (!resp) return null;
-        const text = await resp.text();
-        // 解析JSONP: quotebridge_v4_line_hs_xxx_01_last({...})
-        const m = text.match(/\(({[\s\S]*})\)/);
-        if (!m) return null;
-        const data = JSON.parse(m[1]);
-        const raw = data?.data || '';
-        if (!raw) return null;
-        const points = raw.split(';').filter(p => p.trim());
-        const klines = points.map(p => {
-            const f = p.split(',');
-            if (f.length < 5) return null;
+        const result = await resp.json();
+        const klineList = result?.data?.klines;
+        if (!klineList || klineList.length < 5) return null;
+        // 东方财富字段: f51日期/f52开盘/f53收盘/f54最高/f55最低/f56成交量/f57成交额
+        const klines = klineList.map(k => {
+            const f = k.split(',');
             return {
-                date: f[0],
-                open: parseFloat(f[1]) || 0,
-                high: parseFloat(f[2]) || 0,
-                low: parseFloat(f[3]) || 0,
-                close: parseFloat(f[4]) || 0,
-                volume: parseInt(f[5]) || 0,
-                amount: parseFloat(f[6]) || 0
+                date: f[0], open: parseFloat(f[1]) || 0, close: parseFloat(f[2]) || 0,
+                high: parseFloat(f[3]) || 0, low: parseFloat(f[4]) || 0,
+                volume: parseInt(f[5]) || 0, amount: parseFloat(f[6]) || 0
             };
-        }).filter(k => k !== null);
-        if (klines.length < 9) return null;
+        });
+        if (klines.length < 5) return null;
         return klines;
     } catch(e) {
         return null;
@@ -417,7 +508,7 @@ async function fetchKline(code, period, count) {
 }
 
 async function fetchAllKlines() {
-    const periods = ['m5', 'm30', 'day'];
+    const periods = ['m1', 'm5', 'm30', 'day'];
     const batchSize = 5;
     
     for (const period of periods) {
@@ -817,10 +908,10 @@ function calcAllIndicators() {
         if (!trendCache[code]) trendCache[code] = {};
         if (!trendCache[code].kdj) trendCache[code].kdj = {};
         
-        // KDJ融合值: 5分钟用n=3更敏感，30分钟用n=9标准
-        ['m5', 'm30'].forEach(period => {
+        // KDJ融合值: 1分钟用n=2超敏感，5分钟用n=3，30分钟用n=9标准
+        ['m1', 'm5', 'm30'].forEach(period => {
             const klines = cache[period];
-            const n = period === 'm5' ? 3 : 9;
+            const n = period === 'm1' ? 2 : (period === 'm5' ? 3 : 9);
             if (klines && klines.length >= n + 1) {
                 const kdj = calcKDJ(klines, n);
                 if (kdj && kdj.length > 0) {
@@ -1237,6 +1328,16 @@ async function renderAll() {
     renderTable();
     renderDualWheel();
     renderAbnormalLog();
+    renderConditionStatus();
+    renderKdjSnapshot();
+    renderAlertPanel();
+    renderAlertBadge();
+    // 更新沪指显示
+    const shDisplay = document.getElementById('shIndexDisplay');
+    if (shDisplay && shIndexCache.price) {
+        const shClr = shIndexCache.changePct > 0 ? 'var(--red)' : (shIndexCache.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
+        shDisplay.innerHTML = `上证指数: <span style="color:${shClr};font-weight:600">${shIndexCache.price.toFixed(2)}</span> <span style="color:${shClr}">${shIndexCache.changePct > 0 ? '+' : ''}${shIndexCache.changePct.toFixed(2)}%</span> (${shIndexCache.changePoints > 0 ? '+' : ''}${shIndexCache.changePoints.toFixed(2)}点)`;
+    }
 }
 
 // ==================== 异动监控 ====================
@@ -1316,6 +1417,367 @@ function renderAbnormalLog() {
             <span style="color:var(--text-dim)">${item.detail}</span>
         </div>`
     ).join('');
+}
+
+
+// ==================== 智能预警系统 ====================
+
+let alertLog = [];           // 预警历史
+let alertSentToday = {};     // 今日已发送预警(去重)
+const ALERT_COOLDOWN_MS = 300000; // 同一条件5分钟内不重复
+
+function getStockKDJ(code) {
+    const ind = trendCache[code];
+    if (!ind || !ind.kdj) return { m1: null, m5: null, m30: null };
+    return {
+        m1: ind.kdj.m1 ? ind.kdj.m1.v : null,
+        m5: ind.kdj.m5 ? ind.kdj.m5.v : null,
+        m30: ind.kdj.m30 ? ind.kdj.m30.v : null
+    };
+}
+
+function checkAlerts() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('zh-CN');
+    const today = now.toLocaleDateString('zh-CN');
+    const newAlerts = [];
+
+    // 重置每日去重
+    const todayKey = 'alertDay_' + today;
+    if (alertSentToday._day !== today) {
+        alertSentToday = { _day: today };
+    }
+
+    // ===== 条件1: 沪指跌幅 > 10点 → 发邮件预警 =====
+    const shDrop = shIndexCache.changePoints || 0;
+    if (shDrop < -10) {
+        const key = 'sh_drop10';
+        const lastSent = alertSentToday[key] || 0;
+        if (now - lastSent > ALERT_COOLDOWN_MS) {
+            alertSentToday[key] = now;
+            newAlerts.push({
+                level: 'danger',
+                icon: '📉',
+                title: '沪指急跌预警',
+                detail: `上证指数跌${Math.abs(shDrop).toFixed(1)}点 (${shIndexCache.changePct.toFixed(2)}%)，触发大盘急跌预警`,
+                actions: ['发送邮件通知'],
+                time: timeStr
+            });
+        }
+    }
+
+    // 遍历所有标的
+    for (const stock of STOCKS) {
+        const code = stock.code;
+        const quote = quoteCache[code];
+        const kdj = getStockKDJ(code);
+        const name = quote?.name || stock.name;
+        const shortCode = code.substring(2);
+        const changePct = quote?.changePct || 0;
+
+        if (kdj.m1 === null && kdj.m5 === null) continue;
+
+        // ===== 条件2: 1分K ≥ 80 且 5分K ≥ 80 → 减半仓 =====
+        if (kdj.m1 !== null && kdj.m5 !== null && kdj.m1 >= 80 && kdj.m5 >= 80) {
+            const key = code + '_half_cut';
+            const lastSent = alertSentToday[key] || 0;
+            if (now - lastSent > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({
+                    level: 'warning',
+                    icon: '🔻',
+                    title: `${name}(${shortCode}) 减半仓`,
+                    detail: `1分钟K值=${kdj.m1.toFixed(1)}, 5分钟K值=${kdj.m5.toFixed(1)}，双双超买(≥80)，建议减半仓`,
+                    actions: ['发送邮件', '减半仓操作'],
+                    time: timeStr
+                });
+            }
+        }
+
+        // ===== 条件3: 1分K < 20 且 5分K < 20 → 加仓 =====
+        if (kdj.m1 !== null && kdj.m5 !== null && kdj.m1 < 20 && kdj.m5 < 20) {
+            const key = code + '_add';
+            const lastSent = alertSentToday[key] || 0;
+            if (now - lastSent > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({
+                    level: 'info',
+                    icon: '🟢',
+                    title: `${name}(${shortCode}) 加仓信号`,
+                    detail: `1分钟K值=${kdj.m1.toFixed(1)}, 5分钟K值=${kdj.m5.toFixed(1)}，双双超卖(<20)，建议加仓`,
+                    actions: ['发送邮件', '加仓操作'],
+                    time: timeStr
+                });
+            }
+        }
+
+        // ===== 条件4: 5分K ≥ 80 且 30分K ≥ 80 → 清仓 =====
+        if (kdj.m5 !== null && kdj.m30 !== null && kdj.m5 >= 80 && kdj.m30 >= 80) {
+            const key = code + '_clear';
+            const lastSent = alertSentToday[key] || 0;
+            if (now - lastSent > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({
+                    level: 'danger',
+                    icon: '🚨',
+                    title: `${name}(${shortCode}) 清仓警告`,
+                    detail: `5分钟K值=${kdj.m5.toFixed(1)}, 30分钟K值=${kdj.m30.toFixed(1)}，中短期全部超买(≥80)，建议清仓`,
+                    actions: ['发送邮件', '清仓操作'],
+                    time: timeStr
+                });
+            }
+        }
+
+        // ===== 条件5: 沪指跌>10点 + 个股涨>2% + 1分K>80 → 减仓 =====
+        if (shDrop < -10 && changePct > 2 && kdj.m1 !== null && kdj.m1 > 80) {
+            const key = code + '_reduce_sh';
+            const lastSent = alertSentToday[key] || 0;
+            if (now - lastSent > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({
+                    level: 'danger',
+                    icon: '⚠️',
+                    title: `${name}(${shortCode}) 逆势减仓`,
+                    detail: `沪指跌${Math.abs(shDrop).toFixed(1)}点环境下，个股逆势涨${changePct.toFixed(2)}%且1分K=${kdj.m1.toFixed(1)}超买，建议减仓`,
+                    actions: ['发送邮件', '减仓操作'],
+                    time: timeStr
+                });
+            }
+        }
+    }
+
+    // 新预警加入历史
+    if (newAlerts.length > 0) {
+        alertLog = [...newAlerts, ...alertLog].slice(0, 200);
+        // 显示Toast通知
+        showAlertToast(newAlerts);
+        // 触发邮件（如果有后端）
+        sendAlertEmails(newAlerts);
+    }
+
+    // 更新预警面板
+    renderAlertPanel();
+    renderAlertBadge();
+    return newAlerts;
+}
+
+function showAlertToast(alerts) {
+    // 移除已有toast
+    const existing = document.getElementById('alertToastContainer');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'alertToastContainer';
+    container.style.cssText = 'position:fixed;top:60px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:380px';
+
+    const colors = { danger: '#f85149', warning: '#d2991d', info: '#58a6ff' };
+    for (const alert of alerts.slice(0, 3)) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `background:#161b22;border:1px solid ${colors[alert.level] || '#30363d'};border-left:4px solid ${colors[alert.level] || '#30363d'};border-radius:8px;padding:10px 14px;animation:slideIn 0.3s ease;font-size:12px;line-height:1.5`;
+        toast.innerHTML = `<div style="font-weight:700;color:${colors[alert.level]};margin-bottom:2px">${alert.icon} ${alert.title}</div>
+            <div style="color:#e6edf3">${alert.detail}</div>
+            <div style="color:#8b949e;font-size:10px;margin-top:4px">${alert.time}</div>`;
+        container.appendChild(toast);
+    }
+    document.body.appendChild(container);
+
+    // 8秒后自动消失
+    setTimeout(() => {
+        if (container.parentNode) container.remove();
+    }, 8000);
+}
+
+function sendAlertEmails(alerts) {
+    // 尝试通过后端发送邮件（如果后端服务在运行）
+    const emailAlerts = alerts.filter(a => a.actions.includes('发送邮件') || a.actions.includes('发送邮件通知'));
+    if (emailAlerts.length === 0) return;
+
+    // 检查是否有配置的邮件服务
+    try {
+        const emailConfig = JSON.parse(localStorage.getItem('alertEmailConfig') || '{}');
+        if (emailConfig.enabled && emailConfig.endpoint) {
+            fetch(emailConfig.endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: emailConfig.email || '87538676@qq.com',
+                    subject: `[股票预警] ${emailAlerts.length}条新预警 - ${new Date().toLocaleString('zh-CN')}`,
+                    alerts: emailAlerts.map(a => ({ icon: a.icon, title: a.title, detail: a.detail, level: a.level }))
+                })
+            }).catch(() => {});
+        }
+    } catch(e) {}
+}
+
+function renderAlertPanel() {
+    const panel = document.getElementById('alertPanel');
+    if (!panel) return;
+
+    if (alertLog.length === 0) {
+        panel.innerHTML = '<div class="clear" style="padding:30px">✅ 当前无触发预警，系统持续监控中...</div>';
+        return;
+    }
+
+    const colors = { danger: { bg: 'rgba(248,81,73,0.1)', border: '#f85149', color: '#f85149' },
+                     warning: { bg: 'rgba(210,153,29,0.1)', border: '#d2991d', color: '#d2991d' },
+                     info: { bg: 'rgba(88,166,255,0.1)', border: '#58a6ff', color: '#58a6ff' } };
+
+    let html = '';
+    for (const alert of alertLog.slice(0, 50)) {
+        const c = colors[alert.level] || colors.info;
+        html += `<div style="background:${c.bg};border:1px solid ${c.border};border-left:4px solid ${c.border};border-radius:6px;padding:8px 12px;margin-bottom:6px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font-weight:700;color:${c.color}">${alert.icon} ${alert.title}</span>
+                <span style="color:var(--text-dim);font-size:10px">${alert.time}</span>
+            </div>
+            <div style="color:var(--text);line-height:1.5">${alert.detail}</div>
+        </div>`;
+    }
+    panel.innerHTML = html || '<div class="clear">暂无预警</div>';
+}
+
+function renderAlertBadge() {
+    const badge = document.getElementById('alertBadge');
+    if (badge) {
+        badge.textContent = alertLog.length > 0 ? alertLog.length : '';
+        badge.style.display = alertLog.length > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+// ==================== 条件状态实时面板 ====================
+
+function renderConditionStatus() {
+    const panel = document.getElementById('conditionStatus');
+    if (!panel) return;
+
+    const now = new Date();
+    const shDrop = shIndexCache.changePoints || 0;
+    const statusItems = [];
+
+    // 条件1: 沪指跌幅>10点
+    const shAlert = shDrop < -10;
+    statusItems.push({
+        cond: '沪指急跌预警',
+        status: shAlert ? '⚠️ 触发' : '正常',
+        cls: shAlert ? 'cond-danger' : 'cond-ok',
+        detail: `当前跌幅: ${shDrop.toFixed(1)}点`
+    });
+
+    // 检查所有股票的KDJ状态
+    let halfCutList = [], addList = [], clearList = [], reduceList = [];
+    for (const stock of STOCKS) {
+        const kdj = getStockKDJ(stock.code);
+        const quote = quoteCache[stock.code];
+        const name = quote?.name || stock.name;
+        const changePct = quote?.changePct || 0;
+
+        if (kdj.m1 >= 80 && kdj.m5 >= 80) halfCutList.push(name);
+        if (kdj.m1 < 20 && kdj.m5 < 20) addList.push(name);
+        if (kdj.m5 >= 80 && kdj.m30 >= 80) clearList.push(name);
+        if (shAlert && changePct > 2 && kdj.m1 > 80) reduceList.push(name);
+    }
+
+    statusItems.push({
+        cond: '减半仓(1分+5分K≥80)',
+        status: halfCutList.length > 0 ? `🔻 ${halfCutList.length}只` : '正常',
+        cls: halfCutList.length > 0 ? 'cond-danger' : 'cond-ok',
+        detail: halfCutList.length > 0 ? halfCutList.join('、') : '--'
+    });
+
+    statusItems.push({
+        cond: '加仓(1分+5分K<20)',
+        status: addList.length > 0 ? `🟢 ${addList.length}只` : '正常',
+        cls: addList.length > 0 ? 'cond-info' : 'cond-ok',
+        detail: addList.length > 0 ? addList.join('、') : '--'
+    });
+
+    statusItems.push({
+        cond: '清仓(5分+30分K≥80)',
+        status: clearList.length > 0 ? `🚨 ${clearList.length}只` : '正常',
+        cls: clearList.length > 0 ? 'cond-danger' : 'cond-ok',
+        detail: clearList.length > 0 ? clearList.join('、') : '--'
+    });
+
+    statusItems.push({
+        cond: '逆势减仓(沪指跌+个股涨>2%)',
+        status: reduceList.length > 0 ? `⚠️ ${reduceList.length}只` : '正常',
+        cls: reduceList.length > 0 ? 'cond-danger' : 'cond-ok',
+        detail: reduceList.length > 0 ? reduceList.join('、') : '--'
+    });
+
+    let html = '';
+    for (const item of statusItems) {
+        html += `<div class="cond-row ${item.cls}">
+            <div class="cond-label">${item.cond}</div>
+            <div class="cond-status">${item.status}</div>
+            <div class="cond-detail">${item.detail}</div>
+        </div>`;
+    }
+    panel.innerHTML = html;
+}
+
+function renderKdjSnapshot() {
+    const panel = document.getElementById('kdjSnapshot');
+    if (!panel) return;
+
+    const rows = [];
+    for (const stock of STOCKS) {
+        const kdj = getStockKDJ(stock.code);
+        const quote = quoteCache[stock.code];
+        if (!quote || !kdj.m1) continue;
+
+        const name = quote.name || stock.name;
+        const code = stock.code.substring(2);
+        const changePct = quote.changePct || 0;
+        const pctColor = changePct > 0 ? 'var(--red)' : (changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
+
+        const kdjStyle = (v) => {
+            if (v === null || v === undefined) return '--';
+            if (v >= 80) return `<span style="color:var(--red);font-weight:700">${v.toFixed(1)}</span>`;
+            if (v < 20) return `<span style="color:var(--green);font-weight:700">${v.toFixed(1)}</span>`;
+            return `<span style="color:var(--text-dim)">${v.toFixed(1)}</span>`;
+        };
+
+        // 检查是否有任何预警条件触发
+        const shDrop = shIndexCache.changePoints || 0;
+        let flags = [];
+        if (kdj.m1 >= 80 && kdj.m5 >= 80) flags.push('<span title="减半仓" style="color:var(--yellow)">🔻</span>');
+        if (kdj.m1 < 20 && kdj.m5 < 20) flags.push('<span title="加仓" style="color:var(--green)">🟢</span>');
+        if (kdj.m5 >= 80 && kdj.m30 >= 80) flags.push('<span title="清仓" style="color:var(--red)">🚨</span>');
+        if (shDrop < -10 && changePct > 2 && kdj.m1 > 80) flags.push('<span title="逆势减仓" style="color:var(--orange)">⚠️</span>');
+
+        rows.push({
+            code, name, changePct, pctColor, kdj, flags,
+            m1v: kdj.m1, m5v: kdj.m5, m30v: kdj.m30
+        });
+    }
+
+    // 按是否有预警排序
+    rows.sort((a, b) => {
+        const aAlert = a.flags.length > 0 ? 0 : 1;
+        const bAlert = b.flags.length > 0 ? 0 : 1;
+        return aAlert - bAlert;
+    });
+
+    let html = '<table style="font-size:11px;table-layout:fixed"><thead><tr>' +
+        '<th style="width:8%">代码</th><th style="width:14%">名称</th><th style="width:10%">涨跌</th>' +
+        '<th style="width:12%">1分K</th><th style="width:12%">5分K</th><th style="width:12%">30分K</th>' +
+        '<th style="width:12%">状态</th><th style="width:20%">预警</th></tr></thead><tbody>';
+
+    for (const r of rows) {
+        html += `<tr>
+            <td style="font-size:10px;color:var(--text-dim)">${r.code}</td>
+            <td style="font-weight:600">${r.name}</td>
+            <td style="color:${r.pctColor};font-weight:600">${r.changePct > 0 ? '+' : ''}${r.changePct.toFixed(2)}%</td>
+            <td>${kdjStyle(r.m1v)}</td>
+            <td>${kdjStyle(r.m5v)}</td>
+            <td>${kdjStyle(r.m30v)}</td>
+            <td style="font-size:16px">${r.flags.join(' ') || '<span style="color:var(--text-dim)">--</span>'}</td>
+            <td style="font-size:10px;color:var(--text-dim)">${r.flags.length > 0 ? '触发预警' : '正常'}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    panel.innerHTML = html;
 }
 
 
@@ -1518,6 +1980,7 @@ async function refreshQuotes() {
     if (lastUpdateTime) {
         if (msg) msg.textContent = '';
         checkAbnormal();
+        checkAlerts();
         renderAll();
     } else {
         if (msg) msg.textContent = '行情API连接中...';
@@ -1530,6 +1993,7 @@ async function refreshKDJ() {
     
     await fetchAllKlines();
     calcAllIndicators();
+    checkAlerts();
     renderAll();
     if (msg) msg.textContent = 'KDJ: ' + new Date().toLocaleTimeString('zh-CN');
     kdjLoaded = true;
@@ -2196,6 +2660,59 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkAutoReview, 60000);
     // 页面加载后立即检查一次
     setTimeout(checkAutoReview, 3000);
+
+    // ===== 邮件配置 =====
+    const saveBtn = document.getElementById('saveEmailConfig');
+    const testBtn = document.getElementById('testEmail');
+    const endpointInput = document.getElementById('emailEndpoint');
+    const statusDiv = document.getElementById('emailStatus');
+
+    // 加载已保存配置
+    try {
+        const saved = JSON.parse(localStorage.getItem('alertEmailConfig') || '{}');
+        if (saved.endpoint && endpointInput) endpointInput.value = saved.endpoint;
+    } catch(e) {}
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const endpoint = (endpointInput?.value || '').trim();
+            const config = { enabled: !!endpoint, endpoint, email: '87538676@qq.com' };
+            try {
+                localStorage.setItem('alertEmailConfig', JSON.stringify(config));
+                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--green)">✅ 配置已保存</span>';
+            } catch(e) {
+                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">保存失败</span>';
+            }
+        });
+    }
+
+    if (testBtn) {
+        testBtn.addEventListener('click', () => {
+            const endpoint = (endpointInput?.value || '').trim();
+            if (!endpoint) {
+                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--yellow)">请先输入邮件转发API地址</span>';
+                return;
+            }
+            if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--blue)">⏳ 测试发送中...</span>';
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: '87538676@qq.com',
+                    subject: '[测试邮件] 股票预警系统连通性测试',
+                    alerts: [{ icon: '✅', title: '测试邮件', detail: '如果您收到此邮件，说明预警系统配置正确', level: 'info' }]
+                })
+            }).then(r => {
+                if (r.ok) {
+                    if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--green)">✅ 测试邮件已发送，请检查收件箱</span>';
+                } else {
+                    if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">❌ 发送失败 (HTTP ' + r.status + ')</span>';
+                }
+            }).catch(e => {
+                if (statusDiv) statusDiv.innerHTML = '<span style="color:var(--red)">❌ 连接失败: ' + e.message + '</span>';
+            });
+        });
+    }
 });
 
 // 切换标签
