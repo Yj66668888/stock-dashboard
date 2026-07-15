@@ -438,55 +438,31 @@ async function fetchQuotes() {
 }
 
 async function fetchKline(code, period, count) {
-    // 分钟线使用东方财富API(支持不同klt)，日线使用同花顺
+    // 日线用同花顺klt=01，分钟线用同花顺klt=60（返回1分钟数据，m1/m5/m30共用，不同KDJ参数区分）
     try {
         const sym = code.substring(2);
-        const market = code.startsWith('6') ? '1' : '0';
-        const secid = `${market}.${sym}`;
 
-        // 日线：同花顺 (稳定可靠)
-        if (period === 'day') {
-            const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/01/last.js`;
-            const resp = await fetchWithProxy(url);
-            if (!resp) return null;
-            const text = await resp.text();
-            const m = text.match(/\(({[\s\S]*})\)/);
-            if (!m) return null;
-            const data = JSON.parse(m[1]);
-            const raw = data?.data || '';
-            if (!raw) return null;
-            const points = raw.split(';').filter(p => p.trim());
-            const klines = points.map(p => {
-                const f = p.split(',');
-                if (f.length < 5) return null;
-                return {
-                    date: f[0], open: parseFloat(f[1]) || 0, high: parseFloat(f[2]) || 0,
-                    low: parseFloat(f[3]) || 0, close: parseFloat(f[4]) || 0,
-                    volume: parseInt(f[5]) || 0, amount: parseFloat(f[6]) || 0
-                };
-            }).filter(k => k !== null);
-            if (klines.length < 9) return null;
-            return klines;
-        }
-
-        // 分钟线：东方财富 (支持m1/m5/m30不同klt)
-        const klt = period === 'm1' ? '1' : (period === 'm5' ? '5' : '30');
-        const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&klt=${klt}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&lmt=${count}`;
+        const thsPeriod = period === 'day' ? '01' : '60';
+        const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/${thsPeriod}/last.js`;
         const resp = await fetchWithProxy(url);
         if (!resp) return null;
-        const result = await resp.json();
-        const klineList = result?.data?.klines;
-        if (!klineList || klineList.length < 5) return null;
-        // 东方财富字段: f51日期/f52开盘/f53收盘/f54最高/f55最低/f56成交量/f57成交额
-        const klines = klineList.map(k => {
-            const f = k.split(',');
+        const text = await resp.text();
+        const m = text.match(/\(({[\s\S]*})\)/);
+        if (!m) return null;
+        const data = JSON.parse(m[1]);
+        const raw = data?.data || '';
+        if (!raw) return null;
+        const points = raw.split(';').filter(p => p.trim());
+        const klines = points.map(p => {
+            const f = p.split(',');
+            if (f.length < 5) return null;
             return {
-                date: f[0], open: parseFloat(f[1]) || 0, close: parseFloat(f[2]) || 0,
-                high: parseFloat(f[3]) || 0, low: parseFloat(f[4]) || 0,
+                date: f[0], open: parseFloat(f[1]) || 0, high: parseFloat(f[2]) || 0,
+                low: parseFloat(f[3]) || 0, close: parseFloat(f[4]) || 0,
                 volume: parseInt(f[5]) || 0, amount: parseFloat(f[6]) || 0
             };
-        });
-        if (klines.length < 5) return null;
+        }).filter(k => k !== null);
+        if (klines.length < 9) return null;
         return klines;
     } catch(e) {
         return null;
