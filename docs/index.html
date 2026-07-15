@@ -42,8 +42,8 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .stat-card.active { border-color: var(--blue); background: rgba(88, 166, 255, 0.15); box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
 .stat-card .label { font-size: 11px; color: var(--text-dim); }
 .stat-card .value { font-size: 22px; font-weight: 700; }
-.stat-card .value.up { color: var(--green); }
-.stat-card .value.down { color: var(--red); }
+.stat-card .value.up { color: var(--red); }
+.stat-card .value.down { color: var(--green); }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th { position: sticky; top: 0; background: var(--bg-card); color: var(--text-dim); text-align: left; padding: 8px 6px; font-weight: 600; border-bottom: 2px solid var(--border); z-index: 1; white-space: nowrap; }
 td { padding: 5px 6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
@@ -53,8 +53,8 @@ tr:hover td { background: var(--bg-hover); }
 .kdj-flash { animation: kdjFlash 0.6s ease-in-out infinite; background: rgba(248, 81, 73, 0.25) !important; border-radius: 4px; padding: 2px 4px; }
 @keyframes kdjFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-.tag-up { background: rgba(63, 185, 80, 0.2); color: var(--green); }
-.tag-down { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.tag-up { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.tag-down { background: rgba(63, 185, 80, 0.2); color: var(--green); }
 .tag-washout { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
 .tag-distribute { background: rgba(255, 123, 114, 0.2); color: var(--pink); }
 .tag-accumulate { background: rgba(88, 166, 255, 0.2); color: var(--blue); }
@@ -84,10 +84,10 @@ tr:hover td { background: var(--bg-hover); }
   #reviewTable { font-size: 11px; table-layout: fixed; width: 100%; }
   #reviewTable th { font-size: 11px; padding: 6px 4px; }
   #reviewTable td { padding: 6px 4px; line-height: 1.4; white-space: normal; word-break: break-word; overflow-wrap: break-word; vertical-align: top; font-size: 11px; }
-  .review-up { color: var(--green); font-weight: 700; }
-  .review-down { color: var(--red); font-weight: 700; }
-  .review-cap-in { color: var(--green); font-weight: 600; }
-  .review-cap-out { color: var(--red); font-weight: 600; }
+  .review-up { color: var(--red); font-weight: 700; }
+  .review-down { color: var(--green); font-weight: 700; }
+  .review-cap-in { color: var(--red); font-weight: 600; }
+  .review-cap-out { color: var(--green); font-weight: 600; }
   .review-cap-neutral { color: var(--yellow); }
   .review-action-buy { background: rgba(63,185,80,0.15); color: var(--green); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(63,185,80,0.3); }
   .review-action-hold { background: rgba(88,166,255,0.15); color: var(--blue); padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 11px; display: inline-block; border: 1px solid rgba(88,166,255,0.3); }
@@ -186,7 +186,7 @@ tr:hover td { background: var(--bg-hover); }
         <table>
             <thead>
                 <tr>
-                    <th>评分</th><th>梯队</th><th>代码</th><th>名称</th><th>赛道</th><th>驱动方向</th><th>阶段</th>
+                    <th>评分</th><th>梯队</th><th>代码</th><th>名称</th><th>赛道</th><th>板块</th><th>驱动方向</th><th>阶段</th>
                     <th>现价</th><th>涨跌幅</th><th>PE</th>
                     <th>5分钟KD</th><th>30分钟KD</th>
                     <th>MACD</th><th>RSI</th><th>均线</th>
@@ -291,6 +291,16 @@ let abnormalLog = [];
 let lastUpdateTime = '';
 let capitalFlowCache = {};
 let activeFilter = null; // 当前统计卡片筛选条件
+
+// 板块映射：细分赛道 → 申万一级行业
+const SECTOR_MAP = {
+    'AI算力PCB': '电子', '光通信': '通信', '液冷': '机械设备', '算力电力': '电力设备',
+    '存储芯片': '电子', '半导体设备': '电子', '光伏/储能': '电力设备', '电子特气/材料': '基础化工',
+    '先进封装': '电子', '电力设备': '电力设备', '电网设备': '电力设备', '有色金属': '有色金属',
+    '机器人': '机械设备', '智能制造': '机械设备', '半导体设计': '电子', 'AI应用': '计算机',
+    'AI视觉': '计算机', '食品饮料': '食品饮料', '面板': '电子', '电力': '公用事业',
+    '储能/逆变器': '电力设备', '半导体': '电子'
+};
 
 // ==================== 标的数据 ====================
 const STOCKS = [{"code": "sh600522", "name": "中天科技", "sector": "光通信", "direction": "需求端驱动", "pe": 18, "profitGrowth": 40, "reason": "光纤光缆龙头,AI数据中心光互联", "roe": 12, "grossMargin": 22, "debtRatio": 48, "riskFlags": []}, {"code": "sh600487", "name": "亨通光电", "sector": "光通信", "direction": "需求端驱动", "pe": 16, "profitGrowth": 35, "reason": "光纤+海洋通信,算力网络升级", "roe": 10, "grossMargin": 19, "debtRatio": 55, "riskFlags": []}, {"code": "sz002463", "name": "沪电股份", "sector": "AI算力PCB", "direction": "供需双驱", "pe": 25, "profitGrowth": 80, "reason": "AI服务器PCB龙头,英伟达供应商", "roe": 22, "grossMargin": 35, "debtRatio": 28, "riskFlags": []}, {"code": "sz002916", "name": "深南电路", "sector": "AI算力PCB", "direction": "供需双驱", "pe": 28, "profitGrowth": 70, "reason": "封装基板+PCB双轮驱动", "roe": 18, "grossMargin": 28, "debtRatio": 42, "riskFlags": []}, {"code": "sz002837", "name": "英维克", "sector": "液冷", "direction": "需求端驱动", "pe": 45, "profitGrowth": 100, "reason": "液冷龙头,字节AI Rack3.0催化", "roe": 25, "grossMargin": 38, "debtRatio": 35, "riskFlags": []}, {"code": "sz002272", "name": "川润股份", "sector": "液冷", "direction": "需求端驱动", "pe": 38, "profitGrowth": 85, "reason": "液冷设备,兆瓦级智算配套", "roe": 20, "grossMargin": 32, "debtRatio": 40, "riskFlags": []}, {"code": "sz002335", "name": "科华数据", "sector": "算力电力", "direction": "供需双驱", "pe": 22, "profitGrowth": 60, "reason": "UPS+储能,AI数据中心供电", "roe": 15, "grossMargin": 30, "debtRatio": 50, "riskFlags": ["质押偏高"]}, {"code": "sz000021", "name": "深科技", "sector": "存储芯片", "direction": "供需双驱+戴维斯双击", "pe": 20, "profitGrowth": 200, "reason": "存储封测,长鑫供应链", "roe": 12, "grossMargin": 18, "debtRatio": 55, "riskFlags": []}, {"code": "sz002371", "name": "北方华创", "sector": "半导体设备", "direction": "供给端驱动", "pe": 35, "profitGrowth": 55, "reason": "半导体设备龙头,七部委硬科技方案", "roe": 18, "grossMargin": 42, "debtRatio": 45, "riskFlags": []}, {"code": "sz002459", "name": "晶澳科技", "sector": "光伏/储能", "direction": "供需双驱", "pe": 12, "profitGrowth": 120, "reason": "光伏组件龙头,底部反转", "roe": 8, "grossMargin": 16, "debtRatio": 62, "riskFlags": ["负债偏高"]}, {"code": "sh605117", "name": "德业股份", "sector": "储能/逆变器", "direction": "需求端驱动", "pe": 18, "profitGrowth": 70, "reason": "户储逆变器龙头,海外需求爆发", "roe": 35, "grossMargin": 42, "debtRatio": 25, "riskFlags": []}, {"code": "sh600089", "name": "特变电工", "sector": "电力设备", "direction": "供需双驱", "pe": 15, "profitGrowth": 40, "reason": "变压器+特高压龙头,电网投资加码", "roe": 8, "grossMargin": 18, "debtRatio": 58, "riskFlags": ["负债偏高"]}, {"code": "sh600406", "name": "国电南瑞", "sector": "电网设备", "direction": "需求端驱动", "pe": 22, "profitGrowth": 30, "reason": "电网自动化龙头,特高压+储能", "roe": 14, "grossMargin": 28, "debtRatio": 40, "riskFlags": []}, {"code": "sz002028", "name": "思源电气", "sector": "电网设备", "direction": "需求端驱动", "pe": 25, "profitGrowth": 35, "reason": "电力设备,特别国债定向受益", "roe": 12, "grossMargin": 25, "debtRatio": 38, "riskFlags": []}, {"code": "sz002050", "name": "三花智控", "sector": "机器人", "direction": "需求端驱动", "pe": 30, "profitGrowth": 40, "reason": "热管理+机器人机电执行器", "roe": 16, "grossMargin": 28, "debtRatio": 35, "riskFlags": []}, {"code": "sz002747", "name": "埃斯顿", "sector": "机器人", "direction": "需求端驱动", "pe": 40, "profitGrowth": 50, "reason": "工业机器人龙头,机器人+大会催化", "roe": 6, "grossMargin": 32, "debtRatio": 45, "riskFlags": ["ROE偏低"]}, {"code": "sh600519", "name": "贵州茅台", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 22, "profitGrowth": 15, "reason": "白酒龙头,估值进入击球区,股息率高", "roe": 30, "grossMargin": 90, "debtRatio": 15, "riskFlags": []}, {"code": "sh603288", "name": "海天味业", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 35, "profitGrowth": 20, "reason": "调味品龙头,底部企稳反弹", "roe": 22, "grossMargin": 45, "debtRatio": 20, "riskFlags": []}, {"code": "sz002557", "name": "洽洽食品", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 18, "profitGrowth": 25, "reason": "休闲食品龙头,暑期消费旺季", "roe": 18, "grossMargin": 33, "debtRatio": 30, "riskFlags": []}, {"code": "sz000060", "name": "中金岭南", "sector": "有色金属", "direction": "戴维斯双击", "pe": 15, "profitGrowth": 200, "reason": "三稀龙头,镓锗铟+铜矿满产,PE重塑", "roe": 12, "grossMargin": 15, "debtRatio": 48, "riskFlags": []}, {"code": "sz000725", "name": "京东方A", "sector": "面板", "direction": "戴维斯双击(周期反转)", "pe": 20, "profitGrowth": 40, "reason": "面板龙头,折旧拐点+价格企稳", "roe": 5, "grossMargin": 14, "debtRatio": 55, "riskFlags": ["ROE偏低", "负债偏高"]}, {"code": "sz002979", "name": "雷赛智能", "sector": "智能制造", "direction": "戴维斯双击", "pe": 35, "profitGrowth": 120, "reason": "运动控制,半年报预增38%-42%,连续涨停", "roe": 28, "grossMargin": 40, "debtRatio": 22, "riskFlags": []}, {"code": "sz002230", "name": "科大讯飞", "sector": "AI应用", "direction": "需求端驱动", "pe": 60, "profitGrowth": 45, "reason": "AI大模型龙头,WAIC催化", "roe": 8, "grossMargin": 42, "debtRatio": 38, "riskFlags": ["ROE偏低"]}, {"code": "sh601899", "name": "紫金矿业", "sector": "有色金属", "direction": "戴维斯双击", "pe": 14, "profitGrowth": 40, "reason": "铜金龙头,全球资源+高景气", "roe": 22, "grossMargin": 20, "debtRatio": 50, "riskFlags": []}, {"code": "sh600900", "name": "长江电力", "sector": "电力", "direction": "防御+高股息", "pe": 20, "profitGrowth": 10, "reason": "水电龙头,防御配置+高分红", "roe": 15, "grossMargin": 60, "debtRatio": 55, "riskFlags": ["负债偏高"]}, {"code": "sh600584", "name": "长电科技", "sector": "先进封装", "direction": "供需双驱", "pe": 22, "profitGrowth": 100, "reason": "封测龙头,Chiplet先进封装", "roe": 10, "grossMargin": 22, "debtRatio": 52, "riskFlags": ["质押偏高"]}, {"code": "sh603501", "name": "韦尔股份", "sector": "半导体设计", "direction": "戴维斯双击(底部反转)", "pe": 30, "profitGrowth": 80, "reason": "CIS芯片龙头,手机+汽车双复苏", "roe": 15, "grossMargin": 30, "debtRatio": 40, "riskFlags": []}, {"code": "sz002409", "name": "雅克科技", "sector": "电子特气/材料", "direction": "供给端驱动", "pe": 30, "profitGrowth": 60, "reason": "电子特气+前驱体,氦气管制受益", "roe": 16, "grossMargin": 38, "debtRatio": 30, "riskFlags": []}, {"code": "sh600887", "name": "伊利股份", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 16, "profitGrowth": 18, "reason": "乳业龙头,消费复苏+高股息", "roe": 20, "grossMargin": 35, "debtRatio": 45, "riskFlags": []}, {"code": "sz002415", "name": "海康威视", "sector": "AI视觉", "direction": "供需双驱", "pe": 20, "profitGrowth": 20, "reason": "AI视觉龙头,机器人视觉+大模型", "roe": 20, "grossMargin": 45, "debtRatio": 25, "riskFlags": []}];
@@ -920,7 +930,7 @@ function maAlignHTML(ma) {
 function capitalCellHTML(cf) {
     if (!cf) return '<td style="font-size:11px">--</td>';
     const v = cf.mainNetInflow;
-    const clr = v > 0 ? 'var(--green)' : (v < 0 ? 'var(--red)' : 'var(--text-dim)');
+    const clr = v > 0 ? 'var(--red)' : (v < 0 ? 'var(--green)' : 'var(--text-dim)');
     const sign = v > 0 ? '+' : '';
     const abs = Math.abs(v);
     if (abs >= 100000000) return `<td style="color:${clr};font-size:11px">${sign}${(abs/100000000).toFixed(2)}亿</td>`;
@@ -1075,6 +1085,13 @@ function renderTable() {
         const scColor = scoreColor(sc.total);
         const riskFlags = stock.riskFlags || [];
         const riskHTML = riskFlags.length > 0 ? ` <span style="color:var(--red);font-size:10px" title="${riskFlags.join(',')}">⚠️</span>` : '';
+        const sectorName = SECTOR_MAP[stock.sector] || stock.sector;
+        // 涨跌配色：涨=红、跌=绿（A股惯例）；主力进入+上涨→加粗高亮
+        const capIn = d.capFlow && d.capFlow.mainNetInflow > 0;
+        const capOut = d.capFlow && d.capFlow.mainNetInflow < 0;
+        const priceColor = changeCls === 'up' ? 'var(--red)' : (changeCls === 'down' ? 'var(--green)' : 'var(--text)');
+        const priceWeight = (capIn && changeCls === 'up') ? '800' : '600';
+        const pctGlow = (capIn && changeCls === 'up') ? 'text-shadow:0 0 6px rgba(248,81,73,0.5)' : '';
         
         html += `<tr>
             <td style="font-weight:700;${scColor}">${sc.total}</td>
@@ -1082,10 +1099,11 @@ function renderTable() {
             <td><span style="color:var(--text-dim)">${code.substring(2)}</span></td>
             <td style="font-weight:600">${quoteCache[code]?.name || stock.name}${riskHTML}</td>
             <td>${stock.sector}</td>
+            <td style="font-size:11px;color:var(--blue)">${sectorName}</td>
             <td>${directionTagHTML(stock.direction)}</td>
             <td>${phaseTagHTML(ind.phase)}</td>
-            <td style="font-weight:600;color:${changeCls === 'up' ? 'var(--green)' : (changeCls === 'down' ? 'var(--red)' : 'var(--text)')}">${d.price ? d.price.toFixed(2) : '--'}</td>
-            <td style="color:${changeCls === 'up' ? 'var(--green)' : (changeCls === 'down' ? 'var(--red)' : 'var(--text)')}">${d.changePct ? (d.changePct > 0 ? '+' : '') + d.changePct.toFixed(2) + '%' : '--'}</td>
+            <td style="font-weight:${priceWeight};color:${priceColor};${pctGlow}">${d.price ? d.price.toFixed(2) : '--'}</td>
+            <td style="font-weight:${priceWeight};color:${priceColor};${pctGlow}">${d.changePct ? (d.changePct > 0 ? '+' : '') + d.changePct.toFixed(2) + '%' : '--'}</td>
             <td>${d.pe ? d.pe.toFixed(1) : '--'}</td>
             ${kdjCellHTML(d.kdj.m5)}
             ${kdjCellHTML(d.kdj.m30)}
@@ -1117,7 +1135,7 @@ function renderTierOverview(tierCounts) {
         const names = stocks.map(s => {
             const st = STOCKS.find(x => x.code === s.code);
             const q = quoteCache[s.code];
-            return q ? `<span style="color:var(--text)">${q.name}</span><span style="color:${q.changePct > 0 ? 'var(--green)' : (q.changePct < 0 ? 'var(--red)' : 'var(--text-dim)')};margin-left:4px">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(1)}%</span>` : `<span style="color:var(--text-dim)">${st?.name || s.code}</span>`;
+            return q ? `<span style="color:var(--text)">${q.name}</span><span style="color:${q.changePct > 0 ? 'var(--red)' : (q.changePct < 0 ? 'var(--green)' : 'var(--text-dim)')};margin-left:4px">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(1)}%</span>` : `<span style="color:var(--text-dim)">${st?.name || s.code}</span>`;
         }).join('<span style="color:var(--text-dim)"> · </span>') || '<span style="color:var(--text-dim)">--</span>';
         html += `<div style="flex:1;background:${t.bg};border:1px solid ${t.border};border-radius:10px;padding:12px 14px;min-width:0">
             <div style="font-size:14px;font-weight:700;margin-bottom:4px" class="${t.cls}">${t.label}</div>
@@ -1151,7 +1169,7 @@ function checkAbnormal() {
                 code: stock.code.substring(2),
                 type: d.changePct > 0 ? '急涨' : '急跌',
                 detail: `${d.changePct > 0 ? '+' : ''}${d.changePct.toFixed(2)}%`,
-                color: d.changePct > 0 ? 'var(--green)' : 'var(--red)'
+                color: d.changePct > 0 ? 'var(--red)' : 'var(--green)'
             });
         }
         
@@ -1971,19 +1989,19 @@ function generateReview() {
     const summaryHTML = `
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
             <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:24px;font-weight:800;color:var(--green)">${upCount}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--red)">${upCount}</div>
                 <div style="font-size:12px;color:var(--text-dim)">上涨</div>
             </div>
             <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:24px;font-weight:800;color:var(--red)">${downCount}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--green)">${downCount}</div>
                 <div style="font-size:12px;color:var(--text-dim)">下跌</div>
             </div>
             <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:24px;font-weight:800;color:var(--green)">${strongUp}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--red)">${strongUp}</div>
                 <div style="font-size:12px;color:var(--text-dim)">强势上涨(>3%)</div>
             </div>
             <div style="flex:1;text-align:center;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:24px;font-weight:800;color:var(--red)">${strongDown}</div>
+                <div style="font-size:24px;font-weight:800;color:var(--green)">${strongDown}</div>
                 <div style="font-size:12px;color:var(--text-dim)">强势下跌(<-3%)</div>
             </div>
         </div>
