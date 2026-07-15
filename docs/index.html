@@ -1806,12 +1806,21 @@ function renderStockChip(code) {
     if (!stock) return '';
     const q = getStockQuote(code);
     const name = getStockName(code);
-    const priceText = q ? `${q.price} <span style="color:${q.cls === 'up' ? 'var(--green)' : (q.cls === 'down' ? 'var(--red)' : 'var(--text-dim)')}">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(2)}%</span>` : '<span style="color:var(--text-dim)">--</span>';
+    // A股惯例: 涨红跌绿
+    const priceText = q ? `${q.price} <span style="color:${q.cls === 'up' ? 'var(--red)' : (q.cls === 'down' ? 'var(--green)' : 'var(--text-dim)')}">${q.changePct > 0 ? '+' : ''}${q.changePct.toFixed(2)}%</span>` : '<span style="color:var(--text-dim)">--</span>';
+    // 板块信息
+    const sectorName = SECTOR_MAP[stock.sector] || stock.sector;
+    const sectorIdx = sectorIndexCache[sectorName];
+    const sectorPct = sectorIdx ? sectorIdx.pct : null;
+    const sectorPctStr = sectorPct !== null ? (sectorPct > 0 ? '+' : '') + sectorPct.toFixed(2) + '%' : '--';
+    const sectorColor = sectorPct !== null ? (sectorPct > 0 ? 'var(--red)' : (sectorPct < 0 ? 'var(--green)' : 'var(--text-dim)')) : 'var(--text-dim)';
     return `<div style="display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;margin:3px;font-size:12px">
         <span style="color:var(--text-dim)">${code.substring(2)}</span>
         <span style="font-weight:600;margin-left:4px">${name}</span>
         <span style="margin-left:6px">${priceText}</span>
         <span style="color:var(--text-dim);margin-left:4px;font-size:11px">${stock.sector}</span>
+        <span style="color:var(--blue);margin-left:4px;font-size:11px">${sectorName}</span>
+        <span style="color:${sectorColor};margin-left:2px;font-size:11px">${sectorPctStr}</span>
     </div>`;
 }
 
