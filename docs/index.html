@@ -158,7 +158,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0716-0130</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0716-0155</span>
     </div>
 </div>
 
@@ -376,6 +376,15 @@ tr:hover td { background: var(--bg-hover); }
 // 标的数量: 30
 
 'use strict';
+
+// AbortSignal.timeout polyfill — iOS Safari < 16 / 旧版浏览器不支持
+if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout !== 'function') {
+    AbortSignal.timeout = function(ms) {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+    };
+}
 
 const CORS_PROXIES = [
     'https://api.allorigins.win/raw?url=',
@@ -2026,29 +2035,31 @@ async function init() {
     console.log('仪表盘初始化, 标的数:', STOCKS.length);
     
     // 1. 先渲染静态数据
-    renderCalendar();
-    renderDualWheel();
-    renderAll();
+    try {
+        renderCalendar();
+        renderDualWheel();
+        renderAll();
+    } catch(e) { console.error('静态渲染失败:', e); }
     
-    // 2. 优先加载行情
-    await refreshQuotes();
+    // 2. 优先加载行情（失败不阻塞后续）
+    try { await refreshQuotes(); } catch(e) { console.error('行情加载失败:', e); }
     
     // 3. 后台加载K线数据
     refreshKDJ().then(() => {
         console.log('KDJ数据加载完成');
-    });
+    }).catch(e => console.error('KDJ加载失败:', e));
     
     // 4. 后台加载资金流向
     fetchAllCapitalFlows().then(() => {
         console.log('资金流向加载完成');
         renderAll();
-    });
+    }).catch(e => console.error('资金流向加载失败:', e));
     
     // 5. 加载板块指数
     fetchSectorIndices().then(() => {
         console.log('板块指数加载完成');
         renderAll();
-    });
+    }).catch(e => console.error('板块指数加载失败:', e));
     
     // 6. 启动定时器
     quoteTimer = setInterval(refreshQuotes, REFRESH_QUOTE_MS);
