@@ -3385,11 +3385,6 @@ function renderDeepAnalysis() {
 
     // 渲染表格
     let html = '';
-    // 加载状态提示
-    if (marketLimitStocks.length === 0 && !marketLimitLoaded) {
-        tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-dim)">正在加载全市场涨停数据...</td></tr>';
-        return;
-    }
     for (const r of rows) {
         // 代码
         const codeCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">' + r.code + '</td>';
