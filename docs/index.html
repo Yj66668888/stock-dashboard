@@ -289,7 +289,7 @@ tr:hover td { background: var(--bg-hover); }
         <div class="stat-card" style="flex:1;min-width:100px">
             <div class="label">涨停个股</div>
             <div class="value" id="deepStatLimitCount">--</div>
-            <div style="font-size:10px;color:var(--text-dim)">五日内 <span id="deepStatLimitDate">--</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">全市场 <span id="deepStatLimitDate">--</span></div>
         </div>
         <div class="stat-card" style="flex:1;min-width:100px">
             <div class="label">最高连板</div>
@@ -315,9 +315,9 @@ tr:hover td { background: var(--bg-hover); }
 
     <!-- 标题行 + 更新信息 -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;padding:0 4px">
-        <div style="font-size:14px;font-weight:700;color:var(--blue)">🔍 涨停个股明细（00/60开头·排除ST）</div>
+        <div style="font-size:14px;font-weight:700;color:var(--blue)">🔍 全市场涨停个股明细（排除ST）</div>
         <div style="font-size:11px;color:var(--text-dim)">
-            共 <span id="deepTotalCount" style="font-weight:700">30</span> 只 | 更新：<span id="deepUpdateTime">--</span>
+            共 <span id="deepTotalCount" style="font-weight:700">--</span> 只 | 更新：<span id="deepUpdateTime">--</span>
         </div>
     </div>
 
@@ -616,6 +616,213 @@ async function fetchAllKlines() {
 
     calcAllIndicators();
     renderAll();
+}
+
+// ==================== 全市场涨停个股 ====================
+
+var marketLimitStocks = []; // 全市场涨停个股
+var marketLimitLoaded = false;
+var marketLimitTimer = null;
+
+function getPrevTradingDate(date) {
+    var d = new Date(date);
+    d.setDate(d.getDate() - 1);
+    while (d.getDay() === 0 || d.getDay() === 6) {
+        d.setDate(d.getDate() - 1);
+    }
+    return d.getFullYear() +
+        String(d.getMonth() + 1).padStart(2, '0') +
+        String(d.getDate()).padStart(2, '0');
+}
+
+async function fetchMarketLimitStocks() {
+    var today = new Date();
+    var ymd = today.getFullYear() +
+        String(today.getMonth() + 1).padStart(2, '0') +
+        String(today.getDate()).padStart(2, '0');
+
+    var baseUrl = 'https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cb93f82d732a47&dpt=wz.ztzt&Pageindex=0&pagesize=200&sort=fbt:asc&date=';
+    var pool = null;
+
+    // 尝试今天和上一个交易日
+    var dates = [ymd, getPrevTradingDate(today)];
+    for (var di = 0; di < dates.length && !pool; di++) {
+        var url = baseUrl + dates[di];
+
+        // 方式1: JSONP（绕过CORS）
+        try {
+            var result = await jsonpRequest(url);
+            if (result && result.data && result.data.pool && result.data.pool.length > 0) {
+                pool = result.data.pool;
+            }
+        } catch(e) {}
+
+        // 方式2: fetchWithProxy
+        if (!pool) {
+            try {
+                var resp = await fetchWithProxy(url);
+                if (resp) {
+                    var result2 = await resp.json();
+                    if (result2 && result2.data && result2.data.pool && result2.data.pool.length > 0) {
+                        pool = result2.data.pool;
+                    }
+                }
+            } catch(e) {}
+        }
+    }
+
+    if (!pool || pool.length === 0) {
+        console.log('涨停池数据为空或获取失败');
+        try { renderDeepAnalysis(); } catch(e) {}
+        return;
+    }
+
+    // 解析数据
+    marketLimitStocks = pool.map(function(item) {
+        var code = item.c;
+        var market = code.startsWith('6') ? 'sh' : 'sz';
+        var fullCode = market + code;
+        var rawPrice = item.p;
+        // 东方财富API价格可能为分(整数>1000时需/100)
+        var price = (typeof rawPrice === 'number' && rawPrice > 1000 && Number.isInteger(rawPrice)) ? rawPrice / 100 : rawPrice;
+        return {
+            code: fullCode,
+            shortCode: code,
+            name: item.n,
+            price: price,
+            changePct: item.zdp || 0,
+            limitBoard: item.zbc || 1,
+            limitTime: item.fbt || '',
+            lastLimitTime: item.lbt || '',
+            industry: item.hy || '',
+            industryCode: item.hybk || '',
+            turnover: item.hs || 0,
+            sealAmount: item.fund || 0,
+            amount: item.amount || 0,
+            limitDays: (item.zttj && item.zttj.days) ? item.zttj.days : 1,
+            limitCount: (item.zttj && item.zttj.ct) ? item.zttj.ct : 1,
+            isMarketStock: true,
+            todayLimit: true
+        };
+    });
+
+    // 排除ST和退市股
+    marketLimitStocks = marketLimitStocks.filter(function(s) {
+        return s.name.indexOf('ST') === -1 && s.name.indexOf('退') === -1;
+    });
+
+    marketLimitLoaded = true;
+    console.log('全市场涨停个股: ' + marketLimitStocks.length + ' 只');
+
+    // 为不在30只自选股中的涨停股获取K线
+    var existingCodes = STOCKS.map(function(s) { return s.code; });
+    var newCodes = marketLimitStocks
+        .filter(function(s) { return existingCodes.indexOf(s.code) === -1; })
+        .map(function(s) { return s.code; });
+
+    if (newCodes.length > 0) {
+        fetchLimitStockKlines(newCodes);
+    }
+
+    try { renderDeepAnalysis(); } catch(e) {}
+}
+
+async function fetchLimitStockKlines(codes) {
+    // 跳过已有K线数据的
+    codes = codes.filter(function(code) { return !kdjCache[code] || !kdjCache[code].m5; });
+    if (codes.length === 0) return;
+
+    var batchSize = 10;
+    var fetched = [];
+
+    // 1. 获取分钟线（用于KDJ）
+    for (var i = 0; i < codes.length; i += batchSize) {
+        var batch = codes.slice(i, i + batchSize);
+        await Promise.all(batch.map(async function(code) {
+            var klines = await fetchKline(code, 'm5', 100);
+            if (klines) {
+                if (!kdjCache[code]) kdjCache[code] = {};
+                kdjCache[code]['m1'] = klines;
+                kdjCache[code]['m5'] = klines;
+                kdjCache[code]['m30'] = klines;
+                fetched.push(code);
+            }
+        }));
+        // 每批完成后重算KDJ并刷新
+        calcMarketLimitIndicators(fetched.slice());
+        try { renderDeepAnalysis(); } catch(e) {}
+    }
+
+    // 2. 获取日线（用于5日涨幅和趋势）
+    for (var i = 0; i < codes.length; i += batchSize) {
+        var batch = codes.slice(i, i + batchSize);
+        await Promise.all(batch.map(async function(code) {
+            var klines = await fetchKline(code, 'day', 100);
+            if (klines) {
+                if (!kdjCache[code]) kdjCache[code] = {};
+                kdjCache[code]['day'] = klines;
+            }
+        }));
+        calcMarketLimitIndicators(fetched.slice());
+        try { renderDeepAnalysis(); } catch(e) {}
+    }
+}
+
+function calcMarketLimitIndicators(codes) {
+    for (var i = 0; i < codes.length; i++) {
+        var code = codes[i];
+        var cache = kdjCache[code];
+        if (!cache) continue;
+
+        if (!trendCache[code]) trendCache[code] = {};
+        if (!trendCache[code].kdj) trendCache[code].kdj = {};
+
+        ['m5', 'm30'].forEach(function(period) {
+            var klines = cache[period];
+            var n = period === 'm5' ? 3 : 9;
+            if (klines && klines.length >= n + 1) {
+                var kdj = calcKDJ(klines, n);
+                if (kdj && kdj.length > 0) {
+                    var last = kdj[kdj.length - 1];
+                    var fused = Math.round((last.k + last.d) / 2 * 100) / 100;
+                    trendCache[code].kdj[period] = { v: fused, k: last.k, d: last.d, j: last.j };
+                }
+            }
+        });
+    }
+}
+
+function getMarketLimitLogic(stock) {
+    var board = stock.limitBoard || 1;
+    var time = stock.limitTime || '';
+    var industry = stock.industry || '';
+    var sealAmt = stock.sealAmount || 0;
+
+    var logic = '';
+    if (board >= 5) {
+        logic = board + '连板！' + industry + '板块龙头，市场情绪极度高涨';
+    } else if (board >= 3) {
+        logic = board + '连板，' + industry + '板块持续发酵，资金关注度高';
+    } else if (board === 2) {
+        logic = '2连板，' + industry + '板块走强，次日溢价预期较好';
+    } else {
+        var timeNum = parseInt(time);
+        if (timeNum < 1000) {
+            logic = '首板早盘涨停，' + industry + '板块，资金介入积极';
+        } else if (timeNum >= 1400) {
+            logic = '尾盘涨停，' + industry + '板块，需关注次日走势';
+        } else {
+            logic = '首板涨停，' + industry + '板块，资金关注度提升';
+        }
+    }
+
+    if (sealAmt > 50000000) {
+        logic += '，封单超5000万';
+    } else if (sealAmt > 10000000) {
+        logic += '，封单超1000万';
+    }
+
+    return logic;
 }
 
 // ==================== 板块指数获取 ====================
@@ -2101,12 +2308,19 @@ async function init() {
         renderAll();
     }).catch(e => console.error('板块指数加载失败:', e));
     
-    // 6. 启动定时器
+    // 6. 加载全市场涨停池数据
+    fetchMarketLimitStocks().then(() => {
+        console.log('涨停池数据加载完成');
+    }).catch(e => console.error('涨停池加载失败:', e));
+    
+    // 7. 启动定时器
     quoteTimer = setInterval(refreshQuotes, REFRESH_QUOTE_MS);
     kdjTimer = setInterval(refreshKDJ, REFRESH_KDJ_MS);
     calendarTimer = setInterval(renderCalendar, REFRESH_CALENDAR_MS);
     // 板块指数随行情一起刷新
     setInterval(fetchSectorIndices, REFRESH_QUOTE_MS);
+    // 涨停池每60秒刷新
+    marketLimitTimer = setInterval(fetchMarketLimitStocks, 60000);
 }
 
 // ==================== 收盘复盘(智能分析) ====================
@@ -2951,36 +3165,108 @@ function renderDeepAnalysis() {
     const filterK5 = document.getElementById('deepFilterK5') ? document.getElementById('deepFilterK5').value : 'all';
     const searchText = document.getElementById('deepSearch') ? document.getElementById('deepSearch').value.trim().toLowerCase() : '';
 
+    // 构建合并股票列表：全市场涨停股 + 自选股中5日内涨停的
+    var allStocks = [];
+    var seenCodes = {};
+    var nowDate = new Date();
+    var todayStr = nowDate.getFullYear() + '-' +
+        String(nowDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(nowDate.getDate()).padStart(2, '0');
+
+    // 1. 全市场涨停股（今日涨停池）
+    if (marketLimitStocks.length > 0) {
+        for (var mi = 0; mi < marketLimitStocks.length; mi++) {
+            var ms = marketLimitStocks[mi];
+            allStocks.push({
+                code: ms.code, shortCode: ms.shortCode, name: ms.name,
+                sector: ms.industry, sectorName: ms.industry,
+                price: ms.price, changePct: ms.changePct,
+                limitBoard: ms.limitBoard, limitTime: ms.limitTime,
+                todayLimit: true, isMarketStock: true,
+                sealAmount: ms.sealAmount,
+                limitLogicText: getMarketLimitLogic(ms),
+                limits: null,
+                limitDate: todayStr
+            });
+            seenCodes[ms.code] = true;
+        }
+    }
+
+    // 2. 自选股中5日内有涨停但不在今日涨停池的
+    for (var si = 0; si < STOCKS.length; si++) {
+        var wstock = STOCKS[si];
+        if (seenCodes[wstock.code]) continue;
+        var wlimits = checkDailyLimit(wstock.code);
+        if (wlimits && wlimits.length > 0) {
+            var wquote = quoteCache[wstock.code] || {};
+            var wlogic = getLimitLogic(wstock.code);
+            var wlimitDate = wlimits[wlimits.length - 1].date;
+            allStocks.push({
+                code: wstock.code, shortCode: wstock.code.substring(2),
+                name: wquote.name || wstock.name,
+                sector: wstock.sector, sectorName: SECTOR_MAP[wstock.sector] || wstock.sector,
+                price: wquote.price || 0, changePct: wquote.changePct || 0,
+                limitBoard: wlimits.length, limitTime: '',
+                todayLimit: false, isMarketStock: false,
+                sealAmount: 0,
+                limitLogicText: wlogic ? wlogic.reason : '',
+                limits: wlimits,
+                limitDate: wlimitDate
+            });
+            seenCodes[wstock.code] = true;
+        }
+    }
+
+    // 3. 涨停池还没加载时，回退显示全部30只自选股
+    if (marketLimitStocks.length === 0 && !marketLimitLoaded) {
+        for (var si2 = 0; si2 < STOCKS.length; si2++) {
+            var fstock = STOCKS[si2];
+            if (seenCodes[fstock.code]) continue;
+            var fquote = quoteCache[fstock.code] || {};
+            var flimits = checkDailyLimit(fstock.code);
+            var flogic = flimits ? getLimitLogic(fstock.code) : null;
+            var flimitDate = flimits ? flimits[flimits.length - 1].date : '';
+            allStocks.push({
+                code: fstock.code, shortCode: fstock.code.substring(2),
+                name: fquote.name || fstock.name,
+                sector: fstock.sector, sectorName: SECTOR_MAP[fstock.sector] || fstock.sector,
+                price: fquote.price || 0, changePct: fquote.changePct || 0,
+                limitBoard: flimits ? flimits.length : 0, limitTime: '',
+                todayLimit: false, isMarketStock: false,
+                sealAmount: 0,
+                limitLogicText: flogic ? flogic.reason : '',
+                limits: flimits,
+                limitDate: flimitDate
+            });
+        }
+    }
+
     // 收集数据
     const rows = [];
     let limitCount = 0, maxBoard = 0, washoutCount = 0, distributeCount = 0;
     let totalGain5d = 0, gain5dCount = 0;
     let latestLimitDate = '';
 
-    for (const stock of STOCKS) {
-        const code = stock.code;
-        const shortCode = code.substring(2);
-        const quote = quoteCache[code] || {};
-        const name = quote.name || stock.name;
-        const changePct = quote.changePct || 0;
+    for (var ai = 0; ai < allStocks.length; ai++) {
+        var s = allStocks[ai];
+        var code = s.code;
+        var shortCode = s.shortCode;
+        var name = s.name;
+        var changePct = s.changePct;
 
-        // 涨停检测
-        const limits = checkDailyLimit(code);
-        const limitDates = limits ? limits.map(l => l.date) : [];
-        const limitCountStock = limits ? limits.length : 0;
-        if (limitCountStock > 0) {
+        // 涨停统计
+        if (s.limitBoard > 0 || s.todayLimit) {
             limitCount++;
-            maxBoard = Math.max(maxBoard, limitCountStock);
-            const lastDate = limitDates[limitDates.length - 1];
-            if (lastDate > latestLimitDate) latestLimitDate = lastDate;
+            maxBoard = Math.max(maxBoard, s.limitBoard);
         }
+        if (s.limitDate && s.limitDate > latestLimitDate) latestLimitDate = s.limitDate;
 
         // 5日涨幅（从日K线计算）
-        let gain5d = 0;
-        const dayKlines = kdjCache[code] && kdjCache[code].day;
+        var gain5d = 0;
+        var dayKlines = kdjCache[code] && kdjCache[code].day;
         if (dayKlines && dayKlines.length >= 6) {
-            const lastClose = dayKlines[dayKlines.length - 1].close;
-            const prevClose5 = dayKlines[dayKlines.length - 6].close;
+            var lastClose = dayKlines[dayKlines.length - 1].close;
+            var prevClose5 = dayKlines[dayKlines.length - 6].close;
             if (prevClose5 > 0) {
                 gain5d = ((lastClose - prevClose5) / prevClose5) * 100;
             }
@@ -2989,19 +3275,16 @@ function renderDeepAnalysis() {
         gain5dCount++;
 
         // KDJ值
-        const ind = trendCache[code] || {};
-        const kdj = ind.kdj || {};
-        const k30 = kdj.m30 ? kdj.m30 : null;
-        const k5 = kdj.m5 ? kdj.m5 : null;
+        var ind = trendCache[code] || {};
+        var kdj = ind.kdj || {};
+        var k30 = kdj.m30 ? kdj.m30 : null;
+        var k5 = kdj.m5 ? kdj.m5 : null;
 
-        // 涨停核心逻辑
-        let limitLogic = null;
-        if (limits) {
-            limitLogic = getLimitLogic(code);
+        // 洗盘/出货分析（仅对自选股或已有趋势数据的）
+        var downAnalysis = null;
+        if (!s.isMarketStock || trendCache[code]) {
+            downAnalysis = analyzeDownTrend(code);
         }
-
-        // 洗盘/出货分析
-        let downAnalysis = analyzeDownTrend(code);
         if (downAnalysis) {
             if (downAnalysis.type === 'washout') washoutCount++;
             else if (downAnalysis.type === 'distribute') distributeCount++;
@@ -3009,8 +3292,8 @@ function renderDeepAnalysis() {
 
         // 搜索过滤
         if (searchText) {
-            const matchCode = shortCode.toLowerCase().includes(searchText);
-            const matchName = name.toLowerCase().includes(searchText);
+            var matchCode = shortCode.toLowerCase().indexOf(searchText) !== -1;
+            var matchName = name.toLowerCase().indexOf(searchText) !== -1;
             if (!matchCode && !matchName) continue;
         }
 
@@ -3027,32 +3310,33 @@ function renderDeepAnalysis() {
 
         // 30分K值筛选
         if (filterK30 !== 'all' && k30) {
-            const v = k30.v;
-            if (filterK30 === 'low' && v >= 20) continue;
-            if (filterK30 === 'mid' && (v < 20 || v > 80)) continue;
-            if (filterK30 === 'high' && v <= 80) continue;
+            var v30 = k30.v;
+            if (filterK30 === 'low' && v30 >= 20) continue;
+            if (filterK30 === 'mid' && (v30 < 20 || v30 > 80)) continue;
+            if (filterK30 === 'high' && v30 <= 80) continue;
         }
 
         // 5分K值筛选
         if (filterK5 !== 'all' && k5) {
-            const v = k5.v;
-            if (filterK5 === 'low' && v >= 20) continue;
-            if (filterK5 === 'mid' && (v < 20 || v > 80)) continue;
-            if (filterK5 === 'high' && v <= 80) continue;
+            var v5 = k5.v;
+            if (filterK5 === 'low' && v5 >= 20) continue;
+            if (filterK5 === 'mid' && (v5 < 20 || v5 > 80)) continue;
+            if (filterK5 === 'high' && v5 <= 80) continue;
         }
 
         rows.push({
             code: shortCode, fullCode: code, name: name,
-            sector: stock.sector, sectorName: SECTOR_MAP[stock.sector] || stock.sector,
-            price: quote.price || 0,
+            sector: s.sector, sectorName: s.sectorName,
+            price: s.price,
             changePct: changePct,
             gain5d: gain5d,
-            limits: limits, limitCount: limitCountStock,
-            limitLogic: limitLogic,
+            limitBoard: s.limitBoard,
+            todayLimit: s.todayLimit,
+            limitDate: s.limitDate,
+            limitLogicText: s.limitLogicText,
             downAnalysis: downAnalysis,
             k30: k30, k5: k5,
-            // 排序用字段
-            sortBoard: limitCountStock,
+            sortBoard: s.limitBoard,
             sortChange: changePct,
             sortGain5d: gain5d,
             sortK30: k30 ? k30.v : -1
@@ -3101,6 +3385,11 @@ function renderDeepAnalysis() {
 
     // 渲染表格
     let html = '';
+    // 加载状态提示
+    if (marketLimitStocks.length === 0 && !marketLimitLoaded) {
+        tbody.innerHTML = '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-dim)">正在加载全市场涨停数据...</td></tr>';
+        return;
+    }
     for (const r of rows) {
         // 代码
         const codeCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">' + r.code + '</td>';
@@ -3109,24 +3398,23 @@ function renderDeepAnalysis() {
         const nameCell = '<td style="padding:6px;font-weight:600;white-space:nowrap">' + r.name + '</td>';
 
         // 涨停日
-        let limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">--</td>';
-        if (r.limits && r.limits.length > 0) {
-            const lastLimit = r.limits[r.limits.length - 1];
-            limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--red);white-space:nowrap">' + lastLimit.date.substring(5) + '</td>';
+        var limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">--</td>';
+        if (r.limitDate) {
+            limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--red);white-space:nowrap">' + r.limitDate.substring(5) + '</td>';
         }
 
         // 连板标签
-        let boardCell = '<td style="padding:6px;white-space:nowrap">--</td>';
-        if (r.limitCount > 0) {
-            let boardColor = 'var(--text-dim)';
-            if (r.limitCount >= 5) boardColor = 'var(--purple)';
-            else if (r.limitCount >= 3) boardColor = 'var(--red)';
+        var boardCell = '<td style="padding:6px;white-space:nowrap">--</td>';
+        if (r.limitBoard > 0) {
+            var boardColor = 'var(--text-dim)';
+            if (r.limitBoard >= 5) boardColor = 'var(--purple)';
+            else if (r.limitBoard >= 3) boardColor = 'var(--red)';
             else boardColor = 'var(--orange)';
-            boardCell = '<td style="padding:6px;white-space:nowrap"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;color:' + boardColor + ';background:' + boardColor + '22;border:1px solid ' + boardColor + '44">' + r.limitCount + '连板</span></td>';
+            boardCell = '<td style="padding:6px;white-space:nowrap"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;color:' + boardColor + ';background:' + boardColor + '22;border:1px solid ' + boardColor + '44">' + r.limitBoard + '连板</span></td>';
         }
 
         // 行业
-        const sectorCell = '<td style="padding:6px;font-size:10px;color:var(--blue);white-space:nowrap">' + r.sector + '</td>';
+        const sectorCell = '<td style="padding:6px;font-size:10px;color:var(--blue);white-space:nowrap">' + (r.sector || '--') + '</td>';
 
         // 最新价
         const priceCell = '<td style="padding:6px;text-align:right;font-weight:600;white-space:nowrap">' + (r.price ? r.price.toFixed(2) : '--') + '</td>';
@@ -3137,7 +3425,7 @@ function renderDeepAnalysis() {
 
         // 5日涨幅
         const g5Color = r.gain5d > 0 ? 'var(--red)' : (r.gain5d < 0 ? 'var(--green)' : 'var(--text-dim)');
-        const gain5dCell = '<td style="padding:6px;text-align:right;font-weight:600;color:' + g5Color + ';white-space:nowrap">' + (r.gain5d > 0 ? '+' : '') + r.gain5d.toFixed(2) + '%</td>';
+        const gain5dCell = '<td style="padding:6px;text-align:right;font-weight:600;color:' + g5Color + ';white-space:nowrap">' + (r.gain5d !== 0 ? ((r.gain5d > 0 ? '+' : '') + r.gain5d.toFixed(2) + '%') : '--') + '</td>';
 
         // 30分K值 K100.0 D100.0
         let k30Cell = '<td style="padding:6px;white-space:nowrap">--</td>';
@@ -3162,11 +3450,10 @@ function renderDeepAnalysis() {
         }
 
         // 涨停核心逻辑
-        let logicCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">--</td>';
-        if (r.limitLogic) {
-            logicCell = '<td style="padding:6px;font-size:10px;color:var(--text);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="' + r.limitLogic.reason + '">' + r.limitLogic.reason + '</td>';
+        var logicCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">--</td>';
+        if (r.limitLogicText) {
+            logicCell = '<td style="padding:6px;font-size:10px;color:var(--text);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="' + r.limitLogicText + '">' + r.limitLogicText + '</td>';
         } else if (r.downAnalysis) {
-            // 不是涨停股但有下跌分析，显示判定理由
             logicCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="' + r.downAnalysis.reasons.join('；') + '">' + r.downAnalysis.reasons.slice(0, 2).join('；') + '</td>';
         }
 
