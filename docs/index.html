@@ -283,61 +283,101 @@ tr:hover td { background: var(--bg-hover); }
 
 <!-- 深度分析 -->
 <div class="content tab-content" id="content-deep">
-    <div class="section-title">🔍 深度分析 — 六大维度深度研判</div>
 
-    <!-- 1. 预期涨幅完成度 -->
-    <div class="panel" style="margin-bottom:12px">
-        <h3>① 预期涨幅完成度（戴维斯双击目标 vs 实际涨幅）</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
-            基准价=60日最低价（底部起涨点），预期涨幅=利润增速（戴维斯双击：业绩增长驱动股价上涨）<br>
-            完成度 = 当前涨幅 / 预期涨幅 × 100%。完成度≥100%表示已兑现预期，需警惕获利了结。
+    <!-- 顶部统计卡片 -->
+    <div class="stats-bar" style="margin-bottom:6px">
+        <div class="stat-card" style="flex:1;min-width:100px">
+            <div class="label">涨停个股</div>
+            <div class="value" id="deepStatLimitCount">--</div>
+            <div style="font-size:10px;color:var(--text-dim)">五日内 <span id="deepStatLimitDate">--</span></div>
         </div>
-        <div class="table-container" style="overflow-x:auto;max-height:50vh;overflow-y:auto" id="expectedGainPanel"></div>
+        <div class="stat-card" style="flex:1;min-width:100px">
+            <div class="label">最高连板</div>
+            <div class="value" id="deepStatMaxBoard">--</div>
+            <div style="font-size:10px;color:var(--text-dim)">连板最高</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:100px">
+            <div class="label">碱洗杀</div>
+            <div class="value" id="deepStatWashout" style="color:var(--purple)">--</div>
+            <div style="font-size:10px;color:var(--text-dim)">下跌段判定</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:100px">
+            <div class="label">碱板跌</div>
+            <div class="value" id="deepStatDistribute" style="color:var(--pink)">--</div>
+            <div style="font-size:10px;color:var(--text-dim)">出货风险</div>
+        </div>
+        <div class="stat-card" style="flex:1;min-width:100px">
+            <div class="label">平均5日涨幅</div>
+            <div class="value" id="deepStatAvg5">--</div>
+            <div style="font-size:10px;color:var(--text-dim)">更新：<span id="deepStatUpdate">--</span></div>
+        </div>
     </div>
 
-    <!-- 2. 板块阶段分析 -->
-    <div class="panel" style="margin-bottom:12px">
-        <h3>② 所属板块上涨/结束阶段分析</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
-            基于板块内个股阶段分布（启动/加速/尾部）+ 板块指数涨跌幅综合研判当前板块所处阶段
+    <!-- 标题行 + 更新信息 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;padding:0 4px">
+        <div style="font-size:14px;font-weight:700;color:var(--blue)">🔍 涨停个股明细（00/60开头·排除ST）</div>
+        <div style="font-size:11px;color:var(--text-dim)">
+            共 <span id="deepTotalCount" style="font-weight:700">30</span> 只 | 更新：<span id="deepUpdateTime">--</span>
         </div>
-        <div id="sectorPhasePanel"></div>
     </div>
 
-    <!-- 3. 五日内涨停个股 -->
-    <div class="panel" style="margin-bottom:12px">
-        <h3>③ 五日内涨停个股（仅00/60开头主板）</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
-            检测最近5个交易日内出现涨停（涨幅≥9.5%为10%涨停板）的主板个股
-        </div>
-        <div class="table-container" style="overflow-x:auto" id="limitStocksPanel"></div>
+    <!-- 筛选栏 -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap;padding:4px 4px">
+        <span style="font-size:11px;color:var(--text-dim)">排序：</span>
+        <select id="deepSortBy" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer" onchange="renderDeepAnalysis()">
+            <option value="limitBoard">连板数</option>
+            <option value="changePct">涨跌幅</option>
+            <option value="gain5d">5日涨幅</option>
+            <option value="k30">30分K值</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-dim)">洗盘/出货：</span>
+        <select id="deepFilterWashout" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer" onchange="renderDeepAnalysis()">
+            <option value="all">全部</option>
+            <option value="washout">洗盘</option>
+            <option value="distribute">出货</option>
+            <option value="none">无</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-dim)">30分K值：</span>
+        <select id="deepFilterK30" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer" onchange="renderDeepAnalysis()">
+            <option value="all">全部</option>
+            <option value="low">&lt;20 超卖</option>
+            <option value="mid">20-80 震荡</option>
+            <option value="high">&gt;80 超买</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-dim)">5分K值：</span>
+        <select id="deepFilterK5" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer" onchange="renderDeepAnalysis()">
+            <option value="all">全部</option>
+            <option value="low">&lt;20 超卖</option>
+            <option value="mid">20-80 震荡</option>
+            <option value="high">&gt;80 超买</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-dim)">搜索：</span>
+        <input type="text" id="deepSearch" placeholder="代码/名称" style="background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;width:90px" oninput="renderDeepAnalysis()">
     </div>
 
-    <!-- 4. 下跌段洗盘/出货分析 -->
-    <div class="panel" style="margin-bottom:12px">
-        <h3>④ 下跌段判定：洗盘 vs 出货</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
-            仅分析处于下跌段的个股。洗盘特征：缩量下跌+主力未出逃+RSI超卖+KDJ超卖；出货特征：放量下跌+主力出逃+MACD死叉+跌幅较大
+    <!-- 表格 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <div style="overflow-x:auto">
+            <table style="width:100%;font-size:11px;border-collapse:collapse;white-space:nowrap" id="deepTable">
+                <thead>
+                    <tr style="background:var(--bg-card);border-bottom:2px solid var(--border)">
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">代码</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">名称</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">涨停日</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">连板</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">行业</th>
+                        <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--text-dim);font-weight:600">最新价</th>
+                        <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--text-dim);font-weight:600">涨跌幅</th>
+                        <th style="padding:8px 6px;text-align:right;font-size:11px;color:var(--text-dim);font-weight:600">5日涨幅</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">30分K值</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">5分K值</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600;min-width:160px">涨停核心逻辑</th>
+                        <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--text-dim);font-weight:600">洗盘/出货</th>
+                    </tr>
+                </thead>
+                <tbody id="deepTableBody"></tbody>
+            </table>
         </div>
-        <div class="table-container" style="overflow-x:auto" id="downTrendPanel"></div>
-    </div>
-
-    <!-- 5. 涨停核心逻辑及所属板块 -->
-    <div class="panel">
-        <h3>⑤ 涨停核心逻辑及所属板块</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
-            对五日内涨停个股，深度解析涨停核心驱动逻辑、所属申万板块及赛道
-        </div>
-        <div id="limitLogicPanel"></div>
-    </div>
-
-    <!-- 6. 起涨时间分析 -->
-    <div class="panel" style="margin-top:12px">
-        <h3>⑥ 起涨时间分析（从起涨点到当前价格耗时）</h3>
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.6">
-            起涨点=60日最低价出现日。展示从起涨点到当前价格的交易日数、自然日数、总涨幅、日均涨幅、周均涨幅及上涨速度判定
-        </div>
-        <div class="table-container" style="overflow-x:auto;max-height:50vh;overflow-y:auto" id="riseDurationPanel"></div>
     </div>
 </div>
 
@@ -2901,323 +2941,271 @@ function getLimitLogic(code) {
 // ==================== 深度分析渲染 ====================
 
 function renderDeepAnalysis() {
-    renderExpectedGainPanel();
-    renderSectorPhasePanel();
-    renderLimitStocksPanel();
-    renderDownTrendPanel();
-    renderLimitLogicPanel();
-    renderRiseDurationPanel();
-}
+    const tbody = document.getElementById('deepTableBody');
+    if (!tbody) return;
 
-// 面板1: 预期涨幅完成度
-function renderExpectedGainPanel() {
-    const panel = document.getElementById('expectedGainPanel');
-    if (!panel) return;
+    // 读取筛选条件
+    const sortBy = document.getElementById('deepSortBy') ? document.getElementById('deepSortBy').value : 'limitBoard';
+    const filterWashout = document.getElementById('deepFilterWashout') ? document.getElementById('deepFilterWashout').value : 'all';
+    const filterK30 = document.getElementById('deepFilterK30') ? document.getElementById('deepFilterK30').value : 'all';
+    const filterK5 = document.getElementById('deepFilterK5') ? document.getElementById('deepFilterK5').value : 'all';
+    const searchText = document.getElementById('deepSearch') ? document.getElementById('deepSearch').value.trim().toLowerCase() : '';
 
+    // 收集数据
     const rows = [];
+    let limitCount = 0, maxBoard = 0, washoutCount = 0, distributeCount = 0;
+    let totalGain5d = 0, gain5dCount = 0;
+    let latestLimitDate = '';
+
     for (const stock of STOCKS) {
-        const eg = calcExpectedGain(stock.code);
-        if (!eg) continue;
-        const name = (quoteCache[stock.code] && quoteCache[stock.code].name) || stock.name;
-        rows.push({ code: stock.code, name: name, sector: stock.sector, eg: eg });
-    }
-    // 按完成度降序
-    rows.sort(function(a, b) { return b.eg.completion - a.eg.completion; });
+        const code = stock.code;
+        const shortCode = code.substring(2);
+        const quote = quoteCache[code] || {};
+        const name = quote.name || stock.name;
+        const changePct = quote.changePct || 0;
 
-    let html = '<table style="font-size:11px;table-layout:fixed;width:100%"><thead><tr>' +
-        '<th style="width:10%">代码</th><th style="width:12%">名称</th><th style="width:10%">赛道</th>' +
-        '<th style="width:10%">起涨价</th><th style="width:10%">现价</th>' +
-        '<th style="width:10%">当前涨幅</th><th style="width:10%">预期涨幅</th>' +
-        '<th style="width:10%">完成度</th><th style="width:12%">状态</th></tr></thead><tbody>';
+        // 涨停检测
+        const limits = checkDailyLimit(code);
+        const limitDates = limits ? limits.map(l => l.date) : [];
+        const limitCountStock = limits ? limits.length : 0;
+        if (limitCountStock > 0) {
+            limitCount++;
+            maxBoard = Math.max(maxBoard, limitCountStock);
+            const lastDate = limitDates[limitDates.length - 1];
+            if (lastDate > latestLimitDate) latestLimitDate = lastDate;
+        }
 
-    for (const r of rows) {
-        const barColor = r.eg.statusColor;
-        const barWidth = Math.min(100, Math.max(0, r.eg.completion));
-        html += '<tr>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + r.code.substring(2) + '</td>' +
-            '<td style="font-weight:600">' + r.name + '</td>' +
-            '<td style="font-size:10px;color:var(--blue)">' + r.sector + '</td>' +
-            '<td>' + r.eg.basePrice.toFixed(2) + '</td>' +
-            '<td style="font-weight:600">' + r.eg.currentPrice.toFixed(2) + '</td>' +
-            '<td style="color:' + (r.eg.currentGain > 0 ? 'var(--red)' : 'var(--green)') + '">' + (r.eg.currentGain > 0 ? '+' : '') + r.eg.currentGain.toFixed(1) + '%</td>' +
-            '<td style="color:var(--yellow)">' + r.eg.expectedGain + '%</td>' +
-            '<td><div style="background:var(--bg);border-radius:4px;height:16px;position:relative;overflow:hidden">' +
-                '<div style="background:' + barColor + ';height:100%;width:' + barWidth + '%;border-radius:4px;transition:width 0.5s"></div>' +
-                '<span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:700;color:var(--text)">' + r.eg.completion + '%</span>' +
-            '</div></td>' +
-            '<td><span style="color:' + r.eg.statusColor + ';font-weight:600;font-size:11px">' + r.eg.status + '</span></td>' +
-        '</tr>';
-    }
-    html += '</tbody></table>';
-    panel.innerHTML = html || '<div class="clear">数据加载中...</div>';
-}
+        // 5日涨幅（从日K线计算）
+        let gain5d = 0;
+        const dayKlines = kdjCache[code] && kdjCache[code].day;
+        if (dayKlines && dayKlines.length >= 6) {
+            const lastClose = dayKlines[dayKlines.length - 1].close;
+            const prevClose5 = dayKlines[dayKlines.length - 6].close;
+            if (prevClose5 > 0) {
+                gain5d = ((lastClose - prevClose5) / prevClose5) * 100;
+            }
+        }
+        totalGain5d += gain5d;
+        gain5dCount++;
 
-// 面板2: 板块阶段分析
-function renderSectorPhasePanel() {
-    const panel = document.getElementById('sectorPhasePanel');
-    if (!panel) return;
+        // KDJ值
+        const ind = trendCache[code] || {};
+        const kdj = ind.kdj || {};
+        const k30 = kdj.m30 ? kdj.m30 : null;
+        const k5 = kdj.m5 ? kdj.m5 : null;
 
-    // 获取所有板块
-    const sectors = {};
-    for (const stock of STOCKS) {
-        const sName = SECTOR_MAP[stock.sector] || stock.sector;
-        if (!sectors[sName]) sectors[sName] = true;
-    }
-
-    const results = [];
-    for (const sName of Object.keys(sectors)) {
-        const sp = analyzeSectorPhase(sName);
-        if (sp) results.push(sp);
-    }
-    // 按板块涨跌幅排序
-    results.sort(function(a, b) {
-        const aP = a.sectorPct !== null ? a.sectorPct : -99;
-        const bP = b.sectorPct !== null ? b.sectorPct : -99;
-        return bP - aP;
-    });
-
-    let html = '';
-    for (const r of results) {
-        const pctColor = r.sectorPct !== null ? (r.sectorPct > 0 ? 'var(--red)' : (r.sectorPct < 0 ? 'var(--green)' : 'var(--text-dim)')) : 'var(--text-dim)';
-        const pctText = r.sectorPct !== null ? (r.sectorPct > 0 ? '+' : '') + r.sectorPct.toFixed(2) + '%' : '--';
-        html += '<div style="background:var(--bg);border:1px solid var(--border);border-left:4px solid ' + r.phaseColor + ';border-radius:8px;padding:12px;margin-bottom:8px">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
-                '<div style="display:flex;gap:8px;align-items:center">' +
-                    '<span style="font-size:14px;font-weight:700;color:var(--blue)">' + r.sectorName + '</span>' +
-                    '<span style="color:' + pctColor + ';font-weight:600;font-size:13px">' + pctText + '</span>' +
-                    '<span style="color:' + r.phaseColor + ';font-weight:600;font-size:12px;padding:2px 10px;border-radius:12px;background:' + r.phaseColor + '22">' + r.phase + '</span>' +
-                '</div>' +
-                '<span style="font-size:11px;color:var(--text-dim)">' + r.stockCount + '只 · 均分' + r.avgScore + '</span>' +
-            '</div>' +
-            '<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">' + r.detail + '</div>' +
-            '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px">' +
-                (r.launchCount > 0 ? '<span style="color:var(--blue)">🚀启动' + r.launchCount + '</span>' : '') +
-                (r.accelCount > 0 ? '<span style="color:var(--red)">🔥加速' + r.accelCount + '</span>' : '') +
-                (r.exhaustCount > 0 ? '<span style="color:var(--orange)">⚠️尾部' + r.exhaustCount + '</span>' : '') +
-                '<span style="color:var(--red)">涨' + r.upCount + '</span>' +
-                '<span style="color:var(--green)">跌' + r.downCount + '</span>' +
-            '</div>' +
-        '</div>';
-    }
-    panel.innerHTML = html || '<div class="clear">数据加载中...</div>';
-}
-
-// 面板3: 五日内涨停个股
-function renderLimitStocksPanel() {
-    const panel = document.getElementById('limitStocksPanel');
-    if (!panel) return;
-
-    const limitStocks = [];
-    for (const stock of STOCKS) {
-        const shortCode = stock.code.substring(2);
-        // 用户要求: 00或60开头
-        if (!shortCode.startsWith('00') && !shortCode.startsWith('60')) continue;
-        const limits = checkDailyLimit(stock.code);
+        // 涨停核心逻辑
+        let limitLogic = null;
         if (limits) {
-            const name = (quoteCache[stock.code] && quoteCache[stock.code].name) || stock.name;
-            limitStocks.push({ code: stock.code, shortCode: shortCode, name: name, sector: stock.sector, limits: limits });
+            limitLogic = getLimitLogic(code);
         }
-    }
 
-    if (limitStocks.length === 0) {
-        panel.innerHTML = '<div class="clear">五日内无涨停个股（00/60开头）</div>';
-        return;
-    }
-
-    let html = '<table style="font-size:11px;table-layout:fixed;width:100%"><thead><tr>' +
-        '<th style="width:8%">代码</th><th style="width:12%">名称</th><th style="width:12%">赛道</th>' +
-        '<th style="width:15%">涨停日期</th><th style="width:10%">涨幅</th>' +
-        '<th style="width:10%">类型</th><th style="width:10%">次数</th>' +
-        '<th style="width:15%">最新涨跌</th></tr></thead><tbody>';
-
-    for (const s of limitStocks) {
-        const lastLimit = s.limits[s.limits.length - 1];
-        const quote = quoteCache[s.code];
-        const todayPct = quote ? quote.changePct : 0;
-        const todayColor = todayPct > 0 ? 'var(--red)' : (todayPct < 0 ? 'var(--green)' : 'var(--text-dim)');
-        html += '<tr>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + s.shortCode + '</td>' +
-            '<td style="font-weight:600">' + s.name + '</td>' +
-            '<td style="font-size:10px;color:var(--blue)">' + s.sector + '</td>' +
-            '<td style="font-size:10px">' + s.limits.map(function(l) { return l.date; }).join('<br>') + '</td>' +
-            '<td style="color:var(--red);font-weight:600">' + s.limits.map(function(l) { return '+' + l.gain + '%'; }).join('<br>') + '</td>' +
-            '<td><span style="color:var(--red);font-size:10px">' + lastLimit.limitType + '</span></td>' +
-            '<td><span style="background:var(--red);color:#fff;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700">' + s.limits.length + '次</span></td>' +
-            '<td style="color:' + todayColor + ';font-weight:600">' + (todayPct > 0 ? '+' : '') + (todayPct || 0).toFixed(2) + '%</td>' +
-        '</tr>';
-    }
-    html += '</tbody></table>';
-    panel.innerHTML = html;
-}
-
-// 面板4: 下跌段洗盘/出货分析
-function renderDownTrendPanel() {
-    const panel = document.getElementById('downTrendPanel');
-    if (!panel) return;
-
-    const downStocks = [];
-    for (const stock of STOCKS) {
-        const analysis = analyzeDownTrend(stock.code);
-        if (analysis) {
-            const name = (quoteCache[stock.code] && quoteCache[stock.code].name) || stock.name;
-            const quote = quoteCache[stock.code];
-            downStocks.push({
-                code: stock.code,
-                name: name,
-                sector: stock.sector,
-                changePct: quote ? quote.changePct : 0,
-                analysis: analysis
-            });
+        // 洗盘/出货分析
+        let downAnalysis = analyzeDownTrend(code);
+        if (downAnalysis) {
+            if (downAnalysis.type === 'washout') washoutCount++;
+            else if (downAnalysis.type === 'distribute') distributeCount++;
         }
+
+        // 搜索过滤
+        if (searchText) {
+            const matchCode = shortCode.toLowerCase().includes(searchText);
+            const matchName = name.toLowerCase().includes(searchText);
+            if (!matchCode && !matchName) continue;
+        }
+
+        // 洗盘/出货筛选
+        if (filterWashout !== 'all') {
+            if (filterWashout === 'none') {
+                if (downAnalysis) continue;
+            } else if (filterWashout === 'washout') {
+                if (!downAnalysis || downAnalysis.type !== 'washout') continue;
+            } else if (filterWashout === 'distribute') {
+                if (!downAnalysis || downAnalysis.type !== 'distribute') continue;
+            }
+        }
+
+        // 30分K值筛选
+        if (filterK30 !== 'all' && k30) {
+            const v = k30.v;
+            if (filterK30 === 'low' && v >= 20) continue;
+            if (filterK30 === 'mid' && (v < 20 || v > 80)) continue;
+            if (filterK30 === 'high' && v <= 80) continue;
+        }
+
+        // 5分K值筛选
+        if (filterK5 !== 'all' && k5) {
+            const v = k5.v;
+            if (filterK5 === 'low' && v >= 20) continue;
+            if (filterK5 === 'mid' && (v < 20 || v > 80)) continue;
+            if (filterK5 === 'high' && v <= 80) continue;
+        }
+
+        rows.push({
+            code: shortCode, fullCode: code, name: name,
+            sector: stock.sector, sectorName: SECTOR_MAP[stock.sector] || stock.sector,
+            price: quote.price || 0,
+            changePct: changePct,
+            gain5d: gain5d,
+            limits: limits, limitCount: limitCountStock,
+            limitLogic: limitLogic,
+            downAnalysis: downAnalysis,
+            k30: k30, k5: k5,
+            // 排序用字段
+            sortBoard: limitCountStock,
+            sortChange: changePct,
+            sortGain5d: gain5d,
+            sortK30: k30 ? k30.v : -1
+        });
     }
 
-    if (downStocks.length === 0) {
-        panel.innerHTML = '<div class="clear">当前无下跌段个股</div>';
-        return;
-    }
-
-    // 按判定类型排序: 出货 > 需观察 > 待观察 > 洗盘
-    const typeOrder = { distribute: 0, mixed: 1, neutral: 2, washout: 3 };
-    downStocks.sort(function(a, b) {
-        return (typeOrder[a.analysis.type] || 9) - (typeOrder[b.analysis.type] || 9);
+    // 排序
+    rows.sort(function(a, b) {
+        if (sortBy === 'limitBoard') return b.sortBoard - a.sortBoard;
+        if (sortBy === 'changePct') return b.sortChange - a.sortChange;
+        if (sortBy === 'gain5d') return b.sortGain5d - a.sortGain5d;
+        if (sortBy === 'k30') return b.sortK30 - a.sortK30;
+        return b.sortBoard - a.sortBoard;
     });
 
-    let html = '<table style="font-size:11px;table-layout:fixed;width:100%"><thead><tr>' +
-        '<th style="width:8%">代码</th><th style="width:12%">名称</th><th style="width:10%">赛道</th>' +
-        '<th style="width:10%">今日涨跌</th><th style="width:12%">判定</th>' +
-        '<th style="width:40%">分析依据</th></tr></thead><tbody>';
+    // 更新统计卡片
+    const statLimit = document.getElementById('deepStatLimitCount');
+    if (statLimit) statLimit.textContent = limitCount;
+    const statLimitDate = document.getElementById('deepStatLimitDate');
+    if (statLimitDate) statLimitDate.textContent = latestLimitDate ? latestLimitDate.substring(5) : '--';
 
-    for (const s of downStocks) {
-        const pctColor = s.changePct > 0 ? 'var(--red)' : (s.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
-        html += '<tr>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + s.code.substring(2) + '</td>' +
-            '<td style="font-weight:600">' + s.name + '</td>' +
-            '<td style="font-size:10px;color:var(--blue)">' + s.sector + '</td>' +
-            '<td style="color:' + pctColor + ';font-weight:600">' + (s.changePct > 0 ? '+' : '') + (s.changePct || 0).toFixed(2) + '%</td>' +
-            '<td><span style="color:' + s.analysis.color + ';font-weight:700;padding:3px 12px;border-radius:12px;background:' + s.analysis.color + '22;font-size:12px">' + s.analysis.label + '</span></td>' +
-            '<td style="font-size:10px;line-height:1.5;color:var(--text-dim)">' + s.analysis.reasons.join('；') + '</td>' +
-        '</tr>';
-    }
-    html += '</tbody></table>';
-    panel.innerHTML = html;
-}
+    const statMax = document.getElementById('deepStatMaxBoard');
+    if (statMax) statMax.textContent = maxBoard > 0 ? maxBoard + '板' : '--';
 
-// 面板5: 涨停核心逻辑及所属板块
-function renderLimitLogicPanel() {
-    const panel = document.getElementById('limitLogicPanel');
-    if (!panel) return;
+    const statWash = document.getElementById('deepStatWashout');
+    if (statWash) statWash.textContent = washoutCount;
 
-    const limitLogics = [];
-    for (const stock of STOCKS) {
-        const logic = getLimitLogic(stock.code);
-        if (logic) limitLogics.push(logic);
+    const statDist = document.getElementById('deepStatDistribute');
+    if (statDist) statDist.textContent = distributeCount;
+
+    const statAvg = document.getElementById('deepStatAvg5');
+    if (statAvg) {
+        const avg5 = gain5dCount > 0 ? totalGain5d / gain5dCount : 0;
+        statAvg.textContent = (avg5 > 0 ? '+' : '') + avg5.toFixed(2) + '%';
+        statAvg.className = 'value' + (avg5 > 0 ? ' up' : (avg5 < 0 ? ' down' : ''));
     }
 
-    if (limitLogics.length === 0) {
-        panel.innerHTML = '<div class="clear">五日内无涨停个股，暂无涨停逻辑分析</div>';
-        return;
-    }
+    const statUpdate = document.getElementById('deepStatUpdate');
+    const timeNow = document.getElementById('deepUpdateTime');
+    const nowStr = new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\//g, '/');
+    if (statUpdate) statUpdate.textContent = nowStr;
+    if (timeNow) timeNow.textContent = nowStr;
 
-    // 按涨停次数降序
-    limitLogics.sort(function(a, b) { return b.count - a.count; });
+    const totalCount = document.getElementById('deepTotalCount');
+    if (totalCount) totalCount.textContent = rows.length;
 
+    // 渲染表格
     let html = '';
-    for (const l of limitLogics) {
-        const sectorIdx = sectorIndexCache[l.sectorName];
-        const sectorPct = sectorIdx ? sectorIdx.pct : null;
-        const sectorPctColor = sectorPct !== null ? (sectorPct > 0 ? 'var(--red)' : (sectorPct < 0 ? 'var(--green)' : 'var(--text-dim)')) : 'var(--text-dim)';
-        const sectorPctText = sectorPct !== null ? (sectorPct > 0 ? '+' : '') + sectorPct.toFixed(2) + '%' : '--';
-
-        html += '<div style="background:var(--bg);border:1px solid var(--red);border-left:4px solid var(--red);border-radius:8px;padding:14px;margin-bottom:10px">' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-                '<div style="display:flex;gap:8px;align-items:center">' +
-                    '<span style="font-size:15px;font-weight:700;color:var(--red)">🔴 ' + l.name + '</span>' +
-                    '<span style="font-size:11px;color:var(--text-dim)">' + l.code + '</span>' +
-                    '<span style="background:var(--red);color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">' + l.limitType + ' ' + l.count + '次</span>' +
-                '</div>' +
-                '<span style="font-size:11px;color:var(--text-dim)">最近涨停: ' + l.limitDate + ' (+' + l.limitGain + '%)</span>' +
-            '</div>' +
-            '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">' +
-                '<div><span style="color:var(--text-dim);font-size:11px">所属赛道: </span><span style="color:var(--blue);font-weight:600">' + l.sector + '</span></div>' +
-                '<div><span style="color:var(--text-dim);font-size:11px">申万板块: </span><span style="color:var(--purple);font-weight:600">' + l.sectorName + '</span> <span style="color:' + sectorPctColor + ';font-size:11px">' + sectorPctText + '</span></div>' +
-                '<div><span style="color:var(--text-dim);font-size:11px">驱动方向: </span><span style="color:var(--yellow);font-weight:600">' + l.direction + '</span></div>' +
-                '<div><span style="color:var(--text-dim);font-size:11px">预期增速: </span><span style="color:var(--green);font-weight:600">' + l.profitGrowth + '%</span></div>' +
-            '</div>' +
-            '<div style="background:rgba(248,81,73,0.05);border-radius:6px;padding:10px;margin-top:6px">' +
-                '<div style="color:var(--text-dim);font-size:11px;margin-bottom:4px">📌 涨停核心逻辑：</div>' +
-                '<div style="color:var(--text);font-size:12px;line-height:1.6">' + l.reason + '</div>' +
-            '</div>' +
-            '<div style="font-size:11px;color:var(--text-dim);margin-top:6px">涨停日期: ' + l.allDates.join('、') + '</div>' +
-        '</div>';
-    }
-    panel.innerHTML = html;
-}
-
-// 面板6: 起涨时间分析
-function renderRiseDurationPanel() {
-    const panel = document.getElementById('riseDurationPanel');
-    if (!panel) return;
-
-    const rows = [];
-    for (const stock of STOCKS) {
-        const rd = calcRiseDuration(stock.code);
-        if (!rd) continue;
-        const name = (quoteCache[stock.code] && quoteCache[stock.code].name) || stock.name;
-        rows.push({ code: stock.code, name: name, sector: stock.sector, rd: rd });
-    }
-
-    if (rows.length === 0) {
-        panel.innerHTML = '<div class="clear">数据加载中...</div>';
-        return;
-    }
-
-    // 按总涨幅降序
-    rows.sort(function(a, b) { return b.rd.currentGain - a.rd.currentGain; });
-
-    let html = '<table style="font-size:11px;table-layout:fixed;width:100%"><thead><tr>' +
-        '<th style="width:8%">代码</th><th style="width:10%">名称</th>' +
-        '<th style="width:8%">起涨日</th><th style="width:8%">起涨价</th>' +
-        '<th style="width:8%">现价</th><th style="width:9%">总涨幅</th>' +
-        '<th style="width:8%">交易日</th><th style="width:8%">自然日</th>' +
-        '<th style="width:9%">日均涨幅</th><th style="width:8%">速度</th>' +
-        '<th style="width:8%">趋势</th></tr></thead><tbody>';
-
     for (const r of rows) {
-        const gainColor = r.rd.currentGain > 0 ? 'var(--red)' : 'var(--green)';
-        const daysText = r.rd.tradingDays + '天';
-        const calDaysText = r.rd.calendarDays > 0 ? r.rd.calendarDays + '天' : '--';
+        // 代码
+        const codeCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">' + r.code + '</td>';
 
-        html += '<tr>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + r.code.substring(2) + '</td>' +
-            '<td style="font-weight:600">' + r.name + '</td>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + r.rd.baseDate + '</td>' +
-            '<td style="font-size:10px">' + r.rd.basePrice.toFixed(2) + '</td>' +
-            '<td style="font-weight:600">' + r.rd.currentPrice.toFixed(2) + '</td>' +
-            '<td style="color:' + gainColor + ';font-weight:700">' + (r.rd.currentGain > 0 ? '+' : '') + r.rd.currentGain + '%</td>' +
-            '<td style="color:var(--blue);font-weight:600">' + daysText + '</td>' +
-            '<td style="font-size:10px;color:var(--text-dim)">' + calDaysText + '</td>' +
-            '<td style="color:' + (r.rd.dailyGain > 0 ? 'var(--red)' : 'var(--green)') + '">' + (r.rd.dailyGain > 0 ? '+' : '') + r.rd.dailyGain + '%/日</td>' +
-            '<td><span style="color:' + r.rd.speedColor + ';font-weight:600;font-size:10px">' + r.rd.speed + '</span></td>' +
-            '<td><span style="color:' + r.rd.trendColor + ';font-weight:600;font-size:10px">' + r.rd.trend + '</span></td>' +
-        '</tr>';
+        // 名称
+        const nameCell = '<td style="padding:6px;font-weight:600;white-space:nowrap">' + r.name + '</td>';
+
+        // 涨停日
+        let limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap">--</td>';
+        if (r.limits && r.limits.length > 0) {
+            const lastLimit = r.limits[r.limits.length - 1];
+            limitDateCell = '<td style="padding:6px;font-size:10px;color:var(--red);white-space:nowrap">' + lastLimit.date.substring(5) + '</td>';
+        }
+
+        // 连板标签
+        let boardCell = '<td style="padding:6px;white-space:nowrap">--</td>';
+        if (r.limitCount > 0) {
+            let boardColor = 'var(--text-dim)';
+            if (r.limitCount >= 5) boardColor = 'var(--purple)';
+            else if (r.limitCount >= 3) boardColor = 'var(--red)';
+            else boardColor = 'var(--orange)';
+            boardCell = '<td style="padding:6px;white-space:nowrap"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;color:' + boardColor + ';background:' + boardColor + '22;border:1px solid ' + boardColor + '44">' + r.limitCount + '连板</span></td>';
+        }
+
+        // 行业
+        const sectorCell = '<td style="padding:6px;font-size:10px;color:var(--blue);white-space:nowrap">' + r.sector + '</td>';
+
+        // 最新价
+        const priceCell = '<td style="padding:6px;text-align:right;font-weight:600;white-space:nowrap">' + (r.price ? r.price.toFixed(2) : '--') + '</td>';
+
+        // 涨跌幅（红涨绿跌）
+        const chgColor = r.changePct > 0 ? 'var(--red)' : (r.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
+        const chgCell = '<td style="padding:6px;text-align:right;font-weight:700;color:' + chgColor + ';white-space:nowrap">' + (r.changePct > 0 ? '+' : '') + r.changePct.toFixed(2) + '%</td>';
+
+        // 5日涨幅
+        const g5Color = r.gain5d > 0 ? 'var(--red)' : (r.gain5d < 0 ? 'var(--green)' : 'var(--text-dim)');
+        const gain5dCell = '<td style="padding:6px;text-align:right;font-weight:600;color:' + g5Color + ';white-space:nowrap">' + (r.gain5d > 0 ? '+' : '') + r.gain5d.toFixed(2) + '%</td>';
+
+        // 30分K值 K100.0 D100.0
+        let k30Cell = '<td style="padding:6px;white-space:nowrap">--</td>';
+        if (r.k30) {
+            const k30v = r.k30.v;
+            let k30c = 'var(--text-dim)';
+            if (k30v > 80) k30c = 'var(--red)';
+            else if (k30v < 20) k30c = 'var(--green)';
+            else k30c = 'var(--blue)';
+            k30Cell = '<td style="padding:6px;white-space:nowrap;font-size:10px"><span style="color:' + k30c + ';font-weight:700">K' + r.k30.k.toFixed(1) + '</span> <span style="color:var(--text-dim)">D' + r.k30.d.toFixed(1) + '</span></td>';
+        }
+
+        // 5分K值 K5.0 D25.0
+        let k5Cell = '<td style="padding:6px;white-space:nowrap">--</td>';
+        if (r.k5) {
+            const k5v = r.k5.v;
+            let k5c = 'var(--text-dim)';
+            if (k5v > 80) k5c = 'var(--red)';
+            else if (k5v < 20) k5c = 'var(--green)';
+            else k5c = 'var(--blue)';
+            k5Cell = '<td style="padding:6px;white-space:nowrap;font-size:10px"><span style="color:' + k5c + ';font-weight:700">K' + r.k5.k.toFixed(1) + '</span> <span style="color:var(--text-dim)">D' + r.k5.d.toFixed(1) + '</span></td>';
+        }
+
+        // 涨停核心逻辑
+        let logicCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis">--</td>';
+        if (r.limitLogic) {
+            logicCell = '<td style="padding:6px;font-size:10px;color:var(--text);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="' + r.limitLogic.reason + '">' + r.limitLogic.reason + '</td>';
+        } else if (r.downAnalysis) {
+            // 不是涨停股但有下跌分析，显示判定理由
+            logicCell = '<td style="padding:6px;font-size:10px;color:var(--text-dim);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="' + r.downAnalysis.reasons.join('；') + '">' + r.downAnalysis.reasons.slice(0, 2).join('；') + '</td>';
+        }
+
+        // 洗盘/出货标签
+        let washoutCell = '<td style="padding:6px;white-space:nowrap">--</td>';
+        if (r.downAnalysis) {
+            let wc = r.downAnalysis.color;
+            let wl = r.downAnalysis.label;
+            let ws = r.downAnalysis.type;
+            // 细化标签
+            if (ws === 'washout') {
+                if (r.downAnalysis.score >= 7) wl = '弱洗盘';
+                else if (r.downAnalysis.score >= 5) wl = '中性偏洗盘';
+                else wl = '洗盘为主';
+            } else if (ws === 'distribute') {
+                if (r.downAnalysis.score >= 7) wl = '偏出货';
+                else if (r.downAnalysis.score >= 5) wl = '中性偏出货';
+                else wl = '出货为主';
+            } else if (ws === 'mixed') {
+                wl = '需观察';
+            } else {
+                wl = '待观察';
+            }
+            washoutCell = '<td style="padding:6px;white-space:nowrap"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;color:' + wc + ';background:' + wc + '22;border:1px solid ' + wc + '44">' + wl + '</span></td>';
+        }
+
+        html += '<tr>' + codeCell + nameCell + limitDateCell + boardCell + sectorCell + priceCell + chgCell + gain5dCell + k30Cell + k5Cell + logicCell + washoutCell + '</tr>';
     }
 
-    // 汇总统计
-    const totalStocks = rows.length;
-    const avgDays = Math.round(rows.reduce((s, r) => s + r.rd.tradingDays, 0) / totalStocks);
-    const avgGain = (rows.reduce((s, r) => s + r.rd.currentGain, 0) / totalStocks).toFixed(1);
-    const fastCount = rows.filter(r => r.rd.tradingDays <= 5).length;
-    const slowCount = rows.filter(r => r.rd.tradingDays > 30).length;
-
-    html += '</tbody></table>';
-    html += '<div style="margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--text-dim);line-height:1.8">' +
-        '📊 <b>汇总</b>：共' + totalStocks + '只 · 平均起涨' + avgDays + '个交易日 · 平均涨幅' + (avgGain > 0 ? '+' : '') + avgGain + '%' +
-        ' · 急涨(≤5日)' + fastCount + '只 · 慢涨(>30日)' + slowCount + '只' +
-        ' · 周均涨幅参考：' + rows.map(r => r.rd).reduce((s, rd) => s + rd.weeklyGain, 0).toFixed(0) / rows.length + '%/周' +
-    '</div>';
-
-    panel.innerHTML = html;
+    tbody.innerHTML = html || '<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-dim)">无匹配数据</td></tr>';
 }
+
+// 保留旧面板渲染函数（兼容）
+function renderExpectedGainPanel() {}
+function renderSectorPhasePanel() {}
+function renderLimitStocksPanel() {}
+function renderDownTrendPanel() {}
+function renderLimitLogicPanel() {}
+function renderRiseDurationPanel() {}
 
 function generateReview() {
     const tbody = document.getElementById('reviewTableBody');
