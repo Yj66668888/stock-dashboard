@@ -2427,44 +2427,163 @@ function renderLivePolicyNews() {
     container.innerHTML = html;
 }
 
+// ==================== 实时板块热点（JSONP获取东方财富板块排行） ====================
+let hotSectorsData = [];
+let hotSectorsLoaded = false;
+let sectorTimer = null;
+
+function fetchHotSectors() {
+    const cbName = 'emSectorCb_' + Date.now();
+    window[cbName] = function(data) {
+        try {
+            delete window[cbName];
+            const script = document.getElementById('emSectorScript_' + cbName);
+            if (script) script.remove();
+            
+            if (data && data.data && data.data.diff) {
+                // 概念板块涨幅TOP12 + 跌幅TOP3
+                const all = data.data.diff;
+                const topGainers = all.slice(0, 12);
+                const topLosers = all.slice(-3).reverse();
+                hotSectorsData = { gainers: topGainers, losers: topLosers };
+                hotSectorsLoaded = true;
+                renderDualWheel();
+            }
+        } catch(e) {
+            console.error('Sector fetch error:', e);
+            if (!hotSectorsLoaded) {
+                renderDualWheel(); // 用回退数据渲染
+            }
+        }
+    };
+    
+    const script = document.createElement('script');
+    script.id = 'emSectorScript_' + cbName;
+    // push2his.eastmoney.com 支持 HTTPS + JSONP
+    script.src = 'https://push2his.eastmoney.com/api/qt/clist/get?cb=' + cbName +
+        '&pn=1&pz=20&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:2' +
+        '&fields=f2,f3,f4,f8,f12,f14,f104,f105,f128,f136';
+    script.onerror = function() {
+        delete window[cbName];
+        if (!hotSectorsLoaded) {
+            renderDualWheel(); // 回退渲染
+        }
+    };
+    document.body.appendChild(script);
+}
+
+// 从自选股中匹配板块相关的股票
+function matchStocksBySector(sectorName) {
+    if (!sectorName) return [];
+    // 把板块名拆成关键词
+    const keywords = sectorName.split(/[\s/、]+/).filter(k => k.length >= 2);
+    const matched = STOCKS.filter(s => {
+        const sectorText = (s.sector || '') + (s.name || '') + (s.reason || '');
+        return keywords.some(kw => sectorText.includes(kw));
+    });
+    return matched.slice(0, 4);
+}
+
+function renderDynamicSectorCard(sector, isLoser) {
+    const name = sector.f14 || '未知板块';
+    const pct = sector.f3 || 0;
+    const turnover = sector.f8 || 0;
+    const upCount = sector.f104 || 0;
+    const downCount = sector.f105 || 0;
+    const leadStock = sector.f128 || '--';
+    const leadPct = sector.f136 || 0;
+    const sectorCode = sector.f12 || '';
+    
+    // 颜色：涨红跌绿
+    const pctColor = pct > 0 ? 'var(--red)' : (pct < 0 ? 'var(--green)' : 'var(--text-dim)');
+    const leadColor = leadPct > 0 ? 'var(--red)' : (leadPct < 0 ? 'var(--green)' : 'var(--text-dim)');
+    
+    // 匹配自选股
+    const matchedStocks = matchStocksBySector(name);
+    const stockChips = matchedStocks.map(code => renderStockChip(code)).join('');
+    
+    // 匹配实时新闻
+    const sectorNews = renderSectorNews(name);
+    
+    // 上涨/下跌家数条
+    const total = upCount + downCount;
+    const upRatio = total > 0 ? (upCount / total * 100) : 0;
+    const barColor = upRatio > 50 ? 'var(--red)' : 'var(--green)';
+    
+    const borderColor = isLoser ? 'var(--green)' : (pct > 3 ? 'var(--red)' : 'var(--yellow)');
+    const icon = isLoser ? '📉' : (pct > 3 ? '🔥' : '📊');
+    
+    return `<div style="background:var(--bg-card);border:1px solid var(--border);border-left:4px solid ${borderColor};border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <div style="flex:1;min-width:0">
+                <h3 style="font-size:15px;margin-bottom:4px">
+                    ${icon} ${name}
+                    <span style="font-size:13px;color:${pctColor};font-weight:700;margin-left:8px">${pct > 0 ? '+' : ''}${pct.toFixed(2)}%</span>
+                </h3>
+                <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">
+                    换手率: <span style="color:var(--text)">${turnover.toFixed(1)}%</span>
+                    <span style="margin:0 6px;color:var(--border)">|</span>
+                    上涨/下跌: <span style="color:var(--red)">${upCount}</span>/<span style="color:var(--green)">${downCount}</span>
+                    <span style="margin:0 6px;color:var(--border)">|</span>
+                    领涨: <span style="color:${leadColor}">${leadStock} ${leadPct > 0 ? '+' : ''}${leadPct.toFixed(2)}%</span>
+                </div>
+                <div style="height:4px;background:var(--bg);border-radius:2px;margin-bottom:8px;overflow:hidden">
+                    <div style="height:100%;width:${upRatio}%;background:${barColor};border-radius:2px;transition:width 0.5s"></div>
+                </div>
+                ${sectorNews}
+            </div>
+        </div>
+        ${stockChips ? `<div style="border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">持仓匹配标的（实时行情）：</div>
+            <div>${stockChips}</div>
+        </div>` : ''}
+    </div>`;
+}
+
 function renderDualWheel() {
     const container = document.getElementById('dualWheelContent');
     if (!container) return;
 
     let html = '';
 
-    // 供需双轮驱动（最高优先级）
-    const dualList = POLICY_DIRECTIONS.dualWheel || [];
-    if (dualList.length > 0) {
-        html += `<div class="section-title" style="color:var(--yellow)">🟡 供需双轮驱动 — 政策同时催化供给端 + 需求端（确定性最高）</div>`;
-        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">供给端政策（国产替代/补贴降本）+ 需求端政策（采购刺激/基建扩容）= 双轮闭环，业绩弹性最大</div>`;
-        dualList.forEach(item => { html += renderDirectionCard(item, 'dual'); });
-    }
-
-    // 业绩落地行业（中报验证期）
-    const earningsList = EARNINGS_VERIFIED || [];
-    if (earningsList.length > 0) {
-        html += `<div class="section-title" style="color:var(--green)">💰 业绩落地行业 — 政策催化已转化为订单/营收/利润（中报验证）</div>`;
-        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">订单已实际落地、营收已开始放量的行业，从"政策预期"阶段进入"业绩兑现"阶段，确定性更高、回调风险更小</div>`;
-        earningsList.forEach(item => {
-            html += renderEarningsCard(item);
+    // === 动态板块热点（实时排行） ===
+    if (hotSectorsLoaded && hotSectorsData.gainers && hotSectorsData.gainers.length > 0) {
+        html += `<div class="section-title" style="color:var(--yellow)">🔥 今日板块热点 — 概念板块实时涨幅排行（每60秒刷新）</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+            <span>数据来源：东方财富实时行情 · 自动匹配持仓标的 + 实时政策快讯</span>
+            <span style="font-size:11px;color:var(--green)">● 实时</span>
+        </div>`;
+        hotSectorsData.gainers.forEach(s => { html += renderDynamicSectorCard(s, false); });
+        
+        if (hotSectorsData.losers && hotSectorsData.losers.length > 0) {
+            html += `<div class="section-title" style="color:var(--green);margin-top:16px">📉 板块跌幅榜 — 规避风险</div>`;
+            hotSectorsData.losers.forEach(s => { html += renderDynamicSectorCard(s, true); });
+        }
+    } else {
+        // 回退：用自选股按sector分组
+        html += `<div class="section-title" style="color:var(--yellow)">🔥 今日板块热点</div>`;
+        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">
+            <span style="color:var(--orange)">⚠ 板块排行数据加载中...</span> 以下为持仓标的按赛道分组（实时行情）
+        </div>`;
+        
+        const sectorGroups = {};
+        STOCKS.forEach(s => {
+            if (!sectorGroups[s.sector]) sectorGroups[s.sector] = [];
+            sectorGroups[s.sector].push(s.code);
         });
-    }
-
-    // 供给端驱动
-    const supplyList = POLICY_DIRECTIONS.supply || [];
-    if (supplyList.length > 0) {
-        html += `<div class="section-title" style="color:var(--blue)">🔵 供给端驱动 — 政策倒逼国产替代 / 自主可控</div>`;
-        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">海外管制收紧 + 政策补贴加码 → 国产替代加速，供给端企业订单确定性提升</div>`;
-        supplyList.forEach(item => { html += renderDirectionCard(item, 'supply'); });
-    }
-
-    // 需求端驱动
-    const demandList = POLICY_DIRECTIONS.demand || [];
-    if (demandList.length > 0) {
-        html += `<div class="section-title" style="color:var(--green)">🟢 需求端驱动 — 政策刺激增量需求 / 新赛道爆发</div>`;
-        html += `<div style="color:var(--text-dim);font-size:12px;margin-bottom:12px">特别国债/补贴/产业政策 → 创造新需求，需求端企业营收弹性释放</div>`;
-        demandList.forEach(item => { html += renderDirectionCard(item, 'demand'); });
+        
+        Object.entries(sectorGroups).forEach(([sector, codes]) => {
+            const stockChips = codes.map(code => renderStockChip(code)).join('');
+            const sectorNews = renderSectorNews(sector);
+            html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:8px;padding:14px;margin-bottom:12px">
+                <h3 style="font-size:15px;margin-bottom:6px;color:var(--blue)">📊 ${sector} <span style="font-size:12px;color:var(--text-dim)">${codes.length}只</span></h3>
+                ${sectorNews}
+                <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:8px">
+                    <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">受益标的（实时行情）：</div>
+                    <div>${stockChips}</div>
+                </div>
+            </div>`;
+        });
     }
 
     container.innerHTML = html;
@@ -2600,6 +2719,10 @@ async function init() {
     // 9. 实时政策快讯（每60秒刷新）
     fetchLivePolicyNews();
     policyNewsTimer = setInterval(fetchLivePolicyNews, 60000);
+    
+    // 10. 实时板块热点排行（每60秒刷新）
+    fetchHotSectors();
+    sectorTimer = setInterval(fetchHotSectors, 60000);
 }
 
 // ==================== 收盘复盘(智能分析) ====================
