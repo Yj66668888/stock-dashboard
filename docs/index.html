@@ -194,13 +194,6 @@ tr:hover td { background: var(--bg-hover); }
     <div class="tab" id="tab-alert" onclick="switchTab('alert')">🔔 监控预警<span id="alertBadge" style="display:none;margin-left:4px"></span></div>
 </div>
 
-<!-- 梯队总览 -->
-<div id="tierOverview" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-    <div style="flex:1;text-align:center;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px">
-        <span style="color:var(--text-dim);font-size:13px">⏳ 梯队加载中...</span>
-    </div>
-</div>
-
 <!-- 仪表盘 -->
 <div class="content tab-content active" id="content-main">
     <div class="stats-bar" id="statsBar">
@@ -1639,9 +1632,6 @@ function renderTable() {
         const t = getTier(sc.score.total);
         tierCounts[t.tier].push(sc);
     }
-
-    // 渲染梯队总览
-    renderTierOverview(tierCounts);
 
     for (const code of sortedCodes) {
         const stock = STOCKS.find(s => s.code === code);
