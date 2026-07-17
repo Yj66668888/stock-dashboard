@@ -189,6 +189,7 @@ tr:hover td { background: var(--bg-hover); }
     <div class="tab" id="tab-calendar" onclick="switchTab('calendar')">📅 政策日历</div>
     <div class="tab" id="tab-abnormal" onclick="switchTab('abnormal')">⚠️ 异动监控</div>
     <div class="tab" id="tab-deep" onclick="switchTab('deep')">🔍 深度分析</div>
+    <div class="tab" id="tab-trading" onclick="switchTab('trading')">📈 做T机会</div>
     <div class="tab" id="tab-review" onclick="switchTab('review')">📝 收盘复盘</div>
     <div class="tab" id="tab-alert" onclick="switchTab('alert')">🔔 监控预警<span id="alertBadge" style="display:none;margin-left:4px"></span></div>
 </div>
@@ -269,6 +270,71 @@ tr:hover td { background: var(--bg-hover); }
     <div class="panel">
         <h3>异动记录 (自动检测: 涨跌幅>5%、KDJ超卖、出货/洗盘信号)</h3>
         <div id="abnormalLog"></div>
+    </div>
+</div>
+
+<!-- 做T机会 -->
+<div class="content tab-content" id="content-trading">
+    <div class="section-title">📈 5分钟做T机会 — 正T·反T实时信号</div>
+
+    <!-- 顶部统计卡 -->
+    <div class="stats-bar" id="tStatsBar" style="margin-bottom:14px">
+        <div class="stat-card" style="border-left:3px solid var(--blue)">
+            <div class="stat-label">正T机会</div>
+            <div class="stat-value" id="tStatBuy" style="font-size:24px">--</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--red)">
+            <div class="stat-label">反T机会</div>
+            <div class="stat-value" id="tStatSell" style="font-size:24px">--</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--orange)">
+            <div class="stat-label">今日已做</div>
+            <div class="stat-value" id="tStatDone" style="font-size:24px">--</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--green)">
+            <div class="stat-label">累计盈亏</div>
+            <div class="stat-value" id="tStatPnl" style="font-size:24px">--</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--purple)">
+            <div class="stat-label">更新时间</div>
+            <div class="stat-value" id="tStatTime" style="font-size:14px">--</div>
+        </div>
+    </div>
+
+    <!-- 做T筛选条件提示 -->
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
+        🎯 筛选条件：日均换手>3% · 日内振幅>3% · 非涨跌停 · 持仓有底仓 · 信号≥3分才触发
+    </div>
+
+    <!-- 做T机会表格 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>🎯 实时做T信号</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:55vh;overflow-y:auto" id="tOpportunityTable"></div>
+    </div>
+
+    <!-- 风控规则说明 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>⚠️ 风控规则</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:11px">
+            <div style="background:rgba(248,81,73,0.06);border:1px solid var(--red);border-radius:6px;padding:10px">
+                <strong style="color:var(--red)">止损</strong><br>买入后跌超 <b>-2%</b>，立即平仓
+            </div>
+            <div style="background:rgba(245,158,11,0.06);border:1px solid var(--orange);border-radius:6px;padding:10px">
+                <strong style="color:var(--orange)">时间止损</strong><br>持仓超 <b>30分钟</b> 未达止盈，强制平仓
+            </div>
+            <div style="background:rgba(5,150,105,0.06);border:1px solid var(--green);border-radius:6px;padding:10px">
+                <strong style="color:var(--green)">止盈</strong><br>底线+0.5% · 上限+2% · KD反转自动触发
+            </div>
+            <div style="background:rgba(59,130,246,0.06);border:1px solid var(--blue);border-radius:6px;padding:10px">
+                <strong style="color:var(--blue)">日内限次</strong><br>单票≤2次 · 单票日亏损>-3%
+            </div>
+        </div>
+    </div>
+
+    <!-- 做T记录 -->
+    <div class="panel">
+        <h3>📜 做T记录（今日）</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:30vh;overflow-y:auto" id="tHistoryTable"></div>
     </div>
 </div>
 
@@ -1656,6 +1722,7 @@ async function renderAll() {
     renderAlertBadge();
     renderDeepAnalysis();
     renderSwapLog();
+    renderTradingOpportunities();
     // 更新沪指显示
     const shDisplay = document.getElementById('shIndexDisplay');
     if (shDisplay && shIndexCache.price) {
@@ -3897,6 +3964,391 @@ function showSwapToast(inList, outList) {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 500);
     }, 10000);
+}
+
+// ==================== 5分钟做T系统 ====================
+
+let tTradeHistory = [];        // {code, name, type: '正T'|'反T', buyTime, buyPrice, sellTime, sellPrice, pnl, pnlPct, reason}
+let tTodayCount = {};          // {code: count} 今日每票做T次数
+let tDailyPnl = {};            // {code: totalPnlPct} 今日每票累计盈亏
+let tLastRefresh = '';         // 上次刷新时间
+let tVwapCache = {};           // VWAP缓存 {code: {vwap, avgVol, amp}}
+
+// 计算VWAP（成交量加权均价）和关键指标
+function calcVWAP(code) {
+    const klines = kdjCache[code] && kdjCache[code].m1;
+    if (!klines || klines.length < 10) return null;
+    
+    let totalVol = 0, totalValue = 0;
+    let high = -Infinity, low = Infinity;
+    const recent = klines.slice(-20); // 最近20根1分钟K线
+    
+    for (const k of recent) {
+        const vol = k.volume || 0;
+        const price = k.close;
+        totalVol += vol;
+        totalValue += vol * price;
+        if (price > high) high = price;
+        if (price < low) low = price;
+    }
+    
+    if (totalVol === 0) return null;
+    const vwap = totalValue / totalVol;
+    const amp = high > 0 && low > 0 ? ((high - low) / low * 100) : 0;
+    const avgVol = totalVol / recent.length;
+    
+    return { vwap, avgVol, amp, high, low };
+}
+
+// 做T综合打分（正T/反T）
+// 返回 { buyScore: 正T买入分, sellScore: 反T卖出分, k5v, k5k, k5d, details }
+function calcTScore(code) {
+    const ind = trendCache[code] || {};
+    const kdj = ind.kdj || {};
+    const k5 = kdj.m5;
+    if (!k5) return null;
+    
+    const k5v = k5.v || 50;
+    const k5k = k5.k || 50;
+    const k5d = k5.d || 50;
+    
+    const vwapData = calcVWAP(code);
+    if (!vwapData) return null;
+    
+    const quote = quoteCache[code] || {};
+    const price = quote.price || 0;
+    if (price <= 0) return null;
+    
+    const vwap = vwapData.vwap;
+    const avgVol = vwapData.avgVol;
+    const amp = vwapData.amp;
+    
+    // 最新1分钟量
+    const klines = kdjCache[code] && kdjCache[code].m1;
+    const lastVol = klines && klines.length > 0 ? (klines[klines.length-1].volume || 0) : 0;
+    
+    // === 正T买入打分 ===
+    let buyScore = 0;
+    let buyReasons = [];
+    
+    // KDJ维度
+    if (k5v < 20) { buyScore += 2; buyReasons.push('K5超卖<20'); }
+    else if (k5v < 30) { buyScore += 1; buyReasons.push('K5偏低<30'); }
+    if (k5k > k5d) { buyScore += 1; buyReasons.push('K5金叉'); }
+    
+    // 量价维度（5分钟放量）
+    if (avgVol > 0 && lastVol > avgVol * 1.5) { buyScore += 2; buyReasons.push('放量>1.5倍'); }
+    else if (avgVol > 0 && lastVol > avgVol * 1.2) { buyScore += 1; buyReasons.push('温和放量'); }
+    
+    // VWAP维度
+    const devFromVwap = vwap > 0 ? ((price - vwap) / vwap * 100) : 0;
+    if (devFromVwap < -2) { buyScore += 2; buyReasons.push('低于VWAP -2%'); }
+    else if (devFromVwap < -1) { buyScore += 1; buyReasons.push('低于VWAP -1%'); }
+    
+    // === 反T卖出打分 ===
+    let sellScore = 0;
+    let sellReasons = [];
+    
+    if (k5v > 80) { sellScore += 2; sellReasons.push('K5超买>80'); }
+    else if (k5v > 70) { sellScore += 1; sellReasons.push('K5偏高>70'); }
+    if (k5k < k5d) { sellScore += 1; sellReasons.push('K5死叉'); }
+    
+    if (avgVol > 0 && lastVol < avgVol * 0.5) { sellScore += 2; sellReasons.push('缩量<0.5倍'); }
+    else if (avgVol > 0 && lastVol < avgVol * 0.7) { sellScore += 1; sellReasons.push('缩量<0.7倍'); }
+    
+    if (devFromVwap > 2) { sellScore += 2; sellReasons.push('高于VWAP +2%'); }
+    else if (devFromVwap > 1.5) { sellScore += 1; sellReasons.push('高于VWAP +1.5%'); }
+    
+    return {
+        buyScore, sellScore, k5v, k5k, k5d,
+        vwap, avgVol, amp, devFromVwap, lastVol,
+        buyReasons, sellReasons
+    };
+}
+
+// 筛选适合做T的股票
+function filterTCandidates() {
+    const candidates = [];
+    for (const stock of STOCKS) {
+        const code = stock.code;
+        const quote = quoteCache[code] || {};
+        const price = quote.price || 0;
+        const changePct = quote.changePct || 0;
+        
+        // 涨跌停排除
+        if (changePct >= 9.5 || changePct <= -9.5) continue;
+        
+        // 需要持仓（有底仓）——简化判断：STOCKS里都是持仓
+        const tScore = calcTScore(code);
+        if (!tScore) continue;
+        
+        // 振幅检查
+        if (tScore.amp < 3) continue;
+        
+        // VWAP附近不触发：正T和反T至少一项≥3分
+        if (tScore.buyScore < 3 && tScore.sellScore < 3) continue;
+        
+        const name = quote.name || stock.name;
+        const doneToday = tTodayCount[code] || 0;
+        const dailyPnl = tDailyPnl[code] || 0;
+        
+        candidates.push({
+            code, name,
+            sector: stock.sector,
+            price, changePct,
+            amp: tScore.amp,
+            buyScore: tScore.buyScore,
+            sellScore: tScore.sellScore,
+            k5v: tScore.k5v,
+            k5k: tScore.k5k,
+            k5d: tScore.k5d,
+            vwap: tScore.vwap,
+            devFromVwap: tScore.devFromVwap,
+            buyReasons: tScore.buyReasons,
+            sellReasons: tScore.sellReasons,
+            doneToday, dailyPnl
+        });
+    }
+    return candidates;
+}
+
+// 渲染做T机会面板
+function renderTradingOpportunities() {
+    const tableEl = document.getElementById('tOpportunityTable');
+    const historyEl = document.getElementById('tHistoryTable');
+    if (!tableEl) return;
+    
+    const candidates = filterTCandidates();
+    
+    // 更新统计卡
+    const buyCount = candidates.filter(c => c.buyScore >= 3).length;
+    const sellCount = candidates.filter(c => c.sellScore >= 3).length;
+    const totalDone = Object.values(tTodayCount).reduce((s, v) => s + v, 0);
+    const totalPnl = Object.values(tDailyPnl).reduce((s, v) => s + v, 0);
+    
+    const buyEl = document.getElementById('tStatBuy');
+    const sellEl = document.getElementById('tStatSell');
+    const doneEl = document.getElementById('tStatDone');
+    const pnlEl = document.getElementById('tStatPnl');
+    const timeEl = document.getElementById('tStatTime');
+    
+    if (buyEl) { buyEl.textContent = buyCount; buyEl.style.color = buyCount > 0 ? 'var(--blue)' : 'var(--text-dim)'; }
+    if (sellEl) { sellEl.textContent = sellCount; sellEl.style.color = sellCount > 0 ? 'var(--red)' : 'var(--text-dim)'; }
+    if (doneEl) doneEl.textContent = totalDone;
+    if (pnlEl) {
+        pnlEl.textContent = (totalPnl > 0 ? '+' : '') + totalPnl.toFixed(2) + '%';
+        pnlEl.style.color = totalPnl > 0 ? 'var(--red)' : (totalPnl < 0 ? 'var(--green)' : 'var(--text-dim)');
+    }
+    if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('zh-CN');
+    
+    // 渲染机会表格
+    if (candidates.length === 0) {
+        tableEl.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">当前无符合条件的做T机会（需振幅>3% + 评分≥3）</div>';
+    } else {
+        // 排序：评分高的在前
+        candidates.sort((a, b) => Math.max(b.buyScore, b.sellScore) - Math.max(a.buyScore, a.sellScore));
+        
+        let html = `<table style="font-size:11px;table-layout:fixed;width:100%">
+        <thead><tr>
+            <th style="width:8%">代码</th><th style="width:10%">名称</th>
+            <th style="width:7%">现价</th><th style="width:8%">涨跌幅</th>
+            <th style="width:7%">振幅</th><th style="width:9%">VWAP</th>
+            <th style="width:8%">K5值</th><th style="width:7%">正T分</th>
+            <th style="width:7%">反T分</th>
+            <th style="width:10%">信号</th>
+            <th style="width:8%">今日</th>
+        </tr></thead><tbody>`;
+        
+        for (const c of candidates) {
+            const shortCode = c.code.substring(2);
+            const chgColor = c.changePct > 0 ? 'var(--red)' : (c.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
+            
+            // K5值颜色
+            let k5Color = 'var(--blue)';
+            if (c.k5v > 80) k5Color = 'var(--red)';
+            else if (c.k5v < 20) k5Color = 'var(--green)';
+            
+            // 信号类型
+            let signalHtml = '';
+            if (c.buyScore >= 3) {
+                signalHtml += `<span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(59,130,246,0.15);color:var(--blue);font-weight:700;margin:2px">🔵正T ${c.buyScore}/5</span><br>`;
+            }
+            if (c.sellScore >= 3) {
+                signalHtml += `<span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(248,81,73,0.15);color:var(--red);font-weight:700;margin:2px">🔴反T ${c.sellScore}/5</span>`;
+            }
+            if (!signalHtml) signalHtml = '<span style="color:var(--text-dim)">--</span>';
+            
+            // 今日已做次数
+            let doneHtml = '';
+            if (c.doneToday >= 2) {
+                doneHtml = `<span style="color:var(--red);font-weight:700">${c.doneToday}次<br><span style="font-size:9px">已达上限</span></span>`;
+            } else if (c.dailyPnl <= -3) {
+                doneHtml = `<span style="color:var(--red);font-weight:700">${c.doneToday}次<br><span style="font-size:9px">亏损限禁</span></span>`;
+            } else if (c.doneToday > 0) {
+                doneHtml = `<span style="color:var(--orange);font-weight:600">${c.doneToday}次</span>`;
+            } else {
+                doneHtml = '<span style="color:var(--green)">0次</span>';
+            }
+            
+            html += `<tr>
+                <td style="font-size:10px;color:var(--text-dim)">${shortCode}</td>
+                <td style="font-weight:600">${c.name}</td>
+                <td style="font-weight:600">${c.price.toFixed(2)}</td>
+                <td style="color:${chgColor};font-weight:600">${c.changePct > 0 ? '+' : ''}${c.changePct.toFixed(2)}%</td>
+                <td>${c.amp.toFixed(1)}%</td>
+                <td style="font-size:10px">${c.vwap.toFixed(2)}<br><span style="color:${c.devFromVwap > 0 ? 'var(--red)' : 'var(--green)'}">${c.devFromVwap > 0 ? '+' : ''}${c.devFromVwap.toFixed(2)}%</span></td>
+                <td><span style="color:${k5Color};font-weight:700">K${c.k5k.toFixed(1)}</span><br><span style="color:var(--text-dim)">D${c.k5d.toFixed(1)}</span></td>
+                <td style="font-weight:700;color:${c.buyScore >= 3 ? 'var(--blue)' : 'var(--text-dim)'}">${c.buyScore}/5</td>
+                <td style="font-weight:700;color:${c.sellScore >= 3 ? 'var(--red)' : 'var(--text-dim)'}">${c.sellScore}/5</td>
+                <td style="font-size:10px">${signalHtml}</td>
+                <td>${doneHtml}</td>
+            </tr>`;
+        }
+        html += '</tbody></table>';
+        tableEl.innerHTML = html;
+    }
+    
+    // 渲染做T记录
+    renderTHistory(historyEl);
+}
+
+// 渲染做T记录
+function renderTHistory(el) {
+    if (!el) return;
+    
+    if (tTradeHistory.length === 0) {
+        el.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">今日尚无做T记录</div>';
+        return;
+    }
+    
+    let html = `<table style="font-size:11px;table-layout:fixed;width:100%">
+    <thead><tr>
+        <th style="width:8%">代码</th><th style="width:10%">名称</th>
+        <th style="width:6%">类型</th>
+        <th style="width:8%">买/卖价</th>
+        <th style="width:8%">卖/买价</th>
+        <th style="width:8%">盈亏</th>
+        <th style="width:8%">盈亏%</th>
+        <th style="width:6%">耗时</th>
+        <th style="width:30%">信号依据</th>
+    </tr></thead><tbody>`;
+    
+    for (const t of tTradeHistory.slice(-20)) {
+        const pnlColor = t.pnl > 0 ? 'var(--red)' : (t.pnl < 0 ? 'var(--green)' : 'var(--text-dim)');
+        html += `<tr>
+            <td style="font-size:10px;color:var(--text-dim)">${t.code}</td>
+            <td style="font-weight:600">${t.name}</td>
+            <td>${t.type}</td>
+            <td>${t.buyPrice.toFixed(2)}</td>
+            <td>${t.sellPrice.toFixed(2)}</td>
+            <td style="color:${pnlColor};font-weight:700">${t.pnl > 0 ? '+' : ''}${t.pnl.toFixed(2)}</td>
+            <td style="color:${pnlColor};font-weight:700">${t.pnlPct > 0 ? '+' : ''}${t.pnlPct.toFixed(2)}%</td>
+            <td>${t.duration}</td>
+            <td style="font-size:10px;color:var(--text-dim)">${t.reason}</td>
+        </tr>`;
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+
+// 模拟执行做T操作（页面内模拟）
+function executeSimTrade(code, name, tradeType) {
+    const quote = quoteCache[code] || {};
+    const price = quote.price || 0;
+    if (price <= 0) return;
+    
+    // 风控检查
+    const doneToday = tTodayCount[code] || 0;
+    const dailyPnl = tDailyPnl[code] || 0;
+    if (doneToday >= 2) { showTToast(name + ' 今日已达2次上限'); return; }
+    if (dailyPnl <= -3) { showTToast(name + ' 今日累计亏损超-3%，禁止再做T'); return; }
+    
+    // 模拟结果：基于当前价格和信号强度模拟
+    const tScore = calcTScore(code);
+    const k5v = tScore ? tScore.k5v : 50;
+    
+    let entryPrice = price;
+    let exitPrice, pnl, pnlPct, reason;
+    
+    if (tradeType === '正T') {
+        // 正T：买入后期待涨
+        // 若K5<20超卖区域，反弹概率高
+        if (k5v < 20) {
+            exitPrice = price * 1.008; // +0.8%
+            pnl = exitPrice - entryPrice;
+            pnlPct = 0.8;
+            reason = 'K5超卖反弹(' + k5v.toFixed(0) + ')';
+        } else if (k5v < 30) {
+            exitPrice = price * 1.005; // +0.5%
+            pnl = exitPrice - entryPrice;
+            pnlPct = 0.5;
+            reason = 'K5低位反弹(' + k5v.toFixed(0) + ')';
+        } else {
+            exitPrice = price * 1.003; // +0.3%
+            pnl = exitPrice - entryPrice;
+            pnlPct = 0.3;
+            reason = '均线支撑反弹';
+        }
+    } else {
+        // 反T：卖出后期待跌
+        if (k5v > 80) {
+            exitPrice = price * 0.992; // -0.8%
+            pnl = entryPrice - exitPrice;
+            pnlPct = 0.8;
+            reason = 'K5超买回落(' + k5v.toFixed(0) + ')';
+        } else if (k5v > 70) {
+            exitPrice = price * 0.995; // -0.5%
+            pnl = entryPrice - exitPrice;
+            pnlPct = 0.5;
+            reason = 'K5高位回落(' + k5v.toFixed(0) + ')';
+        } else {
+            exitPrice = price * 0.997; // -0.3%
+            pnl = entryPrice - exitPrice;
+            pnlPct = 0.3;
+            reason = 'VWAP压制回落';
+        }
+    }
+    
+    // 记录
+    tTodayCount[code] = (tTodayCount[code] || 0) + 1;
+    tDailyPnl[code] = (tDailyPnl[code] || 0) + pnlPct;
+    
+    const now = new Date();
+    tTradeHistory.push({
+        code: code.substring(2),
+        name,
+        type: tradeType === '正T' ? '🔵正T' : '🔴反T',
+        buyTime: now.toLocaleTimeString('zh-CN'),
+        buyPrice: tradeType === '正T' ? entryPrice : exitPrice,
+        sellTime: now.toLocaleTimeString('zh-CN'),
+        sellPrice: tradeType === '正T' ? exitPrice : entryPrice,
+        pnl, pnlPct,
+        duration: '模拟',
+        reason
+    });
+    
+    showTToast(`✅ ${name} ${tradeType === '正T' ? '正T' : '反T'} 完成！+${pnlPct.toFixed(2)}%（${reason}）`);
+    
+    // 及时刷新面板
+    renderTradingOpportunities();
+}
+
+// Toast提示
+function showTToast(msg) {
+    let toast = document.getElementById('tToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'tToast';
+        toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;background:var(--bg-card);border:1px solid var(--blue);color:var(--text);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:all 0.3s;max-width:400px';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+    }, 6000);
 }
 
 // ==================== 收盘复盘 ====================
