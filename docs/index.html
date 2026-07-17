@@ -2200,6 +2200,60 @@ function renderStockChip(code) {
     </div>`;
 }
 
+// 根据板块名称自动匹配关键词
+function getSectorKeywords(name) {
+    const kwMap = [
+        { match: 'AI算力', kws: ['AI', '算力', '芯片', '服务器', '数据中心', '智算', '光模块', 'PCB', '液冷', '英伟达', '大模型'] },
+        { match: '半导体', kws: ['半导体', '芯片', '设备', '封装', '晶圆', '存储', '国产替代', '出口管制', '封测', 'Chiplet', '光刻'] },
+        { match: '储能', kws: ['储能', '逆变器', '户储', '新能源', '光伏'] },
+        { match: '电力', kws: ['电力', '电网', '变压器', '特高压', '用电', '负荷', '配电'] },
+        { match: '电子特气', kws: ['电子特气', '氦气', '材料', '前驱体', '自主可控'] },
+        { match: '机器人', kws: ['机器人', '人形', '智能制造', '减速器', '伺服', '运动控制'] },
+        { match: '存储', kws: ['存储', 'DRAM', '芯片', '长鑫', 'NAND'] }
+    ];
+    for (const item of kwMap) {
+        if (name.includes(item.match)) return item.kws;
+    }
+    return ['政策', '利好', '补贴'];
+}
+
+// 从实时新闻中匹配板块相关新闻
+function matchPolicyNewsForSector(keywords) {
+    if (!policyNewsData || policyNewsData.length === 0) return [];
+    const matched = policyNewsData.filter(item => {
+        const text = (item.title || '') + (item.summary || item.digest || '');
+        return keywords.some(kw => text.includes(kw));
+    });
+    return matched.slice(0, 3);
+}
+
+// 渲染板块最新动态
+function renderSectorNews(name) {
+    const keywords = getSectorKeywords(name);
+    const news = matchPolicyNewsForSector(keywords);
+    if (news.length === 0) {
+        return `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">
+            <span style="color:var(--yellow)">📡 最新动态：</span>
+            <span style="color:var(--text-dim)">暂无匹配快讯，等待刷新...</span>
+        </div>`;
+    }
+    let html = `<div style="font-size:11px;margin-bottom:8px">
+        <span style="color:var(--yellow)">📡 最新动态（实时匹配）：</span>`;
+    news.forEach((n, i) => {
+        const time = (n.showTime || n.showtime || '').substring(11, 16) || '';
+        const title = n.title || n.digest || '';
+        const url = n.url_w || n.url_m || '';
+        const sep = i > 0 ? '<span style="color:var(--text-dim);margin:0 4px">|</span>' : '';
+        if (url) {
+            html += `${sep}<span style="color:var(--text-dim)">${time}</span> <a href="${url}" target="_blank" style="color:var(--blue);text-decoration:none">${title.substring(0, 40)}${title.length > 40 ? '...' : ''}</a>`;
+        } else {
+            html += `${sep}<span style="color:var(--text-dim)">${time}</span> <span style="color:var(--blue)">${title.substring(0, 40)}${title.length > 40 ? '...' : ''}</span>`;
+        }
+    });
+    html += `</div>`;
+    return html;
+}
+
 function renderDirectionCard(item, type) {
     const typeColor = type === 'supply' ? 'var(--blue)' : (type === 'demand' ? 'var(--green)' : 'var(--yellow)');
     const typeLabel = type === 'supply' ? '🔵 供给端驱动' : (type === 'demand' ? '🟢 需求端驱动' : '🟡 供需双轮驱动');
@@ -2207,19 +2261,21 @@ function renderDirectionCard(item, type) {
 
     const stockChips = (item.stocks || []).map(code => renderStockChip(code)).join('');
     const stockCount = (item.stocks || []).length;
+    const sectorNews = renderSectorNews(item.name);
 
     return `<div class="direction-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:4px solid ${typeColor};border-radius:8px;padding:14px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:start">
-            <div>
+            <div style="flex:1;min-width:0">
                 <h3 style="color:${typeColor};font-size:15px;margin-bottom:6px">${typeIcon} ${item.name}</h3>
                 <div style="font-size:12px;color:var(--text);margin-bottom:6px">
                     <span style="color:var(--text-dim)">政策催化：</span>${item.policy}
                 </div>
-                <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">
                     <span style="color:var(--text-dim)">驱动逻辑：</span>${item.logic}
                 </div>
+                ${sectorNews}
             </div>
-            <span class="tag" style="background:${typeColor}22;color:${typeColor};font-size:11px">${stockCount}只标的</span>
+            <span class="tag" style="background:${typeColor}22;color:${typeColor};font-size:11px;flex-shrink:0;margin-left:8px">${stockCount}只标的</span>
         </div>
         <div style="border-top:1px solid var(--border);padding-top:8px">
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">受益标的（实时行情）：</div>
@@ -2231,6 +2287,7 @@ function renderDirectionCard(item, type) {
 function renderEarningsCard(item) {
     const stockChips = (item.stocks || []).map(code => renderStockChip(code)).join('');
     const stockCount = (item.stocks || []).length;
+    const sectorNews = renderSectorNews(item.name);
 
     const statusColors = {
         '中报密集验证期': { bg: 'rgba(63,185,80,0.15)', color: 'var(--green)', icon: '📊' },
@@ -2243,7 +2300,7 @@ function renderEarningsCard(item) {
 
     return `<div class="direction-card" style="background:linear-gradient(135deg, rgba(63,185,80,0.05), rgba(63,185,80,0.02));border:1px solid var(--green);border-left:4px solid var(--green);border-radius:8px;padding:14px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:start">
-            <div>
+            <div style="flex:1;min-width:0">
                 <h3 style="color:var(--green);font-size:15px;margin-bottom:6px">${statusStyle.icon} ${item.name}</h3>
                 <div style="margin-bottom:6px">
                     <span class="tag" style="background:${statusStyle.bg};color:${statusStyle.color};font-size:11px">${statusStyle.icon} ${item.status}</span>
@@ -2251,11 +2308,12 @@ function renderEarningsCard(item) {
                 <div style="font-size:12px;color:var(--text);margin-bottom:6px">
                     <span style="color:var(--text-dim)">业绩验证：</span>${item.policy}
                 </div>
-                <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">
                     <span style="color:var(--text-dim)">落地逻辑：</span>${item.logic}
                 </div>
+                ${sectorNews}
             </div>
-            <span class="tag" style="background:rgba(63,185,80,0.2);color:var(--green);font-size:11px">${stockCount}只标的</span>
+            <span class="tag" style="background:rgba(63,185,80,0.2);color:var(--green);font-size:11px;flex-shrink:0;margin-left:8px">${stockCount}只标的</span>
         </div>
         <div style="border-top:1px solid var(--border);padding-top:8px">
             <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px">业绩落地标的（实时行情）：</div>
@@ -2298,6 +2356,8 @@ function fetchLivePolicyNews() {
                 
                 policyNewsData = (filtered.length > 0 ? filtered : allNews).slice(0, 30);
                 renderLivePolicyNews();
+                // 新闻刷新后，重新渲染政策双轮板块（更新各板块最新动态）
+                renderDualWheel();
             }
         } catch(e) {
             console.error('Policy news parse error:', e);
