@@ -277,25 +277,34 @@ tr:hover td { background: var(--bg-hover); }
 
 <!-- 做T机会 -->
 <div class="content tab-content" id="content-trading">
-    <div class="section-title">📈 5分钟做T机会 — 正T·反T实时信号</div>
+    <div class="section-title">📈 全市场做T扫描 — 30分KD金叉 + 30天回测验证</div>
+
+    <!-- 扫描按钮 + 说明 -->
+    <div class="panel" style="margin-bottom:12px">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+            <button id="tScanBtn" onclick="scanMarketForT()" style="padding:10px 24px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600">🔍 开始全市场扫描</button>
+            <span id="tScanStatus" style="color:var(--text-dim);font-size:12px">扫描全市场高换手率个股的30分钟KDJ，筛选K&lt;30且刚金叉的票，再回测30天"下午买、次日卖"胜率</span>
+        </div>
+        <div id="tScanProgress"></div>
+    </div>
 
     <!-- 顶部统计卡 -->
-    <div class="stats-bar" id="tStatsBar" style="margin-bottom:14px">
+    <div class="stats-bar" style="margin-bottom:14px">
         <div class="stat-card" style="border-left:3px solid var(--blue)">
-            <div class="stat-label">正T机会</div>
-            <div class="stat-value" id="tStatBuy" style="font-size:24px">--</div>
-        </div>
-        <div class="stat-card" style="border-left:3px solid var(--red)">
-            <div class="stat-label">反T机会</div>
-            <div class="stat-value" id="tStatSell" style="font-size:24px">--</div>
+            <div class="stat-label">扫描范围</div>
+            <div class="stat-value" id="tStatScan" style="font-size:24px">--</div>
         </div>
         <div class="stat-card" style="border-left:3px solid var(--orange)">
-            <div class="stat-label">今日已做</div>
-            <div class="stat-value" id="tStatDone" style="font-size:24px">--</div>
+            <div class="stat-label">KDJ金叉候选</div>
+            <div class="stat-value" id="tStatKDJ" style="font-size:24px">--</div>
         </div>
         <div class="stat-card" style="border-left:3px solid var(--green)">
-            <div class="stat-label">累计盈亏</div>
-            <div class="stat-value" id="tStatPnl" style="font-size:24px">--</div>
+            <div class="stat-label">通过回测</div>
+            <div class="stat-value" id="tStatPass" style="font-size:24px">--</div>
+        </div>
+        <div class="stat-card" style="border-left:3px solid var(--red)">
+            <div class="stat-label">平均胜率</div>
+            <div class="stat-value" id="tStatWin" style="font-size:24px">--</div>
         </div>
         <div class="stat-card" style="border-left:3px solid var(--purple)">
             <div class="stat-label">更新时间</div>
@@ -303,40 +312,41 @@ tr:hover td { background: var(--bg-hover); }
         </div>
     </div>
 
-    <!-- 做T筛选条件提示 -->
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
-        🎯 筛选条件：日均换手>3% · 日内振幅>3% · 非涨跌停 · 持仓有底仓 · 信号≥3分才触发
+    <!-- 选股逻辑说明 -->
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.8;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px">
+        <strong style="color:var(--text)">🎯 选股逻辑：</strong>
+        ① 从全市场5500+只A股中，按换手率排序取前300只活跃股<br>
+        ② 获取每只票的30分钟K线，计算KDJ(9,3,3)，筛选 <strong style="color:var(--green)">K&lt;30（低位）且K&gt;D（刚金叉）</strong> 的票<br>
+        ③ 对候选票回测近30个交易日：<strong style="color:var(--blue)">买入=当日收盘(≈14:50)</strong>，<strong style="color:var(--red)">卖出=次日开盘(≈9:30)</strong><br>
+        ④ 只保留 <strong style="color:var(--orange)">胜率≥60%且平均收益为正</strong> 的票，按胜率排序展示<br>
+        <strong style="color:var(--yellow)">⚠️ 回测基于历史数据，不代表未来收益。请结合大盘环境、个股基本面综合判断。</strong>
     </div>
 
-    <!-- 做T机会表格 -->
+    <!-- 扫描结果表格 -->
     <div class="panel" style="margin-bottom:12px">
-        <h3>🎯 实时做T信号</h3>
-        <div class="table-container" style="overflow-x:auto;max-height:55vh;overflow-y:auto" id="tOpportunityTable"></div>
-    </div>
-
-    <!-- 风控规则说明 -->
-    <div class="panel" style="margin-bottom:12px">
-        <h3>⚠️ 风控规则</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:11px">
-            <div style="background:rgba(248,81,73,0.06);border:1px solid var(--red);border-radius:6px;padding:10px">
-                <strong style="color:var(--red)">止损</strong><br>买入后跌超 <b>-2%</b>，立即平仓
-            </div>
-            <div style="background:rgba(245,158,11,0.06);border:1px solid var(--orange);border-radius:6px;padding:10px">
-                <strong style="color:var(--orange)">时间止损</strong><br>持仓超 <b>30分钟</b> 未达止盈，强制平仓
-            </div>
-            <div style="background:rgba(5,150,105,0.06);border:1px solid var(--green);border-radius:6px;padding:10px">
-                <strong style="color:var(--green)">止盈</strong><br>底线+0.5% · 上限+2% · KD反转自动触发
-            </div>
-            <div style="background:rgba(59,130,246,0.06);border:1px solid var(--blue);border-radius:6px;padding:10px">
-                <strong style="color:var(--blue)">日内限次</strong><br>单票≤2次 · 单票日亏损>-3%
-            </div>
+        <h3>🎯 做T候选（30分KD金叉 + 30天回测验证）</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:60vh;overflow-y:auto" id="tOpportunityTable">
+            <div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">点击上方"开始全市场扫描"按钮</div>
         </div>
     </div>
 
-    <!-- 做T记录 -->
+    <!-- 操作策略 -->
     <div class="panel">
-        <h3>📜 做T记录（今日）</h3>
-        <div class="table-container" style="overflow-x:auto;max-height:30vh;overflow-y:auto" id="tHistoryTable"></div>
+        <h3>📋 操作策略</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:11px">
+            <div style="background:rgba(59,130,246,0.06);border:1px solid var(--blue);border-radius:6px;padding:10px">
+                <strong style="color:var(--blue)">买入时机</strong><br>14:00-14:50 之间买入，尽量接近收盘
+            </div>
+            <div style="background:rgba(248,81,73,0.06);border:1px solid var(--red);border-radius:6px;padding:10px">
+                <strong style="color:var(--red)">卖出时机</strong><br>次日9:30-10:00 开盘冲高时卖出
+            </div>
+            <div style="background:rgba(245,158,11,0.06);border:1px solid var(--orange);border-radius:6px;padding:10px">
+                <strong style="color:var(--orange)">止损纪律</strong><br>买入价-3%止损，不留过夜
+            </div>
+            <div style="background:rgba(5,150,105,0.06);border:1px solid var(--green);border-radius:6px;padding:10px">
+                <strong style="color:var(--green)">仓位控制</strong><br>单票≤10%仓位 · 分散3-5只
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1726,7 +1736,7 @@ async function renderAll() {
     renderAlertBadge();
     renderDeepAnalysis();
     renderSwapLog();
-    renderTradingOpportunities();
+    renderTScanResults();
     // 更新沪指显示
     const shDisplay = document.getElementById('shIndexDisplay');
     if (shDisplay && shIndexCache.price) {
@@ -2839,6 +2849,9 @@ async function init() {
     // 10. 动态板块成分股（每60秒刷新，按当日涨幅排行选股）
     fetchAllSectorStocks();
     sectorStocksTimer = setInterval(fetchAllSectorStocks, 60000);
+
+    // 11. 做T全市场扫描 — 每天13:30和14:00自动扫描，也可手动触发
+    scheduleTScan();
 }
 
 // ==================== 收盘复盘(智能分析) ====================
@@ -4419,376 +4432,334 @@ function showSwapToast(inList, outList) {
     }, 10000);
 }
 
-// ==================== 5分钟做T系统 ====================
+// ==================== 全市场做T扫描系统 ====================
 
-let tTradeHistory = [];        // {code, name, type: '正T'|'反T', buyTime, buyPrice, sellTime, sellPrice, pnl, pnlPct, reason}
-let tTodayCount = {};          // {code: count} 今日每票做T次数
-let tDailyPnl = {};            // {code: totalPnlPct} 今日每票累计盈亏
-let tLastRefresh = '';         // 上次刷新时间
-let tVwapCache = {};           // VWAP缓存 {code: {vwap, avgVol, amp}}
+let tScanResults = [];          // 扫描通过的结果
+let tScanRunning = false;       // 是否正在扫描
+let tScanProgress = { total: 0, done: 0, phase: '', kdjFound: 0 }; // 扫描进度
+let tScanLastTime = '';         // 上次扫描时间
 
-// 计算VWAP（成交量加权均价）和关键指标
-function calcVWAP(code) {
-    const klines = kdjCache[code] && kdjCache[code].m1;
-    if (!klines || klines.length < 10) return null;
-    
-    let totalVol = 0, totalValue = 0;
-    let high = -Infinity, low = Infinity;
-    const recent = klines.slice(-20); // 最近20根1分钟K线
-    
-    for (const k of recent) {
-        const vol = k.volume || 0;
-        const price = k.close;
-        totalVol += vol;
-        totalValue += vol * price;
-        if (price > high) high = price;
-        if (price < low) low = price;
+// 1. 获取全市场高换手率股票（取top300）
+async function fetchMarketStocksForT() {
+    const url = 'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=300&po=1&np=1&fltt=2&invt=2&fid=f8&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f3,f8,f12,f14';
+    try {
+        const result = await jsonpRequest(url);
+        if (!result || !result.data || !result.data.diff) return [];
+        return result.data.diff.filter(function(s) {
+            var name = s.f14 || '';
+            var price = s.f2;
+            var changePct = s.f3;
+            var turnover = s.f8;
+            if (name.indexOf('ST') >= 0 || name.indexOf('退') >= 0) return false;
+            if (typeof price !== 'number' || price < 2 || price > 200) return false;
+            if (typeof changePct !== 'number' || changePct >= 9.8 || changePct <= -9.8) return false;
+            if (typeof turnover !== 'number' || turnover < 2) return false;
+            return true;
+        }).map(function(s) {
+            var code = s.f12;
+            return {
+                code: code,
+                name: s.f14,
+                price: s.f2,
+                changePct: s.f3,
+                turnover: s.f8,
+                market: code.charAt(0) === '6' ? 1 : 0
+            };
+        });
+    } catch(e) {
+        console.error('fetchMarketStocksForT error:', e);
+        return [];
     }
-    
-    if (totalVol === 0) return null;
-    const vwap = totalValue / totalVol;
-    const amp = high > 0 && low > 0 ? ((high - low) / low * 100) : 0;
-    const avgVol = totalVol / recent.length;
-    
-    return { vwap, avgVol, amp, high, low };
 }
 
-// 做T综合打分（正T/反T）
-// 返回 { buyScore: 正T买入分, sellScore: 反T卖出分, k5v, k5k, k5d, details }
-function calcTScore(code) {
-    const ind = trendCache[code] || {};
-    const kdj = ind.kdj || {};
-    const k5 = kdj.m5;
-    if (!k5) return null;
-    
-    const k5v = k5.v || 50;
-    const k5k = k5.k || 50;
-    const k5d = k5.d || 50;
-    
-    const vwapData = calcVWAP(code);
-    if (!vwapData) return null;
-    
-    const quote = quoteCache[code] || {};
-    const price = quote.price || 0;
-    if (price <= 0) return null;
-    
-    const vwap = vwapData.vwap;
-    const avgVol = vwapData.avgVol;
-    const amp = vwapData.amp;
-    
-    // 最新1分钟量
-    const klines = kdjCache[code] && kdjCache[code].m1;
-    const lastVol = klines && klines.length > 0 ? (klines[klines.length-1].volume || 0) : 0;
-    
-    // === 正T买入打分 ===
-    let buyScore = 0;
-    let buyReasons = [];
-    
-    // KDJ维度
-    if (k5v < 20) { buyScore += 2; buyReasons.push('K5超卖<20'); }
-    else if (k5v < 30) { buyScore += 1; buyReasons.push('K5偏低<30'); }
-    if (k5k > k5d) { buyScore += 1; buyReasons.push('K5金叉'); }
-    
-    // 量价维度（5分钟放量）
-    if (avgVol > 0 && lastVol > avgVol * 1.5) { buyScore += 2; buyReasons.push('放量>1.5倍'); }
-    else if (avgVol > 0 && lastVol > avgVol * 1.2) { buyScore += 1; buyReasons.push('温和放量'); }
-    
-    // VWAP维度
-    const devFromVwap = vwap > 0 ? ((price - vwap) / vwap * 100) : 0;
-    if (devFromVwap < -2) { buyScore += 2; buyReasons.push('低于VWAP -2%'); }
-    else if (devFromVwap < -1) { buyScore += 1; buyReasons.push('低于VWAP -1%'); }
-    
-    // === 反T卖出打分 ===
-    let sellScore = 0;
-    let sellReasons = [];
-    
-    if (k5v > 80) { sellScore += 2; sellReasons.push('K5超买>80'); }
-    else if (k5v > 70) { sellScore += 1; sellReasons.push('K5偏高>70'); }
-    if (k5k < k5d) { sellScore += 1; sellReasons.push('K5死叉'); }
-    
-    if (avgVol > 0 && lastVol < avgVol * 0.5) { sellScore += 2; sellReasons.push('缩量<0.5倍'); }
-    else if (avgVol > 0 && lastVol < avgVol * 0.7) { sellScore += 1; sellReasons.push('缩量<0.7倍'); }
-    
-    if (devFromVwap > 2) { sellScore += 2; sellReasons.push('高于VWAP +2%'); }
-    else if (devFromVwap > 1.5) { sellScore += 1; sellReasons.push('高于VWAP +1.5%'); }
-    
+// 2. 获取30分钟K线（东方财富push2his JSONP）
+function fetch30MinKlineEM(code, market) {
+    return new Promise(function(resolve) {
+        var secid = market + '.' + code;
+        var now = new Date();
+        var end = now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0');
+        var url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=' + secid +
+            '&ut=2869ffafee25fa5d66c39e8d498df3a8&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=30&fqt=1&end=' + end + '&lmt=30';
+        jsonpRequest(url).then(function(data) {
+            if (!data || !data.data || !data.data.klines) { resolve(null); return; }
+            var klines = data.data.klines.map(function(k) {
+                var f = k.split(',');
+                return {
+                    date: f[0],
+                    open: parseFloat(f[1]) || 0,
+                    close: parseFloat(f[2]) || 0,
+                    high: parseFloat(f[3]) || 0,
+                    low: parseFloat(f[4]) || 0,
+                    volume: parseInt(f[5]) || 0,
+                    amount: parseFloat(f[6]) || 0
+                };
+            });
+            resolve(klines);
+        });
+    });
+}
+
+// 3. 获取日线K线（用于30天回测）
+function fetchDailyKlineEM(code, market) {
+    return new Promise(function(resolve) {
+        var secid = market + '.' + code;
+        var now = new Date();
+        var end = now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0');
+        var begDate = new Date(now);
+        begDate.setDate(begDate.getDate() - 70); // 往前推70天确保有30+交易日
+        var beg = begDate.getFullYear() +
+            String(begDate.getMonth() + 1).padStart(2, '0') +
+            String(begDate.getDate()).padStart(2, '0');
+        var url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=' + secid +
+            '&ut=2869ffafee25fa5d66c39e8d498df3a8&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57&klt=101&fqt=1&beg=' + beg + '&end=' + end;
+        jsonpRequest(url).then(function(data) {
+            if (!data || !data.data || !data.data.klines) { resolve(null); return; }
+            var klines = data.data.klines.map(function(k) {
+                var f = k.split(',');
+                return {
+                    date: f[0],
+                    open: parseFloat(f[1]) || 0,
+                    close: parseFloat(f[2]) || 0,
+                    high: parseFloat(f[3]) || 0,
+                    low: parseFloat(f[4]) || 0,
+                    volume: parseInt(f[5]) || 0,
+                    amount: parseFloat(f[6]) || 0
+                };
+            });
+            resolve(klines);
+        });
+    });
+}
+
+// 4. 检测30分KDJ金叉且K<30
+function check30MinKDJGoldenCross(klines) {
+    if (!klines || klines.length < 12) return null;
+    var kdj = calcKDJ(klines, 9);
+    if (!kdj || kdj.length < 3) return null;
+    var last = kdj[kdj.length - 1];
+    var prev = kdj[kdj.length - 2];
+    // 条件：K < 30 且 K > D（金叉状态）
+    if (last.k < 30 && last.k > last.d) {
+        var justCrossed = prev.k <= prev.d; // 上一根K<=D，说明刚刚金叉
+        return {
+            k: last.k,
+            d: last.d,
+            j: last.j,
+            justCrossed: justCrossed,
+            klineTime: last.date
+        };
+    }
+    return null;
+}
+
+// 5. 30天回测：买入=当日收盘(≈14:50)，卖出=次日开盘(≈9:30)
+function backtestBuyCloseSellOpen(dailyKlines) {
+    if (!dailyKlines || dailyKlines.length < 31) return null;
+    var results = [];
+    for (var i = dailyKlines.length - 31; i < dailyKlines.length - 1; i++) {
+        var buyPrice = dailyKlines[i].close;
+        var sellPrice = dailyKlines[i + 1].open;
+        if (buyPrice <= 0) continue;
+        var profit = (sellPrice - buyPrice) / buyPrice * 100;
+        results.push({ date: dailyKlines[i].date, buyPrice: buyPrice, sellPrice: sellPrice, profit: profit });
+    }
+    if (results.length === 0) return null;
+    var wins = results.filter(function(r) { return r.profit > 0; });
+    var totalProfit = results.reduce(function(s, r) { return s + r.profit; }, 0);
+    var avgProfit = totalProfit / results.length;
+    var maxProfit = Math.max.apply(null, results.map(function(r) { return r.profit; }));
+    var maxLoss = Math.min.apply(null, results.map(function(r) { return r.profit; }));
     return {
-        buyScore, sellScore, k5v, k5k, k5d,
-        vwap, avgVol, amp, devFromVwap, lastVol,
-        buyReasons, sellReasons
+        winRate: wins.length / results.length * 100,
+        avgProfit: avgProfit,
+        maxProfit: maxProfit,
+        maxLoss: maxLoss,
+        totalDays: results.length,
+        winDays: wins.length
     };
 }
 
-// 筛选适合做T的股票
-function filterTCandidates() {
-    const candidates = [];
-    for (const stock of STOCKS) {
-        const code = stock.code;
-        const quote = quoteCache[code] || {};
-        const price = quote.price || 0;
-        const changePct = quote.changePct || 0;
-        
-        // 涨跌停排除
-        if (changePct >= 9.5 || changePct <= -9.5) continue;
-        
-        // 需要持仓（有底仓）——简化判断：STOCKS里都是持仓
-        const tScore = calcTScore(code);
-        if (!tScore) continue;
-        
-        // 振幅检查
-        if (tScore.amp < 3) continue;
-        
-        // VWAP附近不触发：正T和反T至少一项≥3分
-        if (tScore.buyScore < 3 && tScore.sellScore < 3) continue;
-        
-        const name = quote.name || stock.name;
-        const doneToday = tTodayCount[code] || 0;
-        const dailyPnl = tDailyPnl[code] || 0;
-        
-        candidates.push({
-            code, name,
-            sector: stock.sector,
-            price, changePct,
-            amp: tScore.amp,
-            buyScore: tScore.buyScore,
-            sellScore: tScore.sellScore,
-            k5v: tScore.k5v,
-            k5k: tScore.k5k,
-            k5d: tScore.k5d,
-            vwap: tScore.vwap,
-            devFromVwap: tScore.devFromVwap,
-            buyReasons: tScore.buyReasons,
-            sellReasons: tScore.sellReasons,
-            doneToday, dailyPnl
-        });
+// 6. 主扫描函数
+async function scanMarketForT() {
+    if (tScanRunning) return;
+    var btn = document.getElementById('tScanBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 扫描中...'; btn.style.opacity = '0.6'; }
+    tScanRunning = true;
+    tScanResults = [];
+    tScanProgress = { total: 0, done: 0, phase: '获取全市场股票列表...', kdjFound: 0 };
+    renderTScanResults();
+
+    // Phase 1: 获取全市场股票
+    var allStocks = await fetchMarketStocksForT();
+    tScanProgress.total = allStocks.length;
+    tScanProgress.phase = '扫描30分钟KDJ（共' + allStocks.length + '只）...';
+    renderTScanResults();
+
+    // Phase 2: 逐批获取30分K线，计算KDJ
+    var batchSize = 5;
+    var kdjCandidates = [];
+    for (var i = 0; i < allStocks.length; i += batchSize) {
+        var batch = allStocks.slice(i, i + batchSize);
+        await Promise.all(batch.map(async function(stock) {
+            var klines = await fetch30MinKlineEM(stock.code, stock.market);
+            tScanProgress.done++;
+            if (klines && klines.length >= 12) {
+                var kdjResult = check30MinKDJGoldenCross(klines);
+                if (kdjResult) {
+                    tScanProgress.kdjFound++;
+                    kdjCandidates.push(Object.assign({}, stock, { kdj30: kdjResult }));
+                }
+            }
+        }));
+        if (i % 15 === 0 || i + batchSize >= allStocks.length) renderTScanResults();
     }
-    return candidates;
+
+    // Phase 3: 对KDJ候选股进行30天回测
+    tScanProgress.phase = '回测30天表现（共' + kdjCandidates.length + '只候选）...';
+    tScanProgress.total = kdjCandidates.length;
+    tScanProgress.done = 0;
+    renderTScanResults();
+
+    var btBatch = 5;
+    for (var j = 0; j < kdjCandidates.length; j += btBatch) {
+        var batch2 = kdjCandidates.slice(j, j + btBatch);
+        await Promise.all(batch2.map(async function(candidate) {
+            var dailyKlines = await fetchDailyKlineEM(candidate.code, candidate.market);
+            tScanProgress.done++;
+            if (dailyKlines && dailyKlines.length >= 31) {
+                var bt = backtestBuyCloseSellOpen(dailyKlines);
+                if (bt && bt.winRate >= 60 && bt.avgProfit > 0) {
+                    tScanResults.push(Object.assign({}, candidate, { backtest: bt }));
+                }
+            }
+        }));
+        renderTScanResults();
+    }
+
+    // 按胜率排序
+    tScanResults.sort(function(a, b) { return b.backtest.winRate - a.backtest.winRate; });
+    tScanRunning = false;
+    tScanProgress.phase = '完成';
+    tScanLastTime = new Date().toLocaleTimeString('zh-CN');
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 重新扫描'; btn.style.opacity = '1'; }
+    renderTScanResults();
+    if (tScanResults.length > 0) {
+        showTToast('扫描完成！找到 ' + tScanResults.length + ' 只符合条件的做T候选股');
+    } else {
+        showTToast('扫描完成，暂无符合条件的票（K<30金叉+胜率≥60%）');
+    }
 }
 
-// 渲染做T机会面板
-function renderTradingOpportunities() {
-    const tableEl = document.getElementById('tOpportunityTable');
-    const historyEl = document.getElementById('tHistoryTable');
+// 7. 渲染扫描结果
+function renderTScanResults() {
+    var tableEl = document.getElementById('tOpportunityTable');
     if (!tableEl) return;
-    
-    const candidates = filterTCandidates();
-    
+
     // 更新统计卡
-    const buyCount = candidates.filter(c => c.buyScore >= 3).length;
-    const sellCount = candidates.filter(c => c.sellScore >= 3).length;
-    const totalDone = Object.values(tTodayCount).reduce((s, v) => s + v, 0);
-    const totalPnl = Object.values(tDailyPnl).reduce((s, v) => s + v, 0);
-    
-    const buyEl = document.getElementById('tStatBuy');
-    const sellEl = document.getElementById('tStatSell');
-    const doneEl = document.getElementById('tStatDone');
-    const pnlEl = document.getElementById('tStatPnl');
-    const timeEl = document.getElementById('tStatTime');
-    
-    if (buyEl) { buyEl.textContent = buyCount; buyEl.style.color = buyCount > 0 ? 'var(--blue)' : 'var(--text-dim)'; }
-    if (sellEl) { sellEl.textContent = sellCount; sellEl.style.color = sellCount > 0 ? 'var(--red)' : 'var(--text-dim)'; }
-    if (doneEl) doneEl.textContent = totalDone;
-    if (pnlEl) {
-        pnlEl.textContent = (totalPnl > 0 ? '+' : '') + totalPnl.toFixed(2) + '%';
-        pnlEl.style.color = totalPnl > 0 ? 'var(--red)' : (totalPnl < 0 ? 'var(--green)' : 'var(--text-dim)');
+    var scanEl = document.getElementById('tStatScan');
+    var kdjEl = document.getElementById('tStatKDJ');
+    var passEl = document.getElementById('tStatPass');
+    var winEl = document.getElementById('tStatWin');
+    var timeEl = document.getElementById('tStatTime');
+
+    if (scanEl) scanEl.textContent = tScanProgress.total || '--';
+    if (kdjEl) {
+        if (tScanRunning && tScanProgress.phase.indexOf('KDJ') >= 0) {
+            kdjEl.textContent = tScanProgress.kdjFound;
+        } else if (tScanRunning && tScanProgress.phase.indexOf('回测') >= 0) {
+            kdjEl.textContent = tScanProgress.total;
+        } else {
+            kdjEl.textContent = tScanProgress.kdjFound || (tScanResults.length > 0 ? tScanResults.length : '--');
+        }
     }
-    if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('zh-CN');
-    
-    // 渲染机会表格
-    if (candidates.length === 0) {
-        tableEl.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">当前无符合条件的做T机会（需振幅>3% + 评分≥3）</div>';
+    if (passEl) passEl.textContent = tScanResults.length || '--';
+    var avgWin = tScanResults.length > 0
+        ? Math.round(tScanResults.reduce(function(s, r) { return s + r.backtest.winRate; }, 0) / tScanResults.length) + '%'
+        : '--';
+    if (winEl) winEl.textContent = avgWin;
+    if (timeEl) timeEl.textContent = tScanLastTime || (tScanRunning ? '扫描中...' : '--');
+
+    // 渲染进度条
+    var progressEl = document.getElementById('tScanProgress');
+    if (progressEl) {
+        if (tScanRunning) {
+            var pct = tScanProgress.total > 0 ? Math.round(tScanProgress.done / tScanProgress.total * 100) : 0;
+            progressEl.innerHTML = '<div style="background:var(--bg);border-radius:6px;padding:10px 14px;margin-bottom:8px">' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:6px">' +
+                '<span style="color:var(--blue);font-size:12px;font-weight:600">🔄 ' + tScanProgress.phase + '</span>' +
+                '<span style="color:var(--text-dim);font-size:12px">' + tScanProgress.done + '/' + tScanProgress.total + ' (' + pct + '%)</span>' +
+                '</div>' +
+                '<div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">' +
+                '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 0.3s"></div>' +
+                '</div></div>';
+        } else {
+            progressEl.innerHTML = '';
+        }
+    }
+
+    // 渲染结果表格
+    if (tScanResults.length === 0 && !tScanRunning) {
+        tableEl.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">点击上方"开始全市场扫描"按钮</div>';
+    } else if (tScanResults.length === 0 && tScanRunning) {
+        tableEl.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">⏳ ' + tScanProgress.phase + '</div>';
     } else {
-        // 排序：评分高的在前
-        candidates.sort((a, b) => Math.max(b.buyScore, b.sellScore) - Math.max(a.buyScore, a.sellScore));
-        
-        let html = `<table style="font-size:11px;table-layout:fixed;width:100%">
-        <thead><tr>
-            <th style="width:8%">代码</th><th style="width:10%">名称</th>
-            <th style="width:7%">现价</th><th style="width:8%">涨跌幅</th>
-            <th style="width:7%">振幅</th><th style="width:9%">VWAP</th>
-            <th style="width:8%">K5值</th><th style="width:7%">正T分</th>
-            <th style="width:7%">反T分</th>
-            <th style="width:10%">信号</th>
-            <th style="width:8%">今日</th>
-        </tr></thead><tbody>`;
-        
-        for (const c of candidates) {
-            const shortCode = c.code.substring(2);
-            const chgColor = c.changePct > 0 ? 'var(--red)' : (c.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
-            
-            // K5值颜色
-            let k5Color = 'var(--blue)';
-            if (c.k5v > 80) k5Color = 'var(--red)';
-            else if (c.k5v < 20) k5Color = 'var(--green)';
-            
-            // 信号类型
-            let signalHtml = '';
-            if (c.buyScore >= 3) {
-                signalHtml += `<span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(59,130,246,0.15);color:var(--blue);font-weight:700;margin:2px">🔵正T ${c.buyScore}/5</span><br>`;
-            }
-            if (c.sellScore >= 3) {
-                signalHtml += `<span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(248,81,73,0.15);color:var(--red);font-weight:700;margin:2px">🔴反T ${c.sellScore}/5</span>`;
-            }
-            if (!signalHtml) signalHtml = '<span style="color:var(--text-dim)">--</span>';
-            
-            // 今日已做次数
-            let doneHtml = '';
-            if (c.doneToday >= 2) {
-                doneHtml = `<span style="color:var(--red);font-weight:700">${c.doneToday}次<br><span style="font-size:9px">已达上限</span></span>`;
-            } else if (c.dailyPnl <= -3) {
-                doneHtml = `<span style="color:var(--red);font-weight:700">${c.doneToday}次<br><span style="font-size:9px">亏损限禁</span></span>`;
-            } else if (c.doneToday > 0) {
-                doneHtml = `<span style="color:var(--orange);font-weight:600">${c.doneToday}次</span>`;
+        var html = '<table style="font-size:11px;table-layout:fixed;width:100%">' +
+            '<thead><tr>' +
+            '<th style="width:7%">代码</th><th style="width:8%">名称</th>' +
+            '<th style="width:6%">现价</th><th style="width:6%">涨跌</th>' +
+            '<th style="width:5%">换手</th>' +
+            '<th style="width:6%">30分K</th><th style="width:6%">30分D</th>' +
+            '<th style="width:11%">金叉时间</th>' +
+            '<th style="width:9%">30天胜率</th><th style="width:8%">平均收益</th>' +
+            '<th style="width:7%">建议买入</th><th style="width:7%">止损价</th>' +
+            '<th style="width:14%">选股理由</th>' +
+            '</tr></thead><tbody>';
+        for (var i = 0; i < tScanResults.length; i++) {
+            var r = tScanResults[i];
+            var chgColor = r.changePct > 0 ? 'var(--red)' : (r.changePct < 0 ? 'var(--green)' : 'var(--text-dim)');
+            var winColor = r.backtest.winRate >= 70 ? 'var(--red)' : (r.backtest.winRate >= 60 ? 'var(--orange)' : 'var(--text-dim)');
+            var avgColor = r.backtest.avgProfit > 0 ? 'var(--red)' : 'var(--green)';
+            var buyPrice = r.price.toFixed(2);
+            var stopLoss = (r.price * 0.97).toFixed(2);
+            var reason = '';
+            if (r.backtest.winRate >= 70 && r.kdj30.justCrossed) {
+                reason = '<span style="color:var(--red);font-weight:700">⭐高胜率+刚金叉</span>';
+            } else if (r.backtest.winRate >= 70) {
+                reason = '<span style="color:var(--orange);font-weight:600">高胜率金叉</span>';
+            } else if (r.kdj30.justCrossed) {
+                reason = '<span style="color:var(--blue)">刚金叉K' + r.kdj30.k.toFixed(0) + '</span>';
             } else {
-                doneHtml = '<span style="color:var(--green)">0次</span>';
+                reason = '<span style="color:var(--text-dim)">金叉持续中</span>';
             }
-            
-            html += `<tr>
-                <td style="font-size:10px;color:var(--text-dim)">${shortCode}</td>
-                <td style="font-weight:600">${c.name}</td>
-                <td style="font-weight:600">${c.price.toFixed(2)}</td>
-                <td style="color:${chgColor};font-weight:600">${c.changePct > 0 ? '+' : ''}${c.changePct.toFixed(2)}%</td>
-                <td>${c.amp.toFixed(1)}%</td>
-                <td style="font-size:10px">${c.vwap.toFixed(2)}<br><span style="color:${c.devFromVwap > 0 ? 'var(--red)' : 'var(--green)'}">${c.devFromVwap > 0 ? '+' : ''}${c.devFromVwap.toFixed(2)}%</span></td>
-                <td><span style="color:${k5Color};font-weight:700">K${c.k5k.toFixed(1)}</span><br><span style="color:var(--text-dim)">D${c.k5d.toFixed(1)}</span></td>
-                <td style="font-weight:700;color:${c.buyScore >= 3 ? 'var(--blue)' : 'var(--text-dim)'}">${c.buyScore}/5</td>
-                <td style="font-weight:700;color:${c.sellScore >= 3 ? 'var(--red)' : 'var(--text-dim)'}">${c.sellScore}/5</td>
-                <td style="font-size:10px">${signalHtml}</td>
-                <td>${doneHtml}</td>
-            </tr>`;
+            var kColor = r.kdj30.k < 20 ? 'var(--green)' : 'var(--blue)';
+            html += '<tr>' +
+                '<td style="font-size:10px;color:var(--text-dim)">' + r.code + '</td>' +
+                '<td style="font-weight:600">' + r.name + '</td>' +
+                '<td style="font-weight:600">' + buyPrice + '</td>' +
+                '<td style="color:' + chgColor + ';font-weight:600">' + (r.changePct > 0 ? '+' : '') + r.changePct.toFixed(2) + '%</td>' +
+                '<td style="color:var(--text-dim)">' + r.turnover.toFixed(1) + '%</td>' +
+                '<td><span style="color:' + kColor + ';font-weight:700">' + r.kdj30.k.toFixed(1) + '</span></td>' +
+                '<td><span style="color:var(--text-dim)">' + r.kdj30.d.toFixed(1) + '</span></td>' +
+                '<td style="font-size:10px;color:var(--text-dim)">' + r.kdj30.klineTime + '</td>' +
+                '<td style="color:' + winColor + ';font-weight:700">' + r.backtest.winRate.toFixed(0) + '%<br><span style="font-size:9px;color:var(--text-dim)">' + r.backtest.winDays + '/' + r.backtest.totalDays + '天</span></td>' +
+                '<td style="color:' + avgColor + ';font-weight:600">' + (r.backtest.avgProfit > 0 ? '+' : '') + r.backtest.avgProfit.toFixed(2) + '%</td>' +
+                '<td style="color:var(--blue);font-weight:600">' + buyPrice + '</td>' +
+                '<td style="color:var(--green)">' + stopLoss + '</td>' +
+                '<td style="font-size:10px">' + reason + '</td>' +
+                '</tr>';
         }
         html += '</tbody></table>';
         tableEl.innerHTML = html;
     }
-    
-    // 渲染做T记录
-    renderTHistory(historyEl);
-}
-
-// 渲染做T记录
-function renderTHistory(el) {
-    if (!el) return;
-    
-    if (tTradeHistory.length === 0) {
-        el.innerHTML = '<div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">今日尚无做T记录</div>';
-        return;
-    }
-    
-    let html = `<table style="font-size:11px;table-layout:fixed;width:100%">
-    <thead><tr>
-        <th style="width:8%">代码</th><th style="width:10%">名称</th>
-        <th style="width:6%">类型</th>
-        <th style="width:8%">买/卖价</th>
-        <th style="width:8%">卖/买价</th>
-        <th style="width:8%">盈亏</th>
-        <th style="width:8%">盈亏%</th>
-        <th style="width:6%">耗时</th>
-        <th style="width:30%">信号依据</th>
-    </tr></thead><tbody>`;
-    
-    for (const t of tTradeHistory.slice(-20)) {
-        const pnlColor = t.pnl > 0 ? 'var(--red)' : (t.pnl < 0 ? 'var(--green)' : 'var(--text-dim)');
-        html += `<tr>
-            <td style="font-size:10px;color:var(--text-dim)">${t.code}</td>
-            <td style="font-weight:600">${t.name}</td>
-            <td>${t.type}</td>
-            <td>${t.buyPrice.toFixed(2)}</td>
-            <td>${t.sellPrice.toFixed(2)}</td>
-            <td style="color:${pnlColor};font-weight:700">${t.pnl > 0 ? '+' : ''}${t.pnl.toFixed(2)}</td>
-            <td style="color:${pnlColor};font-weight:700">${t.pnlPct > 0 ? '+' : ''}${t.pnlPct.toFixed(2)}%</td>
-            <td>${t.duration}</td>
-            <td style="font-size:10px;color:var(--text-dim)">${t.reason}</td>
-        </tr>`;
-    }
-    html += '</tbody></table>';
-    el.innerHTML = html;
-}
-
-// 模拟执行做T操作（页面内模拟）
-function executeSimTrade(code, name, tradeType) {
-    const quote = quoteCache[code] || {};
-    const price = quote.price || 0;
-    if (price <= 0) return;
-    
-    // 风控检查
-    const doneToday = tTodayCount[code] || 0;
-    const dailyPnl = tDailyPnl[code] || 0;
-    if (doneToday >= 2) { showTToast(name + ' 今日已达2次上限'); return; }
-    if (dailyPnl <= -3) { showTToast(name + ' 今日累计亏损超-3%，禁止再做T'); return; }
-    
-    // 模拟结果：基于当前价格和信号强度模拟
-    const tScore = calcTScore(code);
-    const k5v = tScore ? tScore.k5v : 50;
-    
-    let entryPrice = price;
-    let exitPrice, pnl, pnlPct, reason;
-    
-    if (tradeType === '正T') {
-        // 正T：买入后期待涨
-        // 若K5<20超卖区域，反弹概率高
-        if (k5v < 20) {
-            exitPrice = price * 1.008; // +0.8%
-            pnl = exitPrice - entryPrice;
-            pnlPct = 0.8;
-            reason = 'K5超卖反弹(' + k5v.toFixed(0) + ')';
-        } else if (k5v < 30) {
-            exitPrice = price * 1.005; // +0.5%
-            pnl = exitPrice - entryPrice;
-            pnlPct = 0.5;
-            reason = 'K5低位反弹(' + k5v.toFixed(0) + ')';
-        } else {
-            exitPrice = price * 1.003; // +0.3%
-            pnl = exitPrice - entryPrice;
-            pnlPct = 0.3;
-            reason = '均线支撑反弹';
-        }
-    } else {
-        // 反T：卖出后期待跌
-        if (k5v > 80) {
-            exitPrice = price * 0.992; // -0.8%
-            pnl = entryPrice - exitPrice;
-            pnlPct = 0.8;
-            reason = 'K5超买回落(' + k5v.toFixed(0) + ')';
-        } else if (k5v > 70) {
-            exitPrice = price * 0.995; // -0.5%
-            pnl = entryPrice - exitPrice;
-            pnlPct = 0.5;
-            reason = 'K5高位回落(' + k5v.toFixed(0) + ')';
-        } else {
-            exitPrice = price * 0.997; // -0.3%
-            pnl = entryPrice - exitPrice;
-            pnlPct = 0.3;
-            reason = 'VWAP压制回落';
-        }
-    }
-    
-    // 记录
-    tTodayCount[code] = (tTodayCount[code] || 0) + 1;
-    tDailyPnl[code] = (tDailyPnl[code] || 0) + pnlPct;
-    
-    const now = new Date();
-    tTradeHistory.push({
-        code: code.substring(2),
-        name,
-        type: tradeType === '正T' ? '🔵正T' : '🔴反T',
-        buyTime: now.toLocaleTimeString('zh-CN'),
-        buyPrice: tradeType === '正T' ? entryPrice : exitPrice,
-        sellTime: now.toLocaleTimeString('zh-CN'),
-        sellPrice: tradeType === '正T' ? exitPrice : entryPrice,
-        pnl, pnlPct,
-        duration: '模拟',
-        reason
-    });
-    
-    showTToast(`✅ ${name} ${tradeType === '正T' ? '正T' : '反T'} 完成！+${pnlPct.toFixed(2)}%（${reason}）`);
-    
-    // 及时刷新面板
-    renderTradingOpportunities();
 }
 
 // Toast提示
 function showTToast(msg) {
-    let toast = document.getElementById('tToast');
+    var toast = document.getElementById('tToast');
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'tToast';
@@ -4798,10 +4769,30 @@ function showTToast(msg) {
     toast.textContent = msg;
     toast.style.opacity = '1';
     toast.style.transform = 'translateY(0)';
-    setTimeout(() => {
+    setTimeout(function() {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-10px)';
     }, 6000);
+}
+
+// 自动定时扫描（交易日13:30和14:00各扫一次）
+function scheduleTScan() {
+    function checkAndScan() {
+        var now = new Date();
+        var day = now.getDay();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var hm = h * 100 + m;
+        // 周一到周五 13:30 或 14:00 触发
+        if (day >= 1 && day <= 5 && (hm === 1330 || hm === 1400)) {
+            if (!tScanRunning) {
+                console.log('做T自动扫描触发: ' + hm);
+                scanMarketForT();
+            }
+        }
+    }
+    // 每30秒检查一次时间
+    setInterval(checkAndScan, 30000);
 }
 
 // ==================== 收盘复盘 ====================
