@@ -4257,6 +4257,19 @@ function executeAutoSwap() {
         console.log('✅ 换票结果已持久化到localStorage');
     } catch(e) { console.error('持久化换票结果失败:', e); }
 
+    // 5.1) 清除被踢出股票的异动和预警记录（避免旧票记录残留）
+    const outCodes6 = new Set(outList.map(s => s.code.substring(2)));
+    const outNames = new Set(outList.map(s => s.name));
+    const oldAbnLen = abnormalLog.length;
+    const oldAlertLen = alertLog.length;
+    abnormalLog = abnormalLog.filter(item => !outCodes6.has(item.code));
+    alertLog = alertLog.filter(item => !outList.some(s => item.title && item.title.includes(s.name)));
+    console.log(`🧹 清除旧票记录: 异动${oldAbnLen - abnormalLog.length}条, 预警${oldAlertLen - alertLog.length}条`);
+
+    // 5.2) 立即监控新换入的股票
+    checkAbnormal();
+    checkAlerts();
+
     // 5) 刷新页面
     renderAll();
     renderSwapLog();
