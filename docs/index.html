@@ -145,7 +145,28 @@ tr:hover td { background: var(--bg-hover); }
   #tierOverview .tier-gold, #tierOverview .tier-silver, #tierOverview .tier-bronze { font-size: 13px; }
 }
 </style>
-</head>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'a4010b2b578843569b3968a39dcdaac3'
+    });
+  }catch(e){}
+})();
+</script></head>
 <body>
 <noscript><div style="padding:20px;color:var(--red);text-align:center">⚠️ 请启用JavaScript以查看仪表盘</div></noscript>
 <div class="header">
@@ -402,9 +423,17 @@ tr:hover td { background: var(--bg-hover); }
     </div>
 
     <!-- 预警历史 -->
-    <div class="panel">
+    <div class="panel" style="margin-bottom:12px">
         <h3>📜 预警历史记录</h3>
         <div id="alertPanel"></div>
+    </div>
+
+    <!-- 自动换票日志 -->
+    <div class="panel">
+        <h3>🔄 每日14:00自动换票日志（踢出最差5只 → 换入涨停首板）</h3>
+        <div id="swapLogPanel" style="font-size:12px;max-height:40vh;overflow-y:auto">
+            <div style="color:var(--text-dim);padding:8px">暂无换票记录</div>
+        </div>
     </div>
 
 </div>
@@ -1626,6 +1655,7 @@ async function renderAll() {
     renderAlertPanel();
     renderAlertBadge();
     renderDeepAnalysis();
+    renderSwapLog();
     // 更新沪指显示
     const shDisplay = document.getElementById('shIndexDisplay');
     if (shDisplay && shIndexCache.price) {
@@ -2247,6 +2277,9 @@ function renderCalendar() {
 let quoteTimer = null;
 let kdjTimer = null;
 let calendarTimer = null;
+let swapTimer = null;
+let lastSwapDate = ''; // 记录上次换票日期，避免同一天重复
+let swapHistory = [];  // 换票历史记录
 let kdjLoaded = false;
 
 async function refreshQuotes() {
@@ -2321,6 +2354,9 @@ async function init() {
     setInterval(fetchSectorIndices, REFRESH_QUOTE_MS);
     // 涨停池每60秒刷新
     marketLimitTimer = setInterval(fetchMarketLimitStocks, 60000);
+    
+    // 8. 每天14:00自动换票检查（每分钟检查一次）
+    swapTimer = setInterval(checkAndSwap, 60000);
 }
 
 // ==================== 收盘复盘(智能分析) ====================
@@ -3488,6 +3524,382 @@ function renderLimitStocksPanel() {}
 function renderDownTrendPanel() {}
 function renderLimitLogicPanel() {}
 function renderRiseDurationPanel() {}
+
+// ==================== 每日14:00自动换票 ====================
+
+/**
+ * 对单只股票打分（分越高越差，越应该被踢出）
+ * 维度：今日跌幅(40) + 出货信号(30) + KDJ超卖(20) + 主力流出(10)
+ */
+function calcStockScore(stockCode) {
+    let score = 0;
+    const quote = quoteCache[stockCode];
+    const ind = trendCache[stockCode] || {};
+    const capFlow = capitalFlowCache[stockCode];
+    
+    // 1) 今日涨跌幅：跌得越惨分越高 (权重40)
+    const changePct = quote ? quote.changePct : 0;
+    if (changePct < -7) score += 40;
+    else if (changePct < -5) score += 35;
+    else if (changePct < -3) score += 25;
+    else if (changePct < -1) score += 15;
+    else if (changePct < 0) score += 8;
+    else score += Math.max(0, 5 - changePct * 0.5); // 涨得少也得一点分
+    
+    // 2) 出货信号 (权重30)
+    const downAnalysis = analyzeDownTrend(stockCode);
+    if (downAnalysis) {
+        if (downAnalysis.type === 'distribute') score += 30;
+        else if (downAnalysis.type === 'mixed') score += 20;
+        else score += 10;
+    }
+    
+    // 3) KDJ m30 持续超卖 (权重20)
+    const kdj = ind.kdj || {};
+    const k30 = kdj.m30 || null;
+    if (k30 !== null) {
+        if (k30 < 10) score += 20;
+        else if (k30 < 20) score += 15;
+        else if (k30 < 30) score += 8;
+    }
+    
+    // 4) 主力资金大幅流出 (权重10)
+    if (capFlow) {
+        const mainNet = capFlow.mainNet || 0;
+        if (mainNet < -5000) score += 10;       // 超大单流出>5000万
+        else if (mainNet < -2000) score += 8;
+        else if (mainNet < -1000) score += 5;
+        else if (mainNet < -500) score += 3;
+    }
+    
+    return { code: stockCode, score: score, changePct: changePct };
+}
+
+/**
+ * 从全市场涨停池中筛选替换候选股
+ * 优先：首板、KDJ不过热、新兴赛道、非自选
+ */
+function findSwapCandidates(count) {
+    const candidates = [];
+    const existingCodes = new Set(STOCKS.map(s => s.code));
+    
+    // 优先使用涨停池数据
+    if (marketLimitStocks && marketLimitStocks.length > 0) {
+        for (const ls of marketLimitStocks) {
+            if (existingCodes.has(ls.code)) continue;
+            if (candidates.length >= count * 3) break; // 先拿3倍数量再排序
+            
+            // 只选首板/2连板（刚启动，不算追高）
+            if (ls.boards > 3) continue;
+            
+            candidates.push({
+                code: ls.code,
+                name: ls.name,
+                price: ls.price,
+                changePct: ls.changePct,
+                boards: ls.boards,
+                sector: ls.sector || detectSector(ls.name),
+                market: ls.market
+            });
+        }
+    }
+    
+    // 候选不足时，从自选股5日内涨停的非当前持仓股补充
+    if (candidates.length < count * 2) {
+        for (let i = 0; i < STOCKS.length && candidates.length < count * 3; i++) {
+            const s = STOCKS[i];
+            if (existingCodes.has(s.code)) continue;
+            const limits = checkDailyLimit(s.code);
+            if (limits && limits.length > 0) {
+                const quote = quoteCache[s.code] || {};
+                candidates.push({
+                    code: s.code,
+                    name: s.name,
+                    price: quote.price || 0,
+                    changePct: quote.changePct || 0,
+                    boards: limits.length,
+                    sector: s.sector,
+                    market: s.code.startsWith('sh') ? 'SH' : 'SZ'
+                });
+            }
+        }
+    }
+    
+    // 去重 + 排序：连板数低优先（首板最好），涨跌幅高优先
+    const seen = new Set();
+    const unique = candidates.filter(c => {
+        if (seen.has(c.code)) return false;
+        seen.add(c.code);
+        return true;
+    });
+    
+    unique.sort((a, b) => {
+        if (a.boards !== b.boards) return a.boards - b.boards; // 首板优先
+        return (b.changePct || 0) - (a.changePct || 0);        // 涨幅高优先
+    });
+    
+    return unique.slice(0, count);
+}
+
+/**
+ * 根据名称推测行业赛道
+ */
+function detectSector(name) {
+    const map = {
+        'AI': 'AI应用', '智能': '智能制造', '科技': 'AI算力PCB',
+        '电路': 'AI算力PCB', '封装': '先进封装', '芯片': '半导体设计',
+        '半导体': '半导体设备', '设备': '半导体设备', '光': '光通信',
+        '通信': '光通信', '电': '电力设备', '储能': '储能/逆变器',
+        '光伏': '光伏/储能', '新能源': '光伏/储能', '液': '液冷',
+        '算力': '算力电力', '机器': '机器人', '药': '医药',
+        '医': '医药', '食品': '食品饮料', '酒': '食品饮料',
+        '金属': '有色金属', '铜': '有色金属', '铝': '有色金属',
+        '面板': '面板', '京东方': '面板', '黄金': '有色金属',
+        '化学': '电子特气/材料', '材料': '电子特气/材料',
+        '银行': '金融', '证券': '金融', '保险': '金融',
+        '汽车': '汽车', '军工': '军工', '地产': '房地产',
+        '建筑': '基建', '水泥': '基建', '钢铁': '钢铁',
+        '传媒': '传媒', '游戏': '传媒', '影视': '传媒',
+        '能源': '能源', '煤炭': '能源', '石油': '能源',
+        '软件': 'AI应用', '数据': 'AI应用', '网络': 'AI应用',
+        '安全': 'AI应用', '云': 'AI应用'
+    };
+    for (const [k, v] of Object.entries(map)) {
+        if (name.includes(k)) return v;
+    }
+    return '综合';
+}
+
+/**
+ * 将候选股转为标准STOCKS条目
+ */
+function candidateToStock(candidate) {
+    const shortCode = candidate.code.substring(2);
+    const isSH = candidate.code.startsWith('sh');
+    const sectorPctMap = {
+        'AI算力PCB': 25, '光通信': 18, '液冷': 40, '算力电力': 22,
+        '半导体设备': 35, '先进封装': 22, '半导体设计': 30,
+        '储能/逆变器': 20, '电力设备': 18, '电网设备': 22,
+        '机器人': 35, 'AI应用': 50, '智能制造': 35,
+        '食品饮料': 20, '有色金属': 15, '面板': 20,
+        '光伏/储能': 15, '电子特气/材料': 30,
+        '医药': 25, '金融': 10, '汽车': 18, '军工': 30,
+        '房地产': 12, '基建': 10, '钢铁': 12, '传媒': 25,
+        '能源': 12, '综合': 20
+    };
+    
+    return {
+        code: candidate.code,
+        name: candidate.name,
+        sector: candidate.sector,
+        direction: '每日轮动',
+        pe: sectorPctMap[candidate.sector] || 20,
+        profitGrowth: Math.round((sectorPctMap[candidate.sector] || 20) * 1.5),
+        reason: '14:00自动轮换' + (candidate.boards > 0 ? ` · ${candidate.boards}连板首板` : ''),
+        roe: 12,
+        grossMargin: 25,
+        debtRatio: 40,
+        riskFlags: ['自动轮换']
+    };
+}
+
+/**
+ * 执行换票：踢出评分最高的5只，换入最佳候选
+ */
+function executeAutoSwap() {
+    if (!quoteCache || Object.keys(quoteCache).length < STOCKS.length * 0.8) {
+        console.log('换票跳过：行情数据不足');
+        return false;
+    }
+    
+    // 1) 计算所有标的评分
+    const scored = STOCKS.map(s => {
+        const result = calcStockScore(s.code);
+        result.stock = s;
+        return result;
+    });
+    
+    // 按分数降序，取最高的5只
+    scored.sort((a, b) => b.score - a.score);
+    const worst5 = scored.slice(0, 5);
+    
+    // 2) 找替换候选
+    const candidates = findSwapCandidates(5);
+    if (candidates.length < 3) {
+        console.log('换票跳过：候选不足 (' + candidates.length + '只)');
+        return false;
+    }
+    
+    const swapCount = Math.min(worst5.length, candidates.length);
+    
+    // 3) 执行替换
+    const outList = [];
+    const inList = [];
+    
+    for (let i = 0; i < swapCount; i++) {
+        const outStock = worst5[i].stock;
+        const inStock = candidateToStock(candidates[i]);
+        
+        // 在STOCKS中找到并替换
+        const idx = STOCKS.findIndex(s => s.code === outStock.code);
+        if (idx !== -1) {
+            STOCKS[idx] = inStock;
+            outList.push(outStock);
+            inList.push(inStock);
+            
+            // 后台拉取新标的K线数据
+            fetchAllKlinesForCode(inStock.code).catch(() => {});
+        }
+    }
+    
+    // 4) 记录日志
+    const now = new Date();
+    const timeStr = now.toLocaleString('zh-CN');
+    const entry = {
+        time: timeStr,
+        date: now.toLocaleDateString('zh-CN'),
+        out: outList.map(s => `${s.name}(${s.code.substring(2)}) 评分${scored.find(sc => sc.stock.code === s.code)?.score || '?'}`),
+        in: inList.map(s => `${s.name}(${s.code.substring(2)}) ${s.sector}`),
+        swapCount: swapCount
+    };
+    swapHistory.unshift(entry);
+    if (swapHistory.length > 30) swapHistory.splice(30); // 保留最近30条
+    
+    lastSwapDate = entry.date;
+    
+    // 5) 刷新页面
+    renderAll();
+    renderSwapLog();
+    
+    // Toast提示
+    showSwapToast(inList, outList);
+    
+    console.log(`✅ 换票完成: 踢出${outList.map(s=>s.name).join('、')} → 换入${inList.map(s=>s.name).join('、')}`);
+    return true;
+}
+
+/**
+ * 检查并执行自动换票（每分钟调用）
+ */
+function checkAndSwap() {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    const dayOfWeek = now.getDay();
+    const today = now.toLocaleDateString('zh-CN');
+    
+    // 仅交易日且14:00-14:05触发
+    if (dayOfWeek === 0 || dayOfWeek === 6) return;
+    if (hour !== 14 || minute < 0 || minute > 5) return;
+    
+    // 今天已经换过了
+    if (lastSwapDate === today) return;
+    
+    console.log(`🔄 触发14:00自动换票检查...`);
+    
+    // 确保涨停池数据已加载
+    if (!marketLimitStocks || marketLimitStocks.length === 0) {
+        fetchMarketLimitStocks().then(() => {
+            executeAutoSwap();
+        }).catch(e => console.error('换票前加载涨停池失败:', e));
+    } else {
+        executeAutoSwap();
+    }
+}
+
+/**
+ * 为新换入的股票拉取K线
+ */
+async function fetchAllKlinesForCode(code) {
+    try {
+        const idSuffix = code.substring(2);
+        const period = '60'; // 同花顺分钟线
+        const count = 100;
+        
+        // 同花顺分钟线API
+        const url = `https://d.10jqka.com.cn/v4/line/hs_${idSuffix}/60/last.js`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        const text = await resp.text();
+        
+        // 解析JSONP
+        const match = text.match(/quotebridge_v4_line_hs_\w+_60_last\(([\s\S]*)\)/);
+        if (!match) return;
+        const data = JSON.parse(match[1]);
+        if (!data || !data.data) return;
+        
+        const raw = data.data.split(';').filter(Boolean);
+        const klines = raw.map(r => {
+            const parts = r.split(',');
+            return { open: +parts[1], high: +parts[3], low: +parts[4], close: +parts[2], vol: +parts[5], date: parts[0] };
+        });
+        
+        if (!kdjCache[code]) kdjCache[code] = {};
+        kdjCache[code]['m30'] = klines;
+        calcKDJ(code, 'm30', klines);
+        
+    } catch(e) {
+        console.error(`K线拉取失败 ${code}:`, e.message);
+    }
+}
+
+/**
+ * 渲染换票日志
+ */
+function renderSwapLog() {
+    const panel = document.getElementById('swapLogPanel');
+    if (!panel) return;
+    
+    if (swapHistory.length === 0) {
+        panel.innerHTML = '<div style="color:var(--text-dim);padding:8px">暂无换票记录</div>';
+        return;
+    }
+    
+    let html = '';
+    for (const entry of swapHistory) {
+        html += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px">`;
+        html += `<div style="display:flex;justify-content:space-between;margin-bottom:6px">`;
+        html += `<span style="font-size:13px;font-weight:700;color:var(--blue)">🔄 ${entry.date} 换票 (${entry.swapCount}只)</span>`;
+        html += `<span style="font-size:11px;color:var(--text-dim)">${entry.time}</span>`;
+        html += `</div>`;
+        html += `<div style="font-size:11px;margin-bottom:4px"><span style="color:var(--red)">❌ 踢出：</span>${entry.out.join('、')}</div>`;
+        html += `<div style="font-size:11px"><span style="color:var(--green)">✅ 换入：</span>${entry.in.join('、')}</div>`;
+        html += `</div>`;
+    }
+    panel.innerHTML = html;
+}
+
+/**
+ * 换票Toast提示
+ */
+function showSwapToast(inList, outList) {
+    const toast = document.createElement('div');
+    const outNames = outList.map(s => s.name).join('、');
+    const inNames = inList.map(s => s.name).join('、');
+    toast.innerHTML = `
+        <div style="background:var(--bg-card);border:2px solid var(--blue);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-width:400px">
+            <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:8px">🔄 14:00 自动换票完成</div>
+            <div style="font-size:11px;color:var(--red);margin-bottom:4px">❌ 踢出: ${outNames}</div>
+            <div style="font-size:11px;color:var(--green);margin-bottom:8px">✅ 换入: ${inNames}</div>
+            <div style="font-size:10px;color:var(--text-dim)">标签「每日轮动」标记，可在🔔监控预警页查看换票日志</div>
+        </div>`;
+    toast.style.cssText = 'position:fixed;top:80px;right:20px;z-index:9999;animation:slideIn 0.4s ease;max-width:400px';
+    
+    // 添加动画
+    const style = document.createElement('style');
+    style.textContent = '@keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
+    document.head.appendChild(style);
+    
+    document.body.appendChild(toast);
+    
+    // 10秒后自动消失
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.5s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, 10000);
+}
+
+// ==================== 收盘复盘 ====================
 
 function generateReview() {
     const tbody = document.getElementById('reviewTableBody');
