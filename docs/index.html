@@ -179,7 +179,8 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0718-0130</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-0123</span>
+        <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
 
@@ -5472,6 +5473,31 @@ function checkAutoReview() {
 
 // 收盘复盘按钮 + 自动复盘检查
 document.addEventListener('DOMContentLoaded', () => {
+    // 版本检测：调用GitHub API对比最新commit
+    (async function checkVersion() {
+        try {
+            const pageVer = document.getElementById('pageVer');
+            const verCheck = document.getElementById('verCheck');
+            if (!pageVer || !verCheck) return;
+            const resp = await fetch('https://api.github.com/repos/Yj66668888/stock-dashboard/commits?path=docs/index.html&per_page=1', {cache:'no-store'});
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (!data[0]) return;
+            const commitDate = new Date(data[0].commit.author.date);
+            const now = new Date();
+            const diffMin = (now - commitDate) / 60000;
+            // 如果最新commit在30分钟内，说明有新版本推送
+            const pageVerStr = pageVer.textContent.trim();
+            const commitVer = 'v' + String(commitDate.getMonth()+1).padStart(2,'0') + String(commitDate.getDate()).padStart(2,'0') + '-' + String(commitDate.getHours()).padStart(2,'0') + String(commitDate.getMinutes()).padStart(2,'0');
+            if (pageVerStr !== commitVer && diffMin > 2) {
+                verCheck.style.display = 'inline';
+                verCheck.style.color = 'var(--yellow)';
+                verCheck.textContent = '⚠️ 新版(' + commitVer + ') 点击刷新';
+                verCheck.title = '检测到GitHub仓库有新版本，点击强刷加载最新';
+            }
+        } catch(e) { /* 静默失败 */ }
+    })();
+
     const reviewBtn = document.getElementById('reviewBtn');
     if (reviewBtn) {
         reviewBtn.addEventListener('click', () => {
