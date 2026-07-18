@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-0123</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-0145</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -637,7 +637,523 @@ const SECTOR_MAP = {
 };
 
 // ==================== 标的数据 ====================
-const STOCKS = [{"code": "sh600522", "name": "中天科技", "sector": "光通信", "direction": "需求端驱动", "pe": 18, "profitGrowth": 40, "reason": "光纤光缆龙头,AI数据中心光互联", "roe": 12, "grossMargin": 22, "debtRatio": 48, "riskFlags": []}, {"code": "sh600487", "name": "亨通光电", "sector": "光通信", "direction": "需求端驱动", "pe": 16, "profitGrowth": 35, "reason": "光纤+海洋通信,算力网络升级", "roe": 10, "grossMargin": 19, "debtRatio": 55, "riskFlags": []}, {"code": "sz002463", "name": "沪电股份", "sector": "AI算力PCB", "direction": "供需双驱", "pe": 25, "profitGrowth": 80, "reason": "AI服务器PCB龙头,英伟达供应商", "roe": 22, "grossMargin": 35, "debtRatio": 28, "riskFlags": []}, {"code": "sz002916", "name": "深南电路", "sector": "AI算力PCB", "direction": "供需双驱", "pe": 28, "profitGrowth": 70, "reason": "封装基板+PCB双轮驱动", "roe": 18, "grossMargin": 28, "debtRatio": 42, "riskFlags": []}, {"code": "sz002837", "name": "英维克", "sector": "液冷", "direction": "需求端驱动", "pe": 45, "profitGrowth": 100, "reason": "液冷龙头,字节AI Rack3.0催化", "roe": 25, "grossMargin": 38, "debtRatio": 35, "riskFlags": []}, {"code": "sz002272", "name": "川润股份", "sector": "液冷", "direction": "需求端驱动", "pe": 38, "profitGrowth": 85, "reason": "液冷设备,兆瓦级智算配套", "roe": 20, "grossMargin": 32, "debtRatio": 40, "riskFlags": []}, {"code": "sz002335", "name": "科华数据", "sector": "算力电力", "direction": "供需双驱", "pe": 22, "profitGrowth": 60, "reason": "UPS+储能,AI数据中心供电", "roe": 15, "grossMargin": 30, "debtRatio": 50, "riskFlags": ["质押偏高"]}, {"code": "sz000021", "name": "深科技", "sector": "存储芯片", "direction": "供需双驱+戴维斯双击", "pe": 20, "profitGrowth": 200, "reason": "存储封测,长鑫供应链", "roe": 12, "grossMargin": 18, "debtRatio": 55, "riskFlags": []}, {"code": "sz002371", "name": "北方华创", "sector": "半导体设备", "direction": "供给端驱动", "pe": 35, "profitGrowth": 55, "reason": "半导体设备龙头,七部委硬科技方案", "roe": 18, "grossMargin": 42, "debtRatio": 45, "riskFlags": []}, {"code": "sz002459", "name": "晶澳科技", "sector": "光伏/储能", "direction": "供需双驱", "pe": 12, "profitGrowth": 120, "reason": "光伏组件龙头,底部反转", "roe": 8, "grossMargin": 16, "debtRatio": 62, "riskFlags": ["负债偏高"]}, {"code": "sh605117", "name": "德业股份", "sector": "储能/逆变器", "direction": "需求端驱动", "pe": 18, "profitGrowth": 70, "reason": "户储逆变器龙头,海外需求爆发", "roe": 35, "grossMargin": 42, "debtRatio": 25, "riskFlags": []}, {"code": "sh600089", "name": "特变电工", "sector": "电力设备", "direction": "供需双驱", "pe": 15, "profitGrowth": 40, "reason": "变压器+特高压龙头,电网投资加码", "roe": 8, "grossMargin": 18, "debtRatio": 58, "riskFlags": ["负债偏高"]}, {"code": "sh600406", "name": "国电南瑞", "sector": "电网设备", "direction": "需求端驱动", "pe": 22, "profitGrowth": 30, "reason": "电网自动化龙头,特高压+储能", "roe": 14, "grossMargin": 28, "debtRatio": 40, "riskFlags": []}, {"code": "sz002028", "name": "思源电气", "sector": "电网设备", "direction": "需求端驱动", "pe": 25, "profitGrowth": 35, "reason": "电力设备,特别国债定向受益", "roe": 12, "grossMargin": 25, "debtRatio": 38, "riskFlags": []}, {"code": "sz002050", "name": "三花智控", "sector": "机器人", "direction": "需求端驱动", "pe": 30, "profitGrowth": 40, "reason": "热管理+机器人机电执行器", "roe": 16, "grossMargin": 28, "debtRatio": 35, "riskFlags": []}, {"code": "sz002747", "name": "埃斯顿", "sector": "机器人", "direction": "需求端驱动", "pe": 40, "profitGrowth": 50, "reason": "工业机器人龙头,机器人+大会催化", "roe": 6, "grossMargin": 32, "debtRatio": 45, "riskFlags": ["ROE偏低"]}, {"code": "sh600519", "name": "贵州茅台", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 22, "profitGrowth": 15, "reason": "白酒龙头,估值进入击球区,股息率高", "roe": 30, "grossMargin": 90, "debtRatio": 15, "riskFlags": []}, {"code": "sh603288", "name": "海天味业", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 35, "profitGrowth": 20, "reason": "调味品龙头,底部企稳反弹", "roe": 22, "grossMargin": 45, "debtRatio": 20, "riskFlags": []}, {"code": "sz002557", "name": "洽洽食品", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 18, "profitGrowth": 25, "reason": "休闲食品龙头,暑期消费旺季", "roe": 18, "grossMargin": 33, "debtRatio": 30, "riskFlags": []}, {"code": "sz000060", "name": "中金岭南", "sector": "有色金属", "direction": "戴维斯双击", "pe": 15, "profitGrowth": 200, "reason": "三稀龙头,镓锗铟+铜矿满产,PE重塑", "roe": 12, "grossMargin": 15, "debtRatio": 48, "riskFlags": []}, {"code": "sz000725", "name": "京东方A", "sector": "面板", "direction": "戴维斯双击(周期反转)", "pe": 20, "profitGrowth": 40, "reason": "面板龙头,折旧拐点+价格企稳", "roe": 5, "grossMargin": 14, "debtRatio": 55, "riskFlags": ["ROE偏低", "负债偏高"]}, {"code": "sz002979", "name": "雷赛智能", "sector": "智能制造", "direction": "戴维斯双击", "pe": 35, "profitGrowth": 120, "reason": "运动控制,半年报预增38%-42%,连续涨停", "roe": 28, "grossMargin": 40, "debtRatio": 22, "riskFlags": []}, {"code": "sz002230", "name": "科大讯飞", "sector": "AI应用", "direction": "需求端驱动", "pe": 60, "profitGrowth": 45, "reason": "AI大模型龙头,WAIC催化", "roe": 8, "grossMargin": 42, "debtRatio": 38, "riskFlags": ["ROE偏低"]}, {"code": "sh601899", "name": "紫金矿业", "sector": "有色金属", "direction": "戴维斯双击", "pe": 14, "profitGrowth": 40, "reason": "铜金龙头,全球资源+高景气", "roe": 22, "grossMargin": 20, "debtRatio": 50, "riskFlags": []}, {"code": "sh600900", "name": "长江电力", "sector": "电力", "direction": "防御+高股息", "pe": 20, "profitGrowth": 10, "reason": "水电龙头,防御配置+高分红", "roe": 15, "grossMargin": 60, "debtRatio": 55, "riskFlags": ["负债偏高"]}, {"code": "sh600584", "name": "长电科技", "sector": "先进封装", "direction": "供需双驱", "pe": 22, "profitGrowth": 100, "reason": "封测龙头,Chiplet先进封装", "roe": 10, "grossMargin": 22, "debtRatio": 52, "riskFlags": ["质押偏高"]}, {"code": "sh603501", "name": "韦尔股份", "sector": "半导体设计", "direction": "戴维斯双击(底部反转)", "pe": 30, "profitGrowth": 80, "reason": "CIS芯片龙头,手机+汽车双复苏", "roe": 15, "grossMargin": 30, "debtRatio": 40, "riskFlags": []}, {"code": "sz002409", "name": "雅克科技", "sector": "电子特气/材料", "direction": "供给端驱动", "pe": 30, "profitGrowth": 60, "reason": "电子特气+前驱体,氦气管制受益", "roe": 16, "grossMargin": 38, "debtRatio": 30, "riskFlags": []}, {"code": "sh600887", "name": "伊利股份", "sector": "食品饮料", "direction": "戴维斯双击(估值修复)", "pe": 16, "profitGrowth": 18, "reason": "乳业龙头,消费复苏+高股息", "roe": 20, "grossMargin": 35, "debtRatio": 45, "riskFlags": []}, {"code": "sz002415", "name": "海康威视", "sector": "AI视觉", "direction": "供需双驱", "pe": 20, "profitGrowth": 20, "reason": "AI视觉龙头,机器人视觉+大模型", "roe": 20, "grossMargin": 45, "debtRatio": 25, "riskFlags": []}];
+const STOCKS = [
+    {
+        "code": "sz000725",
+        "name": "京东方A",
+        "sector": "面板",
+        "direction": "戴维斯双击(周期反转)",
+        "pe": 20,
+        "profitGrowth": 40,
+        "reason": "面板龙头,折旧拐点+价格企稳",
+        "roe": 5,
+        "grossMargin": 14,
+        "debtRatio": 55,
+        "riskFlags": [
+            "ROE偏低",
+            "负债偏高"
+        ],
+        "healthScore": -6.3,
+        "dailyScore": 45.0,
+        "flow5d": -336612.0
+    },
+    {
+        "code": "sz002409",
+        "name": "雅克科技",
+        "sector": "电子特气/材料",
+        "direction": "供给端驱动",
+        "pe": 30,
+        "profitGrowth": 60,
+        "reason": "电子特气+前驱体,氦气管制受益",
+        "roe": 16,
+        "grossMargin": 38,
+        "debtRatio": 30,
+        "riskFlags": [],
+        "healthScore": -6.0,
+        "dailyScore": 52.5,
+        "flow5d": -201164.0
+    },
+    {
+        "code": "sh600584",
+        "name": "长电科技",
+        "sector": "先进封装",
+        "direction": "供需双驱",
+        "pe": 22,
+        "profitGrowth": 100,
+        "reason": "封测龙头,Chiplet先进封装",
+        "roe": 10,
+        "grossMargin": 22,
+        "debtRatio": 52,
+        "riskFlags": [
+            "质押偏高"
+        ],
+        "healthScore": -4.2,
+        "dailyScore": 37.3,
+        "flow5d": -86656.0
+    },
+    {
+        "code": "sz002050",
+        "name": "三花智控",
+        "sector": "机器人",
+        "direction": "需求端驱动",
+        "pe": 30,
+        "profitGrowth": 40,
+        "reason": "热管理+机器人机电执行器",
+        "roe": 16,
+        "grossMargin": 28,
+        "debtRatio": 35,
+        "riskFlags": [],
+        "healthScore": 5.8,
+        "dailyScore": 42.3,
+        "flow5d": -19483.0
+    },
+    {
+        "code": "sz002272",
+        "name": "川润股份",
+        "sector": "液冷",
+        "direction": "需求端驱动",
+        "pe": 38,
+        "profitGrowth": 85,
+        "reason": "液冷设备,兆瓦级智算配套",
+        "roe": 20,
+        "grossMargin": 32,
+        "debtRatio": 40,
+        "riskFlags": [],
+        "healthScore": 7.5,
+        "dailyScore": 48.6,
+        "flow5d": -19407.0
+    },
+    {
+        "code": "sh600089",
+        "name": "特变电工",
+        "sector": "电力设备",
+        "direction": "供需双驱",
+        "pe": 15,
+        "profitGrowth": 40,
+        "reason": "变压器+特高压龙头,电网投资加码",
+        "roe": 8,
+        "grossMargin": 18,
+        "debtRatio": 58,
+        "riskFlags": [
+            "负债偏高"
+        ],
+        "healthScore": 9.5,
+        "dailyScore": 40.8,
+        "flow5d": -11727.0
+    },
+    {
+        "code": "sz002335",
+        "name": "科华数据",
+        "sector": "算力电力",
+        "direction": "供需双驱",
+        "pe": 22,
+        "profitGrowth": 60,
+        "reason": "UPS+储能,AI数据中心供电",
+        "roe": 15,
+        "grossMargin": 30,
+        "debtRatio": 50,
+        "riskFlags": [
+            "质押偏高"
+        ],
+        "healthScore": 10.4,
+        "dailyScore": 52.6,
+        "flow5d": -13937.0
+    },
+    {
+        "code": "sz002557",
+        "name": "洽洽食品",
+        "sector": "食品饮料",
+        "direction": "戴维斯双击(估值修复)",
+        "pe": 18,
+        "profitGrowth": 25,
+        "reason": "休闲食品龙头,暑期消费旺季",
+        "roe": 18,
+        "grossMargin": 33,
+        "debtRatio": 30,
+        "riskFlags": [],
+        "healthScore": 13.0,
+        "dailyScore": 34.0,
+        "flow5d": -63.0
+    },
+    {
+        "code": "sz002979",
+        "name": "雷赛智能",
+        "sector": "智能制造",
+        "direction": "戴维斯双击",
+        "pe": 35,
+        "profitGrowth": 120,
+        "reason": "运动控制,半年报预增38%-42%,连续涨停",
+        "roe": 28,
+        "grossMargin": 40,
+        "debtRatio": 22,
+        "riskFlags": [],
+        "healthScore": 14.4,
+        "dailyScore": 45.0,
+        "flow5d": -15531.0
+    },
+    {
+        "code": "sz002459",
+        "name": "晶澳科技",
+        "sector": "光伏/储能",
+        "direction": "供需双驱",
+        "pe": 12,
+        "profitGrowth": 120,
+        "reason": "光伏组件龙头,底部反转",
+        "roe": 8,
+        "grossMargin": 16,
+        "debtRatio": 62,
+        "riskFlags": [
+            "负债偏高"
+        ],
+        "healthScore": 16.9,
+        "dailyScore": 39.9,
+        "flow5d": -2421.0
+    },
+    {
+        "code": "sz000060",
+        "name": "中金岭南",
+        "sector": "有色金属",
+        "direction": "戴维斯双击",
+        "pe": 15,
+        "profitGrowth": 200,
+        "reason": "三稀龙头,镓锗铟+铜矿满产,PE重塑",
+        "roe": 12,
+        "grossMargin": 15,
+        "debtRatio": 48,
+        "riskFlags": [],
+        "healthScore": 17.2,
+        "dailyScore": 47.4,
+        "flow5d": -2390.0
+    },
+    {
+        "code": "sh603288",
+        "name": "海天味业",
+        "sector": "食品饮料",
+        "direction": "戴维斯双击(估值修复)",
+        "pe": 35,
+        "profitGrowth": 20,
+        "reason": "调味品龙头,底部企稳反弹",
+        "roe": 22,
+        "grossMargin": 45,
+        "debtRatio": 20,
+        "riskFlags": [],
+        "healthScore": 18.1,
+        "dailyScore": 28.5,
+        "flow5d": 8374.0
+    },
+    {
+        "code": "sz002415",
+        "name": "海康威视",
+        "sector": "AI视觉",
+        "direction": "供需双驱",
+        "pe": 20,
+        "profitGrowth": 20,
+        "reason": "AI视觉龙头,机器人视觉+大模型",
+        "roe": 20,
+        "grossMargin": 45,
+        "debtRatio": 25,
+        "riskFlags": [],
+        "healthScore": 18.2,
+        "dailyScore": 45.0,
+        "flow5d": -7449.0
+    },
+    {
+        "code": "sz002230",
+        "name": "科大讯飞",
+        "sector": "AI应用",
+        "direction": "需求端驱动",
+        "pe": 60,
+        "profitGrowth": 45,
+        "reason": "AI大模型龙头,WAIC催化",
+        "roe": 8,
+        "grossMargin": 42,
+        "debtRatio": 38,
+        "riskFlags": [
+            "ROE偏低"
+        ],
+        "healthScore": 19.5,
+        "dailyScore": 40.6,
+        "flow5d": -6509.0
+    },
+    {
+        "code": "sh605117",
+        "name": "德业股份",
+        "sector": "储能/逆变器",
+        "direction": "需求端驱动",
+        "pe": 18,
+        "profitGrowth": 70,
+        "reason": "户储逆变器龙头,海外需求爆发",
+        "roe": 35,
+        "grossMargin": 42,
+        "debtRatio": 25,
+        "riskFlags": [],
+        "healthScore": 20.4,
+        "dailyScore": 48.9,
+        "flow5d": -5043.0
+    },
+    {
+        "code": "sz002463",
+        "name": "沪电股份",
+        "sector": "AI算力PCB",
+        "direction": "供需双驱",
+        "pe": 25,
+        "profitGrowth": 80,
+        "reason": "AI服务器PCB龙头,英伟达供应商",
+        "roe": 22,
+        "grossMargin": 35,
+        "debtRatio": 28,
+        "riskFlags": [],
+        "healthScore": 21.5,
+        "dailyScore": 48.8,
+        "flow5d": 4937.0
+    },
+    {
+        "code": "sh603501",
+        "name": "韦尔股份",
+        "sector": "半导体设计",
+        "direction": "戴维斯双击(底部反转)",
+        "pe": 30,
+        "profitGrowth": 80,
+        "reason": "CIS芯片龙头,手机+汽车双复苏",
+        "roe": 15,
+        "grossMargin": 30,
+        "debtRatio": 40,
+        "riskFlags": [],
+        "healthScore": 27.3,
+        "dailyScore": 45.4,
+        "flow5d": 15010.0
+    },
+    {
+        "code": "sh600406",
+        "name": "国电南瑞",
+        "sector": "电网设备",
+        "direction": "需求端驱动",
+        "pe": 22,
+        "profitGrowth": 30,
+        "reason": "电网自动化龙头,特高压+储能",
+        "roe": 14,
+        "grossMargin": 28,
+        "debtRatio": 40,
+        "riskFlags": [],
+        "healthScore": 28.5,
+        "dailyScore": 48.2,
+        "flow5d": 1656.0
+    },
+    {
+        "code": "sh600887",
+        "name": "伊利股份",
+        "sector": "食品饮料",
+        "direction": "戴维斯双击(估值修复)",
+        "pe": 16,
+        "profitGrowth": 18,
+        "reason": "乳业龙头,消费复苏+高股息",
+        "roe": 20,
+        "grossMargin": 35,
+        "debtRatio": 45,
+        "riskFlags": [],
+        "healthScore": 29.0,
+        "dailyScore": 42.0,
+        "flow5d": 11131.0
+    },
+    {
+        "code": "sz002028",
+        "name": "思源电气",
+        "sector": "电网设备",
+        "direction": "需求端驱动",
+        "pe": 25,
+        "profitGrowth": 35,
+        "reason": "电力设备,特别国债定向受益",
+        "roe": 12,
+        "grossMargin": 25,
+        "debtRatio": 38,
+        "riskFlags": [],
+        "healthScore": 30.1,
+        "dailyScore": 46.9,
+        "flow5d": 14238.0
+    },
+    {
+        "code": "sh600900",
+        "name": "长江电力",
+        "sector": "电力",
+        "direction": "防御+高股息",
+        "pe": 20,
+        "profitGrowth": 10,
+        "reason": "水电龙头,防御配置+高分红",
+        "roe": 15,
+        "grossMargin": 60,
+        "debtRatio": 55,
+        "riskFlags": [
+            "负债偏高"
+        ],
+        "healthScore": 35.3,
+        "dailyScore": 36.7,
+        "flow5d": 19239.0
+    },
+    {
+        "code": "sz002747",
+        "name": "埃斯顿",
+        "sector": "机器人",
+        "direction": "需求端驱动",
+        "pe": 40,
+        "profitGrowth": 50,
+        "reason": "工业机器人龙头,机器人+大会催化",
+        "roe": 6,
+        "grossMargin": 32,
+        "debtRatio": 45,
+        "riskFlags": [
+            "ROE偏低"
+        ],
+        "healthScore": 42.7,
+        "dailyScore": 37.4,
+        "flow5d": 50845.0
+    },
+    {
+        "code": "sh600519",
+        "name": "贵州茅台",
+        "sector": "食品饮料",
+        "direction": "戴维斯双击(估值修复)",
+        "pe": 22,
+        "profitGrowth": 15,
+        "reason": "白酒龙头,估值进入击球区,股息率高",
+        "roe": 30,
+        "grossMargin": 90,
+        "debtRatio": 15,
+        "riskFlags": [],
+        "healthScore": 49.4,
+        "dailyScore": 51.0,
+        "flow5d": 38023.0
+    },
+    {
+        "code": "sh601899",
+        "name": "紫金矿业",
+        "sector": "有色金属",
+        "direction": "戴维斯双击",
+        "pe": 14,
+        "profitGrowth": 40,
+        "reason": "铜金龙头,全球资源+高景气",
+        "roe": 22,
+        "grossMargin": 20,
+        "debtRatio": 50,
+        "riskFlags": [],
+        "healthScore": 51.4,
+        "dailyScore": 41.0,
+        "flow5d": 89541.0
+    },
+    {
+        "code": "sh600664",
+        "name": "哈药股份",
+        "sector": "医药",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从33%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 74.1,
+        "dailyScore": 58.7,
+        "flow5d": 44323.0,
+        "isNew": true
+    },
+    {
+        "code": "sh601857",
+        "name": "中国石油",
+        "sector": "热门标的",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从20%升至47%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 59.5,
+        "dailyScore": 58.2,
+        "flow5d": 25225.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600227",
+        "name": "赤天化",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从7%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 56.4,
+        "dailyScore": 56.2,
+        "flow5d": 8185.0,
+        "isNew": true
+    },
+    {
+        "code": "sz000722",
+        "name": "湖南发展",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 55.2,
+        "dailyScore": 55.6,
+        "flow5d": 13447.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600021",
+        "name": "上海电力",
+        "sector": "电力设备",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至47%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 53.5,
+        "dailyScore": 53.6,
+        "flow5d": 14803.0,
+        "isNew": true
+    },
+    {
+        "code": "sh601600",
+        "name": "中国铝业",
+        "sector": "有色金属",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期持续缩量，卖盘减少",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 50.2,
+        "dailyScore": 52.2,
+        "flow5d": 38633.0,
+        "isNew": true
+    }
+];
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
 
