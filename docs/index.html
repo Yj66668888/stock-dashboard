@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1134</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1204</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -324,6 +324,14 @@ tr:hover td { background: var(--bg-hover); }
         ④ 对TOP候选做 <strong style="color:var(--blue)">30分钟KDJ验证</strong>，标注金叉/即将金叉状态<br>
         ⑤ <strong style="color:var(--orange)">高开率高 + KDJ低位金叉</strong> = 隔日交易最佳候选（今天买、明天高开卖）<br>
         <strong style="color:var(--yellow)">⚠️ 高开率基于历史统计，不代表未来必然高开。请结合大盘环境、个股基本面综合判断。</strong>
+    </div>
+
+    <!-- 用户关注做T票 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>👤 用户关注做T票</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:30vh;overflow-y:auto" id="userTStockTable">
+            <div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">加载用户关注做T票...</div>
+        </div>
     </div>
 
     <!-- 扫描结果表格 -->
@@ -1152,83 +1160,53 @@ const STOCKS = [
         "dailyScore": 52.2,
         "flow5d": 38633.0,
         "isNew": true
-    },
+    }
+];
+const USER_T_STOCKS = [
     {
         "code": "sh600885",
         "name": "宏发股份",
         "sector": "电力设备",
         "direction": "继电器龙头",
-        "pe": 0,
-        "profitGrowth": 0,
         "reason": "👤用户关注:继电器全球龙头,高压直流受益新能源",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
         "riskFlags": [
-                "👤用户关注"
-        ],
-        "healthScore": 14.1,
-        "dailyScore": 43.7,
-        "flow5d": -5031.0
-},
+            "👤用户关注"
+        ]
+    },
     {
         "code": "sh603067",
         "name": "振华股份",
         "sector": "化工",
         "direction": "铬盐龙头",
-        "pe": 0,
-        "profitGrowth": 0,
         "reason": "👤用户关注:铬盐行业龙头,维生素K3涨价受益",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
         "riskFlags": [
-                "👤用户关注"
-        ],
-        "healthScore": 17.3,
-        "dailyScore": 40.3,
-        "flow5d": 1264.0
-},
+            "👤用户关注"
+        ]
+    },
     {
         "code": "sh600105",
         "name": "永鼎股份",
         "sector": "光通信",
         "direction": "通信光缆",
-        "pe": 0,
-        "profitGrowth": 0,
         "reason": "👤用户关注:光通信龙头,光纤光缆+超导概念",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
         "riskFlags": [
-                "👤用户关注",
-                "5日资金流出4.7亿",
-                "⚠8.4%大跌"
-        ],
-        "healthScore": -5.3,
-        "dailyScore": 53.3,
-        "flow5d": -47354.0
-},
+            "👤用户关注",
+            "5日资金流出4.7亿",
+            "⚠8.4%大跌"
+        ]
+    },
     {
         "code": "sh601126",
         "name": "四方股份",
         "sector": "电力设备",
         "direction": "二次设备",
-        "pe": 0,
-        "profitGrowth": 0,
         "reason": "👤用户关注:电力二次设备龙头,电网自动化受益",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
         "riskFlags": [
-                "👤用户关注",
-                "5日资金流出2亿",
-                "⚠5.7%大跌"
-        ],
-        "healthScore": 20.9,
-        "dailyScore": 66.3,
-        "flow5d": -20578.0
-}
+            "👤用户关注",
+            "5日资金流出2亿",
+            "⚠5.7%大跌"
+        ]
+    }
 ];
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
@@ -2455,10 +2433,10 @@ async function renderAll() {
     renderDeepAnalysis();
     renderSwapLog();
 
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5317,10 +5295,10 @@ async function scanMarketForT() {
     tScanResults = [];
     tScanProgress = { total: GAP_UP_TOTAL, done: 0, phase: '加载30天高开率数据...', kdjFound: 0 };
 
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5342,6 +5320,7 @@ async function scanMarketForT() {
         }
     });
     renderTScanResults();
+    renderUserTStocks();
 
     // 加载预计算的高开率TOP50数据（后端gap_up_predictor.py扫描全市场生成）
     tScanResults = GAP_UP_TOP50.map(function(s) {
@@ -5378,10 +5357,10 @@ async function scanMarketForT() {
     tScanLastTime = GAP_UP_SCAN_DATE;
     if (btn) { btn.disabled = false; btn.textContent = '🔍 验证30分KDJ'; btn.style.opacity = '1'; btn.setAttribute('onclick', 'verifyKDJForTop()'); }
 
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5413,10 +5392,10 @@ async function verifyKDJForTop() {
     tScanRunning = true;
     tScanProgress = { total: tScanResults.length, done: 0, phase: '验证30分KDJ...', kdjFound: 0 };
 
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5463,10 +5442,10 @@ async function verifyKDJForTop() {
             }
         }));
     
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5495,10 +5474,10 @@ async function verifyKDJForTop() {
     tScanLastTime = new Date().toLocaleTimeString('zh-CN');
     if (btn) { btn.disabled = false; btn.textContent = '🔍 重新验证KDJ'; btn.style.opacity = '1'; }
 
-    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
     tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
-    STOCKS.forEach(function(s) {
+    USER_T_STOCKS.forEach(function(s) {
         var pureCode = s.code.replace('sh','').replace('sz','');
         if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
             var r = GAP_UP_RATE_ALL[pureCode];
@@ -5826,6 +5805,40 @@ function scheduleTScan() {
         }
     }
     setInterval(checkAndScan, 30000);
+}
+
+
+// === 渲染用户关注做T票 ===
+function renderUserTStocks() {
+    var table = document.getElementById('userTStockTable');
+    if (!table || !USER_T_STOCKS || !USER_T_STOCKS.length) return;
+    var rows = USER_T_STOCKS.map(function(s) {
+        var code = s.code.replace('sh','').replace('sz','');
+        var r = GAP_UP_RATE_ALL[code] || {};
+        var cap = GAP_UP_CAPITAL_FLOW[code] || {};
+        var score = r.sc || 0;
+        var rate30 = r.r30 || 0;
+        var flow5d = cap.flow5d ? (cap.flow5d / 10000).toFixed(1) + '亿' : '--';
+        var flowColor = cap.flow5d > 0 ? 'var(--green)' : (cap.flow5d < 0 ? 'var(--red)' : 'var(--text-dim)');
+        var riskTags = (s.riskFlags || []).map(function(f) {
+            return '<span class="risk-tag">' + f + '</span>';
+        }).join(' ');
+        return '<tr>' +
+            '<td style="font-weight:600">' + s.code + '</td>' +
+            '<td style="font-weight:600">' + s.name + '</td>' +
+            '<td>' + (s.sector || '--') + '</td>' +
+            '<td>' + (s.direction || '--') + '</td>' +
+            '<td style="color:' + (score >= 60 ? 'var(--green)' : (score >= 40 ? 'var(--orange)' : 'var(--red)')) + '">' + (score ? score.toFixed(1) : '--') + '</td>' +
+            '<td>' + rate30.toFixed(1) + '%</td>' +
+            '<td style="color:' + flowColor + '">' + flow5d + '</td>' +
+            '<td>' + riskTags + '</td>' +
+            '<td>' + (s.reason || '--') + '</td>' +
+            '</tr>';
+    }).join('');
+    table.innerHTML = '<table class="data-table"><thead><tr>' +
+        '<th>代码</th><th>名称</th><th>板块</th><th>驱动</th>' +
+        '<th>评分</th><th>30日高开率</th><th>5日资金流</th><th>风险标签</th><th>关注理由</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 // ==================== 5分钟做T系统（正T·反T） ====================
