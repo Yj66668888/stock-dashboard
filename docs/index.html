@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-0145</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1134</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -1152,7 +1152,83 @@ const STOCKS = [
         "dailyScore": 52.2,
         "flow5d": 38633.0,
         "isNew": true
-    }
+    },
+    {
+        "code": "sh600885",
+        "name": "宏发股份",
+        "sector": "电力设备",
+        "direction": "继电器龙头",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "👤用户关注:继电器全球龙头,高压直流受益新能源",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+                "👤用户关注"
+        ],
+        "healthScore": 14.1,
+        "dailyScore": 43.7,
+        "flow5d": -5031.0
+},
+    {
+        "code": "sh603067",
+        "name": "振华股份",
+        "sector": "化工",
+        "direction": "铬盐龙头",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "👤用户关注:铬盐行业龙头,维生素K3涨价受益",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+                "👤用户关注"
+        ],
+        "healthScore": 17.3,
+        "dailyScore": 40.3,
+        "flow5d": 1264.0
+},
+    {
+        "code": "sh600105",
+        "name": "永鼎股份",
+        "sector": "光通信",
+        "direction": "通信光缆",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "👤用户关注:光通信龙头,光纤光缆+超导概念",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+                "👤用户关注",
+                "5日资金流出4.7亿",
+                "⚠8.4%大跌"
+        ],
+        "healthScore": -5.3,
+        "dailyScore": 53.3,
+        "flow5d": -47354.0
+},
+    {
+        "code": "sh601126",
+        "name": "四方股份",
+        "sector": "电力设备",
+        "direction": "二次设备",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "👤用户关注:电力二次设备龙头,电网自动化受益",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+                "👤用户关注",
+                "5日资金流出2亿",
+                "⚠5.7%大跌"
+        ],
+        "healthScore": 20.9,
+        "dailyScore": 66.3,
+        "flow5d": -20578.0
+}
 ];
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
@@ -2378,6 +2454,31 @@ async function renderAll() {
     renderAlertBadge();
     renderDeepAnalysis();
     renderSwapLog();
+
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
     renderTScanResults();
     renderTradingOpportunities();
     // 更新沪指显示
@@ -5215,6 +5316,31 @@ async function scanMarketForT() {
     tScanRunning = true;
     tScanResults = [];
     tScanProgress = { total: GAP_UP_TOTAL, done: 0, phase: '加载30天高开率数据...', kdjFound: 0 };
+
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
     renderTScanResults();
 
     // 加载预计算的高开率TOP50数据（后端gap_up_predictor.py扫描全市场生成）
@@ -5251,6 +5377,31 @@ async function scanMarketForT() {
     tScanRunning = false;
     tScanLastTime = GAP_UP_SCAN_DATE;
     if (btn) { btn.disabled = false; btn.textContent = '🔍 验证30分KDJ'; btn.style.opacity = '1'; btn.setAttribute('onclick', 'verifyKDJForTop()'); }
+
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
     renderTScanResults();
     showTToast('已加载30天高开率TOP' + GAP_UP_TOP50.length + '（高开率≥50%: ' + highRate + '只）。点击"验证30分KDJ"检查金叉');
 }
@@ -5261,6 +5412,31 @@ async function verifyKDJForTop() {
     if (btn) { btn.disabled = true; btn.textContent = '⏳ KDJ验证中...'; btn.style.opacity = '0.6'; }
     tScanRunning = true;
     tScanProgress = { total: tScanResults.length, done: 0, phase: '验证30分KDJ...', kdjFound: 0 };
+
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
     renderTScanResults();
 
     var batchSize = 5;
@@ -5286,13 +5462,63 @@ async function verifyKDJForTop() {
                 }
             }
         }));
-        renderTScanResults();
+    
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
+    renderTScanResults();
     }
 
     tScanRunning = false;
     tScanProgress.phase = 'KDJ验证完成';
     tScanLastTime = new Date().toLocaleTimeString('zh-CN');
     if (btn) { btn.disabled = false; btn.textContent = '🔍 重新验证KDJ'; btn.style.opacity = '1'; }
+
+    // === 追加STOCKS中的自定义关注票（不在TOP50的）到做T候选池 ===
+    var top50Codes = {};
+    tScanResults.forEach(function(r) { top50Codes[r.code] = true; });
+    STOCKS.forEach(function(s) {
+        var pureCode = s.code.replace('sh','').replace('sz','');
+        if (!top50Codes[pureCode] && GAP_UP_RATE_ALL[pureCode]) {
+            var r = GAP_UP_RATE_ALL[pureCode];
+            tScanResults.push({
+                code: pureCode, name: s.name, price: 0, changePct: 0, turnover: 0,
+                gapUpRate30: r.r30, gapUpRateFull: r.rf, trend: r.tr,
+                consecutive: r.co, drop20d: r.d20, score: r.sc,
+                confidence: '', reasons: ['👤自定义关注'], riskReasons: [],
+                kdj30: null, backtest: null,
+                kdPattern: '--',
+                kdAvgK30: 0, kdAvgD30: 0, kdHighPct30: 0, kdMidPct30: 0, kdLowPct30: 0, kdSample30: 0,
+                kdAvgK60: 0, kdAvgD60: 0, kdHighPct60: 0, kdMidPct60: 0, kdLowPct60: 0, kdSample60: 0,
+                todayK30: 0, todayD30: 0, todayJ30: 0, todayZone30: '--', todayTime30: '',
+                todayK5: 0, todayD5: 0, todayJ5: 0, todayZone5: '--',
+                closePos: null, volumeRatio: null, tailMove: null, dayChange: null,
+                marketTrend: GAP_UP_MARKET_TREND,
+                volUp: 0, volDown: 0, trackedTags: ['👤自定义关注']
+            });
+        }
+    });
     renderTScanResults();
     showTToast('KDJ验证完成！' + kdjCount + '只金叉');
 }
