@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1204</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1217</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -393,6 +393,14 @@ tr:hover td { background: var(--bg-hover); }
     <!-- 做T筛选条件提示 -->
     <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
         🎯 筛选条件：日内振幅>3% · 非涨跌停 · 持仓有底仓 · 信号≥3分才触发 · 正T=低位买入待涨 · 反T=高位卖出待跌
+    </div>
+
+    <!-- 用户关注做T票 -->
+    <div class="panel" style="margin-bottom:12px">
+        <h3>👤 用户关注做T票</h3>
+        <div class="table-container" style="overflow-x:auto;max-height:30vh;overflow-y:auto" id="userTStockTable2">
+            <div class="clear" style="padding:20px;text-align:center;color:var(--text-dim)">加载用户关注做T票...</div>
+        </div>
     </div>
 
     <!-- 做T机会表格 -->
@@ -5810,35 +5818,38 @@ function scheduleTScan() {
 
 // === 渲染用户关注做T票 ===
 function renderUserTStocks() {
-    var table = document.getElementById('userTStockTable');
-    if (!table || !USER_T_STOCKS || !USER_T_STOCKS.length) return;
-    var rows = USER_T_STOCKS.map(function(s) {
-        var code = s.code.replace('sh','').replace('sz','');
-        var r = GAP_UP_RATE_ALL[code] || {};
-        var cap = GAP_UP_CAPITAL_FLOW[code] || {};
-        var score = r.sc || 0;
-        var rate30 = r.r30 || 0;
-        var flow5d = cap.flow5d ? (cap.flow5d / 10000).toFixed(1) + '亿' : '--';
-        var flowColor = cap.flow5d > 0 ? 'var(--green)' : (cap.flow5d < 0 ? 'var(--red)' : 'var(--text-dim)');
-        var riskTags = (s.riskFlags || []).map(function(f) {
-            return '<span class="risk-tag">' + f + '</span>';
-        }).join(' ');
-        return '<tr>' +
-            '<td style="font-weight:600">' + s.code + '</td>' +
-            '<td style="font-weight:600">' + s.name + '</td>' +
-            '<td>' + (s.sector || '--') + '</td>' +
-            '<td>' + (s.direction || '--') + '</td>' +
-            '<td style="color:' + (score >= 60 ? 'var(--green)' : (score >= 40 ? 'var(--orange)' : 'var(--red)')) + '">' + (score ? score.toFixed(1) : '--') + '</td>' +
-            '<td>' + rate30.toFixed(1) + '%</td>' +
-            '<td style="color:' + flowColor + '">' + flow5d + '</td>' +
-            '<td>' + riskTags + '</td>' +
-            '<td>' + (s.reason || '--') + '</td>' +
-            '</tr>';
-    }).join('');
-    table.innerHTML = '<table class="data-table"><thead><tr>' +
-        '<th>代码</th><th>名称</th><th>板块</th><th>驱动</th>' +
-        '<th>评分</th><th>30日高开率</th><th>5日资金流</th><th>风险标签</th><th>关注理由</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table>';
+    var tables = ['userTStockTable', 'userTStockTable2'];
+    tables.forEach(function(tableId) {
+        var table = document.getElementById(tableId);
+        if (!table || !USER_T_STOCKS || !USER_T_STOCKS.length) return;
+        var rows = USER_T_STOCKS.map(function(s) {
+            var code = s.code.replace('sh','').replace('sz','');
+            var r = GAP_UP_RATE_ALL[code] || {};
+            var cap = GAP_UP_CAPITAL_FLOW[code] || {};
+            var score = r.sc || 0;
+            var rate30 = r.r30 || 0;
+            var flow5d = cap.flow5d ? (cap.flow5d / 10000).toFixed(1) + '亿' : '--';
+            var flowColor = cap.flow5d > 0 ? 'var(--green)' : (cap.flow5d < 0 ? 'var(--red)' : 'var(--text-dim)');
+            var riskTags = (s.riskFlags || []).map(function(f) {
+                return '<span class="risk-tag">' + f + '</span>';
+            }).join(' ');
+            return '<tr>' +
+                '<td style="font-weight:600">' + s.code + '</td>' +
+                '<td style="font-weight:600">' + s.name + '</td>' +
+                '<td>' + (s.sector || '--') + '</td>' +
+                '<td>' + (s.direction || '--') + '</td>' +
+                '<td style="color:' + (score >= 60 ? 'var(--green)' : (score >= 40 ? 'var(--orange)' : 'var(--red)')) + '">' + (score ? score.toFixed(1) : '--') + '</td>' +
+                '<td>' + rate30.toFixed(1) + '%</td>' +
+                '<td style="color:' + flowColor + '">' + flow5d + '</td>' +
+                '<td>' + riskTags + '</td>' +
+                '<td>' + (s.reason || '--') + '</td>' +
+                '</tr>';
+        }).join('');
+        table.innerHTML = '<table class="data-table"><thead><tr>' +
+            '<th>代码</th><th>名称</th><th>板块</th><th>驱动</th>' +
+            '<th>评分</th><th>30日高开率</th><th>5日资金流</th><th>风险标签</th><th>关注理由</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+    });
 }
 
 // ==================== 5分钟做T系统（正T·反T） ====================
@@ -6279,6 +6290,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(checkAutoReview, 60000);
     // 页面加载后立即检查一次
     setTimeout(checkAutoReview, 3000);
+
+    // 页面加载后立即渲染用户关注做T票
+    setTimeout(renderUserTStocks, 500);
 });
 
 // 切换标签
@@ -6288,6 +6302,11 @@ function switchTab(tabName) {
     
     document.getElementById('tab-' + tabName).classList.add('active');
     document.getElementById('content-' + tabName).classList.add('active');
+
+    // 切换到做T相关标签时，刷新用户关注做T票表格
+    if (tabName === 'trading' || tabName === 'ttrade') {
+        setTimeout(renderUserTStocks, 100);
+    }
 }
 
 window.addEventListener('load', () => {
