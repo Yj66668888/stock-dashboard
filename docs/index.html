@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-0054</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-0109</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -265,8 +265,73 @@ tr:hover td { background: var(--bg-hover); }
 
 <!-- 政策日历 -->
 <div class="content tab-content" id="content-calendar">
-    <div class="section-title">📅 政策 + 催化日历 (7月中旬)</div>
-    <div id="policyCalendar"></div>
+    <div class="panel" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <h3 style="margin:0">📅 政策 + 催化日历 <span id="calendarMonthLabel" style="color:var(--text-dim);font-size:13px;font-weight:normal"></span></h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button onclick="openEventForm()" style="padding:6px 12px;background:var(--blue);color:white;border:none;border-radius:4px;cursor:pointer;font-size:12px">➕ 添加事件</button>
+                <button onclick="exportCalendarEvents()" style="padding:6px 12px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px">📥 导出</button>
+                <button onclick="document.getElementById('importCalendarFile').click()" style="padding:6px 12px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px">📤 导入</button>
+                <input type="file" id="importCalendarFile" accept=".json" style="display:none" onchange="importCalendarEvents(event)">
+                <button onclick="toggleCalendarHistory()" id="toggleHistoryBtn" style="padding:6px 12px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:12px">📜 显示历史</button>
+            </div>
+        </div>
+        <div id="calendarSummary" style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-dim);margin-bottom:8px"></div>
+        <div style="color:var(--text-dim);font-size:11px;margin-bottom:10px">
+            🔄 常规事件(LPR/MLF/PMI/CPI/美联储议息/季度GDP)按日期规则自动生成 · 已过期事件自动归入"近期回顾"<br>
+            ⚠️ 自定义事件仅存在浏览器本地，换设备请用导出/导入或同步GitHub
+        </div>
+        <div id="policyCalendar"></div>
+        <div id="policyCalendarHistory" style="display:none;margin-top:12px;border-top:1px dashed var(--border);padding-top:12px">
+            <div style="color:var(--text-dim);font-size:13px;margin-bottom:8px">📜 近期回顾（已过期事件）</div>
+            <div id="policyCalendarHistoryList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加/编辑事件模态框 -->
+<div id="eventModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:20px;width:90%;max-width:480px;max-height:90vh;overflow-y:auto">
+        <h3 style="margin:0 0 12px;color:var(--text)">📅 添加政策事件</h3>
+        <input type="hidden" id="eventEditIndex" value="">
+        <div style="margin-bottom:10px">
+            <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">日期 *</label>
+            <input type="text" id="eventDate" placeholder="如:7月29日 或 2026-07-29 或 本周" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box">
+        </div>
+        <div style="margin-bottom:10px">
+            <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">标题 *</label>
+            <input type="text" id="eventTitle" placeholder="事件标题" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+            <div style="flex:1">
+                <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">影响星数</label>
+                <select id="eventImpact" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box">
+                    <option value="★">★ 影响较小</option>
+                    <option value="★★">★★ 一般</option>
+                    <option value="★★★">★★★ 中等</option>
+                    <option value="★★★★">★★★★ 重要</option>
+                    <option value="★★★★★">★★★★★ 重磅</option>
+                </select>
+            </div>
+            <div style="flex:1">
+                <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">受益赛道</label>
+                <input type="text" id="eventSector" placeholder="如:半导体/AI/储能" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box">
+            </div>
+        </div>
+        <div style="margin-bottom:10px">
+            <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">详情描述</label>
+            <textarea id="eventDetail" rows="3" placeholder="事件详情、受益个股、市场预期等" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box;font-family:inherit"></textarea>
+        </div>
+        <div style="margin-bottom:12px">
+            <label style="display:block;font-size:12px;color:var(--text-dim);margin-bottom:4px">事件日期(可选,用于排序)</label>
+            <input type="date" id="eventSortDate" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text);box-sizing:border-box">
+            <div style="color:var(--text-dim);font-size:11px;margin-top:2px">不填则按"日期"字段解析</div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button onclick="closeEventForm()" style="padding:8px 16px;background:var(--bg-card);color:var(--text);border:1px solid var(--border);border-radius:4px;cursor:pointer">取消</button>
+            <button onclick="saveEventForm()" style="padding:8px 16px;background:var(--blue);color:white;border:none;border-radius:4px;cursor:pointer">保存</button>
+        </div>
+    </div>
 </div>
 
 <!-- 异动监控 -->
@@ -3931,43 +3996,517 @@ function renderDualWheel() {
 }
 
 
-// ==================== 政策催化日历 ====================
+// ==================== 政策催化日历（动态版） ====================
 
-const POLICY_CALENDAR = [
-    { date: '7月13日(周一)', title: '科创板科创成长层正式实施', impact: '★★★★★', sector: '半导体/AI/创新药', detail: '32家未盈利企业划入,利好硬科技估值修复' },
-    { date: '7月13日(周一)', title: '机器人+创新发展大会开幕', impact: '★★★★', sector: '机器人产业链', detail: '人形机器人减速器/伺服/视觉零部件集中展出' },
-    { date: '7月13日(周一)', title: '长鑫存储IPO询价(295亿)', impact: '★★★★★', sector: '存储芯片/设备', detail: '科创板史上第二大IPO,募资扩产国产DRAM' },
-    { date: '7月13日(周一)', title: '商务部:6N高纯电子氦禁止出口', impact: '★★★★★', sector: '电子特气/半导体', detail: '华特气体、金宏气体、九丰能源直接受益' },
-    { date: '7月14日(周二)', title: '8000亿特别国债第三批发行', impact: '★★★★', sector: '储能/特高压/电网', detail: '2000亿定向储能、特高压、算力设备' },
-    { date: '7月15日(周三)', title: 'Q2 GDP/工业/社融/70城房价数据', impact: '★★★★★', sector: '全市场', detail: '重磅经济数据发布,影响宏观预期' },
-    { date: '7月15日(周三)', title: '半年报业绩预告截止日', impact: '★★★★★', sector: '全市场', detail: '业绩暴雷/超预期个股分化加剧' },
-    { date: '7月16日(周四)', title: '长鑫存储IPO申购日', impact: '★★★★', sector: '存储/半导体', detail: '短期分流科技板块资金' },
-    { date: '7月17日(周五)', title: '世界人工智能大会(WAIC)开幕', impact: '★★★★★', sector: 'AI算力/大模型', detail: '国产大模型/3D存储/人形机器人新品首发' },
-    { date: '本周', title: '七部委硬科技三年方案(2026-2028)', impact: '★★★★★', sector: '半导体/AI/航天', detail: '国产AI芯片采购补贴30%,研发费200%加计扣除' },
-    { date: '本周', title: '转融券阶段性收紧(7.11起)', impact: '★★★★', sector: '高位科技股', detail: '做空筹码减少,利好算力/半导体等高成长主线' },
-    { date: '本周', title: '全国用电负荷15.18亿千瓦创新高', impact: '★★★★', sector: '储能/电力/液冷', detail: '高温保供,电网设备/液冷储能需求集中释放' },
-    { date: '7月下旬', title: '美联储议息会议(7.29)', impact: '★★★', sector: '全市场', detail: '市场预期维持利率不变概率63.5%' }
+// 静态事件存档（已发生的重大政策，会被自动归类到"近期回顾"）
+const POLICY_CALENDAR_ARCHIVE = [
+    { date: '7月13日', sortDate: '2026-07-13', title: '科创板科创成长层正式实施', impact: '★★★★★', sector: '半导体/AI/创新药', detail: '32家未盈利企业划入,利好硬科技估值修复' },
+    { date: '7月13日', sortDate: '2026-07-13', title: '机器人+创新发展大会开幕', impact: '★★★★', sector: '机器人产业链', detail: '人形机器人减速器/伺服/视觉零部件集中展出' },
+    { date: '7月13日', sortDate: '2026-07-13', title: '长鑫存储IPO询价(295亿)', impact: '★★★★★', sector: '存储芯片/设备', detail: '科创板史上第二大IPO,募资扩产国产DRAM' },
+    { date: '7月13日', sortDate: '2026-07-13', title: '商务部:6N高纯电子氦禁止出口', impact: '★★★★★', sector: '电子特气/半导体', detail: '华特气体、金宏气体、九丰能源直接受益' },
+    { date: '7月14日', sortDate: '2026-07-14', title: '8000亿特别国债第三批发行', impact: '★★★★', sector: '储能/特高压/电网', detail: '2000亿定向储能、特高压、算力设备' },
+    { date: '7月15日', sortDate: '2026-07-15', title: 'Q2 GDP/工业/社融/70城房价数据', impact: '★★★★★', sector: '全市场', detail: '重磅经济数据发布,影响宏观预期' },
+    { date: '7月15日', sortDate: '2026-07-15', title: '半年报业绩预告截止日', impact: '★★★★★', sector: '全市场', detail: '业绩暴雷/超预期个股分化加剧' },
+    { date: '7月16日', sortDate: '2026-07-16', title: '长鑫存储IPO申购日', impact: '★★★★', sector: '存储/半导体', detail: '短期分流科技板块资金' },
+    { date: '7月17日', sortDate: '2026-07-17', title: '世界人工智能大会(WAIC)开幕', impact: '★★★★★', sector: 'AI算力/大模型', detail: '国产大模型/3D存储/人形机器人新品首发' }
 ];
+
+// 2026年美联储议息日期（已公布的8次会议）
+const FOMC_2026_DATES = [
+    { date: '1月28-29日', sortDate: '2026-01-29', note: '2026年首次议息' },
+    { date: '3月18-19日', sortDate: '2026-03-19', note: '点阵图更新' },
+    { date: '4月29-30日', sortDate: '2026-04-30', note: '可能重启降息讨论' },
+    { date: '6月17-18日', sortDate: '2026-06-18', note: '点阵图更新·SEP发布' },
+    { date: '7月29-30日', sortDate: '2026-07-30', note: '夏季议息·市场预期维持利率不变概率63.5%' },
+    { date: '9月16-17日', sortDate: '2026-09-17', note: '点阵图更新·可能开启降息周期' },
+    { date: '11月4-5日', sortDate: '2026-11-05', note: '美国大选后议息·高度敏感' },
+    { date: '12月15-16日', sortDate: '2026-12-16', note: '年终议息·2027年路径定调' }
+];
+
+// 自定义事件localStorage key
+const CALENDAR_EVENTS_KEY = 'davisCalendarEvents';
+let _calendarEventsCache = null;
+let _showCalendarHistory = false;
+
+// 工作日顺延（周末顺延到下周一）
+function nextWeekday(dateStr) {
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    if (day === 0) d.setDate(d.getDate() + 1); // 周日→周一
+    else if (day === 6) d.setDate(d.getDate() + 2); // 周六→周一
+    return d;
+}
+
+// 生成规则化事件（未来3个月）
+function generateRegularEvents() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const events = [];
+
+    // 当前年和下一年的月度事件
+    for (let yearOff = 0; yearOff <= 1; yearOff++) {
+        const year = today.getFullYear() + yearOff;
+        for (let month = 0; month < 12; month++) {
+            // 仅生成最近3个月到未来3个月之间的事件
+            const eventMonth = new Date(year, month, 1);
+            const diffMonths = (eventMonth.getFullYear() - today.getFullYear()) * 12 + (eventMonth.getMonth() - today.getMonth());
+            if (diffMonths < -1 || diffMonths > 3) continue;
+
+            // LPR公布（每月20日，遇周末顺延）
+            const lprDate = nextWeekday(`${year}-${String(month + 1).padStart(2, '0')}-20`);
+            events.push({
+                date: `${month + 1}月${lprDate.getDate()}日`,
+                sortDate: lprDate.toISOString().slice(0, 10),
+                title: `LPR利率公布(${year}.${month + 1})`,
+                impact: '★★★',
+                sector: '全市场/银行/地产',
+                detail: `1年期/5年期LPR报价,关注是否调整`,
+                source: 'regular'
+            });
+
+            // MLF操作（每月15日，遇周末顺延）
+            const mlfDate = nextWeekday(`${year}-${String(month + 1).padStart(2, '0')}-15`);
+            events.push({
+                date: `${month + 1}月${mlfDate.getDate()}日`,
+                sortDate: mlfDate.toISOString().slice(0, 10),
+                title: `MLF中期借贷便利操作(${year}.${month + 1})`,
+                impact: '★★★',
+                sector: '全市场/债市',
+                detail: `央行MLF续做,关注利率是否调整、投放规模`,
+                source: 'regular'
+            });
+
+            // CPI/PPI公布（每月9日，遇周末顺延，实际公布日通常10日左右）
+            const cpiDate = nextWeekday(`${year}-${String(month + 1).padStart(2, '0')}-10`);
+            events.push({
+                date: `${month + 1}月${cpiDate.getDate()}日`,
+                sortDate: cpiDate.toISOString().slice(0, 10),
+                title: `CPI/PPI通胀数据(${year}.${month - 1 < 0 ? 12 : month}月数据)`,
+                impact: '★★★★',
+                sector: '全市场/消费/周期',
+                detail: `上月CPI/PPI公布,通胀预期影响货币政策`,
+                source: 'regular'
+            });
+
+            // PMI月末公布
+            const pmiLastDay = new Date(year, month + 1, 0); // 当月最后一天
+            events.push({
+                date: `${month + 1}月${pmiLastDay.getDate()}日`,
+                sortDate: pmiLastDay.toISOString().slice(0, 10),
+                title: `官方PMI数据公布(${year}.${month})`,
+                impact: '★★★★',
+                sector: '全市场/制造业/周期',
+                detail: `制造业PMI 50荣枯线,反映经济景气度`,
+                source: 'regular'
+            });
+
+            // 社融数据（每月10-15日之间公布上月数据）
+            const shiborDate = nextWeekday(`${year}-${String(month + 1).padStart(2, '0')}-12`);
+            events.push({
+                date: `${month + 1}月${shiborDate.getDate()}日`,
+                sortDate: shiborDate.toISOString().slice(0, 10),
+                title: `社融/M2信贷数据(${year}.${month - 1 < 0 ? 12 : month}月)`,
+                impact: '★★★★',
+                sector: '全市场/银行',
+                detail: `社融增量、M2同比、新增贷款,反映信用扩张`,
+                source: 'regular'
+            });
+
+            // 季度GDP（1月/4月/7月/10月公布季度数据）
+            if ([0, 3, 6, 9].includes(month)) {
+                const quarter = month === 0 ? 'Q4(上一年)' : month === 3 ? 'Q1' : month === 6 ? 'Q2' : 'Q3';
+                const gdpDate = nextWeekday(`${year}-${String(month + 1).padStart(2, '0')}-18`);
+                events.push({
+                    date: `${month + 1}月${gdpDate.getDate()}日`,
+                    sortDate: gdpDate.toISOString().slice(0, 10),
+                    title: `季度GDP数据公布(${quarter})`,
+                    impact: '★★★★★',
+                    sector: '全市场',
+                    detail: `${quarter} GDP增速、工业增加值、社零数据,重磅宏观`,
+                    source: 'regular'
+                });
+            }
+        }
+    }
+
+    // 加入美联储议息事件
+    FOMC_2026_DATES.forEach(f => {
+        events.push({
+            date: f.date,
+            sortDate: f.sortDate,
+            title: `美联储FOMC议息会议`,
+            impact: '★★★★★',
+            sector: '全市场/黄金/汇率',
+            detail: f.note,
+            source: 'regular'
+        });
+    });
+
+    // 中央经济工作会议（12月中旬）
+    events.push({
+        date: '12月中旬',
+        sortDate: `${today.getFullYear()}-12-15`,
+        title: '中央经济工作会议',
+        impact: '★★★★★',
+        sector: '全市场',
+        detail: '次年经济工作定调,政策主线风向标',
+        source: 'regular'
+    });
+
+    // 政治局会议（4月/7月/10月/12月）
+    [3, 6, 9, 11].forEach(m => {
+        events.push({
+            date: `${m + 1}月底`,
+            sortDate: `${today.getFullYear()}-${String(m + 1).padStart(2, '0')}-28`,
+            title: '中共中央政治局会议',
+            impact: '★★★★',
+            sector: '全市场',
+            detail: '分析研究经济形势,部署下阶段工作',
+            source: 'regular'
+        });
+    });
+
+    return events;
+}
+
+// 加载用户自定义事件
+function loadCalendarEvents() {
+    if (_calendarEventsCache !== null) return _calendarEventsCache;
+    try {
+        const raw = localStorage.getItem(CALENDAR_EVENTS_KEY);
+        _calendarEventsCache = raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        console.error('加载自定义事件失败:', e);
+        _calendarEventsCache = [];
+    }
+    return _calendarEventsCache;
+}
+
+function saveCalendarEvents(events) {
+    _calendarEventsCache = events;
+    try {
+        localStorage.setItem(CALENDAR_EVENTS_KEY, JSON.stringify(events));
+    } catch (e) {
+        console.error('保存自定义事件失败:', e);
+    }
+}
+
+// 解析日期字符串为可比较的Date对象
+function parseEventDate(item) {
+    if (item.sortDate) return new Date(item.sortDate);
+    // 解析"7月15日"格式
+    const m = item.date && item.date.match(/(\d{1,2})月(\d{1,2})/);
+    if (m) {
+        const year = new Date().getFullYear();
+        return new Date(year, parseInt(m[1]) - 1, parseInt(m[2]));
+    }
+    // "本周"/"7月下旬"等模糊日期，给一个近期日期
+    if (item.date && (item.date.includes('本周') || item.date.includes('下旬') || item.date.includes('中旬'))) {
+        return new Date(); // 视为今天附近
+    }
+    return new Date(0); // 未知日期排到最前
+}
+
+// 获取合并后的全部事件（规则+用户+存档），按日期升序
+function getAllCalendarEvents() {
+    const regular = generateRegularEvents().map(e => ({ ...e, _userIdx: -1 }));
+    const userEvents = loadCalendarEvents().map((e, idx) => ({ ...e, _userIdx: idx, source: e.source || 'user' }));
+    const archive = POLICY_CALENDAR_ARCHIVE.map(e => ({ ...e, _userIdx: -1, source: 'archive' }));
+
+    const all = [...regular, ...userEvents, ...archive].map(e => ({
+        ...e,
+        _dateObj: parseEventDate(e)
+    }));
+
+    return all.sort((a, b) => a._dateObj - b._dateObj);
+}
+
+// 计算距今天数
+function daysFromToday(dateObj) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(dateObj);
+    d.setHours(0, 0, 0, 0);
+    return Math.round((d - today) / 86400000);
+}
 
 function renderCalendar() {
     const container = document.getElementById('policyCalendar');
     if (!container) return;
-    
-    const impactStars = (s) => {
-        const n = (s.match(/★/g) || []).length;
-        return `<span style="color:var(--yellow)">${s}</span>`;
+
+    const all = getAllCalendarEvents();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 拆分：今天及未来 / 已过期
+    const upcoming = all.filter(e => e._dateObj >= today);
+    const past = all.filter(e => e._dateObj < today).reverse(); // 最近的过期事件在最前
+
+    // 月度标签
+    const monthLabel = document.getElementById('calendarMonthLabel');
+    if (monthLabel) {
+        const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        const now = new Date();
+        monthLabel.textContent = `· ${months[now.getMonth()]} 更新 · ${now.toLocaleDateString('zh-CN')}`;
+    }
+
+    // 汇总
+    const summary = document.getElementById('calendarSummary');
+    if (summary) {
+        const todayEvents = upcoming.filter(e => daysFromToday(e._dateObj) === 0);
+        const weekEvents = upcoming.filter(e => {
+            const d = daysFromToday(e._dateObj);
+            return d >= 0 && d <= 7;
+        });
+        const highImpact = upcoming.filter(e => (e.impact.match(/★/g) || []).length >= 4);
+        summary.innerHTML = `
+            <span style="color:var(--red)">🔴 今日: ${todayEvents.length}</span>
+            <span style="color:var(--yellow)">🟡 一周内: ${weekEvents.length}</span>
+            <span style="color:var(--blue)">⭐ 重磅事件: ${highImpact.length}</span>
+            <span style="color:var(--text-dim)">📅 未来事件: ${upcoming.length}</span>
+            <span style="color:var(--green)">👤 自定义: ${loadCalendarEvents().length}</span>
+        `;
+    }
+
+    const impactStars = (s) => `<span style="color:var(--yellow)">${s}</span>`;
+
+    // 渲染未来事件
+    if (upcoming.length === 0) {
+        container.innerHTML = `<div style="color:var(--text-dim);font-size:13px;text-align:center;padding:20px">暂无未来事件，可点"添加事件"自定义</div>`;
+    } else {
+        container.innerHTML = upcoming.map((item, idx) => {
+            const days = daysFromToday(item._dateObj);
+            let dayLabel = '';
+            let dayColor = 'var(--text-dim)';
+            if (days === 0) { dayLabel = '今天'; dayColor = 'var(--red)'; }
+            else if (days === 1) { dayLabel = '明天'; dayColor = 'var(--orange)'; }
+            else if (days <= 7) { dayLabel = `${days}天后`; dayColor = 'var(--yellow)'; }
+            else { dayLabel = `${days}天后`; dayColor = 'var(--text-dim)'; }
+
+            const isToday = days === 0;
+            const isUserEvent = item.source === 'user';
+            const cardStyle = isToday
+                ? 'border-left:3px solid var(--red);background:var(--bg-card)'
+                : 'border-left:3px solid var(--border);background:var(--bg-card)';
+
+            const editBtn = isUserEvent
+                ? `<button onclick="editCalendarEvent(${item._userIdx || 0})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;padding:2px 4px">✏️</button><button onclick="deleteCalendarEvent(${item._userIdx || 0})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:2px 4px">🗑️</button>`
+                : '';
+
+            return `<div class="calendar-card" style="${cardStyle}">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                    <h3 style="margin:0;flex:1"><span class="date-tag" style="${isToday ? 'background:var(--red);color:white' : ''}">${item.date}</span> ${item.title} ${impactStars(item.impact)}</h3>
+                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+                        <span style="color:${dayColor};font-size:11px;font-weight:bold">${dayLabel}</span>
+                        ${editBtn}
+                    </div>
+                </div>
+                <div style="color:var(--blue);font-size:12px;margin:4px 0">📌 受益赛道: ${item.sector || '全市场'}</div>
+                <div style="color:var(--text-dim);font-size:12px">${item.detail || ''}</div>
+                ${isUserEvent ? '<div style="color:var(--green);font-size:10px;margin-top:4px">👤 自定义事件</div>' : ''}
+            </div>`;
+        }).join('');
+    }
+
+    // 渲染历史事件
+    const historyList = document.getElementById('policyCalendarHistoryList');
+    if (historyList) {
+        if (past.length === 0) {
+            historyList.innerHTML = '<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:12px">暂无历史事件</div>';
+        } else {
+            // 只显示最近30条
+            historyList.innerHTML = past.slice(0, 30).map(item => {
+                const days = -daysFromToday(item._dateObj);
+                let dayLabel = days === 0 ? '今天' : `${days}天前`;
+                return `<div class="calendar-card" style="opacity:0.65;border-left:3px solid var(--border)">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                        <h3 style="margin:0;flex:1;font-size:13px"><span class="date-tag" style="opacity:0.7">${item.date}</span> ${item.title} ${impactStars(item.impact)}</h3>
+                        <span style="color:var(--text-dim);font-size:11px">${dayLabel}</span>
+                    </div>
+                    <div style="color:var(--blue);font-size:11px;margin:2px 0">📌 ${item.sector || '全市场'}</div>
+                </div>`;
+            }).join('');
+        }
+    }
+}
+
+function toggleCalendarHistory() {
+    _showCalendarHistory = !_showCalendarHistory;
+    const histDiv = document.getElementById('policyCalendarHistory');
+    const btn = document.getElementById('toggleHistoryBtn');
+    if (_showCalendarHistory) {
+        histDiv.style.display = 'block';
+        btn.textContent = '🔒 隐藏历史';
+    } else {
+        histDiv.style.display = 'none';
+        btn.textContent = '📜 显示历史';
+    }
+}
+
+function openEventForm(editIdx) {
+    const modal = document.getElementById('eventModal');
+    modal.style.display = 'flex';
+
+    const idxInput = document.getElementById('eventEditIndex');
+    const titleInput = document.getElementById('eventTitle');
+    const dateInput = document.getElementById('eventDate');
+    const impactSelect = document.getElementById('eventImpact');
+    const sectorInput = document.getElementById('eventSector');
+    const detailInput = document.getElementById('eventDetail');
+    const sortDateInput = document.getElementById('eventSortDate');
+
+    if (editIdx !== undefined && editIdx !== null) {
+        const events = loadCalendarEvents();
+        const e = events[editIdx];
+        if (!e) return;
+        idxInput.value = editIdx;
+        titleInput.value = e.title || '';
+        dateInput.value = e.date || '';
+        impactSelect.value = e.impact || '★★★';
+        sectorInput.value = e.sector || '';
+        detailInput.value = e.detail || '';
+        sortDateInput.value = e.sortDate || '';
+    } else {
+        idxInput.value = '';
+        titleInput.value = '';
+        dateInput.value = '';
+        impactSelect.value = '★★★';
+        sectorInput.value = '';
+        detailInput.value = '';
+        sortDateInput.value = '';
+    }
+}
+
+function closeEventForm() {
+    document.getElementById('eventModal').style.display = 'none';
+}
+
+function saveEventForm() {
+    const idx = document.getElementById('eventEditIndex').value;
+    const title = document.getElementById('eventTitle').value.trim();
+    const date = document.getElementById('eventDate').value.trim();
+    const impact = document.getElementById('eventImpact').value;
+    const sector = document.getElementById('eventSector').value.trim();
+    const detail = document.getElementById('eventDetail').value.trim();
+    const sortDate = document.getElementById('eventSortDate').value;
+
+    if (!title || !date) {
+        alert('请填写标题和日期');
+        return;
+    }
+
+    const events = loadCalendarEvents();
+    const newEvent = { date, title, impact, sector, detail, sortDate, source: 'user' };
+
+    if (idx !== '') {
+        events[parseInt(idx)] = newEvent;
+    } else {
+        events.push(newEvent);
+    }
+    saveCalendarEvents(events);
+    closeEventForm();
+    renderCalendar();
+}
+
+function deleteCalendarEvent(idx) {
+    if (!confirm('确定删除该事件?')) return;
+    const events = loadCalendarEvents();
+    events.splice(idx, 1);
+    saveCalendarEvents(events);
+    renderCalendar();
+}
+
+function editCalendarEvent(idx) {
+    openEventForm(idx);
+}
+
+function exportCalendarEvents() {
+    const events = loadCalendarEvents();
+    const blob = new Blob([JSON.stringify(events, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar_events_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importCalendarEvents(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!Array.isArray(imported)) {
+                alert('文件格式错误:应为事件数组');
+                return;
+            }
+            const current = loadCalendarEvents();
+            const merged = [...current];
+            let added = 0;
+            imported.forEach(item => {
+                if (item.title && item.date) {
+                    merged.push({ ...item, source: 'user' });
+                    added++;
+                }
+            });
+            saveCalendarEvents(merged);
+            renderCalendar();
+            alert(`导入成功:新增${added}条,合计${merged.length}条自定义事件`);
+        } catch (err) {
+            alert('导入失败:' + err.message);
+        }
     };
-    
-    const starCount = (s) => (s.match(/★/g) || []).length;
-    const sorted = [...POLICY_CALENDAR].sort((a, b) => starCount(b.impact) - starCount(a.impact));
-    
-    container.innerHTML = sorted.map(item => 
-        `<div class="calendar-card">
-            <h3><span class="date-tag">${item.date}</span> ${item.title} ${impactStars(item.impact)}</h3>
-            <div style="color:var(--blue);font-size:12px;margin-bottom:4px">📌 受益赛道: ${item.sector}</div>
-            <div style="color:var(--text-dim);font-size:12px">${item.detail}</div>
-        </div>`
-    ).join('');
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// 同步自定义事件到GitHub（需要先填token）
+async function syncCalendarToGitHub() {
+    const token = prompt('请输入GitHub Personal Access Token (需repo权限):');
+    if (!token) return;
+
+    const events = loadCalendarEvents();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(events, null, 2))));
+    const url = 'https://api.github.com/repos/Yj66668888/stock-dashboard/contents/calendar_events.json';
+
+    try {
+        // 获取现有文件SHA（如果存在）
+        let sha = '';
+        try {
+            const resp = await fetch(url, { headers: { Authorization: `token ${token}` } });
+            if (resp.ok) {
+                const data = await resp.json();
+                sha = data.sha;
+            }
+        } catch (e) {}
+
+        const body = {
+            message: `📅 同步自定义事件 ${new Date().toLocaleString('zh-CN')}`,
+            content: content
+        };
+        if (sha) body.sha = sha;
+
+        const resp = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                Authorization: `token ${token}`,
+                Accept: 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (resp.ok) {
+            alert('✅ 同步成功!');
+        } else {
+            const err = await resp.json();
+            alert('❌ 同步失败:' + (err.message || resp.status));
+        }
+    } catch (e) {
+        alert('❌ 网络错误:' + e.message);
+    }
 }
 
 
