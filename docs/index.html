@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0719-1217</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0720-1444</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -655,109 +655,6 @@ const SECTOR_MAP = {
 // ==================== 标的数据 ====================
 const STOCKS = [
     {
-        "code": "sz000725",
-        "name": "京东方A",
-        "sector": "面板",
-        "direction": "戴维斯双击(周期反转)",
-        "pe": 20,
-        "profitGrowth": 40,
-        "reason": "面板龙头,折旧拐点+价格企稳",
-        "roe": 5,
-        "grossMargin": 14,
-        "debtRatio": 55,
-        "riskFlags": [
-            "ROE偏低",
-            "负债偏高"
-        ],
-        "healthScore": -6.3,
-        "dailyScore": 45.0,
-        "flow5d": -336612.0
-    },
-    {
-        "code": "sz002409",
-        "name": "雅克科技",
-        "sector": "电子特气/材料",
-        "direction": "供给端驱动",
-        "pe": 30,
-        "profitGrowth": 60,
-        "reason": "电子特气+前驱体,氦气管制受益",
-        "roe": 16,
-        "grossMargin": 38,
-        "debtRatio": 30,
-        "riskFlags": [],
-        "healthScore": -6.0,
-        "dailyScore": 52.5,
-        "flow5d": -201164.0
-    },
-    {
-        "code": "sh600584",
-        "name": "长电科技",
-        "sector": "先进封装",
-        "direction": "供需双驱",
-        "pe": 22,
-        "profitGrowth": 100,
-        "reason": "封测龙头,Chiplet先进封装",
-        "roe": 10,
-        "grossMargin": 22,
-        "debtRatio": 52,
-        "riskFlags": [
-            "质押偏高"
-        ],
-        "healthScore": -4.2,
-        "dailyScore": 37.3,
-        "flow5d": -86656.0
-    },
-    {
-        "code": "sz002050",
-        "name": "三花智控",
-        "sector": "机器人",
-        "direction": "需求端驱动",
-        "pe": 30,
-        "profitGrowth": 40,
-        "reason": "热管理+机器人机电执行器",
-        "roe": 16,
-        "grossMargin": 28,
-        "debtRatio": 35,
-        "riskFlags": [],
-        "healthScore": 5.8,
-        "dailyScore": 42.3,
-        "flow5d": -19483.0
-    },
-    {
-        "code": "sz002272",
-        "name": "川润股份",
-        "sector": "液冷",
-        "direction": "需求端驱动",
-        "pe": 38,
-        "profitGrowth": 85,
-        "reason": "液冷设备,兆瓦级智算配套",
-        "roe": 20,
-        "grossMargin": 32,
-        "debtRatio": 40,
-        "riskFlags": [],
-        "healthScore": 7.5,
-        "dailyScore": 48.6,
-        "flow5d": -19407.0
-    },
-    {
-        "code": "sh600089",
-        "name": "特变电工",
-        "sector": "电力设备",
-        "direction": "供需双驱",
-        "pe": 15,
-        "profitGrowth": 40,
-        "reason": "变压器+特高压龙头,电网投资加码",
-        "roe": 8,
-        "grossMargin": 18,
-        "debtRatio": 58,
-        "riskFlags": [
-            "负债偏高"
-        ],
-        "healthScore": 9.5,
-        "dailyScore": 40.8,
-        "flow5d": -11727.0
-    },
-    {
         "code": "sz002335",
         "name": "科华数据",
         "sector": "算力电力",
@@ -1040,6 +937,25 @@ const STOCKS = [
         "flow5d": 38023.0
     },
     {
+        "code": "sh601600",
+        "name": "中国铝业",
+        "sector": "有色金属",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期持续缩量，卖盘减少",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 50.2,
+        "dailyScore": 52.2,
+        "flow5d": 38633.0,
+        "isNew": true
+    },
+    {
         "code": "sh601899",
         "name": "紫金矿业",
         "sector": "有色金属",
@@ -1056,60 +972,22 @@ const STOCKS = [
         "flow5d": 89541.0
     },
     {
-        "code": "sh600664",
-        "name": "哈药股份",
-        "sector": "医药",
-        "direction": "资金流入",
-        "pe": 0,
-        "profitGrowth": 0,
-        "reason": "🆕动态选入：高开趋势加速中；近期高开率从33%升至53%",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
-        "riskFlags": [
-            "🆕动态选入"
-        ],
-        "healthScore": 74.1,
-        "dailyScore": 58.7,
-        "flow5d": 44323.0,
-        "isNew": true
-    },
-    {
-        "code": "sh601857",
-        "name": "中国石油",
-        "sector": "热门标的",
-        "direction": "资金流入",
-        "pe": 0,
-        "profitGrowth": 0,
-        "reason": "🆕动态选入：高开趋势加速中；近期高开率从20%升至47%",
-        "roe": 0,
-        "grossMargin": 0,
-        "debtRatio": 0,
-        "riskFlags": [
-            "🆕动态选入"
-        ],
-        "healthScore": 59.5,
-        "dailyScore": 58.2,
-        "flow5d": 25225.0,
-        "isNew": true
-    },
-    {
-        "code": "sh600227",
-        "name": "赤天化",
-        "sector": "热门标的",
+        "code": "sh600021",
+        "name": "上海电力",
+        "sector": "电力设备",
         "direction": "评分驱动",
         "pe": 0,
         "profitGrowth": 0,
-        "reason": "🆕动态选入：高开趋势加速中；近期高开率从7%升至53%",
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至47%",
         "roe": 0,
         "grossMargin": 0,
         "debtRatio": 0,
         "riskFlags": [
             "🆕动态选入"
         ],
-        "healthScore": 56.4,
-        "dailyScore": 56.2,
-        "flow5d": 8185.0,
+        "healthScore": 53.5,
+        "dailyScore": 53.6,
+        "flow5d": 14803.0,
         "isNew": true
     },
     {
@@ -1132,9 +1010,142 @@ const STOCKS = [
         "isNew": true
     },
     {
-        "code": "sh600021",
-        "name": "上海电力",
-        "sector": "电力设备",
+        "code": "sh600227",
+        "name": "赤天化",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从7%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 56.4,
+        "dailyScore": 56.2,
+        "flow5d": 8185.0,
+        "isNew": true
+    },
+    {
+        "code": "sh601857",
+        "name": "中国石油",
+        "sector": "热门标的",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从20%升至47%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 59.5,
+        "dailyScore": 58.2,
+        "flow5d": 25225.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600664",
+        "name": "哈药股份",
+        "sector": "医药",
+        "direction": "资金流入",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从33%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 74.1,
+        "dailyScore": 58.7,
+        "flow5d": 44323.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600331",
+        "name": "宏达股份",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从40%升至53%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 47.6,
+        "dailyScore": 65.0,
+        "flow5d": 1888.0,
+        "isNew": true
+    },
+    {
+        "code": "sz000703",
+        "name": "恒逸石化",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期持续缩量，卖盘减少",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 47.3,
+        "dailyScore": 57.1,
+        "flow5d": 9638.0,
+        "isNew": true
+    },
+    {
+        "code": "sh601225",
+        "name": "陕西煤业",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从20%升至40%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 47.0,
+        "dailyScore": 57.2,
+        "flow5d": 11812.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600881",
+        "name": "亚泰集团",
+        "sector": "热门标的",
+        "direction": "评分驱动",
+        "pe": 0,
+        "profitGrowth": 0,
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从20%升至40%",
+        "roe": 0,
+        "grossMargin": 0,
+        "debtRatio": 0,
+        "riskFlags": [
+            "🆕动态选入"
+        ],
+        "healthScore": 46.5,
+        "dailyScore": 50.7,
+        "flow5d": 5831.0,
+        "isNew": true
+    },
+    {
+        "code": "sh600722",
+        "name": "金牛化工",
+        "sector": "化工",
         "direction": "评分驱动",
         "pe": 0,
         "profitGrowth": 0,
@@ -1145,28 +1156,28 @@ const STOCKS = [
         "riskFlags": [
             "🆕动态选入"
         ],
-        "healthScore": 53.5,
-        "dailyScore": 53.6,
-        "flow5d": 14803.0,
+        "healthScore": 46.0,
+        "dailyScore": 54.8,
+        "flow5d": 1071.0,
         "isNew": true
     },
     {
-        "code": "sh601600",
-        "name": "中国铝业",
+        "code": "sz002532",
+        "name": "天山铝业",
         "sector": "有色金属",
         "direction": "资金流入",
         "pe": 0,
         "profitGrowth": 0,
-        "reason": "🆕动态选入：高开趋势加速中；近期持续缩量，卖盘减少",
+        "reason": "🆕动态选入：高开趋势加速中；近期高开率从40%升至60%",
         "roe": 0,
         "grossMargin": 0,
         "debtRatio": 0,
         "riskFlags": [
             "🆕动态选入"
         ],
-        "healthScore": 50.2,
-        "dailyScore": 52.2,
-        "flow5d": 38633.0,
+        "healthScore": 46.0,
+        "dailyScore": 54.0,
+        "flow5d": 32095.0,
         "isNew": true
     }
 ];
