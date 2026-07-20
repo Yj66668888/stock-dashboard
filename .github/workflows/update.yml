@@ -4,9 +4,8 @@ on:
   schedule:
     # 北京时间14:00 = UTC 06:00，周一至周五
     - cron: '0 6 * * 1-5'
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
-# 赋予写入权限以便提交变更
 permissions:
   contents: write
   pages: write
@@ -29,20 +28,20 @@ jobs:
       - name: 执行自动更新脚本
         run: python auto_update.py
 
-      - name: 提交变更
+      - name: 提交选股池变更（不覆盖docs/，由本地自动化推送完整HTML）
         run: |
-          git config user.name "Stock Bot"
-          git config user.email "bot@stock-dashboard.local"
-          git add stocks.json davis_dashboard_v5.html docs/
+          git config user.name 'Stock Bot'
+          git config user.email 'bot@stock-dashboard.local'
+          git add stocks.json
           if git diff --staged --quiet; then
-            echo "📭 无变更，跳过提交"
+            echo '📭 选股池无变更，跳过提交'
           else
             git commit -m "📊 自动更新选股池 $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
             git push
-            echo "✅ 变更已提交"
+            echo '✅ 选股池已更新'
           fi
 
-      - name: 部署到 GitHub Pages
+      - name: 重新部署GitHub Pages（取最新docs/内容）
         uses: actions/configure-pages@v4
 
       - name: 上传构建产物
