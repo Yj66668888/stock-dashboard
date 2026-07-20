@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-0024</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-0054</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -571,6 +571,102 @@ tr:hover td { background: var(--bg-hover); }
     <div class="section-title" style="display:flex;align-items:center;gap:8px">
         🔔 实时预警监控
         <span id="shIndexDisplay" style="font-size:12px;color:var(--text-dim)">沪指加载中...</span>
+    </div>
+
+    <!-- 💼 我的持仓跟踪 -->
+    <div class="panel" style="margin-bottom:12px;border:1px solid var(--border)">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <span>💼 我的持仓跟踪 <span id="holdingsCount" style="font-size:11px;color:var(--text-dim);font-weight:400">(0只)</span></span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button onclick="openHoldingForm()" style="font-size:12px;padding:4px 10px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer">➕ 添加持仓</button>
+                <button onclick="exportHoldings()" style="font-size:12px;padding:4px 10px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text-dim);cursor:pointer">📥 导出</button>
+                <button onclick="document.getElementById('importHoldingsFile').click()" style="font-size:12px;padding:4px 10px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text-dim);cursor:pointer">📤 导入</button>
+                <input type="file" id="importHoldingsFile" accept=".json" style="display:none" onchange="importHoldings(event)">
+                <button onclick="syncHoldingsToGitHub()" style="font-size:12px;padding:4px 10px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--blue);cursor:pointer">☁️ 同步</button>
+            </div>
+        </h3>
+        <!-- 汇总卡片 -->
+        <div id="holdingsSummary" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px"></div>
+        <!-- 持仓表格 -->
+        <div class="table-container" style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12px" id="holdingsTable">
+                <thead>
+                    <tr style="border-bottom:1px solid var(--border);color:var(--text-dim)">
+                        <th style="padding:6px 8px;text-align:left">代码/名称</th>
+                        <th style="padding:6px 8px;text-align:right">买入价</th>
+                        <th style="padding:6px 8px;text-align:right">数量</th>
+                        <th style="padding:6px 8px;text-align:right">现价</th>
+                        <th style="padding:6px 8px;text-align:right">涨跌%</th>
+                        <th style="padding:6px 8px;text-align:right">市值</th>
+                        <th style="padding:6px 8px;text-align:right">盈亏</th>
+                        <th style="padding:6px 8px;text-align:right">盈亏%</th>
+                        <th style="padding:6px 8px;text-align:center">预警设置</th>
+                        <th style="padding:6px 8px;text-align:center">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="holdingsBody">
+                    <tr><td colspan="10" style="padding:20px;text-align:center;color:var(--text-dim)">📋 暂无持仓，点击"➕ 添加持仓"开始跟踪你的实盘持仓</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 持仓表单模态框 -->
+    <div id="holdingModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;width:420px;max-width:90vw;max-height:90vh;overflow-y:auto">
+            <h3 style="margin:0 0 16px;display:flex;justify-content:space-between;align-items:center">
+                <span id="holdingModalTitle">➕ 添加持仓</span>
+                <button onclick="closeHoldingForm()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px">✕</button>
+            </h3>
+            <input type="hidden" id="holdingId">
+            <div style="margin-bottom:12px">
+                <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">股票代码 <span style="color:var(--red)">*</span></label>
+                <input type="text" id="holdingCode" placeholder="如 600519 或 sh600519" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                <div style="font-size:10px;color:var(--text-dim);margin-top:2px">沪市sh开头，深市sz开头，北交所bj开头。不确定前缀可只填数字</div>
+            </div>
+            <div style="margin-bottom:12px">
+                <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">股票名称</label>
+                <input type="text" id="holdingName" placeholder="如 贵州茅台（可留空，自动获取）" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:12px">
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">买入价 <span style="color:var(--red)">*</span></label>
+                    <input type="number" id="holdingBuyPrice" step="0.001" placeholder="0.00" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">数量(股) <span style="color:var(--red)">*</span></label>
+                    <input type="number" id="holdingQuantity" step="1" placeholder="100" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:12px">
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">买入日期</label>
+                    <input type="date" id="holdingBuyDate" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">涨跌幅预警阈值(%)</label>
+                    <input type="number" id="holdingChangeAlert" step="0.1" placeholder="如 5 表示涨跌超5%提醒" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:12px">
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">止盈价</label>
+                    <input type="number" id="holdingTargetPrice" step="0.001" placeholder="到价提醒卖出" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+                <div style="flex:1">
+                    <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">止损价</label>
+                    <input type="number" id="holdingStopLossPrice" step="0.001" placeholder="到价提醒止损" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+                </div>
+            </div>
+            <div style="margin-bottom:16px">
+                <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">备注</label>
+                <input type="text" id="holdingNote" placeholder="如 长线持有/做T/短线" style="width:100%;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;box-sizing:border-box">
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button onclick="closeHoldingForm()" style="padding:6px 16px;background:var(--bg-hover);border:1px solid var(--border);border-radius:4px;color:var(--text-dim);cursor:pointer;font-size:13px">取消</button>
+                <button onclick="saveHoldingForm()" style="padding:6px 16px;background:var(--blue);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:600">保存</button>
+            </div>
+        </div>
     </div>
 
     <!-- 条件状态面板 -->
@@ -1270,7 +1366,8 @@ async function fetchWithProxy(url) {
 let shIndexCache = { price: 0, changePct: 0 }; // 沪指数据
 
 async function fetchQuotes() {
-    const codes = STOCKS.map(s => s.code).join(',');
+    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
+    const codes = [...new Set(_allCodes)].join(',');
     // 加入沪指 sh000001
     const url = 'https://qt.gtimg.cn/q=' + codes + ',sh000001';
     try {
@@ -1367,7 +1464,8 @@ async function fetchAllKlines() {
     // 性能优化：m1/m5/m30共用同一份同花顺分钟线数据(同花顺klt=60只返回一种分钟线)
     // 只请求一次分钟线 + 一次日线，请求数从120减到60
     const batchSize = 10; // 增大并发数
-    const codes = STOCKS.map(s => s.code);
+    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
+    const codes = [...new Set(_allCodes)];
 
     // 1. 获取分钟线（m1/m5/m30共用）
     for (let i = 0; i < codes.length; i += batchSize) {
@@ -2465,6 +2563,7 @@ async function renderAll() {
     renderAlertBadge();
     renderDeepAnalysis();
     renderSwapLog();
+    if (typeof renderHoldings === 'function') renderHoldings();
 
     // === 追加用户关注做T票（不在TOP50的）到做T候选池 ===
     var top50Codes = {};
@@ -2579,6 +2678,384 @@ function renderAbnormalLog() {
     ).join('');
 }
 
+
+// ==================== 我的持仓跟踪系统 ====================
+
+let myHoldings = [];
+const HOLDINGS_KEY = 'myHoldings';
+const HOLDINGS_GH_RAW = 'https://raw.githubusercontent.com/Yj66668888/stock-dashboard/main/my_holdings.json';
+
+function loadHoldings() {
+    try {
+        const saved = localStorage.getItem(HOLDINGS_KEY);
+        if (saved) myHoldings = JSON.parse(saved) || [];
+    } catch(e) { console.error('加载持仓失败:', e); myHoldings = []; }
+}
+
+function saveHoldings() {
+    try { localStorage.setItem(HOLDINGS_KEY, JSON.stringify(myHoldings)); }
+    catch(e) { console.error('保存持仓失败:', e); }
+}
+
+function normalizeStockCode(code) {
+    code = String(code).trim().toLowerCase();
+    if (/^(sh|sz|bj)/.test(code)) return code;
+    if (/^6/.test(code)) return 'sh' + code;
+    if (/^[03]/.test(code)) return 'sz' + code;
+    if (/^[48]/.test(code)) return 'bj' + code;
+    return 'sz' + code;
+}
+
+function renderHoldings() {
+    const body = document.getElementById('holdingsBody');
+    const summary = document.getElementById('holdingsSummary');
+    const countEl = document.getElementById('holdingsCount');
+    if (!body) return;
+
+    if (myHoldings.length === 0) {
+        body.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:var(--text-dim)">📋 暂无持仓，点击"➕ 添加持仓"开始跟踪你的实盘持仓</td></tr>';
+        summary.innerHTML = '';
+        if (countEl) countEl.textContent = '(0只)';
+        return;
+    }
+
+    let totalValue = 0, totalCost = 0;
+    let html = '';
+
+    for (const h of myHoldings) {
+        const quote = quoteCache[h.code] || {};
+        const currentPrice = quote.price || 0;
+        const changePct = quote.changePct || 0;
+        const marketValue = currentPrice * h.quantity;
+        const costValue = h.buyPrice * h.quantity;
+        const profit = marketValue - costValue;
+        const profitPct = costValue > 0 ? (profit / costValue * 100) : 0;
+
+        totalValue += marketValue;
+        totalCost += costValue;
+
+        const profitColor = profit >= 0 ? 'var(--red)' : 'var(--green)';
+        const changeColor = changePct >= 0 ? 'var(--red)' : 'var(--green)';
+
+        // 预警标签
+        let alertTags = [];
+        if (h.targetPrice) alertTags.push('🎯' + h.targetPrice);
+        if (h.stopLossPrice) alertTags.push('🛑' + h.stopLossPrice);
+        if (h.changeAlertPct) alertTags.push('📊' + h.changeAlertPct + '%');
+        alertTags.push('KDJ');
+        alertTags.push('大盘');
+
+        const shortCode = h.code.replace(/^(sh|sz|bj)/, '');
+
+        // 检查是否触发预警（行高亮）
+        let alertActive = false;
+        if (h.targetPrice && currentPrice > 0 && currentPrice >= h.targetPrice) alertActive = true;
+        if (h.stopLossPrice && currentPrice > 0 && currentPrice <= h.stopLossPrice) alertActive = true;
+        if (h.changeAlertPct && Math.abs(changePct) >= h.changeAlertPct) alertActive = true;
+
+        // 备注显示
+        const noteStr = h.note ? `<div style="font-size:10px;color:var(--text-dim);margin-top:1px">${h.note}</div>` : '';
+
+        html += `<tr style="border-bottom:1px solid var(--border);${alertActive ? 'background:rgba(248,81,73,0.08);animation:alertPulse 1.5s infinite' : ''}">
+            <td style="padding:6px 8px">
+                <div style="font-weight:600">${quote.name || h.name || '--'}</div>
+                <div style="font-size:10px;color:var(--text-dim)">${shortCode}</div>
+                ${noteStr}
+            </td>
+            <td style="padding:6px 8px;text-align:right">${h.buyPrice.toFixed(2)}</td>
+            <td style="padding:6px 8px;text-align:right">${h.quantity}</td>
+            <td style="padding:6px 8px;text-align:right;font-weight:600">${currentPrice > 0 ? currentPrice.toFixed(2) : '--'}</td>
+            <td style="padding:6px 8px;text-align:right;color:${changeColor}">${currentPrice > 0 ? (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%' : '--'}</td>
+            <td style="padding:6px 8px;text-align:right">${marketValue > 0 ? marketValue.toFixed(0) : '--'}</td>
+            <td style="padding:6px 8px;text-align:right;color:${profitColor};font-weight:600">${currentPrice > 0 ? (profit >= 0 ? '+' : '') + profit.toFixed(0) : '--'}</td>
+            <td style="padding:6px 8px;text-align:right;color:${profitColor}">${currentPrice > 0 ? (profitPct >= 0 ? '+' : '') + profitPct.toFixed(2) + '%' : '--'}</td>
+            <td style="padding:6px 8px;text-align:center;font-size:10px">${alertTags.map(t => `<span style="background:var(--bg-hover);padding:1px 5px;border-radius:8px;margin:1px;display:inline-block;white-space:nowrap">${t}</span>`).join('')}</td>
+            <td style="padding:6px 8px;text-align:center;white-space:nowrap">
+                <button onclick="openHoldingForm('${h.id}')" style="font-size:11px;padding:2px 8px;background:var(--bg-hover);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);cursor:pointer">编辑</button>
+                <button onclick="deleteHolding('${h.id}')" style="font-size:11px;padding:2px 8px;background:rgba(248,81,73,0.1);border:1px solid var(--red);border-radius:3px;color:var(--red);cursor:pointer">删除</button>
+            </td>
+        </tr>`;
+    }
+
+    body.innerHTML = html;
+
+    // 汇总卡片
+    const totalProfit = totalValue - totalCost;
+    const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost * 100) : 0;
+    const tProfitColor = totalProfit >= 0 ? 'var(--red)' : 'var(--green)';
+
+    summary.innerHTML = `
+        <div style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px">
+            <div style="font-size:10px;color:var(--text-dim)">持仓市值</div>
+            <div style="font-size:16px;font-weight:700;color:var(--text)">${totalValue > 0 ? totalValue.toFixed(0) : '--'}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px">
+            <div style="font-size:10px;color:var(--text-dim)">持仓成本</div>
+            <div style="font-size:16px;font-weight:700;color:var(--text)">${totalCost.toFixed(0)}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px">
+            <div style="font-size:10px;color:var(--text-dim)">累计盈亏</div>
+            <div style="font-size:16px;font-weight:700;color:${tProfitColor}">${totalValue > 0 ? (totalProfit >= 0 ? '+' : '') + totalProfit.toFixed(0) : '--'}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px">
+            <div style="font-size:10px;color:var(--text-dim)">收益率</div>
+            <div style="font-size:16px;font-weight:700;color:${tProfitColor}">${totalValue > 0 ? (totalProfitPct >= 0 ? '+' : '') + totalProfitPct.toFixed(2) + '%' : '--'}</div>
+        </div>
+    `;
+
+    if (countEl) countEl.textContent = `(${myHoldings.length}只)`;
+}
+
+function openHoldingForm(id) {
+    const modal = document.getElementById('holdingModal');
+    const title = document.getElementById('holdingModalTitle');
+
+    if (id) {
+        const h = myHoldings.find(x => x.id === id);
+        if (!h) return;
+        title.textContent = '✏️ 编辑持仓';
+        document.getElementById('holdingId').value = h.id;
+        document.getElementById('holdingCode').value = h.code;
+        document.getElementById('holdingName').value = h.name || '';
+        document.getElementById('holdingBuyPrice').value = h.buyPrice;
+        document.getElementById('holdingQuantity').value = h.quantity;
+        document.getElementById('holdingBuyDate').value = h.buyDate || '';
+        document.getElementById('holdingTargetPrice').value = h.targetPrice || '';
+        document.getElementById('holdingStopLossPrice').value = h.stopLossPrice || '';
+        document.getElementById('holdingChangeAlert').value = h.changeAlertPct || '';
+        document.getElementById('holdingNote').value = h.note || '';
+    } else {
+        title.textContent = '➕ 添加持仓';
+        document.getElementById('holdingId').value = '';
+        document.getElementById('holdingCode').value = '';
+        document.getElementById('holdingName').value = '';
+        document.getElementById('holdingBuyPrice').value = '';
+        document.getElementById('holdingQuantity').value = '';
+        document.getElementById('holdingBuyDate').value = new Date().toISOString().slice(0,10);
+        document.getElementById('holdingTargetPrice').value = '';
+        document.getElementById('holdingStopLossPrice').value = '';
+        document.getElementById('holdingChangeAlert').value = '';
+        document.getElementById('holdingNote').value = '';
+    }
+    modal.style.display = 'flex';
+}
+
+function closeHoldingForm() {
+    document.getElementById('holdingModal').style.display = 'none';
+}
+
+function saveHoldingForm() {
+    const id = document.getElementById('holdingId').value;
+    let code = document.getElementById('holdingCode').value.trim();
+    const name = document.getElementById('holdingName').value.trim();
+    const buyPrice = parseFloat(document.getElementById('holdingBuyPrice').value);
+    const quantity = parseInt(document.getElementById('holdingQuantity').value);
+    const buyDate = document.getElementById('holdingBuyDate').value;
+    const targetPrice = parseFloat(document.getElementById('holdingTargetPrice').value) || null;
+    const stopLossPrice = parseFloat(document.getElementById('holdingStopLossPrice').value) || null;
+    const changeAlertPct = parseFloat(document.getElementById('holdingChangeAlert').value) || null;
+    const note = document.getElementById('holdingNote').value.trim();
+
+    if (!code) { alert('请输入股票代码'); return; }
+    if (!buyPrice || buyPrice <= 0) { alert('请输入有效的买入价'); return; }
+    if (!quantity || quantity <= 0) { alert('请输入有效的数量'); return; }
+
+    code = normalizeStockCode(code);
+
+    if (id) {
+        const idx = myHoldings.findIndex(x => x.id === id);
+        if (idx >= 0) {
+            myHoldings[idx] = { ...myHoldings[idx], code, name, buyPrice, quantity, buyDate, targetPrice, stopLossPrice, changeAlertPct, note };
+        }
+    } else {
+        myHoldings.push({
+            id: 'h_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+            code, name, buyPrice, quantity, buyDate,
+            targetPrice, stopLossPrice, changeAlertPct, note,
+            addedAt: new Date().toISOString()
+        });
+    }
+
+    saveHoldings();
+    renderHoldings();
+    closeHoldingForm();
+}
+
+function deleteHolding(id) {
+    const h = myHoldings.find(x => x.id === id);
+    if (!h) return;
+    if (!confirm(`确认删除 ${h.name || h.code} 的持仓记录？`)) return;
+    myHoldings = myHoldings.filter(x => x.id !== id);
+    saveHoldings();
+    renderHoldings();
+}
+
+function exportHoldings() {
+    if (myHoldings.length === 0) { alert('暂无持仓可导出'); return; }
+    const data = { exportDate: new Date().toISOString(), version: '1.0', holdings: myHoldings };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `my_holdings_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importHoldings(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            let holdings = data;
+            if (data.holdings) holdings = data.holdings;
+            if (!Array.isArray(holdings)) { alert('文件格式错误：未找到持仓数组'); return; }
+            if (!confirm(`即将导入 ${holdings.length} 条持仓记录，将覆盖当前持仓。继续？`)) return;
+            myHoldings = holdings;
+            saveHoldings();
+            renderHoldings();
+            alert('✅ 导入成功，共 ' + holdings.length + ' 条持仓');
+        } catch(err) { alert('导入失败: ' + err.message); }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+async function syncHoldingsToGitHub() {
+    let token = sessionStorage.getItem('gh_sync_token');
+    if (!token) {
+        token = prompt('请输入 GitHub Personal Access Token（用于同步持仓数据，仅本会话有效，不会保存到文件）:\n\n提示：在 GitHub Settings → Developer settings → Personal access tokens 生成，需要 repo 权限。');
+        if (!token) return;
+        token = token.trim();
+        sessionStorage.setItem('gh_sync_token', token);
+    }
+
+    const repo = 'Yj66668888/stock-dashboard';
+    const path = 'my_holdings.json';
+    const apiBase = 'https://api.github.com/repos/' + repo;
+
+    try {
+        // 1. 获取当前文件SHA
+        let sha = null;
+        try {
+            const resp = await fetch(`${apiBase}/contents/${path}`, {
+                headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json', 'User-Agent': 'Mozilla/5.0' }
+            });
+            if (resp.ok) { const d = await resp.json(); sha = d.sha; }
+        } catch(e) {}
+
+        // 2. 上传
+        const payload = JSON.stringify({ syncDate: new Date().toISOString(), holdings: myHoldings }, null, 2);
+        const content = btoa(unescape(encodeURIComponent(payload)));
+        const resp = await fetch(`${apiBase}/contents/${path}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },
+            body: JSON.stringify({ message: `💼 同步持仓数据 ${new Date().toLocaleString('zh-CN')}`, content: content, sha: sha })
+        });
+
+        if (resp.ok) { alert('✅ 持仓已同步到GitHub（my_holdings.json）'); }
+        else {
+            const err = await resp.json().catch(() => ({}));
+            if (resp.status === 401) { alert('❌ Token无效，请检查后重试'); sessionStorage.removeItem('gh_sync_token'); }
+            else { throw new Error(err.message || 'HTTP ' + resp.status); }
+        }
+    } catch(e) {
+        alert('❌ 同步失败: ' + e.message + '\n\n可能原因：网络问题或GitHub API限制。可改用"📥 导出"生成JSON文件后手动上传。');
+    }
+}
+
+async function loadHoldingsFromGitHub() {
+    try {
+        const resp = await fetch(HOLDINGS_GH_RAW + '?_=' + Date.now(), { signal: AbortSignal.timeout(8000) });
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (data.holdings && Array.isArray(data.holdings) && data.holdings.length > 0) {
+            const localIds = new Set(myHoldings.map(h => h.id));
+            let added = 0;
+            for (const h of data.holdings) {
+                if (!localIds.has(h.id)) { myHoldings.push(h); added++; }
+            }
+            if (added > 0) {
+                saveHoldings();
+                renderHoldings();
+                console.log(`✅ 从GitHub同步了 ${added} 条持仓`);
+            }
+        }
+    } catch(e) { /* 静默失败，GitHub无数据或网络不通 */ }
+}
+
+function checkHoldingAlerts() {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('zh-CN');
+    const newAlerts = [];
+    const shDrop = shIndexCache.changePoints || 0;
+
+    for (const h of myHoldings) {
+        const quote = quoteCache[h.code];
+        if (!quote || !quote.price) continue;
+
+        const currentPrice = quote.price;
+        const changePct = quote.changePct || 0;
+        const name = quote.name || h.name || h.code;
+        const shortCode = h.code.replace(/^(sh|sz|bj)/, '');
+        const kdj = getStockKDJ(h.code);
+
+        // ① 止盈价
+        if (h.targetPrice && currentPrice >= h.targetPrice) {
+            const key = h.id + '_target';
+            if (now - (alertSentToday[key] || 0) > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({ level: 'info', icon: '🎯', title: `持仓 ${name}(${shortCode}) 触及止盈价`,
+                    detail: `现价${currentPrice.toFixed(2)}已达止盈价${h.targetPrice.toFixed(2)}，涨${changePct.toFixed(2)}%，考虑卖出止盈`, actions: ['止盈操作'], time: timeStr });
+            }
+        }
+
+        // ② 止损价
+        if (h.stopLossPrice && currentPrice <= h.stopLossPrice) {
+            const key = h.id + '_stoploss';
+            if (now - (alertSentToday[key] || 0) > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({ level: 'danger', icon: '🛑', title: `持仓 ${name}(${shortCode}) 跌破止损价`,
+                    detail: `现价${currentPrice.toFixed(2)}已跌破止损价${h.stopLossPrice.toFixed(2)}，跌${changePct.toFixed(2)}%，建议止损卖出`, actions: ['止损操作'], time: timeStr });
+            }
+        }
+
+        // ③ 涨跌幅阈值
+        if (h.changeAlertPct && Math.abs(changePct) >= h.changeAlertPct) {
+            const key = h.id + '_change';
+            if (now - (alertSentToday[key] || 0) > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                const isUp = changePct > 0;
+                newAlerts.push({ level: isUp ? 'info' : 'warning', icon: isUp ? '🔥' : '💧',
+                    title: `持仓 ${name}(${shortCode}) ${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%`,
+                    detail: `现价${currentPrice.toFixed(2)}，涨跌幅${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%超过阈值${h.changeAlertPct}%`, actions: ['关注'], time: timeStr });
+            }
+        }
+
+        // ④ KDJ清仓信号
+        if (kdj.m5 !== null && kdj.m30 !== null && kdj.m5 >= 80 && kdj.m30 >= 80) {
+            const key = h.id + '_kdj';
+            if (now - (alertSentToday[key] || 0) > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({ level: 'danger', icon: '🚨', title: `持仓 ${name}(${shortCode}) 清仓警告`,
+                    detail: `5分K=${kdj.m5.toFixed(1)}, 30分K=${kdj.m30.toFixed(1)}，中短期全部超买(≥80)，建议清仓`, actions: ['清仓操作'], time: timeStr });
+            }
+        }
+
+        // ⑤ 大盘急跌 + 持仓逆势涨
+        if (shDrop < -10 && changePct > 2) {
+            const key = h.id + '_sh';
+            if (now - (alertSentToday[key] || 0) > ALERT_COOLDOWN_MS) {
+                alertSentToday[key] = now;
+                newAlerts.push({ level: 'danger', icon: '⚠️', title: `持仓 ${name}(${shortCode}) 逆势减仓`,
+                    detail: `沪指跌${Math.abs(shDrop).toFixed(1)}点，持仓逆势涨${changePct.toFixed(2)}%，注意回调风险`, actions: ['减仓操作'], time: timeStr });
+            }
+        }
+    }
+    return newAlerts;
+}
 
 // ==================== 智能预警系统 ====================
 
@@ -2704,6 +3181,12 @@ function checkAlerts() {
                 });
             }
         }
+    }
+
+    // 持仓预警（止盈止损/涨跌幅/KDJ/大盘联动）
+    if (typeof checkHoldingAlerts === 'function') {
+        const holdingAlerts = checkHoldingAlerts();
+        newAlerts.push(...holdingAlerts);
     }
 
     // 新预警加入历史
@@ -3528,6 +4011,9 @@ async function refreshKDJ() {
 }
 
 async function init() {
+    // -1. 加载我的持仓跟踪数据（必须在fetchQuotes之前，确保持仓股票行情被获取）
+    if (typeof loadHoldings === 'function') loadHoldings();
+
     // 0. 从localStorage恢复持久化的持仓和换票历史（换票结果跨刷新保留）
     try {
         const savedStocks = localStorage.getItem('davisStocks');
@@ -3562,6 +4048,11 @@ async function init() {
     
     // 2. 优先加载行情（失败不阻塞后续）
     try { await refreshQuotes(); } catch(e) { console.error('行情加载失败:', e); }
+
+    // 2.5 异步从GitHub加载持仓（不阻塞，合并新持仓后刷新）
+    if (typeof loadHoldingsFromGitHub === 'function') {
+        loadHoldingsFromGitHub().then(() => renderAll()).catch(() => {});
+    }
     
     // 3. 后台加载K线数据
     refreshKDJ().then(() => {
