@@ -15,7 +15,7 @@
       },
       {
         "name": "半导体设备/材料(供需双驱)",
-        "policy": "摩根大通策略师预计盈利增长将推动芯片股反弹 —  摩根大通策略师表示，AI相关股票不太可能长期承压，预计强劲的盈利增长和估值改善将重新刺激需求，尤以半导体公司为主。",
+        "policy": "半导体板块大反弹 — 7月21日，A股主要指数全线高开，截至收盘，沪指涨1.79%，收报3864.37点；深证成指涨4.81%，收报14264",
         "logic": "海外管制收紧(供给端催化)+国内晶圆厂扩产(需求端催化)，设备订单确定性极高",
         "stocks": [
           "sz002371",
@@ -23,7 +23,7 @@
           "sh600584",
           "sz000021"
         ],
-        "updateTime": "07-20 16:49"
+        "updateTime": "07-21 16:10"
       },
       {
         "name": "储能电力(供需双驱)",
@@ -41,13 +41,13 @@
     "supply": [
       {
         "name": "半导体设备国产替代",
-        "policy": "摩根大通策略师预计盈利增长将推动芯片股反弹 —  摩根大通策略师表示，AI相关股票不太可能长期承压，预计强劲的盈利增长和估值改善将重新刺激需求，尤以半导体公司为主。",
+        "policy": "半导体板块大反弹 — 7月21日，A股主要指数全线高开，截至收盘，沪指涨1.79%，收报3864.37点；深证成指涨4.81%，收报14264",
         "logic": "美国对华半导体设备出口管制持续收紧,国产设备渗透率从15%向40%加速提升",
         "stocks": [
           "sz002371",
           "sh600584"
         ],
-        "updateTime": "07-20 16:49"
+        "updateTime": "07-21 16:10"
       },
       {
         "name": "电子特气自主可控",
@@ -367,19 +367,6 @@
       "riskFlags": []
     },
     {
-      "code": "sz002557",
-      "name": "洽洽食品",
-      "sector": "食品饮料",
-      "direction": "戴维斯双击(估值修复)",
-      "pe": 18,
-      "profitGrowth": 25,
-      "reason": "休闲食品龙头,暑期消费旺季",
-      "roe": 18,
-      "grossMargin": 33,
-      "debtRatio": 30,
-      "riskFlags": []
-    },
-    {
       "code": "sz000060",
       "name": "中金岭南",
       "sector": "有色金属",
@@ -491,21 +478,6 @@
       "riskFlags": []
     },
     {
-      "code": "sh600900",
-      "name": "长江电力",
-      "sector": "电力",
-      "direction": "防御+高股息",
-      "pe": 20,
-      "profitGrowth": 10,
-      "reason": "水电龙头,防御配置+高分红",
-      "roe": 15,
-      "grossMargin": 60,
-      "debtRatio": 55,
-      "riskFlags": [
-        "负债偏高"
-      ]
-    },
-    {
       "code": "sz002747",
       "name": "埃斯顿",
       "sector": "机器人",
@@ -518,6 +490,47 @@
       "debtRatio": 45,
       "riskFlags": [
         "ROE偏低"
+      ]
+    },
+    {
+      "code": "sh603288",
+      "name": "海天味业",
+      "sector": "食品饮料",
+      "direction": "戴维斯双击(估值修复)",
+      "pe": 35,
+      "profitGrowth": 20,
+      "reason": "调味品龙头,底部企稳反弹",
+      "roe": 22,
+      "grossMargin": 45,
+      "debtRatio": 20,
+      "riskFlags": []
+    },
+    {
+      "code": "sz002557",
+      "name": "洽洽食品",
+      "sector": "食品饮料",
+      "direction": "戴维斯双击(估值修复)",
+      "pe": 18,
+      "profitGrowth": 25,
+      "reason": "休闲食品龙头,暑期消费旺季",
+      "roe": 18,
+      "grossMargin": 33,
+      "debtRatio": 30,
+      "riskFlags": []
+    },
+    {
+      "code": "sh600900",
+      "name": "长江电力",
+      "sector": "电力",
+      "direction": "防御+高股息",
+      "pe": 20,
+      "profitGrowth": 10,
+      "reason": "水电龙头,防御配置+高分红",
+      "roe": 15,
+      "grossMargin": 60,
+      "debtRatio": 55,
+      "riskFlags": [
+        "负债偏高"
       ]
     },
     {
@@ -547,19 +560,6 @@
       "riskFlags": []
     },
     {
-      "code": "sh603288",
-      "name": "海天味业",
-      "sector": "食品饮料",
-      "direction": "戴维斯双击(估值修复)",
-      "pe": 35,
-      "profitGrowth": 20,
-      "reason": "调味品龙头,底部企稳反弹",
-      "roe": 22,
-      "grossMargin": 45,
-      "debtRatio": 20,
-      "riskFlags": []
-    },
-    {
       "code": "sh600887",
       "name": "伊利股份",
       "sector": "食品饮料",
@@ -573,5 +573,5 @@
       "riskFlags": []
     }
   ],
-  "updateTime": "2026-07-20T17:19:00+08:00"
+  "updateTime": "2026-07-21T16:33:16+08:00"
 }
