@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-1129</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0721-1308</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -816,116 +816,6 @@ const SECTOR_MAP = {
 // ==================== 标的数据 ====================
 const STOCKS = [
   {
-    "code": "sz000722",
-    "name": "湖南发展",
-    "sector": "热门标的",
-    "direction": "评分驱动",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至53%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入"
-    ],
-    "healthScore": 56.9,
-    "dailyScore": 55.6,
-    "flow5d": 13447.0,
-    "isNew": true
-  },
-  {
-    "code": "sh601900",
-    "name": "南方传媒",
-    "sector": "热门标的",
-    "direction": "评分驱动",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至67%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入"
-    ],
-    "healthScore": 58.1,
-    "dailyScore": 66.0,
-    "flow5d": 543.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002532",
-    "name": "天山铝业",
-    "sector": "有色金属",
-    "direction": "资金流入",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入：高开趋势加速中；近期高开率从40%升至60%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入"
-    ],
-    "healthScore": 58.3,
-    "dailyScore": 54.0,
-    "flow5d": 32095.0,
-    "isNew": true
-  },
-  {
-    "code": "sh600887",
-    "name": "伊利股份",
-    "sector": "食品饮料",
-    "direction": "戴维斯双击(估值修复)",
-    "pe": 16,
-    "profitGrowth": 18,
-    "reason": "乳业龙头,消费复苏+高股息",
-    "roe": 20,
-    "grossMargin": 35,
-    "debtRatio": 45,
-    "riskFlags": [],
-    "healthScore": 60.0,
-    "dailyScore": 42.0,
-    "flow5d": 11131.0
-  },
-  {
-    "code": "sh600900",
-    "name": "长江电力",
-    "sector": "电力",
-    "direction": "防御+高股息",
-    "pe": 20,
-    "profitGrowth": 10,
-    "reason": "水电龙头,防御配置+高分红",
-    "roe": 15,
-    "grossMargin": 60,
-    "debtRatio": 55,
-    "riskFlags": [
-      "负债偏高"
-    ],
-    "healthScore": 61.1,
-    "dailyScore": 36.7,
-    "flow5d": 19239.0
-  },
-  {
-    "code": "sh600021",
-    "name": "上海电力",
-    "sector": "电力设备",
-    "direction": "评分驱动",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入：高开趋势加速中；近期高开率从27%升至47%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入"
-    ],
-    "healthScore": 61.1,
-    "dailyScore": 53.6,
-    "flow5d": 14803.0,
-    "isNew": true
-  },
-  {
     "code": "sh600406",
     "name": "国电南瑞",
     "sector": "电网设备",
@@ -1091,6 +981,53 @@ const STOCKS = [
     "isNew": true
   },
   {
+    "code": "sh603926",
+    "name": "铁流股份",
+    "sector": "热门标的",
+    "direction": "回调到位",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从27%升至60%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位"
+    ],
+    "healthScore": 68.8,
+    "dailyScore": 63.7,
+    "flow5d": -730.0,
+    "drop20d": -17.7,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sh603018",
+    "name": "华设集团",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位,资金回流）：温和量能，筹码稳定；近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位",
+      "资金回流"
+    ],
+    "healthScore": 69.2,
+    "dailyScore": 53.6,
+    "flow5d": 64.0,
+    "drop20d": -19.2,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
     "code": "sh601899",
     "name": "紫金矿业",
     "sector": "有色金属",
@@ -1105,6 +1042,100 @@ const STOCKS = [
     "healthScore": 69.6,
     "dailyScore": 41.0,
     "flow5d": 89541.0
+  },
+  {
+    "code": "sz000819",
+    "name": "岳阳兴长",
+    "sector": "热门标的",
+    "direction": "回调到位",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位）：近30天高开率70%；高开趋势加速中",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位"
+    ],
+    "healthScore": 69.6,
+    "dailyScore": 60.5,
+    "flow5d": -71.0,
+    "drop20d": -13.7,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sh603177",
+    "name": "德创环保",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位,资金回流）：缩量高开+低开放量→抛压枯竭；近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位",
+      "资金回流"
+    ],
+    "healthScore": 69.6,
+    "dailyScore": 53.6,
+    "flow5d": 416.0,
+    "drop20d": -10.0,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sh603323",
+    "name": "苏农银行",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从20%升至33%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位",
+      "资金回流"
+    ],
+    "healthScore": 70.0,
+    "dailyScore": 54.0,
+    "flow5d": 666.0,
+    "drop20d": -11.3,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sh600538",
+    "name": "国发股份",
+    "sector": "热门标的",
+    "direction": "回调到位",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从40%升至53%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位"
+    ],
+    "healthScore": 70.3,
+    "dailyScore": 62.4,
+    "flow5d": -749.0,
+    "drop20d": -16.3,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
   },
   {
     "code": "sh601216",
@@ -1285,31 +1316,32 @@ const STOCKS = [
     "flow5d": 14238.0
   },
   {
-    "code": "sh600538",
-    "name": "国发股份",
+    "code": "sz000881",
+    "name": "中广核技",
     "sector": "热门标的",
-    "direction": "回调到位",
+    "direction": "回调到位,资金回流",
     "pe": 0,
     "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从40%升至53%",
+    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从13%升至33%",
     "roe": 0,
     "grossMargin": 0,
     "debtRatio": 0,
     "riskFlags": [
       "🆕动态选入",
-      "回调到位"
+      "回调到位",
+      "资金回流"
     ],
-    "healthScore": 70.3,
-    "dailyScore": 62.4,
-    "flow5d": -749.0,
-    "drop20d": -16.3,
-    "consecutive": 0,
+    "healthScore": 68.8,
+    "dailyScore": 52.3,
+    "flow5d": 79.0,
+    "drop20d": -11.9,
+    "consecutive": 1,
     "kdjBonus": 0,
     "isNew": true
   },
   {
-    "code": "sh603323",
-    "name": "苏农银行",
+    "code": "sz000011",
+    "name": "深物业A",
     "sector": "热门标的",
     "direction": "回调到位,资金回流",
     "pe": 0,
@@ -1323,45 +1355,22 @@ const STOCKS = [
       "回调到位",
       "资金回流"
     ],
-    "healthScore": 70.0,
-    "dailyScore": 54.0,
-    "flow5d": 666.0,
-    "drop20d": -11.3,
+    "healthScore": 68.8,
+    "dailyScore": 52.1,
+    "flow5d": 147.0,
+    "drop20d": -10.2,
     "consecutive": 0,
     "kdjBonus": 0,
     "isNew": true
   },
   {
-    "code": "sz000819",
-    "name": "岳阳兴长",
-    "sector": "热门标的",
-    "direction": "回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位）：近30天高开率70%；高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位"
-    ],
-    "healthScore": 69.6,
-    "dailyScore": 60.5,
-    "flow5d": -71.0,
-    "drop20d": -13.7,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sh603177",
-    "name": "德创环保",
+    "code": "sh600956",
+    "name": "新天绿能",
     "sector": "热门标的",
     "direction": "回调到位,资金回流",
     "pe": 0,
     "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,资金回流）：缩量高开+低开放量→抛压枯竭；近期持续缩量，卖盘减少",
+    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从27%升至47%",
     "roe": 0,
     "grossMargin": 0,
     "debtRatio": 0,
@@ -1370,17 +1379,63 @@ const STOCKS = [
       "回调到位",
       "资金回流"
     ],
-    "healthScore": 69.6,
-    "dailyScore": 53.6,
-    "flow5d": 416.0,
-    "drop20d": -10.0,
+    "healthScore": 68.6,
+    "dailyScore": 51.5,
+    "flow5d": 237.0,
+    "drop20d": -12.1,
     "consecutive": 0,
     "kdjBonus": 0,
     "isNew": true
   },
   {
-    "code": "sh603018",
-    "name": "华设集团",
+    "code": "sh605333",
+    "name": "沪光股份",
+    "sector": "光通信",
+    "direction": "回调到位",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从33%升至67%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位"
+    ],
+    "healthScore": 68.2,
+    "dailyScore": 62.2,
+    "flow5d": -224.0,
+    "drop20d": -12.0,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sz000532",
+    "name": "华金资本",
+    "sector": "热门标的",
+    "direction": "回调到位",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从33%升至53%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位"
+    ],
+    "healthScore": 68.1,
+    "dailyScore": 56.4,
+    "flow5d": -116.0,
+    "drop20d": -11.0,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "isNew": true
+  },
+  {
+    "code": "sh603730",
+    "name": "岱美股份",
     "sector": "热门标的",
     "direction": "回调到位,资金回流",
     "pe": 0,
@@ -1394,32 +1449,9 @@ const STOCKS = [
       "回调到位",
       "资金回流"
     ],
-    "healthScore": 69.2,
-    "dailyScore": 53.6,
-    "flow5d": 64.0,
-    "drop20d": -19.2,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sh603926",
-    "name": "铁流股份",
-    "sector": "热门标的",
-    "direction": "回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从27%升至60%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位"
-    ],
-    "healthScore": 68.8,
-    "dailyScore": 63.7,
-    "flow5d": -730.0,
+    "healthScore": 68.1,
+    "dailyScore": 54.1,
+    "flow5d": 735.0,
     "drop20d": -17.7,
     "consecutive": 2,
     "kdjBonus": 0,
