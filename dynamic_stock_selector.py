@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-动态换血选票脚本
-对STOCKS数组的30只票算健康度，踢出最差的6只，从全市场选最好的6只补入。
-保留原STOCKS基本面信息，新进入的票标注🆕。
+全量选股脚本
+每次从全市场重新选出最优30只票，不做增量换血，全量替换。
 """
 import json, os, re
 
@@ -13,10 +12,11 @@ CF_FILE = os.path.join(BASE, 'capital_flow.json')
 SECTOR_FILE = os.path.join(BASE, 'sector_resonance.json')
 SECTOR_FILTER_FILE = os.path.join(BASE, 'sector_filter.json')
 KDJ_FILE = os.path.join(BASE, 'kdj_factor.json')
+FUNDAMENTAL_FILE = os.path.join(BASE, 'fundamental_factors.json')
 OUTPUT = os.path.join(BASE, 'dynamic_stocks.json')
 
-# 每次换血数量
-ROTATE_COUNT = 6
+# 每次全量选出30只
+TARGET_POOL_SIZE = 30
 
 # 白名单：用户指定持仓，动态换血永不踢出
 PROTECTED_CODES = {}  # 白名单（用户指定做T关注票，不在STOCKS中）
@@ -49,152 +49,368 @@ def is_zombie(score, flow_5d):
     """数据缺失票：dailyScore和资金流全为0 → 僵尸票"""
     return score == 0 and flow_5d == 0
 
-def calc_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus=0, rsi=None,
-                sector_tier=None, ratio_5d=None, ratio_10d=None):
+# =====================================================================
+# 四层漏斗选股框架
+# 逻辑：①资金推动 → ②推动理由 → ③核心壁垒 → ④股性好
+# =====================================================================
+
+def calc_capital_quality(flow_5d, flow_10d, daily=None):
     """
-    综合健康度算法（0-100），返回 -999 表示僵尸票需立即踢出
+    ① 资金层（0-25分）—— 硬性门禁 + 质量评分
+    
+    硬门禁：10日累计>0 或 最近3日连续流入 → 不过关直接排除
+    质量分：连续流入天数 + 资金加速比 + 资金体量
+    
+    Returns: (passed_bool, capital_score, diagnosis_str)
+    """
+    daily = daily or []
+    daily_flows = [d.get('flow_wan', 0) for d in daily]
+    
+    # === 硬性门禁 ===
+    recent_3 = daily_flows[-3:] if len(daily_flows) >= 3 else daily_flows
+    recent_3_inflow = len(recent_3) >= 3 and all(f > 0 for f in recent_3)
+    
+    # 10日累计态度
+    if flow_10d is not None:
+        passed_10d = flow_10d > 0
+    else:
+        passed_10d = None
+    
+    if passed_10d is not None:
+        passed = passed_10d or recent_3_inflow
+    else:
+        passed = flow_5d > 0 or recent_3_inflow
+    
+    if not passed:
+        diag = "资金博弈偏空" if flow_5d <= 0 else "近3日无持续流入"
+        return (False, 0, diag)
+    
+    # === 质量评分 ===
+    score = 0
+    
+    # 1. 连续流入天数（0-10分）
+    consecutive_inflow = 0
+    for f in reversed(daily_flows):
+        if f > 0:
+            consecutive_inflow += 1
+        else:
+            break
+    if consecutive_inflow >= 5:
+        score += 10
+    elif consecutive_inflow >= 3:
+        score += 7
+    elif consecutive_inflow >= 2:
+        score += 4
+    else:
+        score += 1  # 今天才开始流入
+    
+    # 2. 资金加速比（0-8分）— 最近5日占10日的比例
+    if flow_10d is not None and flow_5d > 0 and flow_10d > 0:
+        ratio = flow_5d / flow_10d
+        if ratio > 0.8:
+            score += 8   # 强势加速（80%流入都在最近5天）
+        elif ratio > 0.6:
+            score += 6
+        elif ratio > 0.4:
+            score += 4
+        else:
+            score += 2
+    elif flow_5d > 0:
+        score += 3  # 无10日数据，5日为正给基础分
+    
+    # 3. 资金体量（0-7分）
+    ref_flow = flow_5d if flow_10d is None else max(flow_5d, flow_10d)
+    if ref_flow > 50000:
+        score += 7
+    elif ref_flow > 20000:
+        score += 5
+    elif ref_flow > 5000:
+        score += 3
+    elif ref_flow > 0:
+        score += 1
+    
+    # 诊断
+    parts = []
+    if consecutive_inflow >= 3:
+        parts.append(f"连{consecutive_inflow}日流入")
+    if flow_10d is not None and flow_5d > 0 and flow_10d > 0 and flow_5d / flow_10d > 0.6:
+        parts.append("资金加速")
+    if ref_flow > 20000:
+        parts.append(f"{ref_flow/10000:.1f}亿体量")
+    diag = " | ".join(parts) if parts else "资金正流入"
+    
+    return (True, min(score, 25), diag)
 
-    八维度平衡评分，偏好"强势板块内+回调到位+资金回流"形态
 
-    1. 基本面评分 18分：高开预测评分兜底
-    2. 资金面     18分：5日资金流正负+幅度，回流加分
-    3. 位置评估   15分：回调-10%~-20%最优，过深过浅都扣分
-    4. 趋势状态   12分：刚启动+温和涨跌最优，追高扣分
-    5. 跌速判断   15分：跌势加速→扣分，跌势放缓→加分
-    6. 技术信号   10分：KDJ低位反转+缩量止跌+RSI超卖辅助确认
-    7. 板块共振    7分：【新增】在强势概念板块内加分
-    8. 主力占比    5分：【新增】5日/10日主力资金净占比
+def calc_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score):
+    """
+    ② 逻辑层（0-15分）—— 推动理由分析
+    
+    判断：这只票为什么涨/跌？
+    - 板块驱动：在强势板块内，板块共振推动
+    - 独立逻辑：不在板块但资金持续涌入，可能有独立催化剂
+    - 无明确驱动：不属于任何强势板块，资金也一般
+    
+    Returns: (rationale_score, rationale_type, rationale_diag)
+    """
+    r_score = 0
+    r_type = "无明确驱动"
+    r_diag = ""
+    
+    # 板块共振判断
+    if sector_tier is not None:
+        if sector_tier == 1:
+            r_score += 10
+            r_type = "板块共振T1"
+            r_diag = "最强板块共振"
+        elif sector_tier == 2:
+            r_score += 8
+            r_type = "板块共振T2"
+            r_diag = "强势板块内"
+        elif sector_tier == 3:
+            r_score += 6
+            r_type = "板块共振T3"
+            r_diag = "板块内共振"
+        elif sector_tier == 99:
+            r_score += 4
+            r_type = "板块兜底"
+            r_diag = "弱板块共振"
+    
+    # 主力占比加分（同一板块内，主力介入深的票逻辑更清晰）
+    if ratio_5d is not None and ratio_5d > 3:
+        r_score += 3
+        r_diag += " | 主力深度介入"
+    elif ratio_5d is not None and ratio_5d > 1:
+        r_score += 2
+    elif ratio_5d is not None and ratio_5d > 0.5:
+        r_score += 1
+    
+    # 独立逻辑检测：不在板块但资金大幅流入（>2亿）且基本面评分高
+    if sector_tier is None:
+        if flow_5d > 20000 and score > 55:
+            r_score += 8
+            r_type = "独立逻辑"
+            r_diag = "大资金独立推动 | 基本面支撑"
+        elif flow_5d > 10000:
+            r_score += 5
+            r_type = "独立逻辑"
+            r_diag = "资金独立推动"
+        elif flow_5d > 5000:
+            r_score += 3
+            r_type = "资金关注"
+            r_diag = "有资金关注"
+    
+    return (min(r_score, 15), r_type, r_diag)
+
+
+def calc_moat(code, fundamental_data):
+    """
+    ③ 壁垒层（0-20分）—— 核心护城河评估
+    
+    评估维度：ROE(盈利能力) + PE/PB(估值合理性) + 流通市值(规模壁垒) + 机构持仓
+    
+    无基本面数据的票默认中性10分（不因数据缺失误杀）
+    """
+    fd = fundamental_data.get(code, {})
+    if not fd:
+        return (10, "无基本面数据")
+    
+    m_score = 0
+    factors = []
+    
+    # 1. ROE 盈利能力（0-6分）— ROE > 10% 代表有持续赚钱能力
+    roe = fd.get('roe', 0)
+    if roe > 20:
+        m_score += 6
+        factors.append(f"ROE{roe:.0f}%")
+    elif roe > 15:
+        m_score += 5
+        factors.append(f"ROE{roe:.0f}%")
+    elif roe > 10:
+        m_score += 4
+        factors.append(f"ROE{roe:.0f}%")
+    elif roe > 5:
+        m_score += 2
+    elif roe > 0:
+        m_score += 1
+    
+    # 2. PE 估值合理性（0-4分）
+    pe = fd.get('pe', 0)
+    if 10 <= pe <= 30:
+        m_score += 4
+        factors.append(f"PE{pe:.0f}")
+    elif 5 <= pe <= 40:
+        m_score += 3
+    elif 0 < pe < 50:
+        m_score += 1
+    # pe 为负（亏损）不加分
+    
+    # 3. PB 资产定价（0-3分）
+    pb = fd.get('pb', 0)
+    if 0 < pb <= 2:
+        m_score += 3
+    elif 0 < pb <= 3:
+        m_score += 2
+    elif 0 < pb <= 5:
+        m_score += 1
+    
+    # 4. 流通市值——规模壁垒（0-4分）
+    circ_mv = fd.get('circ_mv', 0)  # 流通市值（元）
+    mv_yi = circ_mv / 1e8  # 亿
+    if mv_yi > 500:
+        m_score += 4   # 大市值龙头，规模壁垒强
+        factors.append(f"市值{mv_yi:.0f}亿")
+    elif mv_yi > 100:
+        m_score += 3
+    elif mv_yi > 30:
+        m_score += 2
+    elif mv_yi > 10:
+        m_score += 1
+    
+    # 5. 机构持仓信号（0-3分）
+    fund_bonus = fd.get('fund_bonus', 0)
+    if fund_bonus >= 8:
+        m_score += 3
+        factors.append("机构重仓")
+    elif fund_bonus >= 5:
+        m_score += 2
+    elif fund_bonus >= 3:
+        m_score += 1
+    
+    diag = " | ".join(factors) if factors else "壁垒一般"
+    return (min(m_score, 20), diag)
+
+
+def calc_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonus=0, rsi=None):
+    """
+    ④ 股性层（0-40分）—— 交易特性综合评估
+    
+    整合：位置 + 趋势 + 跌速 + 技术信号
+    预判：这只票好不好做？
+    """
+    t_score = 0
+    
+    # === 位置评估（0-12分）=== — 回调-10%~-20%最优
+    if -20 <= drop_20d <= -10:
+        t_score += 12  # 回调到位（最优区间）
+    elif -25 <= drop_20d < -20:
+        t_score += 9   # 稍深
+    elif -10 < drop_20d <= -5:
+        t_score += 8   # 浅回调
+    elif -30 <= drop_20d < -25:
+        t_score += 6   # 深调
+    elif -5 < drop_20d <= 0:
+        t_score += 5   # 微调
+    elif 0 < drop_20d <= 5:
+        t_score += 3   # 小涨（非回调）
+    elif drop_20d < -30:
+        t_score += 3   # 太深，基本面风险
+    else:
+        t_score += 1   # 大涨追高
+    
+    # === 趋势+跌速（0-14分）=== — 启动确认+温和涨跌最优
+    if drop_20d < -5:
+        # 票在回调中，关注跌速
+        if latest_chg > 3:
+            t_score += 14  # 强反弹启动
+        elif latest_chg > 1:
+            t_score += 12  # 止跌回升
+        elif latest_chg > 0:
+            t_score += 9   # 微弱回升
+        elif latest_chg > -1:
+            t_score += 6   # 跌势放缓
+        elif latest_chg > -2:
+            t_score += 3   # 仍在阴跌
+        else:
+            t_score += 0   # 加速下跌
+    else:
+        # 票没怎么跌
+        if latest_chg > 5:
+            t_score += 3   # 大涨追高
+        elif latest_chg > 1:
+            t_score += 8   # 温和上涨
+        elif latest_chg > -1:
+            t_score += 6   # 横盘
+        else:
+            t_score += 2   # 下跌
+    
+    # 连续上涨惩罚（连涨>4天追高）
+    if consecutive >= 6:
+        t_score -= 3
+    elif consecutive >= 4:
+        t_score -= 1
+    
+    # === 技术信号（0-14分）===
+    tech = 0
+    if kdj_bonus >= 7:
+        tech += 6
+    elif kdj_bonus >= 5:
+        tech += 4
+    elif kdj_bonus >= 3:
+        tech += 2
+    
+    if avg_vol_up is not None and 0 < avg_vol_up < 0.95:
+        tech += 4  # 缩量止跌
+    
+    if rsi is not None:
+        if rsi < 30:
+            tech += 4  # 超卖反弹
+        elif rsi < 40:
+            tech += 2  # 偏低
+    
+    t_score += min(tech, 14)
+    
+    return min(t_score, 40)
+
+
+def calc_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg_vol_up,
+                kdj_bonus=0, rsi=None, sector_tier=None, ratio_5d=None, ratio_10d=None,
+                daily=None, code=None, fundamental_data=None):
+    """
+    四层漏斗综合健康度（0-100），返回 -999 表示不合格需排除
+    
+    ┌─────────────────────────────────────────┐
+    │ ① 资金门（硬过滤）       0-25分          │
+    │ → 不过关直接返回 -999                   │
+    ├─────────────────────────────────────────┤
+    │ ② 推动理由（逻辑层）     0-15分          │
+    │ → 板块驱动 vs 独立逻辑                 │
+    ├─────────────────────────────────────────┤
+    │ ③ 核心壁垒（基本面）     0-20分          │
+    │ → ROE/PE/PB/市值/机构                  │
+    ├─────────────────────────────────────────┤
+    │ ④ 股性好（交易特性）     0-40分          │
+    │ → 位置+趋势+跌速+技术信号              │
+    └─────────────────────────────────────────┘
     """
     # === 僵尸票检测 ===
     if is_zombie(score, flow_5d):
-        return -999.0
-
-    # ========== 1. 基本面评分（0-18）==========
-    base = min(score / 70 * 18, 18)
-
-    # ========== 2. 资金面（0-18）==========
-    if flow_5d > 30000:
-        flow_score = 18
-    elif flow_5d > 10000:
-        flow_score = 15
-    elif flow_5d > 0:
-        flow_score = 7 + min(flow_5d / 10000 * 7, 7)
-    elif flow_5d > -5000:
-        flow_score = 5   # 流出减缓
-    elif flow_5d > -20000:
-        flow_score = 2   # 轻度流出
-    else:
-        flow_score = 0   # 大幅流出
-
-    # ========== 3. 位置评估（0-15）==========
-    if -20 <= drop_20d <= -10:
-        pos_score = 15   # 回调到位（最优区间）
-    elif -30 <= drop_20d < -20:
-        pos_score = 11   # 稍深但有反弹空间
-    elif -10 < drop_20d <= -5:
-        pos_score = 10   # 浅回调
-    elif -5 < drop_20d <= 0:
-        pos_score = 7    # 微调
-    elif 0 < drop_20d <= 5:
-        pos_score = 4    # 小涨
-    elif drop_20d < -30:
-        pos_score = 5    # 太深，可能有基本面问题
-    else:
-        pos_score = 2    # 大涨（追高）
-
-    # ========== 4. 趋势状态（0-12）==========
-    if latest_chg > 7:
-        trend_score = 0   # 涨停追高
-    elif latest_chg > 5:
-        trend_score = 2
-    elif consecutive >= 6:
-        trend_score = 2   # 连涨太多
-    elif consecutive >= 4:
-        trend_score = 5
-    elif consecutive >= 2 and latest_chg < 3:
-        trend_score = 10  # 启动确认
-    elif latest_chg > 1:
-        trend_score = 11  # 温和上涨
-    elif latest_chg > -1:
-        trend_score = 8   # 横盘
-    elif latest_chg > -2:
-        trend_score = 5   # 微跌
-    elif latest_chg > -3:
-        trend_score = 3   # 下跌
-    else:
-        trend_score = 1   # 中跌以上
-
-    # ========== 5. 跌速判断（0-15）==========
-    # 关键：一只票跌了-15%不可怕，可怕的是今天还在加速跌
-    momentum_score = 0
-    if drop_20d < -5:
-        if latest_chg > 3:
-            momentum_score = 15  # 强反弹启动！
-        elif latest_chg > 1:
-            momentum_score = 12  # 止跌回升
-        elif latest_chg > 0:
-            momentum_score = 9   # 微弱回升，观望
-        elif latest_chg > -1:
-            momentum_score = 6   # 跌势放缓，可能企稳
-        elif latest_chg > -2:
-            momentum_score = 3   # 仍在阴跌
-        elif latest_chg > -3:
-            momentum_score = 1   # 跌速未降
-        else:
-            momentum_score = 0   # 加速下跌 → 严重扣分
-    else:
-        if latest_chg > 0:
-            momentum_score = 8   # 正常上涨
-        else:
-            momentum_score = 5   # 正常微调
-
-    # ========== 6. 技术信号（0-10）==========
-    tech_score = 0
-    if kdj_bonus >= 7:
-        tech_score += 5
-    elif kdj_bonus >= 5:
-        tech_score += 4
-    elif kdj_bonus >= 3:
-        tech_score += 2
-
-    if avg_vol_up is not None and 0 < avg_vol_up < 0.95:
-        tech_score += 3  # 缩量止跌
-
-    if rsi is not None and rsi < 30:
-        tech_score += 2
-
-    # ========== 7. 板块共振（0-7）【新增】==========
-    # 票在强势概念板块内，享受板块共振加分
-    sector_score = 0
-    if sector_tier == 1:
-        sector_score = 7   # T1: 最强势板块
-    elif sector_tier == 2:
-        sector_score = 5   # T2: 较强板块
-    elif sector_tier == 3:
-        sector_score = 3   # T3: 入门板块
-    elif sector_tier == 99:
-        sector_score = 1   # 兜底板块（微弱共振）
-
-    # ========== 8. 主力资金占比（0-5）【新增】==========
-    # 5日/10日主力净流入占成交额比例
-    capital_ratio_score = 0
-    if ratio_5d is not None:
-        if ratio_5d > 5:
-            capital_ratio_score += 3
-        elif ratio_5d > 2:
-            capital_ratio_score += 2
-        elif ratio_5d > 0.5:
-            capital_ratio_score += 1
-        # 负占比不扣分（可能只是主力未介入）
-    if ratio_10d is not None:
-        if ratio_10d > 5:
-            capital_ratio_score += 2
-        elif ratio_10d > 2:
-            capital_ratio_score += 1
-    capital_ratio_score = min(capital_ratio_score, 5)
-
-    health = base + flow_score + pos_score + trend_score + momentum_score + tech_score + sector_score + capital_ratio_score
-    return round(max(0, min(health, 100)), 1)
+        return -999.0, {'capital': (False, 0, '僵尸票'), 'rationale': (0, '', ''), 'moat': (0, ''), 'trading': 0}
+    
+    # ========== ① 资金门 ==========
+    passed, capital_score, capital_diag = calc_capital_quality(flow_5d, flow_10d, daily)
+    if not passed:
+        return -999.0, {'capital': (passed, capital_score, capital_diag), 'rationale': (0, '', ''), 'moat': (0, ''), 'trading': 0}
+    
+    # ========== ② 推动理由 ==========
+    rationale_score, rationale_type, rationale_diag = calc_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score)
+    
+    # ========== ③ 核心壁垒 ==========
+    moat_score, moat_diag = calc_moat(code, fundamental_data or {})
+    
+    # ========== ④ 股性好 ==========
+    trading_score = calc_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonus, rsi)
+    
+    health = capital_score + rationale_score + moat_score + trading_score
+    health = round(max(0, min(health, 100)), 1)
+    
+    details = {
+        'capital': (passed, capital_score, capital_diag),
+        'rationale': (rationale_score, rationale_type, rationale_diag),
+        'moat': (moat_score, moat_diag),
+        'trading': trading_score
+    }
+    return health, details
 
 def calc_launch_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus=0, rsi=None):
     """
@@ -441,11 +657,11 @@ def main():
                 capture_output=False, timeout=30)
     
     # 1. 加载数据
-    stocks = extract_stocks_from_html()
     pred = load_json(PRED_FILE)
     cf_data = load_json(CF_FILE)
     sector_data = load_json(SECTOR_FILE)
     sector_filter = load_json(SECTOR_FILTER_FILE)
+    fundamental_data = load_json(FUNDAMENTAL_FILE).get('stocks', {})  # code → 基本面数据
 
     all_results = {r['code']: r for r in pred.get('all_results', [])}
     cf_stocks = cf_data.get('stocks', {})
@@ -472,122 +688,30 @@ def main():
             code_sector_ratio[s['code']] = (s.get('ratio_5d'), s.get('ratio_10d'))
 
     sector_qualified_count = len(code_sector_tier)
-    print(f"原STOCKS: {len(stocks)}只, daily_predictions: {len(all_results)}只, 资金流: {len(cf_stocks)}只")
+    print(f"全市场候选: daily_predictions {len(all_results)}只, 资金流 {len(cf_stocks)}只")
     print(f"板块预筛选: {len(sector_filter.get('qualified_sectors',{}))}个强势板块, 覆盖{sector_qualified_count}只票")
     kdj_stocks = kdj_data.get('stocks', {})
     if kdj_stocks:
         kdj_hits = sum(1 for v in kdj_stocks.values() if v.get('kdj_bonus', 0) > 0)
         print(f"KDJ因子: {len(kdj_stocks)}只已扫描, {kdj_hits}只命中低位上升")
 
-    # 2. 计算STOCKS每只票的综合健康度
-    stock_health = []
-    zombie_count = 0
-    for s in stocks:
-        pc = pure_code(s['code'])
-        pr = all_results.get(pc, {})
-        cf = cf_stocks.get(pc, {})
-        metrics = pr.get('metrics', {})
-        score = pr.get('total_score', 0)
-        flow_5d = cf.get('flow_5d_wan', 0)
-        drop_20d = metrics.get('drop_20d', 0)
-        consecutive = metrics.get('consecutive', 0)
-        latest_chg = cf.get('latest_chg', 0)
-        avg_vol_up = metrics.get('avg_vol_up', 1.0)
-        rsi = metrics.get('rsi', None)
-        kdj_bonus = kdj_stocks.get(pc, {}).get('kdj_bonus', 0)
-        # 板块共振数据
-        s_tier = code_sector_tier.get(pc)
-        s_ratio_5d, s_ratio_10d = code_sector_ratio.get(pc, (None, None))
-        health = calc_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus, rsi,
-                             sector_tier=s_tier, ratio_5d=s_ratio_5d, ratio_10d=s_ratio_10d)
-        if health == -999:
-            zombie_count += 1
-        stock_health.append({
-            'stock': s,
-            'code': pc,
-            'score': score,
-            'flow_5d': flow_5d,
-            'drop_20d': drop_20d,
-            'consecutive': consecutive,
-            'latest_chg': latest_chg,
-            'avg_vol_up': avg_vol_up,
-            'kdj_bonus': kdj_bonus,
-            'rsi': rsi,
-            'health': health,
-            'sector_tier': s_tier,
-            'ratio_5d': s_ratio_5d,
-            'is_zombie': health == -999
-        })
-
-    if zombie_count:
-        print(f"\n🧟 检测到 {zombie_count} 只僵尸票（数据缺失），将被优先踢出")
-
-    # 按健康度排序（僵尸票 -999 排最前面）
-    stock_health.sort(key=lambda x: x['health'])
-
-    print(f"\n=== STOCKS综合健康度排名（低→高）===")
-    for sh in stock_health:
-        flag = ''
-        if sh.get('is_zombie'):
-            flag = ' 🧟僵尸票'
-        elif -20 <= sh['drop_20d'] <= -10:
-            flag = ' ✅回调到位'
-        elif sh['drop_20d'] < -20:
-            flag = ' 💎超跌'
-        if sh['flow_5d'] > 10000:
-            flag += ' 💰资金流入'
-        elif sh['flow_5d'] < -20000:
-            flag += ' ⚠资金流出'
-        if sh['consecutive'] >= 4:
-            flag += ' ⚠连涨多'
-        if sh['latest_chg'] < -2 and sh['drop_20d'] < -5:
-            flag += ' 🔻加速跌'
-        elif sh['latest_chg'] > 0 and sh['drop_20d'] < -5:
-            flag += ' 🟢止跌企稳'
-        if sh['kdj_bonus'] >= 5:
-            flag += f' 📈KD+{sh["kdj_bonus"]}'
-        if sh['avg_vol_up'] is not None and sh['avg_vol_up'] < 0.95:
-            flag += ' 📉缩量'
-        s_tier = code_sector_tier.get(sh['code'])
-        s_ratio_5d, _ = code_sector_ratio.get(sh['code'], (None, None))
-        sector_flag = f' 🏭T{s_tier}' if s_tier else ''
-        ratio_flag = f' 💹主力{s_ratio_5d:+.1f}%' if s_ratio_5d else ''
-        rsi_str = f' RSI{sh.get("rsi","-"):.0f}' if sh.get('rsi') is not None else ''
-        print(f"  {sh['health']:5.1f} | {sh['stock']['code']} {sh['stock']['name']:6s} | 评分{sh['score']:4.1f} 资金{sh['flow_5d']:+8.0f}万 20日{sh['drop_20d']:+5.1f}% 当天{sh['latest_chg']:+.1f}% 连{sh['consecutive']}天{rsi_str}{flag}{sector_flag}{ratio_flag}")
-
-    # 3. 踢出健康度最低的ROTATE_COUNT只（白名单票跳过，永不踢出）
-    protected_sh = [sh for sh in stock_health if sh['code'] in PROTECTED_CODES]
-    kickable_sh = [sh for sh in stock_health if sh['code'] not in PROTECTED_CODES]
-    if protected_sh:
-        print(f"\n🔒 白名单保护({len(protected_sh)}只): {', '.join(sh['stock']['name'] for sh in protected_sh)}")
-    kicked = kickable_sh[:ROTATE_COUNT]
-    kept = kickable_sh[ROTATE_COUNT:] + protected_sh
-    print(f"\n=== 踢出 {len(kicked)} 只 ===")
-    for sh in kicked:
-        print(f"  ❌ {sh['stock']['name']} (健康度{sh['health']})")
-
-    # 4. 从全市场选综合健康度最高的ROTATE_COUNT只补入
-    # 排除已在kept里的、ST/退市的、已踢出的
-    kept_codes = set(sh['code'] for sh in kept)
-    kicked_codes = set(sh['code'] for sh in kicked)
-
+    # 2. 全市场扫描 + 四层漏斗评分
     sector_candidates = []
     fallback_candidates = []
     for code, pr in all_results.items():
-        if code in kept_codes or code in kicked_codes:
-            continue
-        # 排除ST/退市（name里带ST/退）
         name = pr.get('name', '')
+        # 排除ST/退市
         if 'ST' in name or '退' in name:
             continue
-        # 排除创业板/科创板/北交所（只保留00/60主板）
+        # 只保留00/60主板
         if not (code.startswith('00') or code.startswith('60')):
             continue
         score = pr.get('total_score', 0)
-        if score < 50:  # 门槛：评分≥50
+        if score < 50:
             continue
         cf = cf_stocks.get(code, {})
         flow_5d = cf.get('flow_5d_wan', 0)
+        flow_10d = cf.get('flow_10d_wan')
         metrics = pr.get('metrics', {})
         drop_20d = metrics.get('drop_20d', 0)
         consecutive = metrics.get('consecutive', 0)
@@ -595,70 +719,61 @@ def main():
         avg_vol_up = metrics.get('avg_vol_up', 1.0)
         rsi = metrics.get('rsi', None)
         kdj_bonus = kdj_stocks.get(code, {}).get('kdj_bonus', 0)
+        daily = cf.get('daily', [])
 
-        # 排除数据缺失票（僵尸票）
+        # 排除数据缺失票
         if is_zombie(score, flow_5d):
             continue
 
-        # 多维度过滤（不依赖单一维度，但排除明显不适合的）：
-        # - 资金大幅流出（<-3亿）且无超跌反弹逻辑 → 排除
+        # 多维度过滤
         if flow_5d < -30000 and drop_20d > -10:
             continue
-        # - 已连续大涨（连涨6天+且当天涨>5%）→ 追高风险极高
         if consecutive >= 6 and latest_chg > 5:
             continue
-        # - 20日涨幅>15%（已经涨太多）→ 排除
         if drop_20d > 15:
             continue
-        # - 跌势加速：20日跌超5%且今天还在跌超3% → 排除
         if drop_20d < -5 and latest_chg < -3:
             continue
 
         # 板块共振数据
         c_tier = code_sector_tier.get(code)
         c_ratio_5d, c_ratio_10d = code_sector_ratio.get(code, (None, None))
-        health = calc_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus, rsi,
-                             sector_tier=c_tier, ratio_5d=c_ratio_5d, ratio_10d=c_ratio_10d)
-        # 二次确认非僵尸
+        health, details = calc_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg_vol_up,
+                                      kdj_bonus, rsi, sector_tier=c_tier, ratio_5d=c_ratio_5d, ratio_10d=c_ratio_10d,
+                                      daily=daily, code=code, fundamental_data=fundamental_data)
         if health == -999:
             continue
         cand = {
-            'code': code,
-            'name': name,
-            'score': score,
-            'flow_5d': flow_5d,
-            'drop_20d': drop_20d,
-            'consecutive': consecutive,
-            'latest_chg': latest_chg,
-            'avg_vol_up': avg_vol_up,
-            'rsi': rsi,
-            'kdj_bonus': kdj_bonus,
-            'health': health,
-            'sector_tier': c_tier,
-            'ratio_5d': c_ratio_5d,
-            'ratio_10d': c_ratio_10d,
-            'reasons': pr.get('reasons', []),
-            'confidence': pr.get('confidence', '')
+            'code': code, 'name': name, 'score': score,
+            'flow_5d': flow_5d, 'flow_10d': flow_10d,
+            'drop_20d': drop_20d, 'consecutive': consecutive,
+            'latest_chg': latest_chg, 'avg_vol_up': avg_vol_up,
+            'rsi': rsi, 'kdj_bonus': kdj_bonus,
+            'health': health, 'details': details,
+            'sector_tier': c_tier, 'ratio_5d': c_ratio_5d, 'ratio_10d': c_ratio_10d,
+            'reasons': pr.get('reasons', []), 'confidence': pr.get('confidence', '')
         }
-        # 🎯 双池策略：板块票进精选池，其他进兜底池
+        # 双池策略：板块票优先，其他兜底
         if c_tier and c_tier <= 99:
             sector_candidates.append(cand)
         else:
             fallback_candidates.append(cand)
 
-    # 排序
     sector_candidates.sort(key=lambda x: x['health'], reverse=True)
     fallback_candidates.sort(key=lambda x: x['health'], reverse=True)
 
-    # 补入：板块票优先，不够则全市场兜底
-    new_comers = sector_candidates[:ROTATE_COUNT]
-    deficit = ROTATE_COUNT - len(new_comers)
-    if deficit > 0:
-        new_comers += fallback_candidates[:deficit]
+    # 取Top30：板块票优先
+    final_picks = sector_candidates[:TARGET_POOL_SIZE]
+    deficit_count = TARGET_POOL_SIZE - len(final_picks)
+    if deficit_count > 0:
+        final_picks += fallback_candidates[:deficit_count]
 
     sector_count = len(sector_candidates)
-    print(f"\n=== 补入 {len(new_comers)} 只（板块池{sector_count}只 + 兜底池{len(fallback_candidates)}只）===")
-    for c in new_comers:
+    print(f"\n=== 全量选出 {len(final_picks)} 只（板块池{sector_count}只 + 兜底池{len(fallback_candidates)}只）===")
+
+    # 3. 排名展示
+    print(f"\n=== STOCKS全量排名 ①资金②逻辑③壁垒④股性 ===")
+    for i, c in enumerate(final_picks):
         pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
         flow_flag = '💰资金流入' if c['flow_5d'] > 0 else ''
         kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
@@ -672,41 +787,22 @@ def main():
             elif c['latest_chg'] < -2:
                 mom_flag = '🔻跌速快'
         rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
-        c_tier = code_sector_tier.get(c['code'])
+        details = c.get('details', {})
+        cap = details.get('capital', (0,0,''))[1] if details.get('capital') else 0
+        rat = details.get('rationale', (0,'',''))[0] if details.get('rationale') else 0
+        moat = details.get('moat', (0,''))[0] if details.get('moat') else 0
+        trad = details.get('trading', 0)
+        funnel = f' ①{cap:.0f}②{rat:.0f}③{moat:.0f}④{trad:.0f}'
+        rat_type = details.get('rationale', (0,'',''))[1] if details.get('rationale') else ''
+        rat_label = f' [{rat_type}]' if rat_type else ''
+        c_tier_label = code_sector_tier.get(c['code'])
         c_ratio_5d, _ = code_sector_ratio.get(c['code'], (None, None))
-        sector_flag = f' 🏭T{c_tier}' if c_tier else ''
+        sector_flag = f' 🏭T{c_tier_label}' if c_tier_label else ''
         ratio_flag = f' 💹主力{c_ratio_5d:+.1f}%' if c_ratio_5d else ''
-        print(f"  ✅ {c['name']:6s} (健康度{c['health']}) 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{sector_flag}{ratio_flag}")
+        print(f"  #{i+1:2d} {c['health']:5.1f} | {c['name']:6s} | 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{rat_label}{funnel}{sector_flag}{ratio_flag}")
 
-    # 5. 构造新STOCKS数组
-    new_stocks = []
-
-    # 保留的票（原样保留基本面）
-    for sh in kept:
-        s = sh['stock'].copy()
-        # 补充健康度信息（用于前端展示）
-        s['healthScore'] = sh['health']
-        s['dailyScore'] = sh['score']
-        s['flow5d'] = sh['flow_5d']
-        s['drop20d'] = round(sh['drop_20d'], 1)
-        s['consecutive'] = sh['consecutive']
-        s['kdjBonus'] = sh['kdj_bonus']
-        if sh.get('rsi') is not None:
-            s['rsi'] = round(sh['rsi'], 1)
-        # 补充板块共振和主力占比数据
-        s_tier = code_sector_tier.get(sh['code'])
-        s_ratio_5d, s_ratio_10d = code_sector_ratio.get(sh['code'], (None, None))
-        if s_tier:
-            s['sectorTier'] = s_tier
-        if s_ratio_5d is not None:
-            s['ratio5d'] = s_ratio_5d
-        if s_ratio_10d is not None:
-            s['ratio10d'] = s_ratio_10d
-        new_stocks.append(s)
-
-    # 新进入的票
+    # 4. 构造新STOCKS数组
     sector_map = {
-        # 简单板块映射（根据代码/名称关键词）
         '半导体': ['芯', '微', '集成', '封测', '晶圆'],
         '光通信': ['光', '纤', '缆'],
         '电力设备': ['电', '能源', '电网'],
@@ -723,9 +819,9 @@ def main():
                 return sec
         return '热门标的'
 
-    for c in new_comers:
-        reasons_str = '；'.join(c['reasons'][:2]) if c['reasons'] else '评分驱动'
-        # 标注综合特征
+    new_stocks = []
+    for c in final_picks:
+        reasons_str = '；'.join(c['reasons'][:2]) if c['reasons'] else '全量优选'
         tags = []
         if -20 <= c['drop_20d'] <= -10:
             tags.append('回调到位')
@@ -739,7 +835,6 @@ def main():
             tags.append('KDJ反转')
         if c['avg_vol_up'] is not None and c['avg_vol_up'] < 0.95:
             tags.append('缩量止跌')
-        # 跌速标签
         if c['drop_20d'] < -5:
             if c['latest_chg'] > 1:
                 tags.append('止跌回升')
@@ -747,24 +842,19 @@ def main():
                 tags.append('企稳')
             elif c['latest_chg'] < -2:
                 tags.append('跌速偏快')
-        # 板块共振标签
         if c.get('sector_tier'):
             tags.append(f'T{c["sector_tier"]}板块共振')
-        # 主力占比标签
         if c.get('ratio_5d') and c['ratio_5d'] > 2:
             tags.append('主力介入')
         new_stock = {
             'code': to_prefixed_code(c['code']),
             'name': c['name'],
             'sector': guess_sector(c['name']),
-            'direction': ','.join(tags[:2]) if tags else '综合选入',
-            'pe': 0,
-            'profitGrowth': 0,
-            'reason': f"🆕动态选入（{','.join(tags) if tags else '综合'}）：{reasons_str}",
-            'roe': 0,
-            'grossMargin': 0,
-            'debtRatio': 0,
-            'riskFlags': ['🆕动态选入'] + tags,
+            'direction': ','.join(tags[:2]) if tags else '全量选入',
+            'pe': 0, 'profitGrowth': 0,
+            'reason': f"🔄全量选入（{','.join(tags) if tags else '综合优选'}）：{reasons_str}",
+            'roe': 0, 'grossMargin': 0, 'debtRatio': 0,
+            'riskFlags': ['🔄全量选入'] + tags,
             'healthScore': c['health'],
             'dailyScore': c['score'],
             'flow5d': c['flow_5d'],
@@ -779,25 +869,20 @@ def main():
         }
         new_stocks.append(new_stock)
 
-    # 6. 输出
+    # 5. 输出
     output = {
         'update_time': pred.get('update_time', ''),
         'total': len(new_stocks),
-        'kicked': [{'code': sh['code'], 'name': sh['stock']['name'], 'health': sh['health']} for sh in kicked],
-        'new_comers': [{'code': c['code'], 'name': c['name'], 'health': c['health']} for c in new_comers],
+        'mode': '全量选股',
         'stocks': new_stocks
     }
-
     with open(OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✓ 动态换血完成：踢出{len(kicked)}只 + 补入{len(new_comers)}只 = {len(new_stocks)}只")
+    print(f"\n✓ 全量选股完成：共{len(new_stocks)}只")
     print(f"  输出: {OUTPUT}")
-
-    # 打印换血摘要
-    print(f"\n=== 换血摘要 ===")
-    print(f"踢出: {', '.join(sh['stock']['name'] for sh in kicked)}")
-    print(f"补入: {', '.join(c['name'] for c in new_comers)}")
+    print(f"\n=== 本期全量选股 ===")
+    print(f"{', '.join(c['name'] for c in final_picks)}")
 
     # 7. 池B：启动段专属选股
     print(f"\n{'='*60}")
