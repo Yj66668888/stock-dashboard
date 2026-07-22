@@ -412,106 +412,258 @@ def calc_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg
     }
     return health, details
 
-def calc_launch_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus=0, rsi=None):
+# ==================== 启动段四层漏斗 ====================
+
+def calc_launch_capital_quality(flow_5d, flow_10d, daily=None):
     """
-    启动段专属健康度算法（0-100），返回 -999 表示僵尸票/不合格
+    ① 启动段资金门（放宽版，0-20分）
+    
+    与主池的区别：近2日有持续流入即可过门，门槛更低
+    适合启动段回调后小资金试盘的特征
+    """
+    # === 硬门禁（放宽版）===
+    # 10日累计≤0 且 近2日内无连续流入 → 踢
+    has_10d = (flow_10d is not None)
+    
+    # 检测近2日连续流入
+    consecutive_inflow = 0
+    if daily and len(daily) >= 2:
+        recent = daily[-2:]
+        consecutive_inflow = sum(1 for d in recent if d.get('net_flow', 0) > 0)
+    
+    if has_10d and flow_10d <= 0 and consecutive_inflow < 2:
+        return (False, 0, '资金门不过')
+    
+    score = 0
+    
+    # 1. 连续流入天数（0-8分）
+    if consecutive_inflow >= 3:
+        score += 8
+    elif consecutive_inflow == 2:
+        score += 6
+    elif consecutive_inflow == 1:
+        score += 3
+    
+    # 2. 资金加速比（0-6分）
+    if has_10d and flow_5d > 0 and flow_10d > 0:
+        ratio = flow_5d / flow_10d
+        if ratio > 0.8:
+            score += 6
+        elif ratio > 0.5:
+            score += 4
+        elif ratio > 0.3:
+            score += 2
+    
+    # 3. 资金体量（0-6分）
+    ref_flow = flow_5d if flow_10d is None else max(flow_5d, flow_10d)
+    if ref_flow > 30000:
+        score += 6
+    elif ref_flow > 10000:
+        score += 4
+    elif ref_flow > 3000:
+        score += 2
+    elif ref_flow > 0:
+        score += 1
+    
+    # 诊断
+    parts = []
+    if consecutive_inflow >= 2:
+        parts.append(f"连{consecutive_inflow}日流入")
+    if ref_flow > 10000:
+        parts.append(f"{ref_flow/10000:.1f}亿")
+    diag = " | ".join(parts) if parts else "小额资金试探"
+    
+    return (True, min(score, 20), diag)
 
-    专门筛选"回调到位 + 跌势已止 + 技术信号确认"的启动段候选票
-    与 calc_health 的区别：位置和技术信号权重最高，基本面权重最低
 
-    1. 位置评估   30分：回调-10%~-20%最优，追高直接低分
-    2. 跌速判断   25分：当天必须止跌或微涨，加速下跌直接0分
-    3. 技术信号   20分：KDJ反转+缩量止跌+RSI超卖+连续高开确认
-    4. 资金面     15分：资金回流加分
-    5. 基本面     10分：评分兜底（权重低，不主导）
+def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score):
+    """
+    ② 启动段逻辑层（轻量版，0-10分）
+    
+    启动段不要求强板块共振，有即可加分
+    """
+    r_score = 0
+    r_type = "无明确驱动"
+    r_diag = ""
+    
+    if sector_tier is not None:
+        if sector_tier == 1:
+            r_score += 7
+            r_type = "板块共振T1"
+        elif sector_tier == 2:
+            r_score += 6
+            r_type = "板块共振T2"
+        elif sector_tier == 3:
+            r_score += 4
+            r_type = "板块共振T3"
+        elif sector_tier == 99:
+            r_score += 2
+            r_type = "板块兜底"
+    
+    # 主力占比加分
+    if ratio_5d is not None and ratio_5d > 3:
+        r_score += 2
+    elif ratio_5d is not None and ratio_5d > 1:
+        r_score += 1
+    
+    # 独立逻辑
+    if sector_tier is None:
+        if flow_5d > 20000 and score > 55:
+            r_score += 6
+            r_type = "独立逻辑"
+            r_diag = "大资金独立推动"
+        elif flow_5d > 10000:
+            r_score += 4
+            r_type = "独立逻辑"
+            r_diag = "资金独立推动"
+        elif flow_5d > 3000:
+            r_score += 2
+            r_type = "资金关注"
+    
+    return (min(r_score, 10), r_type, r_diag)
+
+
+def calc_launch_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonus=0, rsi=None):
+    """
+    ④ 启动段股性层（重仓版，0-55分）
+    
+    位置(20) + 跌速(20) + 技术(15) = 55
+    启动段核心：回调到位 + 止跌确认
+    """
+    t_score = 0
+    
+    # === 位置评估（0-20分）=== — 核心！回调-10%~-20%最优
+    if -20 <= drop_20d <= -10:
+        t_score += 20   # 回调到位
+    elif -25 <= drop_20d < -20:
+        t_score += 16   # 稍深有反弹空间
+    elif -10 < drop_20d <= -5:
+        t_score += 14   # 浅回调
+    elif -30 <= drop_20d < -25:
+        t_score += 10   # 深度超跌
+    elif -5 < drop_20d <= 0:
+        t_score += 8    # 微调
+    elif 0 < drop_20d <= 5:
+        t_score += 3    # 小涨
+    elif drop_20d < -30:
+        t_score += 5    # 太深
+    else:
+        t_score += 1    # 追高不选
+    
+    # === 跌速判断（0-20分）=== — 必须止跌！
+    if latest_chg > 3:
+        t_score += 20   # 强反弹启动
+    elif latest_chg > 1:
+        t_score += 18   # 止跌回升
+    elif latest_chg > 0:
+        t_score += 14   # 微弱回升
+    elif latest_chg > -1:
+        t_score += 8    # 跌势放缓
+    elif latest_chg > -2:
+        t_score += 3    # 阴跌
+    else:
+        t_score += 0    # 加速下跌
+    
+    # 连续上涨惩罚
+    if consecutive >= 6:
+        t_score -= 4
+    elif consecutive >= 4:
+        t_score -= 2
+    
+    # === 技术信号（0-15分）===
+    tech = 0
+    if kdj_bonus >= 7:
+        tech += 7
+    elif kdj_bonus >= 5:
+        tech += 5
+    elif kdj_bonus >= 3:
+        tech += 3
+    
+    if avg_vol_up is not None and 0 < avg_vol_up < 0.95:
+        tech += 5  # 缩量止跌
+    
+    if rsi is not None:
+        if rsi < 30:
+            tech += 3  # 超卖
+        elif rsi < 40:
+            tech += 2  # 偏低
+    
+    t_score += min(tech, 15)
+    
+    return min(t_score, 55)
+
+
+def calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg_vol_up,
+                        kdj_bonus=0, rsi=None, sector_tier=None, ratio_5d=None, ratio_10d=None,
+                        daily=None, code=None, fundamental_data=None):
+    """
+    启动段四层漏斗健康度（0-100），返回 (-999, None) 表示不合格
+    
+    与主池 calc_health 的区别：资金门放宽(20)、逻辑轻量(10)、壁垒标准(15)、股性重仓(55)
+    
+    ┌─────────────────────────────────────────┐
+    │ ① 资金门（硬过滤，放宽版）  0-20分       │
+    │ → 10日累计≤0且近2日无持续 → 踢           │
+    ├─────────────────────────────────────────┤
+    │ ② 推动理由（逻辑轻量）     0-10分         │
+    │ → 板块驱动 vs 独立逻辑（弱化）           │
+    ├─────────────────────────────────────────┤
+    │ ③ 核心壁垒（基本面）       0-15分         │
+    │ → 复用 calc_moat，75%缩放                │
+    ├─────────────────────────────────────────┤
+    │ ④ 股性好（启动段核心）     0-55分         │
+    │ → 位置(20)+跌速(20)+技术(15)              │
+    └─────────────────────────────────────────┘
     """
     # === 僵尸票检测 ===
     if is_zombie(score, flow_5d):
-        return -999.0
-
-    # ========== 1. 位置评估（0-30）==========
-    if -20 <= drop_20d <= -10:
-        pos_score = 30   # 回调到位（最优区间）
-    elif -25 <= drop_20d < -20:
-        pos_score = 24   # 稍深但有反弹空间
-    elif -10 < drop_20d <= -5:
-        pos_score = 22   # 浅回调
-    elif -30 <= drop_20d < -25:
-        pos_score = 16   # 深度超跌
-    elif -5 < drop_20d <= 0:
-        pos_score = 12   # 微调
-    elif 0 < drop_20d <= 5:
-        pos_score = 5    # 小涨（不是回调）
-    elif drop_20d < -30:
-        pos_score = 8    # 太深，可能有基本面问题
-    else:
-        pos_score = 2    # 大涨（追高，启动段不选）
-
-    # ========== 2. 跌速判断（0-25）==========
-    # 启动段必须当天止跌或微涨
-    if latest_chg > 3:
-        mom_score = 25   # 强反弹启动
-    elif latest_chg > 1:
-        mom_score = 22   # 止跌回升
-    elif latest_chg > 0:
-        mom_score = 18   # 微弱回升
-    elif latest_chg > -1:
-        mom_score = 12   # 跌势放缓
-    elif latest_chg > -2:
-        mom_score = 5    # 仍在阴跌
-    else:
-        mom_score = 0    # 加速下跌 → 不适合启动段
-
-    # ========== 3. 技术信号（0-20）==========
-    tech_score = 0
-    if kdj_bonus >= 7:
-        tech_score += 8
-    elif kdj_bonus >= 5:
-        tech_score += 6
-    elif kdj_bonus >= 3:
-        tech_score += 3
-
-    if avg_vol_up is not None and 0 < avg_vol_up < 0.95:
-        tech_score += 5  # 缩量止跌
-
-    if rsi is not None and rsi < 35:
-        tech_score += 4  # RSI超卖
-    elif rsi is not None and rsi < 45:
-        tech_score += 2  # RSI偏低
-
-    # 连续高开1-3天 = 刚启动确认
-    if 1 <= consecutive <= 3:
-        tech_score += 3
-    tech_score = min(tech_score, 20)
-
-    # ========== 4. 资金面（0-15）==========
-    if flow_5d > 30000:
-        flow_score = 15
-    elif flow_5d > 10000:
-        flow_score = 13
-    elif flow_5d > 0:
-        flow_score = 8 + min(flow_5d / 10000 * 5, 5)
-    elif flow_5d > -5000:
-        flow_score = 6   # 流出减缓
-    elif flow_5d > -20000:
-        flow_score = 3   # 轻度流出
-    else:
-        flow_score = 0   # 大幅流出
-
-    # ========== 5. 基本面（0-10）==========
-    base = min(score / 70 * 10, 10)
-
-    health = pos_score + mom_score + tech_score + flow_score + base
-    return round(max(0, min(health, 100)), 1)
+        return -999.0, None
+    
+    # ========== ① 资金门（放宽版，0-20）==========
+    passed, capital_score, capital_diag = calc_launch_capital_quality(flow_5d, flow_10d, daily)
+    if not passed:
+        return -999.0, None
+    
+    # ========== ② 推动理由（轻量版，0-10）==========
+    rationale_score, rationale_type, rationale_diag = calc_launch_rationale(
+        code, sector_tier, ratio_5d, ratio_10d, flow_5d, score
+    )
+    
+    # ========== ③ 核心壁垒（0-15）==========
+    moat_full, moat_diag = calc_moat(code, fundamental_data or {})
+    moat_score = min(round(moat_full * 0.75, 1), 15)  # 75%缩放
+    
+    # ========== ④ 股性好（启动段核心，0-55）==========
+    trading_score = calc_launch_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonus, rsi)
+    
+    health = capital_score + rationale_score + moat_score + trading_score
+    health = round(max(0, min(health, 100)), 1)
+    
+    details = {
+        'capital': (passed, capital_score, capital_diag),
+        'rationale': (rationale_score, rationale_type, rationale_diag),
+        'moat': (moat_score, moat_diag),
+        'trading': trading_score
+    }
+    return health, details
 
 
-def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
+def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None,
+                       code_sector_tier=None, code_sector_ratio=None, exclude_codes=set()):
     """
-    池B：启动段专属选股
+    池B：启动段四层漏斗选股
     从全市场候选池中选 30 只启动段特征最强的票
+    
+    四层漏斗权重：资金门(20)+逻辑(10)+壁垒(15)+股性(55)
     """
     LAUNCH_COUNT = 30
     candidates = []
+    if fundamental_data is None:
+        fundamental_data = {}
+    if code_sector_tier is None:
+        code_sector_tier = {}
+    if code_sector_ratio is None:
+        code_sector_ratio = {}
 
     for code, pr in all_results.items():
         if code in exclude_codes:
@@ -528,6 +680,7 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
 
         cf = cf_stocks.get(code, {})
         flow_5d = cf.get('flow_5d_wan', 0)
+        flow_10d = cf.get('flow_10d_wan')
         metrics = pr.get('metrics', {})
         drop_20d = metrics.get('drop_20d', 0)
         consecutive = metrics.get('consecutive', 0)
@@ -535,6 +688,7 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
         avg_vol_up = metrics.get('avg_vol_up', 1.0)
         rsi = metrics.get('rsi', None)
         kdj_bonus = kdj_stocks.get(code, {}).get('kdj_bonus', 0)
+        daily = cf.get('daily', [])
 
         # === 启动段硬性过滤 ===
         # 1. 僵尸票排除
@@ -556,7 +710,14 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
         if consecutive >= 6 and latest_chg > 5:
             continue
 
-        health = calc_launch_health(score, flow_5d, drop_20d, consecutive, latest_chg, avg_vol_up, kdj_bonus, rsi)
+        # 板块共振数据
+        c_tier = code_sector_tier.get(code)
+        c_ratio_5d, c_ratio_10d = code_sector_ratio.get(code, (None, None))
+
+        health, details = calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive,
+                                              latest_chg, avg_vol_up, kdj_bonus, rsi,
+                                              sector_tier=c_tier, ratio_5d=c_ratio_5d, ratio_10d=c_ratio_10d,
+                                              daily=daily, code=code, fundamental_data=fundamental_data)
         if health == -999 or health < 40:
             continue
 
@@ -565,6 +726,7 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
             'name': name,
             'score': score,
             'flow_5d': flow_5d,
+            'flow_10d': flow_10d,
             'drop_20d': drop_20d,
             'consecutive': consecutive,
             'latest_chg': latest_chg,
@@ -572,6 +734,10 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
             'rsi': rsi,
             'kdj_bonus': kdj_bonus,
             'launch_health': health,
+            'details': details,
+            'sector_tier': c_tier,
+            'ratio_5d': c_ratio_5d,
+            'ratio_10d': c_ratio_10d,
             'reasons': pr.get('reasons', []),
             'confidence': pr.get('confidence', '')
         })
@@ -580,8 +746,10 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=set()):
     return candidates[:LAUNCH_COUNT], len(candidates)
 
 
-def build_launch_stocks(launch_picks):
-    """把启动段候选票构造成前端 STOCKS 格式的对象"""
+def build_launch_stocks(launch_picks, fundamental_data=None):
+    """把启动段候选票构造成前端 STOCKS 格式的对象（含四层漏斗数据）"""
+    if fundamental_data is None:
+        fundamental_data = {}
     sector_map = {
         '半导体': ['芯', '微', '集成', '封测', '晶圆'],
         '光通信': ['光', '纤', '缆'],
@@ -602,6 +770,14 @@ def build_launch_stocks(launch_picks):
     stocks = []
     for c in launch_picks:
         reasons_str = '; '.join(c['reasons'][:2]) if c['reasons'] else '启动段选入'
+        details = c.get('details', {})
+        
+        # 基本面数据
+        fd = fundamental_data.get(c['code'], {})
+        pe_val = fd.get('pe', 0) or 0
+        roe_val = fd.get('roe', 0) or 0
+        
+        # 标签
         tags = []
         if -20 <= c['drop_20d'] <= -10:
             tags.append('回调到位')
@@ -619,19 +795,37 @@ def build_launch_stocks(launch_picks):
             tags.append('止跌回升')
         elif c['latest_chg'] > 0:
             tags.append('企稳')
+        if c.get('sector_tier'):
+            tags.append(f'T{c["sector_tier"]}板块共振')
+        if c.get('ratio_5d') and c['ratio_5d'] > 2:
+            tags.append('主力介入')
+        if roe_val > 10:
+            tags.append(f'ROE{roe_val:.0f}%')
+
+        # 四层漏斗诊断
+        funnel_parts = []
+        cap_diag = details.get('capital', (True, 0, ''))[2] if details.get('capital') else ''
+        rat_type = details.get('rationale', (0, '', ''))[1] if details.get('rationale') else ''
+        moat_diag = details.get('moat', (0, ''))[1] if details.get('moat') else ''
+        if cap_diag:
+            funnel_parts.append(f'①{cap_diag}')
+        if rat_type and rat_type != '无明确驱动':
+            funnel_parts.append(f'②{rat_type}')
+        if moat_diag and moat_diag != '无基本面数据':
+            funnel_parts.append(f'③{moat_diag}')
 
         s = {
             'code': to_prefixed_code(c['code']),
             'name': c['name'],
             'sector': guess_sector(c['name']),
             'direction': ','.join(tags[:2]) if tags else '启动段',
-            'pe': 0,
+            'pe': pe_val,
             'profitGrowth': 0,
-            'reason': f"🚀启动段（{','.join(tags) if tags else '综合'}）：{reasons_str}",
-            'roe': 0,
+            'reason': f"🚀启动段（{','.join(tags[:3]) if tags else '综合'}）{' | '.join(funnel_parts[:2])}｜{reasons_str}",
+            'roe': roe_val,
             'grossMargin': 0,
-            'debtRatio': 0,
-            'riskFlags': ['🚀启动段'] + tags,
+            'debtRatio': fd.get('debt_ratio', 0) or 0,
+            'riskFlags': ['🚀启动段'] + tags[:5],
             'healthScore': c['launch_health'],
             'dailyScore': c['score'],
             'flow5d': c['flow_5d'],
@@ -639,6 +833,9 @@ def build_launch_stocks(launch_picks):
             'consecutive': c['consecutive'],
             'kdjBonus': c['kdj_bonus'],
             'rsi': round(c['rsi'], 1) if c.get('rsi') is not None else None,
+            'sectorTier': c.get('sector_tier'),
+            'ratio5d': c.get('ratio_5d'),
+            'ratio10d': c.get('ratio_10d'),
             'isNew': True
         }
         stocks.append(s)
@@ -890,18 +1087,30 @@ def main():
     print(f"{'='*60}")
     # 池B排除池A已有的票，避免重复
     pool_a_codes = set(pure_code(s['code']) for s in new_stocks)
-    launch_picks, launch_total = select_launch_pool(all_results, cf_stocks, kdj_stocks, exclude_codes=pool_a_codes)
-    launch_stocks = build_launch_stocks(launch_picks)
+    launch_picks, launch_total = select_launch_pool(all_results, cf_stocks, kdj_stocks,
+                                                      fundamental_data=fundamental_data,
+                                                      code_sector_tier=code_sector_tier,
+                                                      code_sector_ratio=code_sector_ratio,
+                                                      exclude_codes=pool_a_codes)
+    launch_stocks = build_launch_stocks(launch_picks, fundamental_data=fundamental_data)
 
     print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(launch_stocks)}只")
-    print(f"\n=== 启动段池 TOP {len(launch_picks)} ===")
+    print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 ===")
     for c in launch_picks:
         pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
         flow_flag = '💰' if c['flow_5d'] > 0 else ''
         mom_flag = '🟢回升' if c['latest_chg'] > 0 else ('🟡企稳' if c['latest_chg'] > -1 else '')
         kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
         rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
-        print(f"  {c['launch_health']:5.1f} | {c['name']:6s} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag}")
+        details = c.get('details', {})
+        cap = details.get('capital', (0,0,''))[1] if details.get('capital') else 0
+        rat = details.get('rationale', (0,'',''))[0] if details.get('rationale') else 0
+        moat = details.get('moat', (0,''))[0] if details.get('moat') else 0
+        trad = details.get('trading', 0)
+        funnel = f' ①{cap:.0f}②{rat:.0f}③{moat:.0f}④{trad:.0f}'
+        rat_type = details.get('rationale', (0,'',''))[1] if details.get('rationale') else ''
+        rat_label = f' [{rat_type}]' if rat_type and rat_type != '无明确驱动' else ''
+        print(f"  {c['launch_health']:5.1f} | {c['name']:6s}{funnel}{rat_label} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag}")
 
     # 输出启动段池 JSON
     launch_output = {
