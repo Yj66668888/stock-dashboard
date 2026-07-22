@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0722-1018</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0722-1055</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -198,6 +198,11 @@ tr:hover td { background: var(--bg-hover); }
 
 <!-- 仪表盘 -->
 <div class="content tab-content active" id="content-main">
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <button id="poolBtnStocks" onclick="switchPool('STOCKS')" style="background:var(--blue);border:1px solid var(--blue);color:#fff;border-radius:6px;padding:5px 16px;font-size:13px;cursor:pointer;font-weight:600">📊 综合最优 (30只)</button>
+        <button id="poolBtnLaunch" onclick="switchPool('LAUNCH')" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:5px 16px;font-size:13px;cursor:pointer">🚀 启动段候选 (30只)</button>
+        <span id="poolInfo" style="font-size:11px;color:var(--text-dim);margin-left:8px"></span>
+    </div>
     <div class="stats-bar" id="statsBar">
         <div class="stat-card" onclick="filterTable('up')" data-filter="up"><div class="label">上涨</div><div class="value up" id="statUp">--</div></div>
         <div class="stat-card" onclick="filterTable('down')" data-filter="down"><div class="label">下跌</div><div class="value down" id="statDown">--</div></div>
@@ -802,6 +807,36 @@ let lastUpdateTime = '';
 let capitalFlowCache = {};
 let sectorIndexCache = {}; // 申万一级行业板块指数缓存 {板块名: {pct: 涨跌幅, price: 指数点位}}
 let activeFilter = null; // 当前统计卡片筛选条件
+let activePool = 'STOCKS'; // 当前显示的池子: 'STOCKS'(综合最优) 或 'LAUNCH'(启动段候选)
+
+function getActiveStocks() {
+    return activePool === 'LAUNCH' ? (typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS : []) : STOCKS;
+}
+
+function switchPool(pool) {
+    if (pool === activePool) return;
+    activePool = pool;
+    // 更新按钮样式
+    var btnS = document.getElementById('poolBtnStocks');
+    var btnL = document.getElementById('poolBtnLaunch');
+    if (pool === 'LAUNCH') {
+        btnS.style.background = 'var(--bg-card)'; btnS.style.borderColor = 'var(--border)'; btnS.style.color = 'var(--text-dim)'; btnS.style.fontWeight = '400';
+        btnL.style.background = 'var(--blue)'; btnL.style.borderColor = 'var(--blue)'; btnL.style.color = '#fff'; btnL.style.fontWeight = '600';
+        document.getElementById('poolInfo').textContent = '🚀 启动段候选: 回调到位+止跌企稳+技术确认';
+    } else {
+        btnL.style.background = 'var(--bg-card)'; btnL.style.borderColor = 'var(--border)'; btnL.style.color = 'var(--text-dim)'; btnL.style.fontWeight = '400';
+        btnS.style.background = 'var(--blue)'; btnS.style.borderColor = 'var(--blue)'; btnS.style.color = '#fff'; btnS.style.fontWeight = '600';
+        document.getElementById('poolInfo').textContent = '';
+    }
+    // 清除筛选
+    activeFilter = null;
+    var fs = document.getElementById('filterStatus');
+    if (fs) fs.style.display = 'none';
+    // 重新计算指标和渲染
+    calcAllIndicators();
+    renderTable();
+    renderStats();
+}
 
 // 板块映射：细分赛道 → 申万一级行业
 const SECTOR_MAP = {
@@ -815,144 +850,6 @@ const SECTOR_MAP = {
 
 // ==================== 标的数据 ====================
 const STOCKS = [
-  {
-    "code": "sz000155",
-    "name": "川能动力",
-    "sector": "热门标的",
-    "direction": "回调到位,资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从27%升至47%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位",
-      "资金回流"
-    ],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sz002028",
-    "name": "思源电气",
-    "sector": "电网设备",
-    "direction": "需求端驱动",
-    "pe": 25,
-    "profitGrowth": 35,
-    "reason": "电力设备,特别国债定向受益",
-    "roe": 12,
-    "grossMargin": 25,
-    "debtRatio": 38,
-    "riskFlags": [],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0
-  },
-  {
-    "code": "sz000881",
-    "name": "中广核技",
-    "sector": "热门标的",
-    "direction": "回调到位,资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从13%升至33%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位",
-      "资金回流"
-    ],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sz000011",
-    "name": "深物业A",
-    "sector": "热门标的",
-    "direction": "回调到位,资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从20%升至33%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位",
-      "资金回流"
-    ],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sh600956",
-    "name": "新天绿能",
-    "sector": "热门标的",
-    "direction": "回调到位,资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,资金回流）：高开趋势加速中；近期高开率从27%升至47%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位",
-      "资金回流"
-    ],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
-  {
-    "code": "sh605333",
-    "name": "沪光股份",
-    "sector": "光通信",
-    "direction": "回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位）：高开趋势加速中；近期高开率从33%升至67%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位"
-    ],
-    "healthScore": -999.0,
-    "dailyScore": 0,
-    "flow5d": 0,
-    "drop20d": 0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "isNew": true
-  },
   {
     "code": "sz000532",
     "name": "华金资本",
@@ -1360,33 +1257,13 @@ const STOCKS = [
     "rsi": 64.7
   },
   {
-    "code": "sh600519",
-    "name": "贵州茅台",
-    "sector": "食品饮料",
-    "direction": "戴维斯双击(估值修复)",
-    "pe": 22,
-    "profitGrowth": 15,
-    "reason": "白酒龙头,估值进入击球区,股息率高",
-    "roe": 30,
-    "grossMargin": 90,
-    "debtRatio": 15,
-    "riskFlags": [],
-    "healthScore": 64.7,
-    "dailyScore": 53.0,
-    "flow5d": 95933.0,
-    "drop20d": 3.1,
-    "consecutive": 3,
-    "kdjBonus": 0,
-    "rsi": 66.4
-  },
-  {
-    "code": "sz000612",
-    "name": "焦作万方",
+    "code": "sh600313",
+    "name": "农发种业",
     "sector": "热门标的",
     "direction": "资金回流,止跌回升",
     "pe": 0,
     "profitGrowth": 0,
-    "reason": "🆕动态选入（资金回流,止跌回升）：低价股(10.29元)，流动性好",
+    "reason": "🆕动态选入（资金回流,止跌回升）：高开趋势加速中；近期高开率从20%升至40%",
     "roe": 0,
     "grossMargin": 0,
     "debtRatio": 0,
@@ -1395,88 +1272,13 @@ const STOCKS = [
       "资金回流",
       "止跌回升"
     ],
-    "healthScore": 69.6,
-    "dailyScore": 52.3,
-    "flow5d": 3969.0,
-    "drop20d": -6.7,
-    "consecutive": 1,
+    "healthScore": 63.9,
+    "dailyScore": 51.7,
+    "flow5d": 849.0,
+    "drop20d": -6.2,
+    "consecutive": 0,
     "kdjBonus": 0,
-    "rsi": 39.8,
-    "isNew": true
-  },
-  {
-    "code": "sh603279",
-    "name": "景津装备",
-    "sector": "热门标的",
-    "direction": "资金回流,止跌回升",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（资金回流,止跌回升）：高开趋势加速中；近期高开率从47%升至67%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "资金回流",
-      "止跌回升"
-    ],
-    "healthScore": 67.2,
-    "dailyScore": 62.6,
-    "flow5d": 624.0,
-    "drop20d": -5.1,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 58.3,
-    "isNew": true
-  },
-  {
-    "code": "sh600094",
-    "name": "大名城",
-    "sector": "热门标的",
-    "direction": "回调到位,止跌回升",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（回调到位,止跌回升）：高开趋势加速中；近期高开率从20%升至47%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "回调到位",
-      "止跌回升"
-    ],
-    "healthScore": 66.3,
-    "dailyScore": 55.1,
-    "flow5d": -33.0,
-    "drop20d": -10.6,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 51.7,
-    "isNew": true
-  },
-  {
-    "code": "sh600595",
-    "name": "中孚实业",
-    "sector": "热门标的",
-    "direction": "资金流入,KDJ反转",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🆕动态选入（资金流入,KDJ反转）：高开趋势加速中；低价股(6.11元)，流动性好",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🆕动态选入",
-      "资金流入",
-      "KDJ反转"
-    ],
-    "healthScore": 65.6,
-    "dailyScore": 52.9,
-    "flow5d": 12232.0,
-    "drop20d": 0.8,
-    "consecutive": 1,
-    "kdjBonus": 5,
-    "rsi": 55.5,
+    "rsi": 50.5,
     "isNew": true
   },
   {
@@ -1505,13 +1307,83 @@ const STOCKS = [
     "isNew": true
   },
   {
-    "code": "sh600313",
-    "name": "农发种业",
+    "code": "sh600519",
+    "name": "贵州茅台",
+    "sector": "食品饮料",
+    "direction": "戴维斯双击(估值修复)",
+    "pe": 22,
+    "profitGrowth": 15,
+    "reason": "白酒龙头,估值进入击球区,股息率高",
+    "roe": 30,
+    "grossMargin": 90,
+    "debtRatio": 15,
+    "riskFlags": [],
+    "healthScore": 64.7,
+    "dailyScore": 53.0,
+    "flow5d": 95933.0,
+    "drop20d": 3.1,
+    "consecutive": 3,
+    "kdjBonus": 0,
+    "rsi": 66.4
+  },
+  {
+    "code": "sh600595",
+    "name": "中孚实业",
+    "sector": "热门标的",
+    "direction": "资金流入,KDJ反转",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（资金流入,KDJ反转）：高开趋势加速中；低价股(6.11元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "资金流入",
+      "KDJ反转"
+    ],
+    "healthScore": 65.6,
+    "dailyScore": 52.9,
+    "flow5d": 12232.0,
+    "drop20d": 0.8,
+    "consecutive": 1,
+    "kdjBonus": 5,
+    "rsi": 55.5,
+    "isNew": true
+  },
+  {
+    "code": "sh600094",
+    "name": "大名城",
+    "sector": "热门标的",
+    "direction": "回调到位,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位,止跌回升）：高开趋势加速中；近期高开率从20%升至47%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位",
+      "止跌回升"
+    ],
+    "healthScore": 66.3,
+    "dailyScore": 55.1,
+    "flow5d": -33.0,
+    "drop20d": -10.6,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 51.7,
+    "isNew": true
+  },
+  {
+    "code": "sh603279",
+    "name": "景津装备",
     "sector": "热门标的",
     "direction": "资金回流,止跌回升",
     "pe": 0,
     "profitGrowth": 0,
-    "reason": "🆕动态选入（资金回流,止跌回升）：高开趋势加速中；近期高开率从20%升至40%",
+    "reason": "🆕动态选入（资金回流,止跌回升）：高开趋势加速中；近期高开率从47%升至67%",
     "roe": 0,
     "grossMargin": 0,
     "debtRatio": 0,
@@ -1520,16 +1392,948 @@ const STOCKS = [
       "资金回流",
       "止跌回升"
     ],
-    "healthScore": 63.9,
-    "dailyScore": 51.7,
-    "flow5d": 849.0,
-    "drop20d": -6.2,
-    "consecutive": 0,
+    "healthScore": 67.2,
+    "dailyScore": 62.6,
+    "flow5d": 624.0,
+    "drop20d": -5.1,
+    "consecutive": 1,
     "kdjBonus": 0,
-    "rsi": 50.5,
+    "rsi": 58.3,
+    "isNew": true
+  },
+  {
+    "code": "sz000612",
+    "name": "焦作万方",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（资金回流,止跌回升）：低价股(10.29元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 69.6,
+    "dailyScore": 52.3,
+    "flow5d": 3969.0,
+    "drop20d": -6.7,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 39.8,
+    "isNew": true
+  },
+  {
+    "code": "sh600295",
+    "name": "鄂尔多斯",
+    "sector": "热门标的",
+    "direction": "资金回流,KDJ反转",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（资金回流,KDJ反转）：高开趋势加速中；近期高开率从33%升至47%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "资金回流",
+      "KDJ反转"
+    ],
+    "healthScore": 63.1,
+    "dailyScore": 58.9,
+    "flow5d": 2013.0,
+    "drop20d": -2.3,
+    "consecutive": 3,
+    "kdjBonus": 5,
+    "rsi": 76.8,
+    "isNew": true
+  },
+  {
+    "code": "sh603997",
+    "name": "继峰股份",
+    "sector": "热门标的",
+    "direction": "回调到位,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（回调到位,止跌回升）：高开趋势加速中；近期高开率从20%升至67%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "回调到位",
+      "止跌回升"
+    ],
+    "healthScore": 62.5,
+    "dailyScore": 65.1,
+    "flow5d": -203.0,
+    "drop20d": -12.3,
+    "consecutive": 4,
+    "kdjBonus": 0,
+    "rsi": 53.9,
+    "isNew": true
+  },
+  {
+    "code": "sh600722",
+    "name": "金牛化工",
+    "sector": "化工",
+    "direction": "资金回流,KDJ反转",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（资金回流,KDJ反转）：高开趋势加速中；近期高开率从27%升至47%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "资金回流",
+      "KDJ反转"
+    ],
+    "healthScore": 61.9,
+    "dailyScore": 53.8,
+    "flow5d": 3708.0,
+    "drop20d": -1.5,
+    "consecutive": 2,
+    "kdjBonus": 5,
+    "rsi": 56.4,
+    "isNew": true
+  },
+  {
+    "code": "sh601083",
+    "name": "锦江航运",
+    "sector": "军工",
+    "direction": "资金回流,企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（资金回流,企稳）：高开趋势加速中；温和量能，筹码稳定",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "资金回流",
+      "企稳"
+    ],
+    "healthScore": 61.6,
+    "dailyScore": 58.8,
+    "flow5d": 110.0,
+    "drop20d": -7.1,
+    "consecutive": 3,
+    "kdjBonus": 0,
+    "rsi": 56.1,
+    "isNew": true
+  },
+  {
+    "code": "sh603881",
+    "name": "数据港",
+    "sector": "热门标的",
+    "direction": "超跌,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（超跌,止跌回升）：高开趋势加速中；近期高开率从27%升至40%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "超跌",
+      "止跌回升"
+    ],
+    "healthScore": 60.6,
+    "dailyScore": 56.0,
+    "flow5d": -6097.0,
+    "drop20d": -27.7,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 48.8,
+    "isNew": true
+  },
+  {
+    "code": "sh603159",
+    "name": "上海亚虹",
+    "sector": "热门标的",
+    "direction": "超跌,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🆕动态选入（超跌,资金回流,止跌回升）：高开趋势加速中；近期高开率从40%升至53%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🆕动态选入",
+      "超跌",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 60.4,
+    "dailyScore": 57.7,
+    "flow5d": 362.0,
+    "drop20d": -30.3,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 61.3,
     "isNew": true
   }
 ];
+const LAUNCH_STOCKS = [
+  {
+    "code": "sh600985",
+    "name": "淮北矿业",
+    "sector": "有色金属",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 71.2,
+    "dailyScore": 54.3,
+    "flow5d": 6805.0,
+    "drop20d": -5.2,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 44.4,
+    "isNew": true
+  },
+  {
+    "code": "sh600486",
+    "name": "扬农化工",
+    "sector": "化工",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 温和量能，筹码稳定",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 70.4,
+    "dailyScore": 54.3,
+    "flow5d": 5204.0,
+    "drop20d": -5.6,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 44.8,
+    "isNew": true
+  },
+  {
+    "code": "sz002279",
+    "name": "久其软件",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（回调到位,资金回流,止跌回升）：高开趋势加速中; 近20天跌11%，超跌反弹概率大",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "回调到位",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 70.1,
+    "dailyScore": 48.7,
+    "flow5d": 326.0,
+    "drop20d": -11.1,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 49.7,
+    "isNew": true
+  },
+  {
+    "code": "sh603918",
+    "name": "金桥信息",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（回调到位,资金回流,止跌回升）：温和量能，筹码稳定; 近20天跌10%，超跌反弹概率大",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "回调到位",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 66.9,
+    "dailyScore": 46.6,
+    "flow5d": 511.0,
+    "drop20d": -10.3,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "rsi": 50.3,
+    "isNew": true
+  },
+  {
+    "code": "sh603178",
+    "name": "圣龙股份",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 66.7,
+    "dailyScore": 47.0,
+    "flow5d": 3921.0,
+    "drop20d": -5.8,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 56.6,
+    "isNew": true
+  },
+  {
+    "code": "sz000410",
+    "name": "沈阳机床",
+    "sector": "热门标的",
+    "direction": "回调到位,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（回调到位,资金回流,企稳）：温和量能，筹码稳定; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "回调到位",
+      "资金回流",
+      "企稳"
+    ],
+    "healthScore": 65.8,
+    "dailyScore": 45.7,
+    "flow5d": 539.0,
+    "drop20d": -11.4,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 48.5,
+    "isNew": true
+  },
+  {
+    "code": "sh600081",
+    "name": "东风科技",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：近期持续缩量，卖盘减少; 低价股(9.30元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 65.2,
+    "dailyScore": 49.3,
+    "flow5d": 240.0,
+    "drop20d": -7.0,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 55.4,
+    "isNew": true
+  },
+  {
+    "code": "sz002383",
+    "name": "合众思壮",
+    "sector": "热门标的",
+    "direction": "回调到位,企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（回调到位,企稳）：温和量能，筹码稳定; 近20天跌10%，超跌反弹概率大",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "回调到位",
+      "企稳"
+    ],
+    "healthScore": 63.9,
+    "dailyScore": 48.3,
+    "flow5d": -39.0,
+    "drop20d": -10.2,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 45.8,
+    "isNew": true
+  },
+  {
+    "code": "sz000786",
+    "name": "北新建材",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：温和量能，筹码稳定",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 63.6,
+    "dailyScore": 45.2,
+    "flow5d": 4311.0,
+    "drop20d": -6.0,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 52.6,
+    "isNew": true
+  },
+  {
+    "code": "sz000683",
+    "name": "博源化工",
+    "sector": "化工",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 低价股(5.69元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 63.3,
+    "dailyScore": 45.5,
+    "flow5d": 5574.0,
+    "drop20d": -9.5,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "rsi": 43.2,
+    "isNew": true
+  },
+  {
+    "code": "sh600651",
+    "name": "飞乐音响",
+    "sector": "热门标的",
+    "direction": "回调到位,企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（回调到位,企稳）：温和量能，筹码稳定; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "回调到位",
+      "企稳"
+    ],
+    "healthScore": 62.9,
+    "dailyScore": 48.2,
+    "flow5d": -752.0,
+    "drop20d": -12.9,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "rsi": 38.3,
+    "isNew": true
+  },
+  {
+    "code": "sh600517",
+    "name": "国网英大",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 62.3,
+    "dailyScore": 49.0,
+    "flow5d": 699.0,
+    "drop20d": -8.6,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 53.3,
+    "isNew": true
+  },
+  {
+    "code": "sz002537",
+    "name": "海联金汇",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：近期持续缩量，卖盘减少; 低价股(5.27元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 62.1,
+    "dailyScore": 47.3,
+    "flow5d": 620.0,
+    "drop20d": -9.1,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 48.1,
+    "isNew": true
+  },
+  {
+    "code": "sz000858",
+    "name": "五 粮 液",
+    "sector": "热门标的",
+    "direction": "资金流入,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金流入,止跌回升）：高开趋势加速中; 近期高开率从7%升至33%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金流入",
+      "止跌回升"
+    ],
+    "healthScore": 61.9,
+    "dailyScore": 48.5,
+    "flow5d": 47641.0,
+    "drop20d": -4.1,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 46.2,
+    "isNew": true
+  },
+  {
+    "code": "sh601601",
+    "name": "中国太保",
+    "sector": "热门标的",
+    "direction": "资金流入,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金流入,止跌回升）：近期持续缩量，卖盘减少; 近期放量高开密集，可能有催化事件",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金流入",
+      "止跌回升"
+    ],
+    "healthScore": 61.6,
+    "dailyScore": 46.1,
+    "flow5d": 34827.0,
+    "drop20d": -0.8,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 52.6,
+    "isNew": true
+  },
+  {
+    "code": "sh600100",
+    "name": "同方股份",
+    "sector": "热门标的",
+    "direction": "止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（止跌回升）：温和量能，筹码稳定; 低价股(6.42元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "止跌回升"
+    ],
+    "healthScore": 60.0,
+    "dailyScore": 48.9,
+    "flow5d": -147.0,
+    "drop20d": -9.7,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 47.1,
+    "isNew": true
+  },
+  {
+    "code": "sz002307",
+    "name": "北新路桥",
+    "sector": "热门标的",
+    "direction": "超跌,资金回流",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（超跌,资金回流,企稳）：高开趋势加速中; 近期高开率从27%升至40%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "超跌",
+      "资金回流",
+      "企稳"
+    ],
+    "healthScore": 59.9,
+    "dailyScore": 47.9,
+    "flow5d": 158.0,
+    "drop20d": -21.9,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 47.4,
+    "isNew": true
+  },
+  {
+    "code": "sz000951",
+    "name": "中国重汽",
+    "sector": "汽车",
+    "direction": "资金回流,企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,企稳）：近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "企稳"
+    ],
+    "healthScore": 58.5,
+    "dailyScore": 49.8,
+    "flow5d": 772.0,
+    "drop20d": -7.4,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 52.1,
+    "isNew": true
+  },
+  {
+    "code": "sh600640",
+    "name": "国脉文化",
+    "sector": "热门标的",
+    "direction": "资金回流,企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,企稳）：高开趋势加速中; 温和量能，筹码稳定",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "企稳"
+    ],
+    "healthScore": 58.0,
+    "dailyScore": 49.0,
+    "flow5d": 51.0,
+    "drop20d": -5.2,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 53.4,
+    "isNew": true
+  },
+  {
+    "code": "sh601808",
+    "name": "中海油服",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期高开率从7%升至47%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 57.7,
+    "dailyScore": 56.2,
+    "flow5d": 3249.0,
+    "drop20d": -2.5,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 62.4,
+    "isNew": true
+  },
+  {
+    "code": "sh600055",
+    "name": "万东医疗",
+    "sector": "医药",
+    "direction": "企稳",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（企稳）：高开趋势加速中; 近期高开率从33%升至53%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "企稳"
+    ],
+    "healthScore": 57.5,
+    "dailyScore": 59.7,
+    "flow5d": -155.0,
+    "drop20d": -7.9,
+    "consecutive": 3,
+    "kdjBonus": 0,
+    "rsi": 53.6,
+    "isNew": true
+  },
+  {
+    "code": "sz000708",
+    "name": "中信特钢",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期高开率从33%升至53%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 57.1,
+    "dailyScore": 58.1,
+    "flow5d": 1660.0,
+    "drop20d": -1.0,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 56.1,
+    "isNew": true
+  },
+  {
+    "code": "sh600583",
+    "name": "XD海油工",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 近期高开率从20%升至40%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 56.8,
+    "dailyScore": 52.6,
+    "flow5d": 2544.0,
+    "drop20d": -0.6,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 63.5,
+    "isNew": true
+  },
+  {
+    "code": "sz002241",
+    "name": "歌尔股份",
+    "sector": "热门标的",
+    "direction": "资金流入,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金流入,止跌回升）：高开趋势加速中; 近期高开率从27%升至40%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金流入",
+      "止跌回升"
+    ],
+    "healthScore": 56.6,
+    "dailyScore": 45.9,
+    "flow5d": 19698.0,
+    "drop20d": -3.8,
+    "consecutive": 0,
+    "kdjBonus": 0,
+    "rsi": 59.7,
+    "isNew": true
+  },
+  {
+    "code": "sh601598",
+    "name": "中国外运",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：高开趋势加速中; 低价股(5.53元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 55.9,
+    "dailyScore": 51.8,
+    "flow5d": 907.0,
+    "drop20d": 0.0,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 68.9,
+    "isNew": true
+  },
+  {
+    "code": "sz002410",
+    "name": "广联达",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：低价股(8.51元)，流动性好",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 55.9,
+    "dailyScore": 45.0,
+    "flow5d": 3040.0,
+    "drop20d": -3.1,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 59.8,
+    "isNew": true
+  },
+  {
+    "code": "sh601825",
+    "name": "沪农商行",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：温和量能，筹码稳定; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 55.6,
+    "dailyScore": 47.7,
+    "flow5d": 1663.0,
+    "drop20d": -2.6,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 55.0,
+    "isNew": true
+  },
+  {
+    "code": "sh601015",
+    "name": "陕西黑猫",
+    "sector": "热门标的",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：近期放量高开密集，可能有催化事件",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 55.6,
+    "dailyScore": 45.9,
+    "flow5d": 2178.0,
+    "drop20d": -3.2,
+    "consecutive": 1,
+    "kdjBonus": 0,
+    "rsi": 52.3,
+    "isNew": true
+  },
+  {
+    "code": "sh603317",
+    "name": "天味食品",
+    "sector": "食品饮料",
+    "direction": "资金回流,止跌回升",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,止跌回升）：温和量能，筹码稳定; 近期持续缩量，卖盘减少",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "止跌回升"
+    ],
+    "healthScore": 55.4,
+    "dailyScore": 47.6,
+    "flow5d": 1142.0,
+    "drop20d": -2.1,
+    "consecutive": 2,
+    "kdjBonus": 0,
+    "rsi": 47.9,
+    "isNew": true
+  },
+  {
+    "code": "sz000401",
+    "name": "金隅冀东",
+    "sector": "热门标的",
+    "direction": "资金回流,KDJ反转",
+    "pe": 0,
+    "profitGrowth": 0,
+    "reason": "🚀启动段（资金回流,KDJ反转,止跌回升）：高开趋势加速中; 近期高开率从20%升至40%",
+    "roe": 0,
+    "grossMargin": 0,
+    "debtRatio": 0,
+    "riskFlags": [
+      "🚀启动段",
+      "资金回流",
+      "KDJ反转",
+      "止跌回升"
+    ],
+    "healthScore": 55.1,
+    "dailyScore": 48.9,
+    "flow5d": 267.0,
+    "drop20d": -1.4,
+    "consecutive": 0,
+    "kdjBonus": 5,
+    "rsi": 62.9,
+    "isNew": true
+  }
+];
+
 const USER_T_STOCKS = [
     {
         "code": "sh600885",
@@ -1605,7 +2409,7 @@ async function fetchWithProxy(url) {
 let shIndexCache = { price: 0, changePct: 0 }; // 沪指数据
 
 async function fetchQuotes() {
-    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
+    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.map(s => s.code) : []), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
     const codes = [...new Set(_allCodes)].join(',');
     // 加入沪指 sh000001
     const url = 'https://qt.gtimg.cn/q=' + codes + ',sh000001';
@@ -1703,7 +2507,7 @@ async function fetchAllKlines() {
     // 性能优化：m1/m5/m30共用同一份同花顺分钟线数据(同花顺klt=60只返回一种分钟线)
     // 只请求一次分钟线 + 一次日线，请求数从120减到60
     const batchSize = 10; // 增大并发数
-    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
+    const _allCodes = [...STOCKS.map(s => s.code), ...(typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.map(s => s.code) : []), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
     const codes = [...new Set(_allCodes)];
 
     // 1. 获取分钟线（m1/m5/m30共用）
@@ -2252,9 +3056,9 @@ function calcSupportPrice(klines) {
     };
 }
 
-function detectPhase(klines, macd, rsi, maAlign) {
+function detectPhase(klines, macd, rsi, maAlign, changePct) {
     // 判断当前处于启动段 / 加速段 / 尾部段
-    // 基于：MACD状态 + RSI位置 + 均线排列 + 价格相对位置
+    // 基于：MACD状态 + RSI位置 + 均线排列 + 价格相对位置 + 当天涨跌
     if (!klines || klines.length < 30 || !macd || !rsi || !maAlign) return { phase: 'unknown', desc: '数据不足' };
 
     const prices = klines.map(k => k.close);
@@ -2263,6 +3067,7 @@ function detectPhase(klines, macd, rsi, maAlign) {
     const ma60 = prices.slice(-60).reduce((a, b) => a + b, 0) / 60;
     const high60 = Math.max(...prices.slice(-60));
     const diff = macd.dif, dea = macd.dea;
+    const chg = changePct || 0; // 当天涨跌幅
 
     // 辅助：判断MACD是否刚金叉（最近5个交易日内）
     const macdCross = diff !== undefined && dea !== undefined && diff > dea;
@@ -2293,18 +3098,24 @@ function detectPhase(klines, macd, rsi, maAlign) {
         return { phase: 'acceleration', desc: '加速（趋势强化）', color: '#4ecb71', score: 4 };
     }
 
-    // ===== 启动段判定 =====
-    // 1) MACD刚金叉不久 + RSI从低位回升 + 价格突破MA20
+    // ===== 启动段判定（加入当天涨跌过滤）=====
+    // 关键修复：当天跌超1%不给"启动"标签，改"观察（潜在反转）"
+    // 当天跌超3%直接不给启动类标签
+
+    // 1) MACD刚金叉不久 + RSI从低位回升 + 价格突破MA20 + 当天没大跌
     if (macdCross && diff < 0.8 && rsi >= 40 && rsi <= 65 && priceVsMA60 > -0.08 && maAlign.align !== 'bearish') {
-        return { phase: 'launch', desc: '启动（底部反转）', color: '#58a6ff', score: 3 };
+        if (chg >= -1) return { phase: 'launch', desc: '启动（底部反转）', color: '#58a6ff', score: 3 };
+        return { phase: 'waiting', desc: '观察（潜在反转）', color: '#d2a82d', score: 1 };
     }
-    // 2) 均线收敛后突破 + KDJ金叉
+    // 2) 均线收敛后突破 + MACD金叉 + 当天没大跌
     if (maAlign.align === 'mixed' && macdCross && rsi > 45 && priceVsMA60 > -0.05) {
-        return { phase: 'launch', desc: '启动（平台突破）', color: '#58a6ff', score: 3 };
+        if (chg >= -1) return { phase: 'launch', desc: '启动（平台突破）', color: '#58a6ff', score: 3 };
+        return { phase: 'waiting', desc: '观察（潜在反转）', color: '#d2a82d', score: 1 };
     }
-    // 3) 空头排列末期 + RSI见底回升
+    // 3) 空头排列末期 + RSI见底回升 → 降级为"观察"，不再标"启动"
     if (maAlign.align === 'bearish' && rsi > 35 && rsi < 52 && macdCross) {
-        return { phase: 'launch', desc: '启动（空翻多）', color: '#58a6ff', score: 2 };
+        if (chg > 0) return { phase: 'launch', desc: '启动（空翻多确认）', color: '#58a6ff', score: 2 };
+        return { phase: 'waiting', desc: '观察（空头待反转）', color: '#d2a82d', score: 1 };
     }
 
     // ===== 其他：震荡 / 观望 =====
@@ -2314,7 +3125,10 @@ function detectPhase(klines, macd, rsi, maAlign) {
 }
 
 function calcAllIndicators() {
-    for (const stock of STOCKS) {
+    // 同时处理两个池子的票
+    var allStocks = [...STOCKS];
+    if (typeof LAUNCH_STOCKS !== 'undefined') allStocks = [...allStocks, ...LAUNCH_STOCKS];
+    for (const stock of allStocks) {
         const code = stock.code;
         const cache = kdjCache[code];
         if (!cache) continue;
@@ -2358,8 +3172,9 @@ function calcAllIndicators() {
             // 均线排列 (日线)
             trendCache[code].maAlign = detectMAAlignment(dayKlines);
             
-            // 阶段判断（启动/加速/尾部）
-            const phaseResult = detectPhase(dayKlines, trendCache[code].macd, trendCache[code].rsi, trendCache[code].maAlign);
+            // 阶段判断（启动/加速/尾部）— 传入当天涨跌幅
+            var _chg = (quoteCache[code] && quoteCache[code].changePct) ? quoteCache[code].changePct : 0;
+            const phaseResult = detectPhase(dayKlines, trendCache[code].macd, trendCache[code].rsi, trendCache[code].maAlign, _chg);
             if (phaseResult) trendCache[code].phase = phaseResult;
         }
     }
@@ -2369,7 +3184,7 @@ function calcAllIndicators() {
 // ==================== 渲染 ====================
 
 function getStockData(code) {
-    const stock = STOCKS.find(s => s.code === code);
+    const stock = STOCKS.find(s => s.code === code) || (typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.find(s => s.code === code) : null) || {};
     const quote = quoteCache[code] || {};
     const ind = trendCache[code] || {};
     const kdj = ind.kdj || {};
@@ -2629,13 +3444,14 @@ function clearFilter() {
 }
 
 function renderStats() {
-    const total = STOCKS.length;
+    var _stocks = getActiveStocks();
+    const total = _stocks.length;
     let upCount = 0, downCount = 0;
     let kdjAlert5 = 0, kdjAlert30 = 0;
     let washoutCount = 0, distributeCount = 0;
     let launchCount = 0, accelCount = 0, exhaustCount = 0;
     
-    for (const stock of STOCKS) {
+    for (const stock of _stocks) {
         const d = getStockData(stock.code);
         if (d.changePct > 0) upCount++;
         else if (d.changePct < 0) downCount++;
@@ -2670,7 +3486,8 @@ function renderTable() {
     let html = '';
     
     let scoreList = [];
-    for (const stock of STOCKS) {
+    var _activeStocks = getActiveStocks();
+    for (const stock of _activeStocks) {
         const d = getStockData(stock.code);
         const score = calcCompositeScore(d);
         scoreList.push({ code: stock.code, score });
@@ -2712,7 +3529,7 @@ function renderTable() {
     }
 
     for (const code of sortedCodes) {
-        const stock = STOCKS.find(s => s.code === code);
+        const stock = _activeStocks.find(s => s.code === code);
         const d = getStockData(code);
         const changeCls = d.changePct > 0 ? 'up' : (d.changePct < 0 ? 'down' : '');
         const supportText = d.support ? `${d.support.price.toFixed(2)} (距${d.support.distance.toFixed(1)}%)` : '--';
