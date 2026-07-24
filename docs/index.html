@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1048</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1051</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -210,6 +210,7 @@ tr:hover td { background: var(--bg-hover); }
         <div class="stat-card" onclick="filterTable('kdj30')" data-filter="kdj30"><div class="label">30分钟KD超卖</div><div class="value down" id="statKdj30">--</div></div>
         <div class="stat-card" onclick="filterTable('washout')" data-filter="washout"><div class="label">洗盘信号</div><div class="value" id="statWashout" style="color:var(--purple)">--</div></div>
         <div class="stat-card" onclick="filterTable('distribute')" data-filter="distribute"><div class="label">出货警告</div><div class="value" id="statDistribute" style="color:var(--pink)">--</div></div>
+        <div class="stat-card" onclick="filterTable('launch')" data-filter="launch"><div class="label">🚀 启动段</div><div class="value" id="statLaunch" style="color:#58a6ff">--</div></div>
         <div class="stat-card" onclick="filterTable('acceleration')" data-filter="acceleration"><div class="label">🔥 加速段</div><div class="value" id="statAccel" style="color:#4ecb71">--</div></div>
         <div class="stat-card" onclick="filterTable('exhaustion')" data-filter="exhaustion"><div class="label">⚠️ 尾部段</div><div class="value" id="statExhaust" style="color:#ff6b6b">--</div></div>
     </div>
@@ -3537,7 +3538,7 @@ function renderStats() {
     let upCount = 0, downCount = 0;
     let kdjAlert5 = 0, kdjAlert30 = 0;
     let washoutCount = 0, distributeCount = 0;
-    let accelCount = 0, exhaustCount = 0;
+    let launchCount = 0, accelCount = 0, exhaustCount = 0;
     
     for (const stock of _stocks) {
         const d = getStockData(stock.code);
@@ -3550,6 +3551,7 @@ function renderStats() {
         if (d.signal.signal === 'distribute') distributeCount++;
 
         const p = (trendCache[stock.code] || {}).phase;
+        if (p && p.phase === 'launch') launchCount++;
         if (p && p.phase === 'acceleration') accelCount++;
         if (p && p.phase === 'exhaustion') exhaustCount++;
     }
@@ -3561,6 +3563,7 @@ function renderStats() {
     document.getElementById('statKdj30').textContent = kdjAlert30;
     document.getElementById('statWashout').textContent = washoutCount;
     document.getElementById('statDistribute').textContent = distributeCount;
+    document.getElementById('statLaunch').textContent = launchCount;
     document.getElementById('statAccel').textContent = accelCount;
     document.getElementById('statExhaust').textContent = exhaustCount;
     document.getElementById('lastUpdate').textContent = '行情: ' + (lastUpdateTime || '更新中...');
@@ -3594,6 +3597,7 @@ function renderTable() {
                 case 'kdj30': return d.kdj.m30 && d.kdj.m30.v < 20;
                 case 'washout': return d.signal.signal === 'washout';
                 case 'distribute': return d.signal.signal === 'distribute';
+                case 'launch': return ind.phase && ind.phase.phase === 'launch';
                 case 'acceleration': return ind.phase && ind.phase.phase === 'acceleration';
                 case 'exhaustion': return ind.phase && ind.phase.phase === 'exhaustion';
                 default: return true;
