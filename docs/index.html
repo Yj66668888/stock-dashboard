@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1604</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1619</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -2916,9 +2916,9 @@ const USER_T_STOCKS = [
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
 
-const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz002028"]}], "supply": [{"name": "军工装备国产化", "policy": "国防预算持续增长+装备现代化加速,军工产业链国产化率持续提升", "logic": "十四五装备采购放量+国产替代深化,军工电子/材料/发动机环节确定性高", "stocks": ["sh603885", "sh601606"]}, {"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sh600309", "sh603049", "sz002258", "sz002092", "sz002226", "sz000703", "sz000949", "sh600409"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sh603799", "sh600362", "sh600711", "sz002155", "sh601061", "sh600916", "sz000506", "sh600547"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sz002173"]}], "demand": [{"name": "低空经济", "policy": "低空经济政策密集出台,无人机物流/城市空中交通商业化加速", "logic": "低空经济从概念走向落地,eVTOL/无人机/空管系统产业链受益", "stocks": ["sh603885", "sh601606"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sh603799", "sh600362", "sh600711", "sz002155", "sh601061", "sh600916", "sz000506", "sh600547"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sz002173"]}, {"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz002028"]}]};
+const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"]}, {"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz002028"]}], "supply": [{"name": "军工装备国产化", "policy": "国防预算持续增长+装备现代化加速,军工产业链国产化率持续提升", "logic": "十四五装备采购放量+国产替代深化,军工电子/材料/发动机环节确定性高", "stocks": ["sh601606", "sh603885"]}, {"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sz000949", "sz000683", "sz002064", "sz002092", "sh600346", "sh600309", "sz002493", "sh603049"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sh600547", "sh601121", "sh600985", "sh601061", "sh600489", "sh600711", "sz001337", "sh603799"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sz002173"]}], "demand": [{"name": "低空经济", "policy": "低空经济政策密集出台,无人机物流/城市空中交通商业化加速", "logic": "低空经济从概念走向落地,eVTOL/无人机/空管系统产业链受益", "stocks": ["sh601606", "sh603885"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sh600547", "sh601121", "sh600985", "sh601061", "sh600489", "sh600711", "sz001337", "sh603799"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sz002173"]}, {"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz002028"]}]};
 
-const EARNINGS_VERIFIED = [{"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sh600309", "sh603049", "sz002258", "sz002092", "sz002226", "sz000703", "sz000949", "sh600409"], "status": "价格传导期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"], "status": "中报密集验证期"}];
+const EARNINGS_VERIFIED = [{"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sz000949", "sz000683", "sz002064", "sz002092", "sh600346", "sh600309", "sz002493", "sh603049"], "status": "价格传导期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sz000561", "sh603175", "sz002052", "sh600570", "sz001365", "sz002036", "sz002690", "sz002546"], "status": "中报密集验证期"}];
 
 
 // ==================== 行情数据获取 ====================
@@ -3057,12 +3057,13 @@ async function fetchKline(code, period, count) {
     }
 }
 
-// 东方财富1分钟K线API（含当日实时数据）
+// 东方财富K线API（支持任意周期：1=1分钟, 5=5分钟, 30=30分钟, 101=日线）
 async function fetchKlineEM(code, klt, count) {
     try {
         const sym = code.substring(2);
         const secid = code.startsWith('sh') ? `1.${sym}` : `0.${sym}`;
-        const url = `https://push2.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=${klt}&fqt=0&end=20500101&lmt=${count}`;
+        // ut token 是东方财富新版API的必需参数
+        const url = `https://push2.eastmoney.com/api/qt/stock/kline/get?secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt=${klt}&fqt=0&end=20500101&lmt=${count}&ut=fa5fd1943c7b386f172d6893dbfba10b`;
         const resp = await fetchWithProxy(url);
         if (!resp) return null;
         const data = await resp.json();
@@ -3150,24 +3151,48 @@ function resampleKlines(klines, period) {
 }
 
 async function fetchAllKlines() {
-    // 全部用同花顺API：5分钟(period=02)直接用于KDJ(5)，合成30分钟(每6根5分钟→1根30分钟)
-    // 日线(period=01)用于MACD/RSI/均线/趋势等指标
+    // 优先用东方财富原生5分钟/30分钟K线（含当日实时数据，KDJ与同花顺一致）
+    // 失败则fallback同花顺：5分钟(period=02) + 合成30分钟(每6根→1根30分钟)
+    // 日线用同花顺(period=01)，用于MACD/RSI/均线/趋势等
     const batchSize = 6;
     const _allCodes = [...STOCKS.map(s => s.code), ...(typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.map(s => s.code) : []), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
     const codes = [...new Set(_allCodes)];
 
-    // 1. 获取5分钟线（同花顺period=02，140根≈3天）+ 合成30分钟
+    let emSuccess = 0, emFail = 0;
+
+    // 1. 获取分钟线：优先东方财富原生klt=5/klt=30
     for (let i = 0; i < codes.length; i += batchSize) {
         const batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async (code) => {
-            const k5 = await fetchKline(code, '5min', 140);
-            if (k5) {
+            // 并发尝试东方财富原生5分钟(200根≈3天)和30分钟(80根≈2周)
+            const [emK5, emK30] = await Promise.all([
+                fetchKlineEM(code, 5, 200),
+                fetchKlineEM(code, 30, 80)
+            ]);
+
+            if (emK5 && emK30) {
+                // 东方财富成功 → 直接用原生K线
                 if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['m5'] = k5;
-                kdjCache[code]['m30'] = resampleKlines(k5, 6); // 6根5分钟→1根30分钟
+                kdjCache[code]['m5'] = emK5;
+                kdjCache[code]['m30'] = emK30;
+                kdjCache[code]['_src'] = 'EM'; // 标记数据源
+                emSuccess++;
+            } else {
+                // 东方财富失败 → fallback同花顺5分钟 + 合成30分钟
+                emFail++;
+                const k5 = await fetchKline(code, '5min', 140);
+                if (k5) {
+                    if (!kdjCache[code]) kdjCache[code] = {};
+                    kdjCache[code]['m5'] = k5;
+                    kdjCache[code]['m30'] = resampleKlines(k5, 6);
+                    kdjCache[code]['_src'] = 'THS';
+                }
             }
         }));
     }
+    console.log(`[KDJ数据源] 东方财富成功:${emSuccess} 回退同花顺:${emFail}`);
+
+    // 分钟线获取完，先渲染一次（KDJ可用了）
     calcAllIndicators();
     renderAll();
 
@@ -3304,16 +3329,32 @@ async function fetchLimitStockKlines(codes) {
     var batchSize = 4; // 数据量增大，降低并发
     var fetched = [];
 
-    // 1. 获取5分钟线（同花顺period=02）+ 合成30分钟（每6根5分钟→1根30分钟）
+    // 1. 获取分钟线：优先东方财富原生klt=5/klt=30，失败则fallback同花顺
     for (var i = 0; i < codes.length; i += batchSize) {
         var batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async function(code) {
-            var k5 = await fetchKline(code, '5min', 140);
-            if (k5) {
+            // 并发尝试东方财富原生5分钟和30分钟
+            var results = await Promise.all([
+                fetchKlineEM(code, 5, 200),
+                fetchKlineEM(code, 30, 80)
+            ]);
+            var emK5 = results[0], emK30 = results[1];
+
+            if (emK5 && emK30) {
+                // 东方财富成功
                 if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['m5'] = k5;
-                kdjCache[code]['m30'] = resampleKlines(k5, 6);
+                kdjCache[code]['m5'] = emK5;
+                kdjCache[code]['m30'] = emK30;
                 fetched.push(code);
+            } else {
+                // Fallback 同花顺
+                var k5 = await fetchKline(code, '5min', 140);
+                if (k5) {
+                    if (!kdjCache[code]) kdjCache[code] = {};
+                    kdjCache[code]['m5'] = k5;
+                    kdjCache[code]['m30'] = resampleKlines(k5, 6);
+                    fetched.push(code);
+                }
             }
         }));
         // 每批完成后重算KDJ并刷新
@@ -3347,9 +3388,8 @@ function calcMarketLimitIndicators(codes) {
 
         ['m5', 'm30'].forEach(function(period) {
             var klines = cache[period];
-            var n = period === 'm5' ? 3 : 5;
-            if (klines && klines.length >= n + 1) {
-                var kdj = calcKDJ(klines, n);
+            if (klines && klines.length >= 10) {
+                var kdj = calcKDJ(klines, 9);
                 if (kdj && kdj.length > 0) {
                     var last = kdj[kdj.length - 1];
                     var fused = Math.round((last.k + last.d) / 2 * 100) / 100;
