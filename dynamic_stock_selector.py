@@ -523,54 +523,183 @@ def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score
     return (min(r_score, 10), r_type, r_diag)
 
 
+def calc_pre_launch_setup(drop_20d, latest_chg, flow_5d, flow_10d, daily,
+                          kdj_bonus=0, rsi=None, avg_vol_up=None):
+    """
+    预启动信号检测（0-100分）
+    
+    不要求当天已涨！专门检测"跌到位了但还没涨"的前置信号：
+    1. 回调到位          0-25分  — 跌到黄金回调位
+    2. 跌速放缓          0-20分  — 跌不动了（最佳预启动信号）
+    3. 资金反转          0-30分  — 跌势中资金掉头 ← 核心！
+    4. 筑底技术信号       0-25分  — KDJ钝化 + 极度缩量 + RSI超卖
+    
+    Returns: (score, phase, signals_list)
+        phase: 'on_deck'(启动在即,>=65) | 'approaching'(接近启动,>=45) | 'building'(筑底,>=30) | 'weak'(弱)
+    """
+    score = 0
+    signals = []
+    
+    # ========== 1. 回调到位（0-25）==========
+    if -20 <= drop_20d <= -10:
+        score += 25
+        signals.append('黄金回调位')
+    elif -15 <= drop_20d <= -8:
+        score += 20
+        signals.append('回调到位')
+    elif -25 <= drop_20d < -20:
+        score += 15
+        signals.append('深度回调')
+    elif -30 <= drop_20d < -25:
+        score += 10
+        signals.append('超跌区')
+    elif -8 < drop_20d <= -3:
+        score += 8
+    elif -3 < drop_20d <= 0:
+        score += 4
+    else:
+        score += 1  # 没跌/已涨 → 不是预启动场景
+    
+    # ========== 2. 跌速放缓（0-20）==========
+    # 核心逻辑：预启动不看涨了多少，看"跌不动了"
+    if -0.5 <= latest_chg <= 0.5:
+        score += 20       # 🎯 止跌企稳 → 最佳预启动信号！
+        signals.append('止跌企稳')
+    elif 0.5 < latest_chg <= 1.5:
+        score += 15       # 微幅反弹（还没飞）
+    elif -1 <= latest_chg < -0.5:
+        score += 12       # 跌速放缓
+        signals.append('跌速放缓')
+    elif -2 <= latest_chg < -1:
+        score += 6        # 仍在阴跌
+    elif latest_chg > 1.5:
+        score += 5        # 已启动（预启动不给高分，这是"已涨"票）
+        signals.append('已启动')
+    else:
+        score += 0        # 加速下跌
+    
+    # ========== 3. 资金反转（0-30）==========
+    # 最关键的前瞻信号：跌市中资金开始掉头
+    has_daily = daily and len(daily) >= 3
+    
+    if flow_10d is not None and flow_10d < 0 and flow_5d > 0:
+        score += 30       # 🔥 资金反转！跌市中资金掉头 → 最强信号
+        signals.append('💰资金反转')
+    elif flow_5d > 5000:
+        score += 20
+        signals.append('💰持续流入')
+    elif 0 < flow_5d <= 5000:
+        score += 14
+    elif flow_5d < 0 and flow_10d is not None and flow_5d > flow_10d * 0.5:
+        score += 8        # 流出减速
+        signals.append('流出减缓')
+    elif -5000 <= flow_5d <= 0:
+        score += 3        # 流出收敛
+    
+    # 连续小额试探（缩量小买）
+    if has_daily:
+        recent = daily[-3:]
+        small_probe = sum(1 for d in recent if 0 < d.get('net_flow', 0) < 5000)
+        if small_probe >= 2:
+            score += 5
+            signals.append('持续试探')
+    
+    # ========== 4. 筑底技术信号（0-25）==========
+    tech = 0
+    
+    # KDJ 底部钝化
+    if kdj_bonus >= 3:
+        tech += 8
+    elif kdj_bonus >= 1:
+        tech += 4
+    
+    # 极度缩量 → 卖盘枯竭，快变盘了
+    if avg_vol_up is not None:
+        if avg_vol_up < 0.7:
+            tech += 10
+            signals.append('极度缩量')
+        elif avg_vol_up < 0.85:
+            tech += 7
+            signals.append('缩量筑底')
+        elif avg_vol_up < 0.95:
+            tech += 3
+    
+    # RSI 超卖
+    if rsi is not None:
+        if rsi < 25:
+            tech += 7
+            signals.append('RSI深度超卖')
+        elif rsi < 35:
+            tech += 5
+            signals.append('RSI超卖')
+        elif rsi < 45:
+            tech += 2
+    
+    score += min(tech, 25)
+    
+    # 确定阶段
+    score = min(score, 100)
+    if score >= 65:
+        phase = 'on_deck'
+    elif score >= 45:
+        phase = 'approaching'
+    elif score >= 30:
+        phase = 'building'
+    else:
+        phase = 'weak'
+    
+    return score, phase, signals
+
+
 def calc_launch_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonus=0, rsi=None):
     """
     ④ 启动段股性层（重仓版，0-55分）
     
-    位置(20) + 跌速(20) + 技术(15) = 55
-    启动段核心：回调到位 + 止跌确认
+    位置(22) + 跌速(15) + 技术(18) = 55
+    改动要点：跌速评分不再偏袒已涨票，止跌企稳比"已涨2%"更高分
     """
     t_score = 0
     
-    # === 位置评估（0-20分）=== — 核心！回调-10%~-20%最优
+    # === 位置评估（0-22分）=== — 核心！回调-10%~-20%最优
     if -20 <= drop_20d <= -10:
-        t_score += 20   # 回调到位
+        t_score += 22   # 回调到位
     elif -25 <= drop_20d < -20:
-        t_score += 16   # 稍深有反弹空间
+        t_score += 18   # 稍深有反弹空间
     elif -10 < drop_20d <= -5:
-        t_score += 14   # 浅回调
+        t_score += 15   # 浅回调
     elif -30 <= drop_20d < -25:
-        t_score += 10   # 深度超跌
+        t_score += 11   # 深度超跌
     elif -5 < drop_20d <= 0:
         t_score += 8    # 微调
     elif 0 < drop_20d <= 5:
-        t_score += 3    # 小涨
+        t_score += 4    # 小涨
     elif drop_20d < -30:
         t_score += 5    # 太深
     else:
         t_score += 1    # 追高不选
     
-    # === 跌速判断（0-20分）=== — 必须止跌！
-    if latest_chg > 3:
-        t_score += 20   # 强反弹启动
-    elif latest_chg > 1:
-        t_score += 18   # 止跌回升
-    elif latest_chg > 0:
-        t_score += 14   # 微弱回升
-    elif latest_chg > -1:
-        t_score += 8    # 跌势放缓
-    elif latest_chg > -2:
-        t_score += 3    # 阴跌
+    # === 跌速判断（0-15分）=== — 重新平衡！
+    # 核心改动：不追已涨票，止跌企稳拿最高分
+    if -0.5 <= latest_chg <= 1:
+        t_score += 15   # 🎯 止跌企稳 → 最高分（还没飞，最佳介入点）
+    elif -1 <= latest_chg < -0.5:
+        t_score += 12   # 跌速放缓（接近止跌）
+    elif 1 < latest_chg <= 2:
+        t_score += 10   # 小幅启动（已经有点晚了）
+    elif -2 <= latest_chg < -1:
+        t_score += 6    # 阴跌
+    elif latest_chg > 2:
+        t_score += 4    # 已起飞（不追）
     else:
         t_score += 0    # 加速下跌
     
     # 连续上涨惩罚
     if consecutive >= 6:
-        t_score -= 4
+        t_score -= 5
     elif consecutive >= 4:
         t_score -= 2
     
-    # === 技术信号（0-15分）===
+    # === 技术信号（0-18分）=== — 增强缩量和超卖权重
     tech = 0
     if kdj_bonus >= 7:
         tech += 7
@@ -579,16 +708,25 @@ def calc_launch_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, k
     elif kdj_bonus >= 3:
         tech += 3
     
-    if avg_vol_up is not None and 0 < avg_vol_up < 0.95:
-        tech += 5  # 缩量止跌
+    # 缩量 — 分级强化
+    if avg_vol_up is not None and avg_vol_up > 0:
+        if avg_vol_up < 0.7:
+            tech += 8  # 极度缩量 → 变盘前兆
+        elif avg_vol_up < 0.85:
+            tech += 6  # 明显缩量
+        elif avg_vol_up < 0.95:
+            tech += 4  # 轻微缩量
     
+    # RSI 超卖
     if rsi is not None:
-        if rsi < 30:
-            tech += 3  # 超卖
-        elif rsi < 40:
-            tech += 2  # 偏低
+        if rsi < 25:
+            tech += 5  # 深度超卖
+        elif rsi < 35:
+            tech += 3  # 超卖区
+        elif rsi < 45:
+            tech += 1  # 偏低
     
-    t_score += min(tech, 15)
+    t_score += min(tech, 18)
     
     return min(t_score, 55)
 
@@ -694,9 +832,12 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
         # 1. 僵尸票排除
         if is_zombie(score, flow_5d):
             continue
-        # 2. 当天跌幅超1% → 还在加速跌，不选
-        if latest_chg < -1:
-            continue
+        # 2. 当天跌幅超1% → 预启动检测（不再硬踢，先算预启动分再决定）
+        #    只有加速下跌(<-2)且无资金反转的才踢
+        if latest_chg < -2:
+            # 检查资金反转信号：5日流入>0 但 10日<0
+            if not (flow_10d is not None and flow_10d < 0 and flow_5d > 0):
+                continue  # 加速下跌+无资金反转 → 踢
         # 3. 20日涨幅>5% → 已经涨起来，不是启动段
         if drop_20d > 5:
             continue
@@ -718,7 +859,17 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
                                               latest_chg, avg_vol_up, kdj_bonus, rsi,
                                               sector_tier=c_tier, ratio_5d=c_ratio_5d, ratio_10d=c_ratio_10d,
                                               daily=daily, code=code, fundamental_data=fundamental_data)
-        if health == -999 or health < 40:
+        
+        # 计算预启动分数（不要求当天已涨）
+        pre_score, pre_phase, pre_signals = calc_pre_launch_setup(
+            drop_20d, latest_chg, flow_5d, flow_10d, daily,
+            kdj_bonus, rsi, avg_vol_up
+        )
+        
+        # 放宽门槛：预启动≥65 或 健康度≥35（原40）
+        if health == -999:
+            continue
+        if health < 35 and pre_score < 65:
             continue
 
         candidates.append({
@@ -739,10 +890,14 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
             'ratio_5d': c_ratio_5d,
             'ratio_10d': c_ratio_10d,
             'reasons': pr.get('reasons', []),
-            'confidence': pr.get('confidence', '')
+            'confidence': pr.get('confidence', ''),
+            'pre_launch_score': pre_score,
+            'pre_launch_phase': pre_phase,
+            'pre_launch_signals': pre_signals
         })
 
-    candidates.sort(key=lambda x: x['launch_health'], reverse=True)
+    # 复合排序：70%健康度 + 30%预启动分，预启动高分的票不被埋没
+    candidates.sort(key=lambda x: x['launch_health'] * 0.7 + x.get('pre_launch_score', 0) * 0.3, reverse=True)
     return candidates[:LAUNCH_COUNT], len(candidates)
 
 
@@ -779,6 +934,14 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
         
         # 标签
         tags = []
+        # 预启动标签优先
+        pre_phase = c.get('pre_launch_phase', '')
+        pre_signals = c.get('pre_launch_signals', [])
+        if pre_phase == 'on_deck':
+            tags.append('⏳启动在即')
+        elif pre_phase == 'approaching':
+            tags.append('🔍接近启动')
+        
         if -20 <= c['drop_20d'] <= -10:
             tags.append('回调到位')
         elif c['drop_20d'] < -20:
@@ -787,14 +950,21 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             tags.append('资金流入')
         elif c['flow_5d'] > 0:
             tags.append('资金回流')
+        # 资金反转
+        if '💰资金反转' in pre_signals:
+            tags.append('资金反转')
         if c['kdj_bonus'] >= 5:
             tags.append('KDJ反转')
-        if c['avg_vol_up'] is not None and c['avg_vol_up'] < 0.95:
+        if c['avg_vol_up'] is not None and c['avg_vol_up'] < 0.85:
+            tags.append('缩量筑底')
+        elif c['avg_vol_up'] is not None and c['avg_vol_up'] < 0.95:
             tags.append('缩量止跌')
-        if c['latest_chg'] > 1:
-            tags.append('止跌回升')
+        if -0.5 <= c['latest_chg'] <= 0.5:
+            tags.append('止跌企稳')
         elif c['latest_chg'] > 0:
             tags.append('企稳')
+        elif c['latest_chg'] > -1:
+            tags.append('跌势放缓')
         if c.get('sector_tier'):
             tags.append(f'T{c["sector_tier"]}板块共振')
         if c.get('ratio_5d') and c['ratio_5d'] > 2:
@@ -814,6 +984,13 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
         if moat_diag and moat_diag != '无基本面数据':
             funnel_parts.append(f'③{moat_diag}')
 
+        # 区分预启动 vs 已启动的阶段标识
+        phase_tag = '🚀启动段'
+        if pre_phase == 'on_deck':
+            phase_tag = '⏳预启动'
+        elif pre_phase == 'approaching':
+            phase_tag = '🔍待启动'
+
         s = {
             'code': to_prefixed_code(c['code']),
             'name': c['name'],
@@ -821,11 +998,11 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             'direction': ','.join(tags[:2]) if tags else '启动段',
             'pe': pe_val,
             'profitGrowth': 0,
-            'reason': f"🚀启动段（{','.join(tags[:3]) if tags else '综合'}）{' | '.join(funnel_parts[:2])}｜{reasons_str}",
+            'reason': f"{phase_tag}（{','.join(tags[:3]) if tags else '综合'}）{' | '.join(funnel_parts[:2])}｜{reasons_str}",
             'roe': roe_val,
             'grossMargin': 0,
             'debtRatio': fd.get('debt_ratio', 0) or 0,
-            'riskFlags': ['🚀启动段'] + tags[:5],
+            'riskFlags': [phase_tag] + tags[:5],
             'healthScore': c['launch_health'],
             'dailyScore': c['score'],
             'flow5d': c['flow_5d'],
@@ -836,6 +1013,9 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             'sectorTier': c.get('sector_tier'),
             'ratio5d': c.get('ratio_5d'),
             'ratio10d': c.get('ratio_10d'),
+            'preLaunchScore': c.get('pre_launch_score', 0),
+            'preLaunchPhase': pre_phase,
+            'preLaunchSignals': pre_signals[:3],
             'isNew': True
         }
         stocks.append(s)
@@ -1095,13 +1275,19 @@ def main():
     launch_stocks = build_launch_stocks(launch_picks, fundamental_data=fundamental_data)
 
     print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(launch_stocks)}只")
-    print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 ===")
+    # 统计预启动票数
+    pre_on_deck = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'on_deck')
+    pre_approaching = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'approaching')
+    print(f"  ⏳预启动在即: {pre_on_deck}只 | 🔍接近启动: {pre_approaching}只 | 🚀已启动: {len(launch_picks) - pre_on_deck - pre_approaching}只")
+    print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 | 预启动 ===")
     for c in launch_picks:
         pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
-        flow_flag = '💰' if c['flow_5d'] > 0 else ''
-        mom_flag = '🟢回升' if c['latest_chg'] > 0 else ('🟡企稳' if c['latest_chg'] > -1 else '')
+        flow_flag = '💰资金反转' if '💰资金反转' in c.get('pre_launch_signals', []) else ('💰' if c['flow_5d'] > 0 else '')
+        mom_flag = '🟢已回升' if c['latest_chg'] > 0.5 else ('🟡止跌' if c['latest_chg'] > -0.5 else ('🔴阴跌' if c['latest_chg'] > -2 else ''))
         kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
         rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
+        pre_flag = f'⏳{c.get("pre_launch_score",0):.0f}' if c.get('pre_launch_phase') in ('on_deck', 'approaching') else ''
+        vol_flag = '📉极度缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.7) else ('📉缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.85) else '')
         details = c.get('details', {})
         cap = details.get('capital', (0,0,''))[1] if details.get('capital') else 0
         rat = details.get('rationale', (0,'',''))[0] if details.get('rationale') else 0
@@ -1110,7 +1296,7 @@ def main():
         funnel = f' ①{cap:.0f}②{rat:.0f}③{moat:.0f}④{trad:.0f}'
         rat_type = details.get('rationale', (0,'',''))[1] if details.get('rationale') else ''
         rat_label = f' [{rat_type}]' if rat_type and rat_type != '无明确驱动' else ''
-        print(f"  {c['launch_health']:5.1f} | {c['name']:6s}{funnel}{rat_label} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag}")
+        print(f"  {c['launch_health']:5.1f} | {c['name']:6s}{funnel}{rat_label} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag} {pre_flag}")
 
     # 输出启动段池 JSON
     launch_output = {
