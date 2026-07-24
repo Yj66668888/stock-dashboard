@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0723-1415</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1048</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -200,7 +200,6 @@ tr:hover td { background: var(--bg-hover); }
 <div class="content tab-content active" id="content-main">
     <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
         <button id="poolBtnStocks" onclick="switchPool('STOCKS')" style="background:var(--blue);border:1px solid var(--blue);color:#fff;border-radius:6px;padding:5px 16px;font-size:13px;cursor:pointer;font-weight:600">📊 综合最优 (30只)</button>
-        <button id="poolBtnLaunch" onclick="switchPool('LAUNCH')" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;padding:5px 16px;font-size:13px;cursor:pointer">🚀 启动段候选 (30只)</button>
         <span id="poolInfo" style="font-size:11px;color:var(--text-dim);margin-left:8px"></span>
     </div>
     <div class="stats-bar" id="statsBar">
@@ -211,7 +210,6 @@ tr:hover td { background: var(--bg-hover); }
         <div class="stat-card" onclick="filterTable('kdj30')" data-filter="kdj30"><div class="label">30分钟KD超卖</div><div class="value down" id="statKdj30">--</div></div>
         <div class="stat-card" onclick="filterTable('washout')" data-filter="washout"><div class="label">洗盘信号</div><div class="value" id="statWashout" style="color:var(--purple)">--</div></div>
         <div class="stat-card" onclick="filterTable('distribute')" data-filter="distribute"><div class="label">出货警告</div><div class="value" id="statDistribute" style="color:var(--pink)">--</div></div>
-        <div class="stat-card" onclick="filterTable('launch')" data-filter="launch"><div class="label">🚀 启动段</div><div class="value" id="statLaunch" style="color:#58a6ff">--</div></div>
         <div class="stat-card" onclick="filterTable('acceleration')" data-filter="acceleration"><div class="label">🔥 加速段</div><div class="value" id="statAccel" style="color:#4ecb71">--</div></div>
         <div class="stat-card" onclick="filterTable('exhaustion')" data-filter="exhaustion"><div class="label">⚠️ 尾部段</div><div class="value" id="statExhaust" style="color:#ff6b6b">--</div></div>
     </div>
@@ -807,35 +805,17 @@ let lastUpdateTime = '';
 let capitalFlowCache = {};
 let sectorIndexCache = {}; // 申万一级行业板块指数缓存 {板块名: {pct: 涨跌幅, price: 指数点位}}
 let activeFilter = null; // 当前统计卡片筛选条件
-let activePool = 'STOCKS'; // 当前显示的池子: 'STOCKS'(综合最优) 或 'LAUNCH'(启动段候选)
 
 function getActiveStocks() {
-    return activePool === 'LAUNCH' ? (typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS : []) : STOCKS;
+    return STOCKS;
 }
 
 function switchPool(pool) {
-    if (pool === activePool) return;
-    activePool = pool;
-    // 更新按钮样式
-    var btnS = document.getElementById('poolBtnStocks');
-    var btnL = document.getElementById('poolBtnLaunch');
-    if (pool === 'LAUNCH') {
-        btnS.style.background = 'var(--bg-card)'; btnS.style.borderColor = 'var(--border)'; btnS.style.color = 'var(--text-dim)'; btnS.style.fontWeight = '400';
-        btnL.style.background = 'var(--blue)'; btnL.style.borderColor = 'var(--blue)'; btnL.style.color = '#fff'; btnL.style.fontWeight = '600';
-        document.getElementById('poolInfo').textContent = '🚀 启动段候选: 回调到位+止跌企稳+技术确认';
-    } else {
-        btnL.style.background = 'var(--bg-card)'; btnL.style.borderColor = 'var(--border)'; btnL.style.color = 'var(--text-dim)'; btnL.style.fontWeight = '400';
-        btnS.style.background = 'var(--blue)'; btnS.style.borderColor = 'var(--blue)'; btnS.style.color = '#fff'; btnS.style.fontWeight = '600';
-        document.getElementById('poolInfo').textContent = '';
-    }
-    // 清除筛选
+    // 已移除启动段池切换，统一显示综合最优池
+    // 保留此函数以防有外部调用，默认无副作用
     activeFilter = null;
     var fs = document.getElementById('filterStatus');
     if (fs) fs.style.display = 'none';
-    // 重新计算指标和渲染
-    calcAllIndicators();
-    renderTable();
-    renderStats();
 }
 
 // 板块映射：细分赛道 → 申万一级行业
@@ -3557,7 +3537,7 @@ function renderStats() {
     let upCount = 0, downCount = 0;
     let kdjAlert5 = 0, kdjAlert30 = 0;
     let washoutCount = 0, distributeCount = 0;
-    let launchCount = 0, accelCount = 0, exhaustCount = 0;
+    let accelCount = 0, exhaustCount = 0;
     
     for (const stock of _stocks) {
         const d = getStockData(stock.code);
@@ -3570,11 +3550,10 @@ function renderStats() {
         if (d.signal.signal === 'distribute') distributeCount++;
 
         const p = (trendCache[stock.code] || {}).phase;
-        if (p && p.phase === 'launch') launchCount++;
         if (p && p.phase === 'acceleration') accelCount++;
         if (p && p.phase === 'exhaustion') exhaustCount++;
     }
-    
+
     document.getElementById('statUp').textContent = upCount;
     document.getElementById('statDown').textContent = downCount;
     document.getElementById('statFlat').textContent = total - upCount - downCount;
@@ -3582,7 +3561,6 @@ function renderStats() {
     document.getElementById('statKdj30').textContent = kdjAlert30;
     document.getElementById('statWashout').textContent = washoutCount;
     document.getElementById('statDistribute').textContent = distributeCount;
-    document.getElementById('statLaunch').textContent = launchCount;
     document.getElementById('statAccel').textContent = accelCount;
     document.getElementById('statExhaust').textContent = exhaustCount;
     document.getElementById('lastUpdate').textContent = '行情: ' + (lastUpdateTime || '更新中...');
@@ -3616,7 +3594,6 @@ function renderTable() {
                 case 'kdj30': return d.kdj.m30 && d.kdj.m30.v < 20;
                 case 'washout': return d.signal.signal === 'washout';
                 case 'distribute': return d.signal.signal === 'distribute';
-                case 'launch': return ind.phase && ind.phase.phase === 'launch';
                 case 'acceleration': return ind.phase && ind.phase.phase === 'acceleration';
                 case 'exhaustion': return ind.phase && ind.phase.phase === 'exhaustion';
                 default: return true;
