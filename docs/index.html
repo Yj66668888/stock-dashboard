@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1153</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1158</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -229,7 +229,7 @@ tr:hover td { background: var(--bg-hover); }
                     <th>5分钟KD</th><th>30分钟KD</th>
                     <th>MACD</th><th>RSI</th><th>均线</th>
                     <th>趋势</th><th>量价信号</th><th>主力资金</th>
-                    <th>30日高开率</th><th>5日资金流</th><th>板块共振</th>
+                    <th>30日高开率</th><th>5日/10日资金</th><th>板块共振</th>
                     <th>支撑价位</th><th>逻辑</th>
                 </tr>
             </thead>
@@ -2522,9 +2522,9 @@ const USER_T_STOCKS = [
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
 
-const POLICY_DIRECTIONS = {"dualWheel": [{"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz000543", "sz002028", "sh600900", "sz002543", "sh600831", "sh601616", "sz000539", "sh600312"]}, {"name": "AI算力硬件(供需双驱)", "policy": "供给端国产AI芯片补贴+大模型备案开放;需求端AI应用爆发→算力需求每6个月翻倍,服务器/光模块/液冷持续放量", "logic": "国产AI芯片政策降本(供给)+AI应用落地催化算力需求(需求),算力基建确定性最高、业绩弹性最大", "stocks": ["sz002065", "sz002195"]}], "supply": [{"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sh600346", "sz000703", "sz002092", "sh600409", "sz000683", "sz002274", "sz002493", "sz002226"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sh600763", "sh603858", "sz002262", "sh603077", "sz002422", "sz000963", "sh600566", "sh603983"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sh600547"]}], "demand": [{"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz000543", "sz002028", "sh600900", "sz002543", "sh600831", "sh601616", "sz000539", "sh600312"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sh600763", "sh603858", "sz002262", "sh603077", "sz002422", "sz000963", "sh600566", "sh603983"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sh600547"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz002065", "sz002195"]}, {"name": "机器人产业", "policy": "工信部人形机器人创新发展指导意见,纳入战略性新兴产业;多地设立机器人产业基金,人形机器人从实验室走向量产", "logic": "AI+机器人融合加速,减速器/伺服/视觉零部件千亿市场开启,赛道处于0→1爆发前夜", "stocks": ["sh603279"]}]};
+const POLICY_DIRECTIONS = {"dualWheel": [{"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz000539", "sz001289", "sz002028", "sh600795", "sh600831", "sh600900", "sz002543", "sh600886"]}, {"name": "AI算力硬件(供需双驱)", "policy": "供给端国产AI芯片补贴+大模型备案开放;需求端AI应用爆发→算力需求每6个月翻倍,服务器/光模块/液冷持续放量", "logic": "国产AI芯片政策降本(供给)+AI应用落地催化算力需求(需求),算力基建确定性最高、业绩弹性最大", "stocks": ["sz002065", "sz002195"]}], "supply": [{"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sh600409", "sz000683", "sh603049", "sz000703", "sh600486", "sz002493", "sh600028", "sz002258"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sh600566", "sz002262", "sh603222", "sh603983", "sh603939", "sh603456", "sh603087", "sz000963"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sh600547"]}], "demand": [{"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz000539", "sz001289", "sz002028", "sh600795", "sh600831", "sh600900", "sz002543", "sh600886"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sh600566", "sz002262", "sh603222", "sh603983", "sh603939", "sh603456", "sh603087", "sz000963"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sh600547"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz002065", "sz002195"]}, {"name": "机器人产业", "policy": "工信部人形机器人创新发展指导意见,纳入战略性新兴产业;多地设立机器人产业基金,人形机器人从实验室走向量产", "logic": "AI+机器人融合加速,减速器/伺服/视觉零部件千亿市场开启,赛道处于0→1爆发前夜", "stocks": ["sh603279"]}]};
 
-const EARNINGS_VERIFIED = [{"name": "电力设备/电网(业绩落地)", "policy": "电网集采开标,变压器/特高压中标量同比+50%,特别国债从\"计划\"→\"开标\"→\"交付\"", "logic": "特高压/配网设备企业订单已实际落地,营收增长可提前确认,业绩确定性行业第一", "stocks": ["sz000543", "sz002028", "sh600900", "sz002543", "sh600831", "sh601616", "sz000539", "sh600312"], "status": "招标放量期"}, {"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sh600346", "sz000703", "sz002092", "sh600409", "sz000683", "sz002274", "sz002493", "sz002226"], "status": "价格传导期"}, {"name": "医药创新(业绩落地)", "policy": "创新药出海加速+国内审批提速,龙头管线进入临床后期/NDA阶段,海外授权收入开始兑现", "logic": "从\"管线预期\"到\"授权收入\",出海+医保谈判双通道放量,创新药企进入收获期", "stocks": ["sh600763", "sh603858", "sz002262", "sh603077", "sz002422", "sz000963", "sh600566", "sh603983"], "status": "订单验证期"}];
+const EARNINGS_VERIFIED = [{"name": "电力设备/电网(业绩落地)", "policy": "电网集采开标,变压器/特高压中标量同比+50%,特别国债从\"计划\"→\"开标\"→\"交付\"", "logic": "特高压/配网设备企业订单已实际落地,营收增长可提前确认,业绩确定性行业第一", "stocks": ["sz000539", "sz001289", "sz002028", "sh600795", "sh600831", "sh600900", "sz002543", "sh600886"], "status": "招标放量期"}, {"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sh600409", "sz000683", "sh603049", "sz000703", "sh600486", "sz002493", "sh600028", "sz002258"], "status": "价格传导期"}, {"name": "医药创新(业绩落地)", "policy": "创新药出海加速+国内审批提速,龙头管线进入临床后期/NDA阶段,海外授权收入开始兑现", "logic": "从\"管线预期\"到\"授权收入\",出海+医保谈判双通道放量,创新药企进入收获期", "stocks": ["sh600566", "sz002262", "sh603222", "sh603983", "sh603939", "sh603456", "sh603087", "sz000963"], "status": "订单验证期"}];
 
 
 // ==================== 行情数据获取 ====================
@@ -3493,23 +3493,48 @@ function gapRateCellHTML(fullCode) {
         '</td>';
 }
 
-// 5日资金流（代理指标）
+// 5日/10日资金流（来自选股系统内部数据，100%覆盖）
 function capitalFlowCellHTML(fullCode) {
+    // fullCode like "sz002028", STOCKS data also uses "sz002028" format
     var code = fullCode.replace(/^(sh|sz)/, '');
-    var c = typeof GAP_UP_CAPITAL_FLOW !== 'undefined' && GAP_UP_CAPITAL_FLOW[code];
-    if (!c) return '<td style="font-size:11px;color:var(--text-dim)">--</td>';
-    var flow = c.f5;
-    var upDays = c.up;
-    var volRatio = c.vr;
-    var upperShadow = c.us;
-    var clr = flow > 0 ? 'var(--red)' : (flow < 0 ? 'var(--green)' : 'var(--text-dim)');
-    var flowText = Math.abs(flow) >= 10000 ? (flow/10000).toFixed(1) + '亿' : Math.abs(flow).toFixed(0) + '万';
-    var trapRisk = flow < 0 && upperShadow > 1.5;
-    var riskTag = trapRisk ? ' <span style="color:var(--red)" title="资金流出+长上影,陷阱风险">⚠</span>' : '';
-    var volClr = volRatio >= 1.5 ? 'var(--red)' : (volRatio >= 1.0 ? 'var(--text)' : 'var(--text-dim)');
+    var stocks = window.__activeStocks || [];
+    var stock = null;
+    for (var i = 0; i < stocks.length; i++) {
+        if (stocks[i].code && stocks[i].code.indexOf(code) >= 0) {
+            stock = stocks[i];
+            break;
+        }
+    }
+    if (!stock) return '<td style="font-size:11px;color:var(--text-dim)">--</td>';
+    var f5 = stock.flow5d || 0;
+    var f10 = stock.flow10d;
+    
+    function fmt(v) {
+        if (v === undefined || v === null) return '--';
+        var abs = Math.abs(v);
+        if (abs >= 10000) return (abs/10000).toFixed(1) + '亿';
+        if (abs >= 1000) return (abs/10000).toFixed(2) + '亿';
+        return abs.toFixed(0) + '万';
+    }
+    function clr(v) {
+        if (v === undefined || v === null) return 'var(--text-dim)';
+        return v > 0 ? 'var(--red)' : (v < 0 ? 'var(--green)' : 'var(--text-dim)');
+    }
+    
+    var sign5 = f5 >= 0 ? '+' : '';
+    var sign10 = (f10 !== undefined && f10 !== null) ? (f10 >= 0 ? '+' : '') : '';
+    var f10Text = (f10 !== undefined && f10 !== null) ? (sign10 + fmt(f10)) : '--';
+    var f10Clr = clr(f10);
+    
+    // 资金反转高亮
+    var reversalTag = '';
+    if (f10 !== undefined && f10 !== null && f10 < 0 && f5 > 0) {
+        reversalTag = ' <span style="color:var(--orange);font-size:9px" title="10日净流出→5日净流入，资金反转">🔄</span>';
+    }
+    
     return '<td style="font-size:11px">' +
-        '<div style="color:' + clr + ';font-weight:600">' + (flow >= 0 ? '+' : '-') + flowText + riskTag + '</div>' +
-        '<div style="font-size:10px;color:var(--text-dim)">涨' + upDays + '/5 <span style="color:' + volClr + '">量' + volRatio.toFixed(2) + '</span></div>' +
+        '<div style="color:' + clr(f5) + ';font-weight:600">5日 ' + sign5 + fmt(f5) + '</div>' +
+        '<div style="font-size:10px;color:' + f10Clr + '">10日 ' + f10Text + reversalTag + '</div>' +
         '</td>';
 }
 
@@ -3626,6 +3651,7 @@ function renderTable() {
     
     let scoreList = [];
     var _activeStocks = getActiveStocks();
+    window.__activeStocks = _activeStocks; // 供 capitalFlowCellHTML 等函数读取
     for (const stock of _activeStocks) {
         const d = getStockData(stock.code);
         const score = calcCompositeScore(d);
