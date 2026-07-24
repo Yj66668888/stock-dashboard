@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1541</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1604</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -2916,9 +2916,9 @@ const USER_T_STOCKS = [
 
 const ORIGINAL_STOCKS = STOCKS.map(s => ({...s})); // 7/13原始持仓备份，用于"重置为初始持仓"
 
-const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"]}, {"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz002028"]}], "supply": [{"name": "军工装备国产化", "policy": "国防预算持续增长+装备现代化加速,军工产业链国产化率持续提升", "logic": "十四五装备采购放量+国产替代深化,军工电子/材料/发动机环节确定性高", "stocks": ["sh603885", "sh601606"]}, {"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sz002064", "sz002258", "sh600688", "sh600486", "sh600346", "sh603049", "sz000949", "sz000683"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sz002155", "sh600489", "sh601899", "sh600547", "sh600985", "sz000506", "sz001337", "sh601069"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sz002173"]}], "demand": [{"name": "低空经济", "policy": "低空经济政策密集出台,无人机物流/城市空中交通商业化加速", "logic": "低空经济从概念走向落地,eVTOL/无人机/空管系统产业链受益", "stocks": ["sh603885", "sh601606"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sz002155", "sh600489", "sh601899", "sh600547", "sh600985", "sz000506", "sz001337", "sh601069"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sz002173"]}, {"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz002028"]}]};
+const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "储能电力(供需双驱)", "policy": "供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速", "logic": "政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍", "stocks": ["sz002028"]}], "supply": [{"name": "军工装备国产化", "policy": "国防预算持续增长+装备现代化加速,军工产业链国产化率持续提升", "logic": "十四五装备采购放量+国产替代深化,军工电子/材料/发动机环节确定性高", "stocks": ["sh603885", "sh601606"]}, {"name": "电子特气自主可控", "policy": "商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现", "logic": "氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱", "stocks": ["sh600309", "sh603049", "sz002258", "sz002092", "sz002226", "sz000703", "sz000949", "sh600409"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sh603799", "sh600362", "sh600711", "sz002155", "sh601061", "sh600916", "sz000506", "sh600547"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sz002173"]}], "demand": [{"name": "低空经济", "policy": "低空经济政策密集出台,无人机物流/城市空中交通商业化加速", "logic": "低空经济从概念走向落地,eVTOL/无人机/空管系统产业链受益", "stocks": ["sh603885", "sh601606"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sh603799", "sh600362", "sh600711", "sz002155", "sh601061", "sh600916", "sz000506", "sh600547"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"]}, {"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sz002173"]}, {"name": "电力设备(业绩落地)", "policy": "电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满", "logic": "特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强", "stocks": ["sz002028"]}]};
 
-const EARNINGS_VERIFIED = [{"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sz002064", "sz002258", "sh600688", "sh600486", "sh600346", "sh603049", "sz000949", "sz000683"], "status": "价格传导期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sz002052", "sz001365", "sh603175", "sz002546", "sz000561", "sz002036", "sh600570", "sz002690"], "status": "中报密集验证期"}];
+const EARNINGS_VERIFIED = [{"name": "电子特气/材料(业绩落地)", "policy": "氦气管制推高电子特气价格30%+,国产替代从\"只能相信\"变为\"已经赚钱\",H1利润增速60%+", "logic": "政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现", "stocks": ["sh600309", "sh603049", "sz002258", "sz002092", "sz002226", "sz000703", "sz000949", "sh600409"], "status": "价格传导期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sz000561", "sz002052", "sz002036", "sh603228", "sz002546", "sh600570", "sz001365", "sh603175"], "status": "中报密集验证期"}];
 
 
 // ==================== 行情数据获取 ====================
@@ -3004,13 +3004,33 @@ async function fetchQuotes() {
     }
 }
 
+// 同花顺日期解析：兼容 YYYYMMDD（日线/5分钟线）和 YYYYMMDDHHMM（1分钟线）
+function parseTHSDate(dateStr) {
+    if (!dateStr) return new Date(NaN);
+    const s = String(dateStr).trim();
+    // 8位=YYYYMMDD，12位=YYYYMMDDHHMM，14位=YYYYMMDDHHMMSS，10位=YYYY-MM-DD
+    if (s.length === 8) {
+        const y = parseInt(s.substring(0, 4)), m = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
+        return new Date(y, m, d);
+    }
+    if (s.length >= 12) {
+        const y = parseInt(s.substring(0, 4)), m = parseInt(s.substring(4, 6)) - 1, d = parseInt(s.substring(6, 8));
+        const h = parseInt(s.substring(8, 10)), mi = parseInt(s.substring(10, 12));
+        return new Date(y, m, d, h, mi);
+    }
+    return new Date(s.replace(' ', 'T'));
+}
+
 async function fetchKline(code, period, count) {
-    // 日线用同花顺klt=01（历史数据，截止到昨日收盘）
-    // 分钟线已改用 fetchKlineEM（东方财富实时1分钟API），再通过 resampleKlines 合成m5/m30
+    // 日线用同花顺klt=01，5分钟线用同花顺klt=02（含当日数据）
+    // 1分钟线用同花顺klt=60
     try {
         const sym = code.substring(2);
 
-        const thsPeriod = period === 'day' ? '01' : '60';
+        let thsPeriod;
+        if (period === 'day') thsPeriod = '01';
+        else if (period === '5min') thsPeriod = '02';
+        else thsPeriod = '60';
         const url = `https://d.10jqka.com.cn/v4/line/hs_${sym}/${thsPeriod}/last.js`;
         const resp = await fetchWithProxy(url);
         if (!resp) return null;
@@ -3062,91 +3082,96 @@ async function fetchKlineEM(code, klt, count) {
     }
 }
 
-// 用1分钟K线合成更高周期K线（按A股交易时间窗口对齐）
+// 用同花顺K线合成更高周期K线
+// 当K线包含时间信息（YYYYMMDDHHMM）时按交易时间窗口对齐分组
+// 当K线只有日期（YYYYMMDD）时按索引每period根一组
 function resampleKlines(klines, period) {
     if (!klines || klines.length < period) return null;
     
-    // 按A股标准交易时间窗口分组
-    // 30分钟窗口: 09:30-10:00, 10:00-10:30, ..., 14:30-15:00
-    // 5分钟窗口: 09:30-09:35, 09:35-09:40, ..., 14:55-15:00
-    const groups = new Map();
+    // 检测日期格式：检查第一根K线是否包含时间信息（长度>=10或有空格/T）
+    const hasTime = klines[0].date && (klines[0].date.length >= 10 || klines[0].date.indexOf(' ') > 0 || klines[0].date.indexOf('T') > 0);
     
-    for (const k of klines) {
-        const d = new Date(k.date.replace(' ', 'T'));
-        const year = d.getFullYear(), month = d.getMonth(), day = d.getDate();
-        const totalMin = d.getHours() * 60 + d.getMinutes();
+    if (hasTime) {
+        // 有时间信息 → 按A股交易时间窗口对齐分组
+        const groups = new Map();
         
-        let windowInDay;
-        if (totalMin >= 570 && totalMin < 690) {
-            // 上午 9:30-11:30
-            windowInDay = Math.floor((totalMin - 570) / period);
-        } else if (totalMin >= 780 && totalMin < 900) {
-            // 下午 13:00-15:00
-            windowInDay = Math.floor((totalMin - 780) / period) + Math.floor(120 / period);
-        } else {
-            continue; // 跳过非交易时间
+        for (const k of klines) {
+            const d = parseTHSDate(k.date);
+            if (isNaN(d.getTime())) continue;
+            const year = d.getFullYear(), month = d.getMonth(), day = d.getDate();
+            const totalMin = d.getHours() * 60 + d.getMinutes();
+            
+            let windowInDay;
+            if (totalMin >= 570 && totalMin < 690) {
+                windowInDay = Math.floor((totalMin - 570) / period);
+            } else if (totalMin >= 780 && totalMin < 900) {
+                windowInDay = Math.floor((totalMin - 780) / period) + Math.floor(120 / period);
+            } else {
+                continue;
+            }
+            
+            const key = `${year}-${month}-${day}_${windowInDay}`;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(k);
         }
         
-        const key = `${year}-${month}-${day}_${windowInDay}`;
-        if (!groups.has(key)) groups.set(key, []);
-        groups.get(key).push(k);
+        const result = [];
+        for (const [key, group] of groups) {
+            result.push({
+                date: group[group.length - 1].date,
+                open: group[0].open,
+                high: Math.max(...group.map(k => k.high)),
+                low: Math.min(...group.map(k => k.low)),
+                close: group[group.length - 1].close,
+                volume: group.reduce((sum, k) => sum + k.volume, 0),
+                amount: group.reduce((sum, k) => sum + k.amount, 0)
+            });
+        }
+        result.sort((a, b) => parseTHSDate(a.date) - parseTHSDate(b.date));
+        return result;
     }
     
-    // 合并每组
+    // 没有时间 → 按索引简单分组（假设数据按时间顺序，从开盘对齐）
     const result = [];
-    for (const [key, group] of groups) {
+    // 每period根5分钟K线合成1根大周期K线
+    for (let i = 0; i + period <= klines.length; i += period) {
+        const chunk = klines.slice(i, i + period);
         result.push({
-            date: group[group.length - 1].date,
-            open: group[0].open,
-            high: Math.max(...group.map(k => k.high)),
-            low: Math.min(...group.map(k => k.low)),
-            close: group[group.length - 1].close,
-            volume: group.reduce((sum, k) => sum + k.volume, 0),
-            amount: group.reduce((sum, k) => sum + k.amount, 0)
+            date: chunk[chunk.length - 1].date,
+            open: chunk[0].open,
+            high: Math.max(...chunk.map(k => k.high)),
+            low: Math.min(...chunk.map(k => k.low)),
+            close: chunk[chunk.length - 1].close,
+            volume: chunk.reduce((sum, k) => sum + k.volume, 0),
+            amount: chunk.reduce((sum, k) => sum + k.amount, 0)
         });
     }
-    
-    // 按时间排序
-    result.sort((a, b) => new Date(a.date.replace(' ', 'T')) - new Date(b.date.replace(' ', 'T')));
     return result;
 }
 
 async function fetchAllKlines() {
-    // 分钟线：用东方财富实时1分钟API（含当日数据），再合成5分钟/30分钟K线
-    // 日线：保留同花顺API
-    const batchSize = 4; // 数据量增大，降低并发避免超时
+    // 全部用同花顺API：5分钟(period=02)直接用于KDJ(5)，合成30分钟(每6根5分钟→1根30分钟)
+    // 日线(period=01)用于MACD/RSI/均线/趋势等指标
+    const batchSize = 6;
     const _allCodes = [...STOCKS.map(s => s.code), ...(typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.map(s => s.code) : []), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
     const codes = [...new Set(_allCodes)];
 
-    // 1. 获取分钟线：优先直接拿5分钟/30分钟K线（与同花顺一致），失败则fallback 1分钟合成
-    // klt=5/klt=30 可能被东方财富限流，先试直接获取，不行再用1分钟合成
+    // 1. 获取5分钟线（同花顺period=02，140根≈3天）+ 合成30分钟
     for (let i = 0; i < codes.length; i += batchSize) {
         const batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async (code) => {
-            // 并发尝试直接获取5分钟(300根≈5天)和30分钟(100根≈2周)
-            const [k5, k30] = await Promise.all([
-                fetchKlineEM(code, 5, 300),
-                fetchKlineEM(code, 30, 100)
-            ]);
-
-            // 如果任一周期获取失败，fallback到1分钟合成（1200根≈5天）
-            let k1 = null;
-            if (!k5 || !k30) {
-                k1 = await fetchKlineEM(code, 1, 1200);
-                if (!k1) k1 = await fetchKline(code, 'm5', 100); // 终极fallback: 同花顺历史1分钟
+            const k5 = await fetchKline(code, '5min', 140);
+            if (k5) {
+                if (!kdjCache[code]) kdjCache[code] = {};
+                kdjCache[code]['m5'] = k5;
+                kdjCache[code]['m30'] = resampleKlines(k5, 6); // 6根5分钟→1根30分钟
             }
-
-            if (!kdjCache[code]) kdjCache[code] = {};
-            kdjCache[code]['m5'] = k5 || (k1 ? resampleKlines(k1, 5) : null);
-            kdjCache[code]['m30'] = k30 || (k1 ? resampleKlines(k1, 30) : null);
-            if (k1) kdjCache[code]['m1'] = k1; // 只有用1分钟数据时才保存
         }));
     }
-    // 分钟线获取完，先渲染一次（KDJ/MACD/RSI等指标可用了）
     calcAllIndicators();
     renderAll();
 
-    // 2. 获取日线
+    // 2. 获取日线（同花顺period=01）
     for (let i = 0; i < codes.length; i += batchSize) {
         const batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async (code) => {
@@ -3157,7 +3182,7 @@ async function fetchAllKlines() {
             }
         }));
     }
-
+    // 日线获取完，重算趋势/RSI/MACD并刷新
     calcAllIndicators();
     renderAll();
 }
@@ -3279,30 +3304,15 @@ async function fetchLimitStockKlines(codes) {
     var batchSize = 4; // 数据量增大，降低并发
     var fetched = [];
 
-    // 1. 获取分钟线：优先直接拿5分钟/30分钟K线，失败则fallback 1分钟合成
+    // 1. 获取5分钟线（同花顺period=02）+ 合成30分钟（每6根5分钟→1根30分钟）
     for (var i = 0; i < codes.length; i += batchSize) {
         var batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async function(code) {
-            // 并发尝试直接获取5分钟和30分钟K线
-            var results = await Promise.all([
-                fetchKlineEM(code, 5, 300),
-                fetchKlineEM(code, 30, 100)
-            ]);
-            var k5 = results[0] || null;
-            var k30 = results[1] || null;
-
-            // 如果任一失败，fallback到1分钟合成
-            var k1 = null;
-            if (!k5 || !k30) {
-                k1 = await fetchKlineEM(code, 1, 1200).catch(function(){ return null; });
-                if (!k1) k1 = await fetchKline(code, 'm5', 100);
-            }
-
-            if (k5 || k30 || k1) {
+            var k5 = await fetchKline(code, '5min', 140);
+            if (k5) {
                 if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['m5'] = k5 || (k1 ? resampleKlines(k1, 5) : null);
-                kdjCache[code]['m30'] = k30 || (k1 ? resampleKlines(k1, 30) : null);
-                if (k1) kdjCache[code]['m1'] = k1;
+                kdjCache[code]['m5'] = k5;
+                kdjCache[code]['m30'] = resampleKlines(k5, 6);
                 fetched.push(code);
             }
         }));
@@ -3777,12 +3787,11 @@ function calcAllIndicators() {
         if (!trendCache[code]) trendCache[code] = {};
         if (!trendCache[code].kdj) trendCache[code].kdj = {};
         
-        // KDJ融合值: 1分钟n=2, 5分钟n=3, 30分钟n=5（适配合成K线数据量）
-        ['m1', 'm5', 'm30'].forEach(period => {
+        // KDJ标准参数：n=9（与同花顺默认一致）
+        ['m5', 'm30'].forEach(period => {
             const klines = cache[period];
-            const n = period === 'm1' ? 2 : (period === 'm5' ? 3 : 5);
-            if (klines && klines.length >= n + 1) {
-                const kdj = calcKDJ(klines, n);
+            if (klines && klines.length >= 10) {
+                const kdj = calcKDJ(klines, 9);
                 if (kdj && kdj.length > 0) {
                     const last = kdj[kdj.length - 1];
                     const fused = Math.round((last.k + last.d) / 2 * 100) / 100;
@@ -3846,10 +3855,17 @@ function getStockData(code) {
 
 function kdjCellHTML(kdjVal) {
     if (!kdjVal) return '<td>--</td>';
-    const val = kdjVal.v;
-    if (val === undefined || val === null || Number.isNaN(val)) return '<td>--</td>';
-    const cls = val < 20 ? 'kdj-flash' : '';
-    return `<td class="${cls}" style="${val < 20 ? 'font-weight:700;' : ''}">${val.toFixed(1)}</td>`;
+    const k = kdjVal.k, d = kdjVal.d;
+    if (k === undefined || d === undefined || Number.isNaN(k) || Number.isNaN(d)) return '<td>--</td>';
+    
+    // K > D = 金叉(绿), K < D = 死叉(红)
+    const cls = k > d ? 'var(--green)' : 'var(--red)';
+    const flashCls = (k < 20 && d < 20) ? 'kdj-flash' : '';
+    const boldStyle = (k < 20 && d < 20) ? 'font-weight:700;' : '';
+    
+    return `<td class="${flashCls}" style="color:${cls};font-size:11px;${boldStyle}" title="K=${k.toFixed(2)} D=${d.toFixed(2)} J=${(kdjVal.j||0).toFixed(2)}">
+        ${k.toFixed(1)}/${d.toFixed(1)}
+    </td>`;
 }
 
 // ==================== 综合评分 ====================
