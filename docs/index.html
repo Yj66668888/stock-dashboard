@@ -179,7 +179,7 @@ tr:hover td { background: var(--bg-hover); }
         <span class="refresh-info" id="kdjUpdateTime">KDJ: --</span>
         <span><span class="status-dot" id="statusDot"></span> 实时</span>
         <span id="initMsg" style="color:var(--yellow)"></span>
-        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1619</span>
+        <span id="pageVer" style="font-size:10px;color:var(--text-dim)">v0724-1640</span>
         <span id="verCheck" style="font-size:10px;cursor:pointer;display:none" onclick="location.reload(true)"></span>
     </div>
 </div>
@@ -2923,16 +2923,16 @@ const EARNINGS_VERIFIED = [{"name": "电子特气/材料(业绩落地)", "policy
 
 // ==================== 行情数据获取 ====================
 async function fetchWithProxy(url) {
-    // 直连尝试（缩短超时到3秒）
+    // 直连尝试（从GitHub Pages跨域大概率失败，超时缩短到1.5秒）
     try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
+        const resp = await fetch(url, { signal: AbortSignal.timeout(1500) });
         if (resp.ok) return resp;
     } catch(e) {}
 
-    // CORS代理fallback（缩短超时到5秒，最多试2个代理）
+    // CORS代理fallback（超时4秒，最多试2个代理）
     for (const proxy of CORS_PROXIES.slice(0, 2)) {
         try {
-            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(5000) });
+            const resp = await fetch(proxy + encodeURIComponent(url), { signal: AbortSignal.timeout(4000) });
             if (resp.ok) return resp;
         } catch(e) {}
     }
@@ -3151,63 +3151,46 @@ function resampleKlines(klines, period) {
 }
 
 async function fetchAllKlines() {
-    // 优先用东方财富原生5分钟/30分钟K线（含当日实时数据，KDJ与同花顺一致）
-    // 失败则fallback同花顺：5分钟(period=02) + 合成30分钟(每6根→1根30分钟)
-    // 日线用同花顺(period=01)，用于MACD/RSI/均线/趋势等
-    const batchSize = 6;
+    // 统一使用同花顺K线数据（东方财富API不支持从GitHub Pages跨域访问）
+    // 5分钟线：同花顺period=02（140根≈3个交易日，KDJ(9)充分收敛）
+    // 30分钟线：由5分钟线合成（每6根5分钟→1根30分钟，≈23根，KDJ(9)基本可参考）
+    // 日线：同花顺period=01，用于MACD/RSI/均线/趋势等
+    const batchSize = 8;  // 增大并发数加速加载
     const _allCodes = [...STOCKS.map(s => s.code), ...(typeof LAUNCH_STOCKS !== 'undefined' ? LAUNCH_STOCKS.map(s => s.code) : []), ...(typeof myHoldings !== 'undefined' ? myHoldings.map(h => h.code) : [])];
     const codes = [...new Set(_allCodes)];
 
-    let emSuccess = 0, emFail = 0;
+    let successCount = 0, failCount = 0;
 
-    // 1. 获取分钟线：优先东方财富原生klt=5/klt=30
+    // 1. 获取5分钟线 + 合成30分钟线 + 获取日线，全部并发
     for (let i = 0; i < codes.length; i += batchSize) {
         const batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async (code) => {
-            // 并发尝试东方财富原生5分钟(200根≈3天)和30分钟(80根≈2周)
-            const [emK5, emK30] = await Promise.all([
-                fetchKlineEM(code, 5, 200),
-                fetchKlineEM(code, 30, 80)
+            // 并发获取：5分钟线 + 日线（同时拉，互不依赖）
+            const [k5, kDay] = await Promise.all([
+                fetchKline(code, '5min', 140),
+                fetchKline(code, 'day', 100)
             ]);
 
-            if (emK5 && emK30) {
-                // 东方财富成功 → 直接用原生K线
-                if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['m5'] = emK5;
-                kdjCache[code]['m30'] = emK30;
-                kdjCache[code]['_src'] = 'EM'; // 标记数据源
-                emSuccess++;
-            } else {
-                // 东方财富失败 → fallback同花顺5分钟 + 合成30分钟
-                emFail++;
-                const k5 = await fetchKline(code, '5min', 140);
-                if (k5) {
-                    if (!kdjCache[code]) kdjCache[code] = {};
-                    kdjCache[code]['m5'] = k5;
-                    kdjCache[code]['m30'] = resampleKlines(k5, 6);
-                    kdjCache[code]['_src'] = 'THS';
-                }
+            if (!kdjCache[code]) kdjCache[code] = {};
+
+            if (k5) {
+                kdjCache[code]['m5'] = k5;
+                kdjCache[code]['m30'] = resampleKlines(k5, 6);
+                kdjCache[code]['_src'] = 'THS';
+                successCount++;
             }
+
+            if (kDay) {
+                kdjCache[code]['day'] = kDay;
+            }
+
+            if (!k5 && !kDay) failCount++;
         }));
     }
-    console.log(`[KDJ数据源] 东方财富成功:${emSuccess} 回退同花顺:${emFail}`);
 
-    // 分钟线获取完，先渲染一次（KDJ可用了）
-    calcAllIndicators();
-    renderAll();
+    console.log(`[KDJ数据源] 同花顺 成功:${successCount} 失败:${failCount}`);
 
-    // 2. 获取日线（同花顺period=01）
-    for (let i = 0; i < codes.length; i += batchSize) {
-        const batch = codes.slice(i, i + batchSize);
-        await Promise.all(batch.map(async (code) => {
-            const klines = await fetchKline(code, 'day', 100);
-            if (klines) {
-                if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['day'] = klines;
-            }
-        }));
-    }
-    // 日线获取完，重算趋势/RSI/MACD并刷新
+    // 计算所有指标并渲染
     calcAllIndicators();
     renderAll();
 }
@@ -3326,52 +3309,30 @@ async function fetchLimitStockKlines(codes) {
     codes = codes.filter(function(code) { return !kdjCache[code] || !kdjCache[code].m5; });
     if (codes.length === 0) return;
 
-    var batchSize = 4; // 数据量增大，降低并发
+    var batchSize = 6;
     var fetched = [];
 
-    // 1. 获取分钟线：优先东方财富原生klt=5/klt=30，失败则fallback同花顺
+    // 批量并发获取：5分钟线 + 日线同时拉（东方财富API不支持跨域，统一用同花顺）
     for (var i = 0; i < codes.length; i += batchSize) {
         var batch = codes.slice(i, i + batchSize);
         await Promise.all(batch.map(async function(code) {
-            // 并发尝试东方财富原生5分钟和30分钟
             var results = await Promise.all([
-                fetchKlineEM(code, 5, 200),
-                fetchKlineEM(code, 30, 80)
+                fetchKline(code, '5min', 140),
+                fetchKline(code, 'day', 100)
             ]);
-            var emK5 = results[0], emK30 = results[1];
+            var k5 = results[0], kDay = results[1];
 
-            if (emK5 && emK30) {
-                // 东方财富成功
-                if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['m5'] = emK5;
-                kdjCache[code]['m30'] = emK30;
+            if (!kdjCache[code]) kdjCache[code] = {};
+            if (k5) {
+                kdjCache[code]['m5'] = k5;
+                kdjCache[code]['m30'] = resampleKlines(k5, 6);
                 fetched.push(code);
-            } else {
-                // Fallback 同花顺
-                var k5 = await fetchKline(code, '5min', 140);
-                if (k5) {
-                    if (!kdjCache[code]) kdjCache[code] = {};
-                    kdjCache[code]['m5'] = k5;
-                    kdjCache[code]['m30'] = resampleKlines(k5, 6);
-                    fetched.push(code);
-                }
+            }
+            if (kDay) {
+                kdjCache[code]['day'] = kDay;
             }
         }));
         // 每批完成后重算KDJ并刷新
-        calcMarketLimitIndicators(fetched.slice());
-        try { renderDeepAnalysis(); } catch(e) {}
-    }
-
-    // 2. 获取日线（用于5日涨幅和趋势）
-    for (var i = 0; i < codes.length; i += batchSize) {
-        var batch = codes.slice(i, i + batchSize);
-        await Promise.all(batch.map(async function(code) {
-            var klines = await fetchKline(code, 'day', 100);
-            if (klines) {
-                if (!kdjCache[code]) kdjCache[code] = {};
-                kdjCache[code]['day'] = klines;
-            }
-        }));
         calcMarketLimitIndicators(fetched.slice());
         try { renderDeepAnalysis(); } catch(e) {}
     }
