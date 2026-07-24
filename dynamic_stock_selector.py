@@ -1129,12 +1129,405 @@ def main():
     inject_to_html(new_stocks)
     inject_launch_to_html(launch_stocks)
 
-    # 9. 推送到 GitHub Pages
+    # 9. 自动生成政策双轮驱动板块
+    print(f"\n=== 生成政策驱动板块 ===")
+    policy_dirs, earnings_verified = build_policy_sectors(sector_filer_data=sector_filter, 
+                                                           sector_resonance=sector_data,
+                                                           final_picks=final_picks)
+    inject_policy_to_html(policy_dirs, earnings_verified)
+
+    # 10. 推送到 GitHub Pages
     print(f"\n=== 推送 GitHub Pages ===")
     push_to_github()
 
-    print(f"\n✅ 全流程完成：池A选票 → 池B启动段 → 注入HTML → 推送GitHub")
+    print(f"\n✅ 全流程完成：池A选票 → 池B启动段 → 政策板块 → 注入HTML → 推送GitHub")
     print(f"⚠️ CloudStudio 部署需要 WorkBuddy 触发，请回复「部署」更新手机端")
+
+
+# ==================== 政策双轮驱动数据生成 ====================
+
+# 概念板块 → 政策方向映射
+SECTOR_TO_POLICY = {
+    '半导体电子': {
+        'dualWheel': '半导体设备/材料(供需双驱)',
+        'supply': ['半导体设备国产替代', '存储芯片国产化'],
+        'demand': ['AI算力基建'],
+        'earnings': ['AI算力产业链(业绩落地)', '半导体先进封装(业绩落地)'],
+    },
+    '电力设备': {
+        'dualWheel': '储能电力(供需双驱)',
+        'supply': [],
+        'demand': ['电力设备(业绩落地)'],
+        'earnings': ['电力设备/电网(业绩落地)'],
+    },
+    '新能源': {
+        'dualWheel': '储能电力(供需双驱)',
+        'supply': [],
+        'demand': ['新能源储能'],
+        'earnings': ['储能逆变器(业绩落地)'],
+    },
+    '计算机/软件': {
+        'dualWheel': 'AI算力硬件(供需双驱)',
+        'supply': [],
+        'demand': ['AI算力基建'],
+        'earnings': ['AI算力产业链(业绩落地)'],
+    },
+    '机械制造': {
+        'dualWheel': '',
+        'supply': [],
+        'demand': ['机器人产业'],
+        'earnings': [],
+    },
+    '化工': {
+        'dualWheel': '',
+        'supply': ['电子特气自主可控'],
+        'demand': [],
+        'earnings': ['电子特气/材料(业绩落地)'],
+    },
+    '通信5G': {
+        'dualWheel': '',
+        'supply': ['光通信自主可控'],
+        'demand': ['AI算力基建'],
+        'earnings': [],
+    },
+    '医药医疗': {
+        'dualWheel': '',
+        'supply': ['创新药国产替代'],
+        'demand': ['医疗基建'],
+        'earnings': ['医药创新(业绩落地)'],
+    },
+    '有色金属': {
+        'dualWheel': '',
+        'supply': ['战略资源自主'],
+        'demand': ['新能源材料'],
+        'earnings': [],
+    },
+    '军工航天': {
+        'dualWheel': '',
+        'supply': ['军工装备国产化'],
+        'demand': ['低空经济'],
+        'earnings': [],
+    },
+}
+
+# 政策方向模板（用于生成 policy 和 logic 文本）
+POLICY_TEMPLATES = {
+    'dualWheel': {
+        '半导体设备/材料(供需双驱)': {
+            'policy': '供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高',
+            'logic': '海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强',
+        },
+        '储能电力(供需双驱)': {
+            'policy': '供给端特别国债定向储能/特高压设备,降本增效;需求端用电负荷创新高+新能源消纳压力倒逼储能装机加速',
+            'logic': '政策补贴降低储能度电成本(供给端)+用电高峰+新能源消纳创造刚需(需求端),户储/大储/电网级储能装机量有望翻倍',
+        },
+        'AI算力硬件(供需双驱)': {
+            'policy': '供给端国产AI芯片补贴+大模型备案开放;需求端AI应用爆发→算力需求每6个月翻倍,服务器/光模块/液冷持续放量',
+            'logic': '国产AI芯片政策降本(供给)+AI应用落地催化算力需求(需求),算力基建确定性最高、业绩弹性最大',
+        },
+    },
+    'supply': {
+        '半导体设备国产替代': {
+            'policy': '美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续',
+            'logic': '海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从"只能相信"变为"实际交付"',
+        },
+        '电子特气自主可控': {
+            'policy': '商务部6N高纯电子氦禁止出口,反向制约海外半导体;电子特气国产化率加速提升,相关企业业绩已开始兑现',
+            'logic': '氦气管制+政策补贴驱动国产替代加速,产品价格上涨已体现在财报,从预期变为已赚钱',
+        },
+        '存储芯片国产化': {
+            'policy': '长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长',
+            'logic': '长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进',
+        },
+        '光通信自主可控': {
+            'policy': 'AI算力需求驱动高速光模块/光器件需求爆发,国产光通信龙头全球份额持续提升',
+            'logic': '海外AI基建扩产→800G/1.6T光模块需求持续放量,国产厂商技术已追平海外,份额提升确定性高',
+        },
+        '创新药国产替代': {
+            'policy': '集采政策边际缓和+创新药审批提速,国产创新药出海加速',
+            'logic': '政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑',
+        },
+        '战略资源自主': {
+            'policy': '海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速',
+            'logic': '海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显',
+        },
+        '军工装备国产化': {
+            'policy': '国防预算持续增长+装备现代化加速,军工产业链国产化率持续提升',
+            'logic': '十四五装备采购放量+国产替代深化,军工电子/材料/发动机环节确定性高',
+        },
+    },
+    'demand': {
+        'AI算力基建': {
+            'policy': '全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发',
+            'logic': 'AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强',
+        },
+        '新能源储能': {
+            'policy': '用电负荷创新高+新能源消纳压力→储能装机加速;电池消费税政策落地,户储/大储/电网级储能全面放量',
+            'logic': '高温保供+新能源消纳双重需求,逆变器/电池/PCS全链条受益,政策+市场双驱动',
+        },
+        '机器人产业': {
+            'policy': '工信部人形机器人创新发展指导意见,纳入战略性新兴产业;多地设立机器人产业基金,人形机器人从实验室走向量产',
+            'logic': 'AI+机器人融合加速,减速器/伺服/视觉零部件千亿市场开启,赛道处于0→1爆发前夜',
+        },
+        '电力设备(业绩落地)': {
+            'policy': '电网集采加速+特高压建设,变压器/开关/电缆中标量同比大幅增长,设备厂商订单饱满',
+            'logic': '特高压+配网改造是十四五确定性最强投资方向,设备厂商排产已到明年,业绩确定性强',
+        },
+        '医疗基建': {
+            'policy': '医疗新基建投资加速,基层医疗机构设备升级需求释放',
+            'logic': '政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量',
+        },
+        '新能源材料': {
+            'policy': '新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长',
+            'logic': '需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头',
+        },
+        '低空经济': {
+            'policy': '低空经济政策密集出台,无人机物流/城市空中交通商业化加速',
+            'logic': '低空经济从概念走向落地,eVTOL/无人机/空管系统产业链受益',
+        },
+    },
+    'earnings': {
+        'AI算力产业链(业绩落地)': {
+            'status': '中报密集验证期',
+            'policy': 'AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期',
+            'logic': 'PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强',
+        },
+        '半导体先进封装(业绩落地)': {
+            'status': '中报密集验证期',
+            'policy': '存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长',
+            'logic': 'Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期',
+        },
+        '电子特气/材料(业绩落地)': {
+            'status': '价格传导期',
+            'policy': '氦气管制推高电子特气价格30%+,国产替代从"只能相信"变为"已经赚钱",H1利润增速60%+',
+            'logic': '政策催化+产品涨价=业绩双击,电子特气/前驱体/光刻胶企业利润已实际兑现',
+        },
+        '电力设备/电网(业绩落地)': {
+            'status': '招标放量期',
+            'policy': '电网集采开标,变压器/特高压中标量同比+50%,特别国债从"计划"→"开标"→"交付"',
+            'logic': '特高压/配网设备企业订单已实际落地,营收增长可提前确认,业绩确定性行业第一',
+        },
+        '储能逆变器(业绩落地)': {
+            'status': '海外放量期',
+            'policy': '海外户储需求爆发+国内用电负荷创新高→逆变器出货量翻倍,龙头海外渠道已铺开',
+            'logic': '国内政策(消费税)+海外需求(户储/大储)双驱动,逆变器/PCS企业营收从底部反转',
+        },
+        '医药创新(业绩落地)': {
+            'status': '订单验证期',
+            'policy': '创新药出海加速+国内审批提速,龙头管线进入临床后期/NDA阶段,海外授权收入开始兑现',
+            'logic': '从"管线预期"到"授权收入",出海+医保谈判双通道放量,创新药企进入收获期',
+        },
+    },
+}
+
+
+def build_policy_sectors(sector_filer_data=None, sector_resonance=None, final_picks=None):
+    """根据板块分析结果生成政策方向数据"""
+    from datetime import datetime as _dt
+    
+    today_str = _dt.now().strftime('%-m/%-d')
+    
+    # 读取板块分析
+    if not sector_filer_data:
+        sector_filer_data = load_json(SECTOR_FILTER_FILE)
+    
+    all_sectors = sector_filer_data.get('all_sectors', [])
+    sector_rank = {s['sector']: s for s in all_sectors}
+    
+    # 初始化收集容器
+    dualWheel = {}      # name → stocks set
+    supply = {}         # name → stocks set
+    demand = {}         # name → stocks set
+    earnings = {}       # name → stocks set
+    
+    # 从 final_picks 获取股票代码→名称映射
+    code_name = {}
+    if final_picks:
+        for c in final_picks:
+            code_name[c['code']] = c['name']
+    
+    # 从板块分析获取每个板块的股票
+    qualified_sectors = sector_filer_data.get('qualified_sectors', {})
+    for sector_name, sd in qualified_sectors.items():
+        mapping = SECTOR_TO_POLICY.get(sector_name)
+        if not mapping:
+            continue
+        
+        stocks = sd.get('stocks', [])
+        stock_codes = []
+        for s in stocks:
+            code = s.get('code', '')
+            if code.startswith('00') or code.startswith('60'):
+                stock_codes.append(code)
+        
+        # 添加到各方向
+        if mapping['dualWheel']:
+            name = mapping['dualWheel']
+            if name not in dualWheel:
+                dualWheel[name] = set()
+            dualWheel[name].update(stock_codes)
+        
+        for name in mapping['supply']:
+            if name not in supply:
+                supply[name] = set()
+            supply[name].update(stock_codes)
+        
+        for name in mapping['demand']:
+            if name not in demand:
+                demand[name] = set()
+            demand[name].update(stock_codes)
+        
+        for name in mapping['earnings']:
+            if name not in earnings:
+                earnings[name] = set()
+            earnings[name].update(stock_codes)
+    
+    # 如果没有从 sector_filter 拿到足够数据，从 final_picks 的 sector 字段补充
+    if final_picks:
+        # 按 sector 归类
+        sector_stocks = {}
+        for c in final_picks:
+            code = c['code']
+            # 用 sector 猜测
+            from sector_pre_filter import SECTOR_KEYWORDS
+            for sec_name, mapping in SECTOR_TO_POLICY.items():
+                if sec_name not in SECTOR_KEYWORDS:
+                    continue
+                kws = SECTOR_KEYWORDS.get(sec_name, [])
+                if any(kw in c['name'] for kw in kws):
+                    if sec_name not in sector_stocks:
+                        sector_stocks[sec_name] = set()
+                    sector_stocks[sec_name].add(code)
+                    break
+        
+        # 补充到各方向
+        for sec_name, codes in sector_stocks.items():
+            mapping = SECTOR_TO_POLICY.get(sec_name)
+            if not mapping:
+                continue
+            
+            if mapping['dualWheel']:
+                name = mapping['dualWheel']
+                if name not in dualWheel:
+                    dualWheel[name] = set()
+                dualWheel[name].update(codes)
+            
+            for name in mapping['supply']:
+                if name not in supply:
+                    supply[name] = set()
+                supply[name].update(codes)
+            
+            for name in mapping['demand']:
+                if name not in demand:
+                    demand[name] = set()
+                demand[name].update(codes)
+    
+    # 构建 POLICY_DIRECTIONS
+    def format_stocks(codes_set):
+        codes = list(codes_set)[:8]  # 最多8只
+        return [f"sz{c}" if c.startswith('00') else f"sh{c}" for c in codes]
+    
+    def build_item(name, stype):
+        templates = POLICY_TEMPLATES.get(stype, {})
+        tpl = templates.get(name, {})
+        return {
+            'name': name,
+            'policy': tpl.get('policy', f'{today_str}：板块行情活跃，政策持续催化中'),
+            'logic': tpl.get('logic', '政策方向确定性高，关注板块内龙头标的'),
+            'stocks': format_stocks(stocks_map.get(name, set()))
+        }
+    
+    policy_dirs = {}
+    
+    # dualWheel
+    stocks_map = dualWheel
+    if dualWheel:
+        policy_dirs['dualWheel'] = [build_item(name, 'dualWheel') for name in dualWheel]
+    else:
+        # 兜底：至少保留核心方向
+        policy_dirs['dualWheel'] = [
+            {'name': '半导体设备/材料(供需双驱)', 'policy': '海外管制收紧+国内扩产加速，双轮驱动确定性最高',
+             'logic': '国产替代+AI需求双催化，设备/材料订单确定性极强', 'stocks': []},
+            {'name': '储能电力(供需双驱)', 'policy': '特别国债降本+用电高峰刺激，储能装机加速',
+             'logic': '政策降本+需求放量，户储/大储/电网储能全面受益', 'stocks': []},
+        ]
+    
+    # supply
+    stocks_map = supply
+    if supply:
+        policy_dirs['supply'] = [build_item(name, 'supply') for name in supply]
+    else:
+        policy_dirs['supply'] = [
+            {'name': '半导体设备国产替代', 'policy': '海外管制加码+政策补贴，国产替代加速',
+             'logic': '国产设备渗透率提升，订单确定性增强', 'stocks': []},
+        ]
+    
+    # demand
+    stocks_map = demand
+    if demand:
+        policy_dirs['demand'] = [build_item(name, 'demand') for name in demand]
+    else:
+        policy_dirs['demand'] = [
+            {'name': 'AI算力基建', 'policy': '智算中心加速建设，算力需求持续爆发',
+             'logic': 'AI应用落地催化需求，光模块/液冷/服务器放量', 'stocks': []},
+        ]
+    
+    # 业绩落地
+    stocks_map = earnings
+    if earnings:
+        earn_list = []
+        for name in earnings:
+            item = build_item(name, 'earnings')
+            templates = POLICY_TEMPLATES.get('earnings', {})
+            tpl = templates.get(name, {})
+            item['status'] = tpl.get('status', '订单验证期')
+            earn_list.append(item)
+        earnings_verified = earn_list
+    else:
+        earnings_verified = [
+            {'name': 'AI算力产业链(业绩落地)', 'status': '中报密集验证期',
+             'policy': '订单已转化为营收，中报集中验证', 'logic': '从预期到兑现，确定性最强', 'stocks': []},
+            {'name': '电力设备/电网(业绩落地)', 'status': '招标放量期',
+             'policy': '集采开标，中标量大幅增长', 'logic': '订单已落地，营收可提前确认', 'stocks': []},
+        ]
+    
+    print(f"  供需双驱: {len(policy_dirs.get('dualWheel',[]))} 方向")
+    print(f"  供给端:   {len(policy_dirs.get('supply',[]))} 方向")
+    print(f"  需求端:   {len(policy_dirs.get('demand',[]))} 方向")
+    print(f"  业绩落地: {len(earnings_verified)} 方向")
+    
+    return policy_dirs, earnings_verified
+
+
+def inject_policy_to_html(policy_dirs, earnings_verified):
+    """把政策方向数据注入到 deploy/index.html"""
+    import re as _re3
+    with open(INDEX_HTML, 'r', encoding='utf-8') as f:
+        html = f.read()
+    
+    # 替换 POLICY_DIRECTIONS
+    policy_json = json.dumps(policy_dirs, ensure_ascii=False)
+    m = _re3.search(r'const POLICY_DIRECTIONS\s*=\s*\{.*?\}\s*;', html, _re3.DOTALL)
+    if m:
+        html = html[:m.start()] + f'const POLICY_DIRECTIONS = {policy_json};' + html[m.end():]
+        print(f"  ✅ POLICY_DIRECTIONS 已更新 ({len(policy_json)} bytes)")
+    else:
+        print("  ⚠️ 未找到 POLICY_DIRECTIONS，跳过")
+    
+    # 替换 EARNINGS_VERIFIED
+    earnings_json = json.dumps(earnings_verified, ensure_ascii=False)
+    m2 = _re3.search(r'const EARNINGS_VERIFIED\s*=\s*\[.*?\]\s*;', html, _re3.DOTALL)
+    if m2:
+        html = html[:m2.start()] + f'const EARNINGS_VERIFIED = {earnings_json};' + html[m2.end():]
+        print(f"  ✅ EARNINGS_VERIFIED 已更新 ({len(earnings_json)} bytes)")
+    else:
+        print("  ⚠️ 未找到 EARNINGS_VERIFIED，跳过")
+    
+    with open(INDEX_HTML, 'w', encoding='utf-8') as f:
+        f.write(html)
+    
+    print(f"  ✅ 政策板块已注入 deploy/index.html")
+    return True
 
 def inject_to_html(new_stocks):
     """把新选票注入到 deploy/index.html 的 const STOCKS = [...] 中"""
