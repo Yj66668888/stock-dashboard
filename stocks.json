@@ -3,7 +3,7 @@
     "dualWheel": [
       {
         "name": "AI算力硬件(供需双驱)",
-        "policy": "FPG财盛国际:电力需求新高推升投资 — 7月17日，AI数据中心扩张推动美国电力需求升至新高，能源基础设施投资逻辑继续强化，FPG财盛国际表示，算力增长正在把电",
+        "policy": "CoreWeave迫于投资者反对，调整与Anthropic合约挂钩的债务安排 — CoreWeave 为争取投资者认购最新一笔规模 26 亿美元的贷款，做出重大让步。该笔贷款依托其与Anthropic达",
         "logic": "政策同时补贴供给端(国产替代降本)和创造需求端(基建采购放量)，双轮闭环确定性最高",
         "stocks": [
           "sz002463",
@@ -11,7 +11,7 @@
           "sz002335",
           "sz002415"
         ],
-        "updateTime": "07-17 15:49"
+        "updateTime": "07-31 16:12"
       },
       {
         "name": "半导体设备/材料(供需双驱)",
@@ -69,7 +69,7 @@
     "demand": [
       {
         "name": "AI算力基建",
-        "policy": "FPG财盛国际:电力需求新高推升投资 — 7月17日，AI数据中心扩张推动美国电力需求升至新高，能源基础设施投资逻辑继续强化，FPG财盛国际表示，算力增长正在把电",
+        "policy": "CoreWeave迫于投资者反对，调整与Anthropic合约挂钩的债务安排 — CoreWeave 为争取投资者认购最新一笔规模 26 亿美元的贷款，做出重大让步。该笔贷款依托其与Anthropic达",
         "logic": "AI训练/推理算力需求每6个月翻倍,服务器PCB/光模块/液冷需求爆发",
         "stocks": [
           "sz002463",
@@ -80,7 +80,7 @@
           "sz002272",
           "sz002230"
         ],
-        "updateTime": "07-17 15:49"
+        "updateTime": "07-31 16:12"
       },
       {
         "name": "新能源储能",
@@ -328,19 +328,6 @@
       ]
     },
     {
-      "code": "sh600406",
-      "name": "国电南瑞",
-      "sector": "电网设备",
-      "direction": "需求端驱动",
-      "pe": 22,
-      "profitGrowth": 30,
-      "reason": "电网自动化龙头,特高压+储能",
-      "roe": 14,
-      "grossMargin": 28,
-      "debtRatio": 40,
-      "riskFlags": []
-    },
-    {
       "code": "sz002028",
       "name": "思源电气",
       "sector": "电网设备",
@@ -493,19 +480,6 @@
       "riskFlags": []
     },
     {
-      "code": "sh601899",
-      "name": "紫金矿业",
-      "sector": "有色金属",
-      "direction": "戴维斯双击",
-      "pe": 14,
-      "profitGrowth": 40,
-      "reason": "铜金龙头,全球资源+高景气",
-      "roe": 22,
-      "grossMargin": 20,
-      "debtRatio": 50,
-      "riskFlags": []
-    },
-    {
       "code": "sh600519",
       "name": "贵州茅台",
       "sector": "食品饮料",
@@ -516,19 +490,6 @@
       "roe": 30,
       "grossMargin": 90,
       "debtRatio": 15,
-      "riskFlags": []
-    },
-    {
-      "code": "sz002557",
-      "name": "洽洽食品",
-      "sector": "食品饮料",
-      "direction": "戴维斯双击(估值修复)",
-      "pe": 18,
-      "profitGrowth": 25,
-      "reason": "休闲食品龙头,暑期消费旺季",
-      "roe": 18,
-      "grossMargin": 33,
-      "debtRatio": 30,
       "riskFlags": []
     },
     {
@@ -547,19 +508,6 @@
       ]
     },
     {
-      "code": "sz002415",
-      "name": "海康威视",
-      "sector": "AI视觉",
-      "direction": "供需双驱",
-      "pe": 20,
-      "profitGrowth": 20,
-      "reason": "AI视觉龙头,机器人视觉+大模型",
-      "roe": 20,
-      "grossMargin": 45,
-      "debtRatio": 25,
-      "riskFlags": []
-    },
-    {
       "code": "sh600887",
       "name": "伊利股份",
       "sector": "食品饮料",
@@ -571,7 +519,59 @@
       "grossMargin": 35,
       "debtRatio": 45,
       "riskFlags": []
+    },
+    {
+      "code": "sh600406",
+      "name": "国电南瑞",
+      "sector": "电网设备",
+      "direction": "需求端驱动",
+      "pe": 22,
+      "profitGrowth": 30,
+      "reason": "电网自动化龙头,特高压+储能",
+      "roe": 14,
+      "grossMargin": 28,
+      "debtRatio": 40,
+      "riskFlags": []
+    },
+    {
+      "code": "sh601899",
+      "name": "紫金矿业",
+      "sector": "有色金属",
+      "direction": "戴维斯双击",
+      "pe": 14,
+      "profitGrowth": 40,
+      "reason": "铜金龙头,全球资源+高景气",
+      "roe": 22,
+      "grossMargin": 20,
+      "debtRatio": 50,
+      "riskFlags": []
+    },
+    {
+      "code": "sz002557",
+      "name": "洽洽食品",
+      "sector": "食品饮料",
+      "direction": "戴维斯双击(估值修复)",
+      "pe": 18,
+      "profitGrowth": 25,
+      "reason": "休闲食品龙头,暑期消费旺季",
+      "roe": 18,
+      "grossMargin": 33,
+      "debtRatio": 30,
+      "riskFlags": []
+    },
+    {
+      "code": "sz002415",
+      "name": "海康威视",
+      "sector": "AI视觉",
+      "direction": "供需双驱",
+      "pe": 20,
+      "profitGrowth": 20,
+      "reason": "AI视觉龙头,机器人视觉+大模型",
+      "roe": 20,
+      "grossMargin": 45,
+      "debtRatio": 25,
+      "riskFlags": []
     }
   ],
-  "updateTime": "2026-07-30T16:30:29+08:00"
+  "updateTime": "2026-07-31T16:53:28+08:00"
 }
