@@ -16,6 +16,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 DEPLOY_HTML = os.path.join(BASE, 'deploy', 'index.html')
 DOCS_HTML = os.path.join(BASE, 'docs', 'index.html')
 DOCS_DIR = os.path.join(BASE, 'docs')
+ROOT_HTML = os.path.join(BASE, 'index.html')  # GitHub Pages 从根目录构建
 
 
 def run_script(name, script_name, timeout=300):
@@ -221,14 +222,15 @@ def full_scan():
     # Step 8: 起涨前预判
     run_script("[8/9] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
 
-    # Step 9: 复制 deploy -> docs + 预计算注入
+    # Step 9: 复制 deploy -> docs + root + 预计算注入
     print(f"\n{'=' * 60}")
     print("  [9/9] 预计算注入 + 部署准备")
     print(f"{'=' * 60}")
 
     os.makedirs(DOCS_DIR, exist_ok=True)
     shutil.copy2(DEPLOY_HTML, DOCS_HTML)
-    print(f"  [OK] deploy -> docs ({os.path.getsize(DOCS_HTML)} bytes)")
+    shutil.copy2(DEPLOY_HTML, ROOT_HTML)
+    print(f"  [OK] deploy -> docs + root ({os.path.getsize(DOCS_HTML)} bytes)")
 
     inject_precomputation(DOCS_HTML)
     restore_deploy_placeholders()
@@ -248,14 +250,15 @@ def update_only():
     # Step 1: 起涨前预判（更新 deploy/index.html 中的 preBreakoutScore 等字段）
     run_script("[1/3] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
 
-    # Step 2: 复制 deploy -> docs
+    # Step 2: 复制 deploy -> docs + root
     print(f"\n{'=' * 60}")
     print("  [2/3] 复制 + 预计算注入")
     print(f"{'=' * 60}")
 
     os.makedirs(DOCS_DIR, exist_ok=True)
     shutil.copy2(DEPLOY_HTML, DOCS_HTML)
-    print(f"  [OK] deploy -> docs ({os.path.getsize(DOCS_HTML)} bytes)")
+    shutil.copy2(DEPLOY_HTML, ROOT_HTML)
+    print(f"  [OK] deploy -> docs + root ({os.path.getsize(DOCS_HTML)} bytes)")
 
     # Step 3: 预计算注入（KDJ + 资金流 + 大盘跟随度）
     inject_precomputation(DOCS_HTML)

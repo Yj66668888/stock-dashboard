@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: cloud-pipeline
@@ -32,27 +30,15 @@ jobs:
       - name: Run update pipeline
         run: python cloud_pipeline.py update
 
-      - name: Commit deploy changes
+      - name: Commit and push
         run: |
           git config user.name 'Stock Bot'
           git config user.email 'bot@stock-dashboard.local'
-          git add deploy/index.html
+          git add -A
           if git diff --staged --quiet; then
-            echo 'No deploy changes to commit'
+            echo 'No changes to commit'
           else
             git commit -m "Cloud update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
             git push
-            echo 'Pushed deploy/index.html'
+            echo 'Pushed to GitHub - Pages will auto-rebuild'
           fi
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
