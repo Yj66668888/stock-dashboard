@@ -1,0 +1,58 @@
+name: Cloud Dashboard Update
+
+on:
+  schedule:
+    # 9:00 AM - 3:30 PM Beijing = 1:00-7:30 UTC, every 30 min, Mon-Fri
+    - cron: '*/30 1-7 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: cloud-pipeline
+  cancel-in-progress: false
+
+jobs:
+  dashboard-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run update pipeline
+        run: python cloud_pipeline.py update
+
+      - name: Commit deploy changes
+        run: |
+          git config user.name 'Stock Bot'
+          git config user.email 'bot@stock-dashboard.local'
+          git add deploy/index.html
+          if git diff --staged --quiet; then
+            echo 'No deploy changes to commit'
+          else
+            git commit -m "Cloud update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+            git push
+            echo 'Pushed deploy/index.html'
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

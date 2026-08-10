@@ -1,10 +1,15 @@
 __pycache__/
 *.pyc
 .DS_Store
-deploy/
 *.log
 /tmp/
 .workbuddy/
+.github_token
+.playwright-cli/
+outputs/
+
+# Excel 报告（不需要版本管理）
+*.xlsx
 
 # 旧版本/中间文件
 davis_dashboard_v4*.html
@@ -16,3 +21,37 @@ server.py
 server_enc.py
 stocks_data.json
 stocks_data_v4.js
+
+# deploy_davis 是本地仪表盘，不需要云端
+deploy_davis/
+
+# 旧版补丁/工具脚本（cloud pipeline 不依赖）
+calc_kdj.py
+calc_kdj_v2.py
+check_js.py
+validate_js.py
+strip_modules.py
+auto_update_full.py
+patch_*.py
+sync_gap_up_results.py
+inject_and_push.py
+inject_stocks_to_dashboard.py
+gen_gapup_report.py
+gen_kdj_report.py
+scan_kdj.py
+scan_kdj_sina.js
+pre_breakout_scanner.py
+factor_compare_backtest.py
+kdj_pattern_analysis.json
+kdj_results.json
+kdj_scan_results.json
+factor_compare.json
+pinned_precompute*.json
+pre_breakout_results.json
+requirements_v2.md
+stock_dashboard_spec.md
+overview.md
+复制选股策略指令.txt
+个股查询.html
+选股策略.html
+戴维斯双击仪表盘*.html

@@ -1,0 +1,58 @@
+name: Cloud Full Scan
+
+on:
+  schedule:
+    # 8:30 AM Beijing = 0:30 UTC, Mon-Fri
+    - cron: '30 0 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: cloud-pipeline
+  cancel-in-progress: false
+
+jobs:
+  full-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run full pipeline
+        run: python cloud_pipeline.py full
+
+      - name: Commit data files
+        run: |
+          git config user.name 'Stock Bot'
+          git config user.email 'bot@stock-dashboard.local'
+          git add -A
+          if git diff --staged --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m "Cloud full-scan $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+            git push
+            echo 'Pushed to GitHub'
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

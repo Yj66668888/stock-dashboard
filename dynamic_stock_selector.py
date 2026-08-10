@@ -3,10 +3,11 @@
 全量选股脚本
 每次从全市场重新选出最优30只票，不做增量换血，全量替换。
 """
-import json, os, re
+import json, os, re, sys
 
 BASE = os.path.dirname(__file__)
 INDEX_HTML = os.path.join(BASE, 'deploy', 'index.html')
+DAVIS_HTML = os.path.join(BASE, 'deploy_davis', 'index.html')  # 🔥 戴维斯双击仪表盘
 PRED_FILE = os.path.join(BASE, 'daily_predictions.json')
 CF_FILE = os.path.join(BASE, 'capital_flow.json')
 SECTOR_FILE = os.path.join(BASE, 'sector_resonance.json')
@@ -20,6 +21,14 @@ TARGET_POOL_SIZE = 30
 
 # 白名单：用户指定持仓，动态换血永不踢出
 PROTECTED_CODES = {}  # 白名单（用户指定做T关注票，不在STOCKS中）
+
+# 🔥 固定票：用户指定永远保留在仪表盘的票，不受选股算法筛选影响
+PINNED_STOCKS = [
+    {'code': 'sh603067', 'name': '振华股份', 'sector': '化工'},
+    {'code': 'sh600105', 'name': '永鼎股份', 'sector': '通信'},
+    {'code': 'sh601126', 'name': '四方股份', 'sector': '电力设备'},
+    {'code': 'sz000688', 'name': '国城矿业', 'sector': '有色金属'},
+]
 
 def load_json(path):
     if not os.path.exists(path):
@@ -49,17 +58,55 @@ def is_zombie(score, flow_5d):
     """数据缺失票：dailyScore和资金流全为0 → 僵尸票"""
     return score == 0 and flow_5d == 0
 
+# 换手率最低阈值：低于此值的票不选入（流动性太差）
+MIN_TURNOVER = 2.0
+
+def fetch_turnover_batch(codes):
+    """
+    从腾讯行情接口批量获取换手率。
+    codes: ['600522', '002451', ...] 纯数字代码列表
+    返回: {'600522': 3.45, '002451': 0.8, ...}  换手率(%)
+    """
+    import subprocess
+    result = {}
+    # 腾讯接口一次最多~50只，分批
+    batch_size = 40
+    for i in range(0, len(codes), batch_size):
+        batch = codes[i:i+batch_size]
+        prefixed = [to_prefixed_code(c) for c in batch]
+        url = 'https://qt.gtimg.cn/q=' + ','.join(prefixed)
+        try:
+            p = subprocess.run(['curl', '-s', '--max-time', '10', url],
+                               capture_output=True, timeout=15)
+            text = p.stdout.decode('gbk', errors='replace')
+            # 解析: v_sh600522="1~名称~code~...~换手率(fields[38])~..."
+            for m in re.finditer(r'v_(s[hz]\d+)="([^"]*)"', text):
+                raw_code = m.group(1)
+                pure = pure_code(raw_code)
+                fields = m.group(2).split('~')
+                if len(fields) > 38:
+                    try:
+                        t = float(fields[38])
+                        if t > 0:
+                            result[pure] = t
+                    except (ValueError, IndexError):
+                        pass
+        except Exception as e:
+            print(f"  ⚠️ 换手率获取失败(batch {i//batch_size+1}): {e}")
+    return result
+
 # =====================================================================
 # 四层漏斗选股框架
 # 逻辑：①资金推动 → ②推动理由 → ③核心壁垒 → ④股性好
 # =====================================================================
 
-def calc_capital_quality(flow_5d, flow_10d, daily=None):
+def calc_capital_quality(flow_5d, flow_10d, daily=None, drop_20d=None, latest_chg=None, avg_vol_up=None, consecutive=None):
     """
-    ① 资金层（0-25分）—— 硬性门禁 + 质量评分
+    ① 资金层（0-25分）—— 硬性门禁 + 质量评分 + 资金类型判别
     
     硬门禁：10日累计>0 或 最近3日连续流入 → 不过关直接排除
     质量分：连续流入天数 + 资金加速比 + 资金体量
+    资金类型：区分增量建仓 vs 存量倒手（出货/分歧），churn类型降权
     
     Returns: (passed_bool, capital_score, diagnosis_str)
     """
@@ -129,6 +176,12 @@ def calc_capital_quality(flow_5d, flow_10d, daily=None):
     elif ref_flow > 0:
         score += 1
     
+    # 4. 资金类型判别（增量进场 vs 高位存量倒手）—— 🔥新增
+    cap_type, cap_type_bonus, cap_type_diag = classify_capital_type(
+        flow_5d, flow_10d, daily, latest_chg, drop_20d, avg_vol_up, consecutive
+    )
+    score += cap_type_bonus
+    
     # 诊断
     parts = []
     if consecutive_inflow >= 3:
@@ -138,8 +191,78 @@ def calc_capital_quality(flow_5d, flow_10d, daily=None):
     if ref_flow > 20000:
         parts.append(f"{ref_flow/10000:.1f}亿体量")
     diag = " | ".join(parts) if parts else "资金正流入"
+    if cap_type_diag:
+        diag += f" | {cap_type_diag}"
     
     return (True, min(score, 25), diag)
+
+
+def classify_capital_type(flow_5d, flow_10d, daily, latest_chg, drop_20d, avg_vol_up, consecutive):
+    """
+    资金类型判别 —— 区分增量进场 vs 高位存量倒手 vs 反转试探
+    
+    核心问题：看到"资金流入"不代表安全，需要判断：
+    1. 是增量资金在建仓（低位+持续流入+涨幅温和）？
+    2. 还是存量筹码在倒手（高位+放量滞涨/下跌）？→ 可能是出货/分歧
+    
+    Returns: (type_str, bonus_penalty, diag_str)
+        type_str: 'incremental'(增量建仓) | 'churn'(存量倒手/出货) | 'reversal'(反转试探) | 'neutral'(中性)
+        bonus_penalty: 建议加分/扣分值（-8 ~ +5）
+        diag_str: 诊断描述
+    """
+    daily = daily or []
+    daily_flows = [d.get('flow_wan', 0) for d in daily[-5:]]
+    
+    # ====== 1. 高位存量倒手/出货检测 ======
+    # 逻辑：涨超20%→极端鱼尾；涨超10%→结合量价/资金减速判断
+    
+    # 高位鱼尾区间（已涨>20%）→ 无论如何都风险极高
+    if drop_20d is not None and drop_20d > 20:
+        return ('churn', -6, '⚠️高位鱼尾区间(涨>20%)→不追')
+    
+    if drop_20d is not None and drop_20d > 10:
+        # 高位放量下跌 → 明确出货信号（量比正常即可，不需1.2倍以上）
+        if latest_chg is not None and latest_chg < -1 and avg_vol_up is not None and avg_vol_up > 1.0:
+            return ('churn', -8, '⚠️高位放量下跌→疑似出货')
+        # 高位暴跌(>5%) → 无论是否放量都是危险信号
+        if latest_chg is not None and latest_chg < -5:
+            return ('churn', -6, '⚠️高位暴跌→主力跑路')
+        # 高位连涨4天+ → 存量博弈，随时变盘
+        if consecutive is not None and consecutive >= 4:
+            return ('churn', -5, '⚠️高位连涨→警惕存量博弈')
+        # 高位+资金减速(5日<10日的60%) → 主力在撤退
+        if flow_10d is not None and flow_10d > 0 and flow_5d < flow_10d * 0.6:
+            return ('churn', -3, '⚠️高位资金减速→主力撤退')
+    
+    # ====== 2. 增量建仓检测 ======
+    # 逻辑：低位(已跌>5%) + 资金持续流入 + 5日流入量>10日 → 增量资金在建仓
+    if drop_20d is not None and drop_20d < -5 and flow_5d > 0:
+        if flow_10d is not None and flow_10d > 0:
+            # 资金加速：最近5日流入远超10日均速
+            if flow_5d > flow_10d * 1.5:
+                return ('incremental', 5, '💰低位增量建仓(资金加速)')
+            if flow_5d > flow_10d:
+                return ('incremental', 3, '💰低位增量建仓')
+        # 10日没有数据但有5日流入+低位 → 也视为增量试探
+        if flow_10d is None and flow_5d > 5000:
+            return ('incremental', 2, '💰低位增量试探')
+    
+    # ====== 3. 反转试探检测 ======
+    # 逻辑：10日流出→5日流入 → 资金在掉头，关注是否持续
+    if flow_10d is not None and flow_10d < 0 and flow_5d > 0:
+        # 确认不是一日游：近3日有小额持续流入
+        recent_3_in = sum(1 for f in daily_flows[-3:] if f > 0)
+        if recent_3_in >= 2:
+            return ('reversal', 4, '🔄资金反转试探(有持续性)')
+        return ('reversal', 2, '🔄资金反转试探')
+    
+    # ====== 4. 中性 ======
+    # 10日和5日都在流入 → 持续偏多但无特别信号
+    if flow_10d is not None and flow_10d > 0 and flow_5d > 0:
+        return ('neutral', 1, '')
+    
+    # 资金博弈不明朗
+    return ('neutral', 0, '')
 
 
 def calc_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score):
@@ -177,7 +300,23 @@ def calc_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score):
             r_diag = "弱板块共振"
     
     # 主力占比加分（同一板块内，主力介入深的票逻辑更清晰）
-    if ratio_5d is not None and ratio_5d > 3:
+    # 🔥 新增：对比3日/5日/10日主力占比趋势，判断主力态度一致性
+    if ratio_5d is not None and ratio_10d is not None and ratio_5d > 0 and ratio_10d > 0:
+        # 主力占比递增 → 主力在持续加码（最强信号）
+        if ratio_5d > ratio_10d * 1.5:
+            r_score += 4
+            r_diag += " | 主力加速加码"
+        elif ratio_5d > ratio_10d:
+            r_score += 3
+            r_diag += " | 主力持续加码"
+        # 主力占比递减 → 主力可能在撤退
+        elif ratio_5d < ratio_10d * 0.5:
+            r_score -= 2
+            r_diag += " | ⚠️主力撤退"
+        elif ratio_5d < ratio_10d:
+            r_score -= 1
+            r_diag += " | 主力减弱"
+    elif ratio_5d is not None and ratio_5d > 3:
         r_score += 3
         r_diag += " | 主力深度介入"
     elif ratio_5d is not None and ratio_5d > 1:
@@ -305,8 +444,12 @@ def calc_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonu
         t_score += 3   # 小涨（非回调）
     elif drop_20d < -30:
         t_score += 3   # 太深，基本面风险
+    elif 5 < drop_20d <= 10:
+        t_score += 2   # 小涨偏高
+    elif 10 < drop_20d <= 15:
+        t_score += 1   # 偏高追入
     else:
-        t_score += 1   # 大涨追高
+        t_score += 0   # 高位不追
     
     # === 趋势+跌速（0-14分）=== — 启动确认+温和涨跌最优
     if drop_20d < -5:
@@ -360,6 +503,26 @@ def calc_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, kdj_bonu
     
     t_score += min(tech, 14)
     
+    # === 高位鱼尾最终风控（🔥新增）===
+    # 无论前面技术信号多好，如果已在鱼尾区间，强制降权
+    fish_tail_penalty = 0
+    if drop_20d > 20:
+        # 已涨超20% → 强势鱼尾区间，大幅降权
+        fish_tail_penalty = -8
+        # 叠加连涨+放量 → 更危险
+        if consecutive >= 4 and avg_vol_up is not None and avg_vol_up > 1.1:
+            fish_tail_penalty = -12
+    elif drop_20d > 15:
+        # 已涨超15% → 进入鱼尾预警区间
+        fish_tail_penalty = -5
+        if consecutive >= 5:
+            fish_tail_penalty = -7
+    elif drop_20d > 10:
+        # 已涨超10% → 偏高，谨慎
+        fish_tail_penalty = -2
+    
+    t_score += fish_tail_penalty
+    
     return min(t_score, 40)
 
 
@@ -388,7 +551,7 @@ def calc_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg
         return -999.0, {'capital': (False, 0, '僵尸票'), 'rationale': (0, '', ''), 'moat': (0, ''), 'trading': 0}
     
     # ========== ① 资金门 ==========
-    passed, capital_score, capital_diag = calc_capital_quality(flow_5d, flow_10d, daily)
+    passed, capital_score, capital_diag = calc_capital_quality(flow_5d, flow_10d, daily, drop_20d, latest_chg, avg_vol_up, consecutive)
     if not passed:
         return -999.0, {'capital': (passed, capital_score, capital_diag), 'rationale': (0, '', ''), 'moat': (0, ''), 'trading': 0}
     
@@ -414,78 +577,173 @@ def calc_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg
 
 # ==================== 启动段四层漏斗 ====================
 
-def calc_launch_capital_quality(flow_5d, flow_10d, daily=None):
+def calc_launch_capital_quality(flow_5d, flow_10d, daily=None, drop_20d=None, latest_chg=None, avg_vol_up=None, consecutive=None):
     """
-    ① 启动段资金门（放宽版，0-20分）
+    ① 启动段资金门（信号前移版，0-20分）
     
-    与主池的区别：近2日有持续流入即可过门，门槛更低
-    适合启动段回调后小资金试盘的特征
+    🔥 核心改进：不等资金转正，抓"流出减速→即将反转"的前兆信号
+    
+    三条路径：
+    A. 10日>0 且 5日>0 → 资金双正，正常评分（路径不变）
+    B. 10日>0 但 5日≤0 → 回调中，检查回调深度即可通过
+    C. 10日≤0 → 🆕 预启动路径：收集5个信号(回调到位/流出减速/缩量/止跌/流入迹象)
+                需≥2个信号通过门禁，不再硬拒绝
+    
+    churn（高位倒手）仍硬拒绝
     """
-    # === 硬门禁（放宽版）===
-    # 10日累计≤0 且 近2日内无连续流入 → 踢
     has_10d = (flow_10d is not None)
+    if not has_10d:
+        return (False, 0, '⛔10日资金缺失')
     
-    # 检测近2日连续流入
+    # 检测近N日连续流入
     consecutive_inflow = 0
-    if daily and len(daily) >= 2:
-        recent = daily[-2:]
-        consecutive_inflow = sum(1 for d in recent if d.get('net_flow', 0) > 0)
+    if daily:
+        recent_flows = [d.get('flow_wan', d.get('net_flow', 0)) for d in daily[-5:]]
+        for f in reversed(recent_flows):
+            if f > 0:
+                consecutive_inflow += 1
+            else:
+                break
     
-    if has_10d and flow_10d <= 0 and consecutive_inflow < 2:
-        return (False, 0, '资金门不过')
+    # 🔥 资金类型判别（先做，churn硬拒绝不变）
+    cap_type, cap_type_bonus, cap_type_diag = classify_capital_type(
+        flow_5d, flow_10d, daily, latest_chg, drop_20d, avg_vol_up, consecutive
+    )
+    if cap_type == 'churn':
+        return (False, 0, f'⛔{cap_type_diag or "高位存量倒手"}')
     
     score = 0
+    diag_parts = []
     
-    # 1. 连续流入天数（0-8分）
-    if consecutive_inflow >= 3:
-        score += 8
-    elif consecutive_inflow == 2:
-        score += 6
-    elif consecutive_inflow == 1:
-        score += 3
+    # ================================================================
+    # 路径A：10日>0 且 5日>0 → 资金双正，正常评分
+    # ================================================================
+    if flow_10d > 0 and (flow_5d or 0) > 0:
+        gate_level = '🟢资金双正'
+        
+        # 连续流入 (0-8)
+        if consecutive_inflow >= 5:
+            score += 8; diag_parts.append(f'连{consecutive_inflow}日')
+        elif consecutive_inflow >= 3:
+            score += 6; diag_parts.append(f'连{consecutive_inflow}日')
+        elif consecutive_inflow >= 2:
+            score += 4; diag_parts.append('连2日')
+        elif consecutive_inflow == 1:
+            score += 2; diag_parts.append('今日流入')
+        
+        # 资金加速比 (0-3)
+        if flow_10d > 0:
+            ratio = flow_5d / flow_10d
+            if ratio > 0.8: score += 3
+            elif ratio > 0.5: score += 2
+            elif ratio > 0.3: score += 1
+        
+        # 体量 (0-3)
+        ref = max(abs(flow_5d or 0), abs(flow_10d))
+        if ref > 30000: score += 3
+        elif ref > 10000: score += 2
+        elif ref > 3000: score += 1
+        
+        # 类型加分
+        if cap_type == 'incremental':
+            score += 3; diag_parts.append(cap_type_diag)
+        elif cap_type == 'reversal':
+            score += 2; diag_parts.append(cap_type_diag)
     
-    # 2. 资金加速比（0-6分）
-    if has_10d and flow_5d > 0 and flow_10d > 0:
-        ratio = flow_5d / flow_10d
-        if ratio > 0.8:
-            score += 6
-        elif ratio > 0.5:
-            score += 4
-        elif ratio > 0.3:
-            score += 2
+    # ================================================================
+    # 路径B：10日>0 但 5日≤0 → 回调中
+    # ================================================================
+    elif flow_10d > 0:
+        gate_level = '🟡回调中'
+        if drop_20d is not None and -20 <= drop_20d <= -5:
+            score += 5; diag_parts.append('回调到位')
+        elif drop_20d is not None and -10 <= drop_20d <= -2:
+            score += 3; diag_parts.append('浅回调')
+        elif consecutive_inflow >= 2:
+            score += 2; diag_parts.append('近转正')
+        else:
+            score += 1
+        
+        if consecutive_inflow >= 1: score += 1
+        if cap_type == 'reversal': score += 2
     
-    # 3. 资金体量（0-6分）
-    ref_flow = flow_5d if flow_10d is None else max(flow_5d, flow_10d)
-    if ref_flow > 30000:
-        score += 6
-    elif ref_flow > 10000:
-        score += 4
-    elif ref_flow > 3000:
-        score += 2
-    elif ref_flow > 0:
-        score += 1
+    # ================================================================
+    # 路径C：10日≤0 → 🆕 预启动路径！
+    # ================================================================
+    else:
+        # 数据异常（10日=0且5日≤0）→ 踢
+        if flow_10d == 0 and (flow_5d or 0) <= 0:
+            return (False, 0, '⛔10日资金异常')
+        
+        # 收集5个预启动信号
+        signals = []
+        
+        # 信号1：回调到位（drop_20d 在 -20% ~ -2%）
+        if drop_20d is not None and -20 <= drop_20d <= -2:
+            signals.append('回调到位')
+        
+        # 信号2：流出减速（|5日流出| / |10日流出| < 0.6）
+        if flow_10d < 0 and flow_5d is not None:
+            decel = abs(flow_5d / flow_10d) if flow_10d != 0 else 999
+            if decel < 0.4:
+                signals.append('强减速')
+            elif decel < 0.6:
+                signals.append('流出减速')
+            elif decel < 0.8:
+                signals.append('弱减速')
+        
+        # 信号3：缩量（avg_vol_up < 0.85）
+        if avg_vol_up is not None and 0 < avg_vol_up < 0.85:
+            signals.append('缩量')
+        
+        # 信号4：止跌（latest_chg 在 -1% ~ 1%）
+        if latest_chg is not None and -1 <= latest_chg <= 1:
+            signals.append('止跌')
+        elif latest_chg is not None and -2 <= latest_chg < -1:
+            signals.append('跌速放缓')
+        
+        # 信号5：近2日有流入迹象
+        if consecutive_inflow >= 1:
+            signals.append(f'近{consecutive_inflow}日流入')
+        
+        # 🔥 门禁：需 ≥ 2 个预启动信号
+        if len(signals) < 2:
+            return (False, 0, f'⛔预启动不足({len(signals)}/5)')
+        
+        gate_level = '🔵预启动'
+        score += min(len(signals) * 2, 10)
+        diag_parts.extend(signals)
+        
+        # 反转加分
+        if cap_type == 'reversal':
+            score += 3; diag_parts.append('反转试探')
+        elif cap_type == 'incremental':
+            score += 2; diag_parts.append('增量迹象')
+        
+        # 反转幅度加分
+        if flow_10d < 0 and (flow_5d or 0) > flow_10d:
+            if flow_10d != 0:
+                rev = abs((flow_5d - flow_10d) / flow_10d)
+                if rev > 0.5: score += 3
+                elif rev > 0.3: score += 2
     
-    # 诊断
-    parts = []
-    if consecutive_inflow >= 2:
-        parts.append(f"连{consecutive_inflow}日流入")
-    if ref_flow > 10000:
-        parts.append(f"{ref_flow/10000:.1f}亿")
-    diag = " | ".join(parts) if parts else "小额资金试探"
+    diag_parts.insert(0, gate_level)
+    diag = ' | '.join(diag_parts) if diag_parts else '弱信号'
     
     return (True, min(score, 20), diag)
 
 
-def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score):
+def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score, sector_persistent=False):
     """
     ② 启动段逻辑层（轻量版，0-10分）
-    
-    启动段不要求强板块共振，有即可加分
+
+    启动段不要求强板块共振，有即可加分。
+    板块持续性验证：一日游板块（非persistent）逻辑分减半。
     """
     r_score = 0
     r_type = "无明确驱动"
     r_diag = ""
-    
+
     if sector_tier is not None:
         if sector_tier == 1:
             r_score += 7
@@ -499,14 +757,20 @@ def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score
         elif sector_tier == 99:
             r_score += 2
             r_type = "板块兜底"
-    
+
+        # 持续性惩罚：一日游板块逻辑分减半（最少保留1分）
+        if not sector_persistent:
+            r_score = max(1, round(r_score * 0.5))
+            r_type += "(一日游)"
+            r_diag = "板块未持续"
+
     # 主力占比加分
     if ratio_5d is not None and ratio_5d > 3:
         r_score += 2
     elif ratio_5d is not None and ratio_5d > 1:
         r_score += 1
-    
-    # 独立逻辑
+
+    # 独立逻辑（不受持续性影响）
     if sector_tier is None:
         if flow_5d > 20000 and score > 55:
             r_score += 6
@@ -519,7 +783,7 @@ def calc_launch_rationale(code, sector_tier, ratio_5d, ratio_10d, flow_5d, score
         elif flow_5d > 3000:
             r_score += 2
             r_type = "资金关注"
-    
+
     return (min(r_score, 10), r_type, r_diag)
 
 
@@ -579,22 +843,58 @@ def calc_pre_launch_setup(drop_20d, latest_chg, flow_5d, flow_10d, daily,
         score += 0        # 加速下跌
     
     # ========== 3. 资金反转（0-30）==========
-    # 最关键的前瞻信号：跌市中资金开始掉头
+    # 🔥 最关键的前瞻信号：跌市中资金开始掉头
+    # 10日数据必检：无10日数据 → 无法判断反转 → 降级
+    has_10d = (flow_10d is not None)
     has_daily = daily and len(daily) >= 3
     
-    if flow_10d is not None and flow_10d < 0 and flow_5d > 0:
-        score += 30       # 🔥 资金反转！跌市中资金掉头 → 最强信号
-        signals.append('💰资金反转')
-    elif flow_5d > 5000:
-        score += 20
-        signals.append('💰持续流入')
-    elif 0 < flow_5d <= 5000:
-        score += 14
-    elif flow_5d < 0 and flow_10d is not None and flow_5d > flow_10d * 0.5:
-        score += 8        # 流出减速
-        signals.append('流出减缓')
-    elif -5000 <= flow_5d <= 0:
-        score += 3        # 流出收敛
+    if has_10d:
+        if flow_10d < 0 and flow_5d > 0:
+            # 🎯 资金反转！跌市中资金掉头 → 最强信号
+            reversal_ratio = abs(flow_5d / flow_10d) if flow_10d != 0 else 0
+            if reversal_ratio > 1.0:
+                score += 30       # 超级反转（5日流入覆盖了10日全部流出）
+                signals.append('💰超级反转')
+            elif reversal_ratio > 0.5:
+                score += 27       # 强力反转
+                signals.append('💰强资金反转')
+            elif reversal_ratio > 0.3:
+                score += 24       # 明显反转
+                signals.append('💰资金反转')
+            else:
+                score += 18       # 弱反转
+                signals.append('💰弱反转')
+        elif flow_10d < -50000 and flow_5d > 0:
+            # 10日大幅流出(>5亿)但5日已转正 → 更确定的反转
+            score += 30
+            signals.append('💰巨量反转')
+        elif flow_5d > 10000 and flow_10d > 0:
+            # 10日和5日都在流入且体量大 → 持续强势
+            score += 22
+            signals.append('💰持续强流入')
+        elif flow_5d > 5000:
+            score += 18
+            signals.append('💰持续流入')
+        elif 0 < flow_5d <= 5000:
+            score += 12
+        elif flow_5d < 0 and flow_5d > flow_10d * 0.5:
+            # 流出减速 → 接近反转
+            score += 10
+            signals.append('流出减缓')
+        elif -5000 <= flow_5d <= 0:
+            score += 3  # 流出收敛
+        elif flow_10d < 0 and flow_5d < flow_10d:
+            # 5日比10日流出更多 → 还在恶化 → 不加分
+            score += 0
+    else:
+        # ⚠️ 无10日数据 → 无法判断反转 → 降级
+        if flow_5d > 5000:
+            score += 12  # 只有5日数据，只能给基础分
+            signals.append('⚠️缺10日数据')
+        elif flow_5d > 0:
+            score += 8
+        else:
+            score += 2
     
     # 连续小额试探（缩量小买）
     if has_daily:
@@ -733,15 +1033,15 @@ def calc_launch_trading_quality(drop_20d, latest_chg, consecutive, avg_vol_up, k
 
 def calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_chg, avg_vol_up,
                         kdj_bonus=0, rsi=None, sector_tier=None, ratio_5d=None, ratio_10d=None,
-                        daily=None, code=None, fundamental_data=None):
+                        daily=None, code=None, fundamental_data=None, sector_persistent=False):
     """
     启动段四层漏斗健康度（0-100），返回 (-999, None) 表示不合格
     
     与主池 calc_health 的区别：资金门放宽(20)、逻辑轻量(10)、壁垒标准(15)、股性重仓(55)
     
     ┌─────────────────────────────────────────┐
-    │ ① 资金门（硬过滤，放宽版）  0-20分       │
-    │ → 10日累计≤0且近2日无持续 → 踢           │
+    │ ① 资金门（信号前移版）      0-20分       │
+    │ → 10日≤0不再硬踢，需≥2个预启动信号       │
     ├─────────────────────────────────────────┤
     │ ② 推动理由（逻辑轻量）     0-10分         │
     │ → 板块驱动 vs 独立逻辑（弱化）           │
@@ -758,13 +1058,13 @@ def calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_c
         return -999.0, None
     
     # ========== ① 资金门（放宽版，0-20）==========
-    passed, capital_score, capital_diag = calc_launch_capital_quality(flow_5d, flow_10d, daily)
+    passed, capital_score, capital_diag = calc_launch_capital_quality(flow_5d, flow_10d, daily, drop_20d, latest_chg, avg_vol_up, consecutive)
     if not passed:
         return -999.0, None
     
     # ========== ② 推动理由（轻量版，0-10）==========
     rationale_score, rationale_type, rationale_diag = calc_launch_rationale(
-        code, sector_tier, ratio_5d, ratio_10d, flow_5d, score
+        code, sector_tier, ratio_5d, ratio_10d, flow_5d, score, sector_persistent
     )
     
     # ========== ③ 核心壁垒（0-15）==========
@@ -787,7 +1087,8 @@ def calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive, latest_c
 
 
 def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None,
-                       code_sector_tier=None, code_sector_ratio=None, exclude_codes=set()):
+                       code_sector_tier=None, code_sector_ratio=None, code_sector_persistent=None,
+                       exclude_codes=set()):
     """
     池B：启动段四层漏斗选股
     从全市场候选池中选 30 只启动段特征最强的票
@@ -802,6 +1103,8 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
         code_sector_tier = {}
     if code_sector_ratio is None:
         code_sector_ratio = {}
+    if code_sector_persistent is None:
+        code_sector_persistent = {}
 
     for code, pr in all_results.items():
         if code in exclude_codes:
@@ -829,6 +1132,12 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
         daily = cf.get('daily', [])
 
         # === 启动段硬性过滤 ===
+        # 0. 🔥 10日资金必检：无10日数据或数据异常 → 跳过
+        if flow_10d is None:
+            continue  # 没有10日资金数据，不可信任
+        if flow_10d == 0 and flow_5d <= 0:
+            continue  # 10日累计为0且5日也无流入 → 数据异常或停牌
+        
         # 1. 僵尸票排除
         if is_zombie(score, flow_5d):
             continue
@@ -854,11 +1163,13 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
         # 板块共振数据
         c_tier = code_sector_tier.get(code)
         c_ratio_5d, c_ratio_10d = code_sector_ratio.get(code, (None, None))
+        c_persistent = code_sector_persistent.get(code, False)
 
         health, details = calc_launch_health(score, flow_5d, flow_10d, drop_20d, consecutive,
                                               latest_chg, avg_vol_up, kdj_bonus, rsi,
                                               sector_tier=c_tier, ratio_5d=c_ratio_5d, ratio_10d=c_ratio_10d,
-                                              daily=daily, code=code, fundamental_data=fundamental_data)
+                                              daily=daily, code=code, fundamental_data=fundamental_data,
+                                              sector_persistent=c_persistent)
         
         # 计算预启动分数（不要求当天已涨）
         pre_score, pre_phase, pre_signals = calc_pre_launch_setup(
@@ -866,10 +1177,10 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
             kdj_bonus, rsi, avg_vol_up
         )
         
-        # 放宽门槛：预启动≥65 或 健康度≥35（原40）
+        # 放宽门槛：预启动≥60 或 健康度≥32（原35，配合10日必检微调）
         if health == -999:
             continue
-        if health < 35 and pre_score < 65:
+        if health < 32 and pre_score < 60:
             continue
 
         candidates.append({
@@ -898,10 +1209,31 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
 
     # 复合排序：70%健康度 + 30%预启动分，预启动高分的票不被埋没
     candidates.sort(key=lambda x: x['launch_health'] * 0.7 + x.get('pre_launch_score', 0) * 0.3, reverse=True)
+
+    # === 换手率过滤：踢掉换手率 <2% 的 ===
+    if candidates:
+        launch_codes = [c['code'] for c in candidates]
+        launch_turnover = fetch_turnover_batch(launch_codes)
+        for c in candidates:
+            c['turnover'] = launch_turnover.get(c['code'], None)
+        before_count = len(candidates)
+        candidates = [c for c in candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
+        kicked = before_count - len(candidates)
+        if kicked > 0:
+            print(f"  🚫 启动段换手率<{MIN_TURNOVER}% 被踢: {kicked}只")
+
     return candidates[:LAUNCH_COUNT], len(candidates)
 
 
-def build_launch_stocks(launch_picks, fundamental_data=None):
+def get_latest_daily_flow(code, cf_stocks):
+    """从 capital_flow.json 获取最近一个交易日的主力净流入（万）"""
+    cf = cf_stocks.get(code, {})
+    daily = cf.get('daily', [])
+    if daily:
+        return daily[-1].get('flow_wan', 0)
+    return None
+
+def build_launch_stocks(launch_picks, fundamental_data=None, cf_stocks=None):
     """把启动段候选票构造成前端 STOCKS 格式的对象（含四层漏斗数据）"""
     if fundamental_data is None:
         fundamental_data = {}
@@ -946,12 +1278,18 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             tags.append('回调到位')
         elif c['drop_20d'] < -20:
             tags.append('超跌')
-        if c['flow_5d'] > 10000:
+        # 🔥 10日资金状态标签（启动段专属）
+        flow_10d_val = c.get('flow_10d') or 0
+        if flow_10d_val < 0 and c['flow_5d'] > 0:
+            tags.append('资金反转')
+        elif c['flow_5d'] > 10000:
             tags.append('资金流入')
         elif c['flow_5d'] > 0:
             tags.append('资金回流')
-        # 资金反转
-        if '💰资金反转' in pre_signals:
+        elif flow_10d_val < 0:
+            tags.append('10日偏空')
+        # 资金反转信号
+        if '💰资金反转' in pre_signals or '💰强资金反转' in pre_signals or '💰超级反转' in pre_signals:
             tags.append('资金反转')
         if c['kdj_bonus'] >= 5:
             tags.append('KDJ反转')
@@ -1006,6 +1344,7 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             'healthScore': c['launch_health'],
             'dailyScore': c['score'],
             'flow5d': c['flow_5d'],
+            'flow10d': c.get('flow_10d') or 0,  # 🔥 10日资金数据
             'drop20d': round(c['drop_20d'], 1),
             'consecutive': c['consecutive'],
             'kdjBonus': c['kdj_bonus'],
@@ -1016,6 +1355,7 @@ def build_launch_stocks(launch_picks, fundamental_data=None):
             'preLaunchScore': c.get('pre_launch_score', 0),
             'preLaunchPhase': pre_phase,
             'preLaunchSignals': pre_signals[:3],
+            'dailyFlow': get_latest_daily_flow(c['code'], cf_stocks) if cf_stocks else None,  # 🔥 当日主力净流入
             'isNew': True
         }
         stocks.append(s)
@@ -1030,8 +1370,8 @@ def main():
         print("🔄 运行概念板块预筛选...")
         import subprocess as _sp
         sp = os.path.join(BASE, 'sector_pre_filter.py')
-        _sp.run(['/Users/fuckyouasshole/.workbuddy/binaries/python/envs/default/bin/python3', sp],
-                capture_output=False, timeout=30)
+        _sp.run([sys.executable, sp],
+                capture_output=False, timeout=60)
     
     # 1. 加载数据
     pred = load_json(PRED_FILE)
@@ -1048,6 +1388,7 @@ def main():
     # 构建板块共振映射: code → (tier, sector_name)
     code_sector_tier = {}
     code_sector_ratio = {}  # code → (ratio_5d, ratio_10d)
+    code_sector_persistent = {}  # code → bool (板块是否连续≥2天强势)
     qualified_codes_set = set(sector_filter.get('qualified_codes', []))
     for sector_name, sd in sector_filter.get('qualified_sectors', {}).items():
         tier = sd.get('tier', sd.get('status', ''))
@@ -1060,9 +1401,12 @@ def main():
             tier_num = 3
         else:
             tier_num = 99
+        # 板块持续性：连续≥2天强势才为True
+        is_persistent = sd.get('persistent', False)
         for s in sd.get('stocks', []):
             code_sector_tier[s['code']] = tier_num
             code_sector_ratio[s['code']] = (s.get('ratio_5d'), s.get('ratio_10d'))
+            code_sector_persistent[s['code']] = is_persistent
 
     sector_qualified_count = len(code_sector_tier)
     print(f"全市场候选: daily_predictions {len(all_results)}只, 资金流 {len(cf_stocks)}只")
@@ -1084,7 +1428,7 @@ def main():
         if not (code.startswith('00') or code.startswith('60')):
             continue
         score = pr.get('total_score', 0)
-        if score < 50:
+        if score < 45:
             continue
         cf = cf_stocks.get(code, {})
         flow_5d = cf.get('flow_5d_wan', 0)
@@ -1139,6 +1483,28 @@ def main():
     sector_candidates.sort(key=lambda x: x['health'], reverse=True)
     fallback_candidates.sort(key=lambda x: x['health'], reverse=True)
 
+    # === 换手率过滤：批量获取候选票换手率，踢掉 <2% 的 ===
+    all_candidates_ordered = sector_candidates + fallback_candidates
+    all_codes = [c['code'] for c in all_candidates_ordered]
+    print(f"\n=== 换手率过滤（阈值≥{MIN_TURNOVER}%）: 批量获取 {len(all_codes)} 只候选票换手率 ===")
+    turnover_map = fetch_turnover_batch(all_codes)
+    print(f"  获取到换手率: {len(turnover_map)}/{len(all_codes)} 只")
+
+    # 标注换手率并过滤
+    low_turnover_kicked = []
+    for c in all_candidates_ordered:
+        c['turnover'] = turnover_map.get(c['code'], None)
+    sector_candidates = [c for c in sector_candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
+    fallback_candidates = [c for c in fallback_candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
+    kicked_by_turnover = [c for c in all_candidates_ordered
+                          if c['turnover'] is not None and c['turnover'] < MIN_TURNOVER]
+    if kicked_by_turnover:
+        print(f"  🚫 换手率<{MIN_TURNOVER}% 被踢: {len(kicked_by_turnover)} 只")
+        for c in kicked_by_turnover[:10]:
+            print(f"     {c['name']:6s} {c['code']} 换手率{c['turnover']:.2f}%")
+        if len(kicked_by_turnover) > 10:
+            print(f"     ... 及其他 {len(kicked_by_turnover)-10} 只")
+
     # 取Top30：板块票优先
     final_picks = sector_candidates[:TARGET_POOL_SIZE]
     deficit_count = TARGET_POOL_SIZE - len(final_picks)
@@ -1152,7 +1518,13 @@ def main():
     print(f"\n=== STOCKS全量排名 ①资金②逻辑③壁垒④股性 ===")
     for i, c in enumerate(final_picks):
         pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
-        flow_flag = '💰资金流入' if c['flow_5d'] > 0 else ''
+        f10 = c.get('flow_10d') or 0
+        if f10 < 0 and c['flow_5d'] > 0:
+            flow_flag = f'💰反转10日{f10/10000:.1f}亿'
+        elif c['flow_5d'] > 0:
+            flow_flag = f'💰+{c["flow_5d"]/10000:.1f}亿'
+        else:
+            flow_flag = ''
         kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
         vol_flag = '📉缩量' if c['avg_vol_up'] is not None and c['avg_vol_up'] < 0.95 else ''
         mom_flag = ''
@@ -1176,7 +1548,8 @@ def main():
         c_ratio_5d, _ = code_sector_ratio.get(c['code'], (None, None))
         sector_flag = f' 🏭T{c_tier_label}' if c_tier_label else ''
         ratio_flag = f' 💹主力{c_ratio_5d:+.1f}%' if c_ratio_5d else ''
-        print(f"  #{i+1:2d} {c['health']:5.1f} | {c['name']:6s} | 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{rat_label}{funnel}{sector_flag}{ratio_flag}")
+        turnover_flag = f' 换手{c["turnover"]:.1f}%' if c.get('turnover') else ''
+        print(f"  #{i+1:2d} {c['health']:5.1f} | {c['name']:6s} | 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{rat_label}{funnel}{sector_flag}{ratio_flag}{turnover_flag}")
 
     # 4. 构造新STOCKS数组
     sector_map = {
@@ -1235,6 +1608,7 @@ def main():
             'healthScore': c['health'],
             'dailyScore': c['score'],
             'flow5d': c['flow_5d'],
+            'flow10d': c.get('flow_10d') or 0,  # 🔥 10日资金数据
             'drop20d': round(c['drop_20d'], 1),
             'consecutive': c['consecutive'],
             'kdjBonus': c['kdj_bonus'],
@@ -1242,9 +1616,89 @@ def main():
             'sectorTier': c.get('sector_tier'),
             'ratio5d': c.get('ratio_5d'),
             'ratio10d': c.get('ratio_10d'),
+            'dailyFlow': get_latest_daily_flow(c['code'], cf_stocks),  # 🔥 当日主力净流入
+            'turnover': c.get('turnover'),  # 🔥 换手率(%)
             'isNew': True
         }
         new_stocks.append(new_stock)
+
+    # 🔥 合并固定票：确保用户指定的票永远在仪表盘中
+    existing_codes = set(s['code'] for s in new_stocks)
+    pinned_added = []
+    for ps in PINNED_STOCKS:
+        if ps['code'] not in existing_codes:
+            # 从 daily_predictions.json 和 capital_flow.json 补数据
+            pcode = pure_code(ps['code'])
+            pred_item = None
+            for item in all_results.values():
+                if item.get('code') == pcode:
+                    pred_item = item
+                    break
+            metrics = pred_item.get('metrics', {}) if pred_item else {}
+            cf_item = cf_stocks.get(pcode, {}) if cf_stocks else {}
+
+            drop_20d = metrics.get('drop_20d', 0) or 0
+            latest_close = metrics.get('latest_close')
+            latest_chg = 0
+            if latest_close and isinstance(latest_close, (list, tuple)) and len(latest_close) >= 2:
+                try:
+                    latest_chg = ((latest_close[-1] - latest_close[-2]) / latest_close[-2]) * 100 if latest_close[-2] else 0
+                except:
+                    pass
+            elif metrics.get('latest_chg') is not None:
+                latest_chg = metrics.get('latest_chg', 0)
+
+            flow_5d = cf_item.get('flow_5d_wan', 0) or 0
+            flow_10d = cf_item.get('flow_10d_wan', 0) or 0
+            rsi_val = metrics.get('rsi')
+            consecutive = metrics.get('consecutive', 0) or 0
+            avg_vol_up = metrics.get('avg_vol_up')
+
+            tags = ['📌固定关注']
+            if drop_20d and -20 <= drop_20d <= -10:
+                tags.append('回调到位')
+            elif drop_20d and drop_20d < -20:
+                tags.append('超跌')
+            if flow_5d > 10000:
+                tags.append('资金流入')
+            elif flow_5d > 0:
+                tags.append('资金回流')
+            if avg_vol_up is not None and avg_vol_up < 0.7:
+                tags.append('极度缩量')
+            elif avg_vol_up is not None and avg_vol_up < 0.95:
+                tags.append('缩量止跌')
+
+            pinned_stock = {
+                'code': ps['code'],
+                'name': ps['name'],
+                'sector': ps['sector'],
+                'direction': ','.join(tags[1:3]) if len(tags) > 1 else '固定关注',
+                'pe': 0, 'profitGrowth': 0,
+                'reason': f"📌用户固定关注票",
+                'roe': 0, 'grossMargin': 0, 'debtRatio': 0,
+                'riskFlags': tags,
+                'healthScore': 0,  # 固定票不参与算法评分，前端实时修正
+                'dailyScore': 0,
+                'flow5d': flow_5d,
+                'flow10d': flow_10d,
+                'drop20d': round(drop_20d, 1) if drop_20d else 0,
+                'consecutive': consecutive,
+                'kdjBonus': 0,
+                'rsi': round(rsi_val, 1) if rsi_val is not None else None,
+                'sectorTier': None,
+                'ratio5d': None,
+                'ratio10d': None,
+                'dailyFlow': cf_item.get('daily', [{}])[-1].get('flow_wan', 0) if cf_item.get('daily') else 0,
+                'turnover': None,
+                'isNew': True,
+                'isPinned': True
+            }
+            new_stocks.append(pinned_stock)
+            pinned_added.append(ps['name'])
+            print(f"  📌 固定票补入: {ps['name']} {ps['code']} (drop20d={drop_20d:.1f}%, flow5d={flow_5d:+.0f}万)")
+
+    if pinned_added:
+        print(f"  📌 固定票共补入 {len(pinned_added)} 只: {', '.join(pinned_added)}")
 
     # 5. 输出
     output = {
@@ -1265,16 +1719,18 @@ def main():
     print(f"\n{'='*60}")
     print(f"=== 池B：启动段专属选股 ===")
     print(f"{'='*60}")
-    # 池B排除池A已有的票，避免重复
+
+    # 正常选股（已移除大盘风控限制）
     pool_a_codes = set(pure_code(s['code']) for s in new_stocks)
     launch_picks, launch_total = select_launch_pool(all_results, cf_stocks, kdj_stocks,
                                                       fundamental_data=fundamental_data,
                                                       code_sector_tier=code_sector_tier,
                                                       code_sector_ratio=code_sector_ratio,
+                                                      code_sector_persistent=code_sector_persistent,
                                                       exclude_codes=pool_a_codes)
-    launch_stocks = build_launch_stocks(launch_picks, fundamental_data=fundamental_data)
+    deploy_launch = build_launch_stocks(launch_picks, fundamental_data=fundamental_data, cf_stocks=cf_stocks)
 
-    print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(launch_stocks)}只")
+    print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(deploy_launch)}只")
     # 统计预启动票数
     pre_on_deck = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'on_deck')
     pre_approaching = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'approaching')
@@ -1282,7 +1738,16 @@ def main():
     print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 | 预启动 ===")
     for c in launch_picks:
         pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
-        flow_flag = '💰资金反转' if '💰资金反转' in c.get('pre_launch_signals', []) else ('💰' if c['flow_5d'] > 0 else '')
+        # 🔥 10日资金状态
+        f10 = c['flow_10d'] or 0
+        if f10 < 0 and c['flow_5d'] > 0:
+            flow_flag = f'💰反转10日{f10/10000:.1f}→5日{c["flow_5d"]/10000:.1f}亿'
+        elif f10 > 0:
+            flow_flag = f'💰10日+{f10/10000:.1f}亿'
+        elif f10 < 0:
+            flow_flag = f'🔴10日{f10/10000:.1f}亿'
+        else:
+            flow_flag = '⚠️10日无数据'
         mom_flag = '🟢已回升' if c['latest_chg'] > 0.5 else ('🟡止跌' if c['latest_chg'] > -0.5 else ('🔴阴跌' if c['latest_chg'] > -2 else ''))
         kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
         rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
@@ -1301,9 +1766,9 @@ def main():
     # 输出启动段池 JSON
     launch_output = {
         'update_time': pred.get('update_time', ''),
-        'total': len(launch_stocks),
+        'total': len(deploy_launch),
         'pool': 'launch',
-        'stocks': launch_stocks
+        'stocks': deploy_launch
     }
     LAUNCH_OUTPUT = os.path.join(BASE, 'launch_stocks.json')
     with open(LAUNCH_OUTPUT, 'w', encoding='utf-8') as f:
@@ -1313,7 +1778,7 @@ def main():
     # 8. 自动注入到仪表盘 HTML（同时注入池A和池B）
     print(f"\n=== 注入仪表盘 HTML ===")
     inject_to_html(new_stocks)
-    inject_launch_to_html(launch_stocks)
+    inject_launch_to_html(deploy_launch)
 
     # 9. 自动生成政策双轮驱动板块
     print(f"\n=== 生成政策驱动板块 ===")
@@ -1716,23 +2181,37 @@ def inject_policy_to_html(policy_dirs, earnings_verified):
     return True
 
 def inject_to_html(new_stocks):
-    """把新选票注入到 deploy/index.html 的 const STOCKS = [...] 中"""
+    """把新选票注入到 deploy/index.html 和 deploy_davis/index.html 的 const STOCKS = [...] 中"""
     import re as _re2
+    new_stocks_json = json.dumps(new_stocks, ensure_ascii=False, indent=2)
+    
+    # 注入 deploy/index.html
     with open(INDEX_HTML, 'r', encoding='utf-8') as f:
         html = f.read()
-
     m = _re2.search(r'(const STOCKS\s*=\s*)(\[.*?\])(;)', html, _re2.DOTALL)
     if not m:
-        print("  ❌ 找不到 STOCKS 数组")
-        return False
-
-    new_stocks_json = json.dumps(new_stocks, ensure_ascii=False, indent=2)
-    new_html = html[:m.start(2)] + new_stocks_json + html[m.end(2):]
-
-    with open(INDEX_HTML, 'w', encoding='utf-8') as f:
-        f.write(new_html)
-
-    print(f"  ✅ 池A已注入 {len(new_stocks)} 只票到 STOCKS ({len(new_html)} bytes)")
+        print("  ❌ deploy/index.html 找不到 STOCKS 数组")
+    else:
+        new_html = html[:m.start(2)] + new_stocks_json + html[m.end(2):]
+        with open(INDEX_HTML, 'w', encoding='utf-8') as f:
+            f.write(new_html)
+        print(f"  ✅ 池A已注入 {len(new_stocks)} 只票到 deploy/index.html STOCKS ({len(new_html)} bytes)")
+    
+    # 🔥 同时注入 deploy_davis/index.html
+    if os.path.exists(DAVIS_HTML):
+        with open(DAVIS_HTML, 'r', encoding='utf-8') as f:
+            davis_html = f.read()
+        m2 = _re2.search(r'(const STOCKS\s*=\s*)(\[.*?\])(;)', davis_html, _re2.DOTALL)
+        if not m2:
+            print("  ⚠️ deploy_davis/index.html 找不到 STOCKS 数组，跳过")
+        else:
+            davis_new = davis_html[:m2.start(2)] + new_stocks_json + davis_html[m2.end(2):]
+            with open(DAVIS_HTML, 'w', encoding='utf-8') as f:
+                f.write(davis_new)
+            print(f"  ✅ 池A已注入 {len(new_stocks)} 只票到 deploy_davis/index.html STOCKS ({len(davis_new)} bytes)")
+    else:
+        print(f"  ⚠️ deploy_davis/index.html 不存在，跳过")
+    
     return True
 
 
@@ -1767,13 +2246,16 @@ def inject_launch_to_html(launch_stocks):
 
 def push_to_github():
     """调用 push_to_github.py 推送到 GitHub Pages"""
+    if os.environ.get('SKIP_PUSH'):
+        print("  ⏭️ 跳过推送（SKIP_PUSH=1，云端模式由 cloud_pipeline 统一处理）")
+        return True
     import subprocess as _sp
     push_script = os.path.join(BASE, 'push_to_github.py')
     if not os.path.exists(push_script):
         print(f"  ⚠️ 推送脚本不存在: {push_script}")
         return False
     try:
-        result = _sp.run(['python3', push_script], capture_output=True, text=True, timeout=60)
+        result = _sp.run([sys.executable, push_script], capture_output=True, text=True, timeout=600)
         print(result.stdout)
         if result.returncode != 0:
             print(f"  ⚠️ 推送失败:\n{result.stderr}")

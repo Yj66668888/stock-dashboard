@@ -13,7 +13,7 @@
 5. 输出 sector_filter.json — 符合条件板块 + 个股清单 + 主力占比
 """
 import json, os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 BASE = os.path.dirname(__file__)
 CF_FILE = os.path.join(BASE, 'capital_flow.json')
@@ -23,6 +23,10 @@ OUTPUT = os.path.join(BASE, 'sector_filter.json')
 # 紧凑模式：涨停门槛降低
 LOOSE_MODE = True  # True=≥1家涨停, False=≥3家涨停
 MIN_AVG_GAIN = 1.5  # 板块均涨幅最低阈值
+
+# 板块历史持久化：用于检测"连续≥2天强势"
+SECTOR_HISTORY_FILE = os.path.join(BASE, 'sector_history.json')
+SECTOR_PERSISTENCE_DAYS = 2  # 要求连续N天强势才认定为持续性板块
 
 # 扩展概念板块关键词（覆盖更多A股命名模式）
 SECTOR_KEYWORDS = {
@@ -294,7 +298,40 @@ def main():
             'stocks': sector_stock_list
         }
     
-    # 6. 输出结果
+    # 6. 板块持续性验证：读取历史，标记连续强势的板块
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    history = load_json(SECTOR_HISTORY_FILE)
+    if not isinstance(history, dict):
+        history = {}
+
+    # 获取昨天入选的板块（昨天有记录的话）
+    yesterday_str = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    yesterday_sectors = set(history.get(yesterday_str, []))
+
+    # 标记每个入选板块的持续性
+    today_sectors = []
+    for sector_name in sector_detail:
+        today_sectors.append(sector_name)
+        # 检查昨天是否也入选了
+        is_persistent = sector_name in yesterday_sectors
+        sector_detail[sector_name]['persistent'] = is_persistent
+        sector_detail[sector_name]['persistent_days'] = 2 if is_persistent else 1
+        # 一日游板块降级标记
+        if not is_persistent:
+            old_status = sector_detail[sector_name].get('status', '')
+            sector_detail[sector_name]['status'] = old_status + '(一日游)'
+            print(f"  ⚠️ 【{sector_name}】昨日未入选，标记为一日游板块")
+        else:
+            print(f"  ✅ 【{sector_name}】连续2天强势，确认为持续性板块")
+
+    # 保存历史（只保留最近30天）
+    history[today_str] = today_sectors
+    cutoff = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+    history = {k: v for k, v in history.items() if k >= cutoff}
+    with open(SECTOR_HISTORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
+    # 7. 输出结果
     output = {
         'update_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'data_source_time': cf_data.get('update_time', ''),
@@ -308,6 +345,8 @@ def main():
             'sectors_mapped': len(sector_map),
             'sectors_qualified': len(qualified_sectors),
             'total_qualified_stocks': len(qualified_codes),
+            'persistent_sectors': sum(1 for s in sector_detail.values() if s.get('persistent')),
+            'one_day_sectors': sum(1 for s in sector_detail.values() if not s.get('persistent')),
         },
         'all_sectors': [
             {
@@ -325,7 +364,7 @@ def main():
         'qualified_sectors': sector_detail,
         'qualified_codes': sorted(list(qualified_codes)),
     }
-    
+
     with open(OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
     
