@@ -152,6 +152,50 @@ def inject_precomputation(html_path):
     print(f"  [OK] docs/index.html 已保存 ({len(html)} bytes)")
 
 
+def validate_js_syntax(html_path):
+    """验证 HTML 文件中的 JavaScript 语法，防止推送有语法错误的页面
+
+    用 node --check 检查所有 <script> 块的 JS 代码。
+    返回 True 如果语法正确，False 如果有错误。
+    """
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html = f.read()
+
+    # 提取所有 <script> 块（不含外部 src 引用）
+    scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, re.DOTALL)
+    if not scripts:
+        print(f"  [WARN] {os.path.basename(html_path)} 未找到 <script> 块")
+        return True  # 没有 script 块不算错误
+
+    js_code = '\n'.join(scripts)
+    tmp_path = html_path + '.js.tmp'
+    with open(tmp_path, 'w', encoding='utf-8') as f:
+        f.write(js_code)
+
+    try:
+        result = subprocess.run(
+            ['node', '--check', tmp_path],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode == 0:
+            print(f"  [OK] JS 语法验证通过: {os.path.basename(html_path)} ({len(js_code)} chars)")
+            return True
+        else:
+            print(f"  [ERROR] JS 语法错误: {os.path.basename(html_path)}")
+            print(f"  {result.stderr[:500]}")
+            return False
+    except FileNotFoundError:
+        # node 不存在时跳过验证（不阻断流程）
+        print(f"  [SKIP] node 未安装，跳过 JS 语法验证: {os.path.basename(html_path)}")
+        return True
+    except Exception as e:
+        print(f"  [WARN] JS 语法验证异常: {e}")
+        return True
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
 def restore_deploy_placeholders():
     """恢复 deploy/index.html 中的占位符"""
     if not os.path.exists(DEPLOY_HTML):
@@ -251,6 +295,19 @@ def full_scan():
             except Exception as e:
                 print(f"  [WARN] 日线指标预计算异常: {e}")
 
+    # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏
+    print(f"\n{'=' * 60}")
+    print("  JS 语法验证")
+    print(f"{'=' * 60}")
+    js_ok = True
+    for html_file in [DOCS_HTML, ROOT_HTML]:
+        if not validate_js_syntax(html_file):
+            js_ok = False
+    if not js_ok:
+        print("\n  [FATAL] JS 语法验证失败！中止推送以保护线上页面。")
+        print("  请检查 deploy/index.html 和预计算注入脚本。")
+        sys.exit(1)
+
     restore_deploy_placeholders()
 
     print("\n" + "=" * 60)
@@ -297,6 +354,19 @@ def update_only():
                     print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
             except Exception as e:
                 print(f"  [WARN] 日线指标预计算异常: {e}")
+
+    # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏
+    print(f"\n{'=' * 60}")
+    print("  JS 语法验证")
+    print(f"{'=' * 60}")
+    js_ok = True
+    for html_file in [DOCS_HTML, ROOT_HTML]:
+        if not validate_js_syntax(html_file):
+            js_ok = False
+    if not js_ok:
+        print("\n  [FATAL] JS 语法验证失败！中止推送以保护线上页面。")
+        print("  请检查 deploy/index.html 和预计算注入脚本。")
+        sys.exit(1)
 
     restore_deploy_placeholders()
 

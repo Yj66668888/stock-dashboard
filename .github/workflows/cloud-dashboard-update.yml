@@ -30,6 +30,27 @@ jobs:
       - name: Run update pipeline
         run: python cloud_pipeline.py update
 
+      - name: Validate JS syntax (safety net)
+        run: |
+          python3 -c "
+          import re, subprocess, sys
+          for f in ['docs/index.html', 'index.html']:
+              try:
+                  html = open(f).read()
+                  scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, re.DOTALL)
+                  js = '\n'.join(scripts)
+                  with open('/tmp/_check.js', 'w') as fh:
+                      fh.write(js)
+                  r = subprocess.run(['node', '--check', '/tmp/_check.js'], capture_output=True, text=True)
+                  if r.returncode != 0:
+                      print(f'JS ERROR in {f}:')
+                      print(r.stderr[:500])
+                      sys.exit(1)
+                  print(f'JS OK: {f}')
+              except FileNotFoundError:
+                  print(f'SKIP: {f} not found')
+          "
+
       - name: Commit and push
         run: |
           git config user.name 'Stock Bot'
