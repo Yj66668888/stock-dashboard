@@ -234,6 +234,23 @@ def full_scan():
 
     inject_precomputation(DOCS_HTML)
     inject_precomputation(ROOT_HTML)
+
+    # 日线指标预计算（MACD/均线/趋势/支撑价/高开率/板块共振/阶段）
+    di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
+    if os.path.exists(di_script):
+        for html_file in [DOCS_HTML, ROOT_HTML]:
+            try:
+                result = subprocess.run(
+                    [sys.executable, di_script, html_file],
+                    capture_output=True, text=True, timeout=300, cwd=BASE
+                )
+                if result.returncode == 0:
+                    print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                else:
+                    print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+            except Exception as e:
+                print(f"  [WARN] 日线指标预计算异常: {e}")
+
     restore_deploy_placeholders()
 
     print("\n" + "=" * 60)
@@ -261,9 +278,26 @@ def update_only():
     shutil.copy2(DEPLOY_HTML, ROOT_HTML)
     print(f"  [OK] deploy -> docs + root ({os.path.getsize(DOCS_HTML)} bytes)")
 
-    # Step 3: 预计算注入（KDJ + 资金流 + 大盘跟随度）
+    # Step 3: 预计算注入（KDJ + 资金流 + 大盘跟随度 + 日线指标）
     inject_precomputation(DOCS_HTML)
     inject_precomputation(ROOT_HTML)
+
+    # 日线指标预计算（MACD/均线/趋势/支撑价/高开率/板块共振/阶段）
+    di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
+    if os.path.exists(di_script):
+        for html_file in [DOCS_HTML, ROOT_HTML]:
+            try:
+                result = subprocess.run(
+                    [sys.executable, di_script, html_file],
+                    capture_output=True, text=True, timeout=300, cwd=BASE
+                )
+                if result.returncode == 0:
+                    print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                else:
+                    print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+            except Exception as e:
+                print(f"  [WARN] 日线指标预计算异常: {e}")
+
     restore_deploy_placeholders()
 
     print("\n" + "=" * 60)
