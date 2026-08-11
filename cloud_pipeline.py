@@ -233,6 +233,7 @@ def full_scan():
     print(f"  [OK] deploy -> docs + root ({os.path.getsize(DOCS_HTML)} bytes)")
 
     inject_precomputation(DOCS_HTML)
+    inject_precomputation(ROOT_HTML)
     restore_deploy_placeholders()
 
     print("\n" + "=" * 60)
@@ -262,6 +263,7 @@ def update_only():
 
     # Step 3: 预计算注入（KDJ + 资金流 + 大盘跟随度）
     inject_precomputation(DOCS_HTML)
+    inject_precomputation(ROOT_HTML)
     restore_deploy_placeholders()
 
     print("\n" + "=" * 60)
