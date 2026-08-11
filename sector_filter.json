@@ -1,5 +1,5 @@
 {
-  "update_time": "2026-08-10 18:45:12",
+  "update_time": "2026-08-11 02:55:55",
   "data_source_time": "2026-08-10 22:34:51",
   "filter_config": {
     "min_avg_gain": 1.5,
@@ -11,8 +11,8 @@
     "sectors_mapped": 18,
     "sectors_qualified": 2,
     "total_qualified_stocks": 34,
-    "persistent_sectors": 0,
-    "one_day_sectors": 2
+    "persistent_sectors": 2,
+    "one_day_sectors": 0
   },
   "all_sectors": [
     {
@@ -208,7 +208,7 @@
       ],
       "avg_ratio_5d": -149.24,
       "strong_count": 3,
-      "status": "T1严格入选(一日游)",
+      "status": "T1严格入选",
       "stocks": [
         {
           "code": "603363",
@@ -431,8 +431,8 @@
           "composite_score": -5547.2
         }
       ],
-      "persistent": false,
-      "persistent_days": 1
+      "persistent": true,
+      "persistent_days": 2
     },
     "半导体电子": {
       "total": 14,
@@ -443,7 +443,7 @@
       ],
       "avg_ratio_5d": 89.45,
       "strong_count": 1,
-      "status": "T2中选(一日游)",
+      "status": "T2中选",
       "stocks": [
         {
           "code": "002138",
@@ -600,8 +600,8 @@
           "composite_score": -8380.0
         }
       ],
-      "persistent": false,
-      "persistent_days": 1
+      "persistent": true,
+      "persistent_days": 2
     }
   },
   "qualified_codes": [

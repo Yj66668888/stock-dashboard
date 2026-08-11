@@ -978,275 +978,9 @@
 // ============================================
 // 综合最优池
 // ============================================
-const STOCKS = [{"code": "sh603936", "name": "博敏电子", "sector": "电力设备", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,止跌回升,T2板块共振,主力介入）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 65, "dailyScore": 52.6, "flow5d": 9268.0, "flow10d": 3967.0, "drop20d": -17.8, "consecutive": 2, "kdjBonus": 0, "rsi": 67.9, "sectorTier": 2, "ratio5d": 308.93, "ratio10d": 66.12, "dailyFlow": -466.0, "turnover": 12.77, "isNew": true, "preBreakoutScore": 15, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 12, "detail": "低位K连升: 15.2->17.6->19.2"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 19.23, "kd30_d": 24.94, "kd30_cross": "下降", "kd5_k": 75.59, "kd5_d": 77.93, "kd5_cross": "下降", "kd60_k": 55.05, "kd60_d": 67.71, "kd60_cross": "下降"}, {"code": "sh603920", "name": "世运电路", "sector": "电力设备", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升,T2板块共振,主力介入）：MACD底背离（强度7.7）；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 64, "dailyScore": 58.2, "flow5d": 13109.0, "flow10d": 16057.0, "drop20d": -12.2, "consecutive": 2, "kdjBonus": 0, "rsi": 63.0, "sectorTier": 2, "ratio5d": 291.31, "ratio10d": 178.41, "dailyFlow": 2757.0, "turnover": 2.96, "isNew": true, "preBreakoutScore": 28, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 25, "detail": "金叉收敛: K=30.6->D=30.6, 差0.0"}, {"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.8)"}], "kd30_k": 30.62, "kd30_d": 30.64, "kd30_cross": "下降", "kd5_k": 60.86, "kd5_d": 70.42, "kd5_cross": "下降", "kd60_k": 56.8, "kd60_d": 65.42, "kd60_cross": "下降"}, {"code": "sh603678", "name": "火炬电子", "sector": "电力设备", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升,T2板块共振,主力介入）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 63, "dailyScore": 48.6, "flow5d": 53666.0, "flow10d": 63827.0, "drop20d": -15.5, "consecutive": 1, "kdjBonus": 0, "rsi": 62.1, "sectorTier": 2, "ratio5d": 564.91, "ratio10d": 335.93, "dailyFlow": -2595.0, "turnover": 6.98, "isNew": true, "preBreakoutScore": 6, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 65.96, "kd30_d": 57.82, "kd30_cross": "上升", "kd5_k": 83.32, "kd5_d": 78.86, "kd5_cross": "上升", "kd60_k": 72.26, "kd60_d": 72.35, "kd60_cross": "下降"}, {"code": "sz002138", "name": "顺络电子", "sector": "电力设备", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升,T2板块共振,主力介入）：温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 63, "dailyScore": 45.9, "flow5d": 102078.0, "flow10d": 84195.0, "drop20d": -8.0, "consecutive": 0, "kdjBonus": 0, "rsi": 69.2, "sectorTier": 2, "ratio5d": 850.65, "ratio10d": 350.81, "dailyFlow": -4897.0, "turnover": 4.82, "isNew": true, "preBreakoutScore": 35, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=33.0 D=32.1"}, {"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.8), 量逐日递减"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 33.02, "kd30_d": 32.1, "kd30_cross": "上升", "kd5_k": 88.74, "kd5_d": 85.45, "kd5_cross": "上升", "kd60_k": 36.24, "kd60_d": 42.97, "kd60_cross": "下降"}, {"code": "sz002169", "name": "智光电气", "sector": "光通信", "direction": "资金流入,T2板块共振", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,T2板块共振）：MACD底背离（强度10）；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "T2板块共振"], "healthScore": 53, "dailyScore": 47.8, "flow5d": 11969.0, "flow10d": 8386.0, "drop20d": -1.9, "consecutive": 1, "kdjBonus": 0, "rsi": 72.9, "sectorTier": 2, "ratio5d": null, "ratio10d": null, "dailyFlow": 1607.0, "turnover": 2.41, "isNew": true, "preBreakoutScore": 32, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=43.0 D=42.6"}, {"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 今日止跌+0.5%"}], "kd30_k": 42.95, "kd30_d": 42.64, "kd30_cross": "上升", "kd5_k": 76.35, "kd5_d": 79.29, "kd5_cross": "下降", "kd60_k": 62.45, "kd60_d": 70.58, "kd60_cross": "下降"}, {"code": "sh603286", "name": "日盈电子", "sector": "电力设备", "direction": "超跌,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金回流,T2板块共振,主力介入）：地量信号（抛压枯竭）；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金回流", "T2板块共振", "主力介入"], "healthScore": 52, "dailyScore": 54.1, "flow5d": 1704.0, "flow10d": 36.0, "drop20d": -22.0, "consecutive": 2, "kdjBonus": 0, "rsi": 54.9, "sectorTier": 2, "ratio5d": 170.4, "ratio10d": 1.8, "dailyFlow": -1804.0, "turnover": 2.96, "isNew": true, "preBreakoutScore": 10, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.8)"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 62.71, "kd30_d": 52.33, "kd30_cross": "上升", "kd5_k": 90.86, "kd5_d": 88.12, "kd5_cross": "上升", "kd60_k": 61.51, "kd60_d": 57.15, "kd60_cross": "上升"}, {"code": "sh603328", "name": "依顿电子", "sector": "电力设备", "direction": "资金回流,T2板块共振", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金回流,T2板块共振,主力介入）：缩量至极致（筹码沉淀）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金回流", "T2板块共振", "主力介入"], "healthScore": 45, "dailyScore": 51.1, "flow5d": 6984.0, "flow10d": 11062.0, "drop20d": -0.4, "consecutive": 2, "kdjBonus": 0, "rsi": 81.2, "sectorTier": 2, "ratio5d": 698.4, "ratio10d": 553.1, "dailyFlow": -1165.0, "turnover": 8.14, "isNew": true, "preBreakoutScore": 7, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "量价背离", "score": 7, "detail": "下跌日量(16140937)<上涨日量(30196556)的70%"}], "kd30_k": 57.78, "kd30_d": 62.71, "kd30_cross": "下降", "kd5_k": 16.88, "kd5_d": 27.71, "kd5_cross": "下降", "kd60_k": 80.04, "kd60_d": 81.72, "kd60_cross": "下降"}, {"code": "sh600877", "name": "电科芯片", "sector": "半导体", "direction": "超跌,T2板块共振", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,T2板块共振）：地量信号（抛压枯竭）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "T2板块共振"], "healthScore": 35, "dailyScore": 55.1, "flow5d": -607.0, "flow10d": 2276.0, "drop20d": -24.0, "consecutive": 1, "kdjBonus": 0, "rsi": 72.0, "sectorTier": 2, "ratio5d": -40.47, "ratio10d": 75.87, "dailyFlow": -1581.0, "turnover": 2.62, "isNew": true, "preBreakoutScore": 18, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升40.6->56.4"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 74.17, "kd30_d": 73.71, "kd30_cross": "上升", "kd5_k": 60.44, "kd5_d": 63.23, "kd5_cross": "下降", "kd60_k": 73.48, "kd60_d": 67.43, "kd60_cross": "上升"}, {"code": "sz000962", "name": "东方钽业", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：高开趋势加速中；近20天跌15%，超跌反弹概率大", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 67, "dailyScore": 57.5, "flow5d": 73134.0, "flow10d": 66256.0, "drop20d": -15.1, "consecutive": 1, "kdjBonus": 0, "rsi": 59.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 9853.0, "turnover": 10.0, "isNew": true, "preBreakoutScore": 25, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升59.5->71.5"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(24830577)<上涨日量(37625816)的70%"}], "kd30_k": 58.14, "kd30_d": 51.89, "kd30_cross": "上升", "kd5_k": 48.83, "kd5_d": 56.85, "kd5_cross": "下降", "kd60_k": 70.2, "kd60_d": 69.75, "kd60_cross": "上升"}, {"code": "sz002975", "name": "博杰股份", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：地量信号（抛压枯竭）；量比突变（强度10）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 67, "dailyScore": 56.3, "flow5d": 42392.0, "flow10d": 27036.0, "drop20d": -18.9, "consecutive": 0, "kdjBonus": 0, "rsi": 61.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 17816.0, "turnover": 12.66, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 64.19, "kd30_d": 53.62, "kd30_cross": "上升", "kd5_k": 92.62, "kd5_d": 88.43, "kd5_cross": "上升", "kd60_k": 84.15, "kd60_d": 84.78, "kd60_cross": "下降"}, {"code": "sh601208", "name": "东材科技", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 66, "dailyScore": 49.5, "flow5d": 86552.0, "flow10d": 29198.0, "drop20d": -15.9, "consecutive": 2, "kdjBonus": 0, "rsi": 59.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 12315.0, "turnover": 11.7, "isNew": true, "preBreakoutScore": 25, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 25, "detail": "金叉收敛: K=34.6->D=34.9, 差0.4"}], "kd30_k": 34.58, "kd30_d": 34.93, "kd30_cross": "下降", "kd5_k": 80.88, "kd5_d": 81.48, "kd5_cross": "下降", "kd60_k": 65.79, "kd60_d": 73.29, "kd60_cross": "下降"}, {"code": "sz002655", "name": "共达电声", "sector": "电力设备", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：近30天高开率60%；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 65, "dailyScore": 67.5, "flow5d": 36244.0, "flow10d": 16372.0, "drop20d": -20.1, "consecutive": 5, "kdjBonus": 0, "rsi": 59.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 11080.0, "turnover": 9.81, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+1.7亿"}], "kd30_k": 82.53, "kd30_d": 74.19, "kd30_cross": "上升", "kd5_k": 95.13, "kd5_d": 92.22, "kd5_cross": "上升", "kd60_k": 87.25, "kd60_d": 86.03, "kd60_cross": "上升"}, {"code": "sh605376", "name": "博迁新材", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；近30天高开率60%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 65, "dailyScore": 61.1, "flow5d": 77796.0, "flow10d": 90001.0, "drop20d": -17.9, "consecutive": 1, "kdjBonus": 0, "rsi": 62.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 6282.0, "turnover": 7.49, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+2.6亿"}], "kd30_k": 79.15, "kd30_d": 72.63, "kd30_cross": "上升", "kd5_k": 51.41, "kd5_d": 54.5, "kd5_cross": "下降", "kd60_k": 78.86, "kd60_d": 76.04, "kd60_cross": "上升"}, {"code": "sz002645", "name": "华宏科技", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 65, "dailyScore": 59.8, "flow5d": 25424.0, "flow10d": 27851.0, "drop20d": -13.3, "consecutive": 1, "kdjBonus": 0, "rsi": 68.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 5740.0, "turnover": 9.34, "isNew": true, "preBreakoutScore": 10, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(33444253)<上涨日量(49828327)的70%"}], "kd30_k": 78.66, "kd30_d": 71.43, "kd30_cross": "上升", "kd5_k": 83.57, "kd5_d": 84.62, "kd5_cross": "下降", "kd60_k": 86.51, "kd60_d": 82.98, "kd60_cross": "上升"}, {"code": "sz001339", "name": "智微智能", "sector": "半导体", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：近期持续缩量，卖盘减少；近20天跌13%，超跌反弹概率大", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 64, "dailyScore": 51.0, "flow5d": 36608.0, "flow10d": 20669.0, "drop20d": -12.8, "consecutive": 1, "kdjBonus": 0, "rsi": 61.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 8766.0, "turnover": 6.09, "isNew": true, "preBreakoutScore": 32, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 25, "detail": "金叉收敛: K=23.2->D=24.4, 差1.2"}, {"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.7)"}], "kd30_k": 23.18, "kd30_d": 24.42, "kd30_cross": "下降", "kd5_k": 91.24, "kd5_d": 86.55, "kd5_cross": "上升", "kd60_k": 38.58, "kd60_d": 57.2, "kd60_cross": "下降"}, {"code": "sh603011", "name": "合锻智能", "sector": "热门标的", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升）：MACD底背离（强度10）；量比突变（强度7）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升"], "healthScore": 60, "dailyScore": 48.3, "flow5d": 24413.0, "flow10d": 17891.0, "drop20d": -7.8, "consecutive": 1, "kdjBonus": 0, "rsi": 70.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 3175.0, "turnover": 22.74, "isNew": true, "preBreakoutScore": 10, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(41452072)<上涨日量(78735641)的70%"}], "kd30_k": 59.44, "kd30_d": 63.09, "kd30_cross": "下降", "kd5_k": 76.3, "kd5_d": 72.0, "kd5_cross": "上升", "kd60_k": 77.46, "kd60_d": 79.78, "kd60_cross": "下降"}, {"code": "sh605589", "name": "圣泉集团", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；近期持续缩量，卖盘减少", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 60, "dailyScore": 45.5, "flow5d": 23420.0, "flow10d": -12724.0, "drop20d": -19.1, "consecutive": 1, "kdjBonus": 0, "rsi": 59.3, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 1302.0, "turnover": 4.46, "isNew": true, "preBreakoutScore": 23, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=40.2 D=40.0"}, {"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}], "kd30_k": 40.23, "kd30_d": 39.99, "kd30_cross": "上升", "kd5_k": 56.95, "kd5_d": 60.08, "kd5_cross": "下降", "kd60_k": 61.34, "kd60_d": 68.75, "kd60_cross": "下降"}, {"code": "sz002980", "name": "华盛昌", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 58, "dailyScore": 57.0, "flow5d": 17213.0, "flow10d": -4804.0, "drop20d": -14.1, "consecutive": 2, "kdjBonus": 0, "rsi": 46.8, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4692.0, "turnover": 7.97, "isNew": true, "preBreakoutScore": 8, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}, {"signal": "资金反转", "score": 5, "detail": "当日主力+0.6亿"}], "kd30_k": 49.03, "kd30_d": 47.08, "kd30_cross": "上升", "kd5_k": 87.47, "kd5_d": 86.63, "kd5_cross": "上升", "kd60_k": 75.11, "kd60_d": 78.88, "kd60_cross": "下降"}, {"code": "sh603991", "name": "领先股份", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,企稳）：缩量至极致（筹码沉淀）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "企稳"], "healthScore": 58, "dailyScore": 55.9, "flow5d": 18110.0, "flow10d": 24179.0, "drop20d": -18.5, "consecutive": 1, "kdjBonus": 0, "rsi": 53.8, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4087.0, "turnover": 2.32, "isNew": true, "preBreakoutScore": 10, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.6)"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 81.51, "kd30_d": 73.74, "kd30_cross": "上升", "kd5_k": 87.99, "kd5_d": 84.35, "kd5_cross": "上升", "kd60_k": 88.6, "kd60_d": 86.74, "kd60_cross": "上升"}, {"code": "sh605168", "name": "三人行", "sector": "热门标的", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,企稳）：全量优选", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "企稳"], "healthScore": 58, "dailyScore": 47.7, "flow5d": 6061.0, "flow10d": 4041.0, "drop20d": -10.0, "consecutive": 1, "kdjBonus": 0, "rsi": 68.1, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 35.0, "turnover": 3.05, "isNew": true, "preBreakoutScore": 6, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 65.15, "kd30_d": 58.93, "kd30_cross": "上升", "kd5_k": 91.55, "kd5_d": 86.8, "kd5_cross": "上升", "kd60_k": 75.63, "kd60_d": 73.25, "kd60_cross": "上升"}, {"code": "sz002185", "name": "华天科技", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度6.0）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 57, "dailyScore": 59.0, "flow5d": 49463.0, "flow10d": -136412.0, "drop20d": -29.0, "consecutive": 2, "kdjBonus": 0, "rsi": 55.0, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 15570.0, "turnover": 9.59, "isNew": true, "preBreakoutScore": 23, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 8, "detail": "量微缩(比0.8), 今日止跌+0.4%"}, {"signal": "MACD收敛", "score": 15, "detail": "MACD柱翻正: -0.1117->0.1418"}], "kd30_k": 53.62, "kd30_d": 46.33, "kd30_cross": "上升", "kd5_k": 89.57, "kd5_d": 87.86, "kd5_cross": "上升", "kd60_k": 77.8, "kd60_d": 79.02, "kd60_cross": "下降"}, {"code": "sh603005", "name": "晶方科技", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 57, "dailyScore": 48.9, "flow5d": 32280.0, "flow10d": 2740.0, "drop20d": -23.2, "consecutive": 1, "kdjBonus": 0, "rsi": 67.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 17086.0, "turnover": 6.07, "isNew": true, "preBreakoutScore": 32, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=30.1 D=29.8"}, {"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 量逐日递减"}], "kd30_k": 30.07, "kd30_d": 29.82, "kd30_cross": "上升", "kd5_k": 80.72, "kd5_d": 82.2, "kd5_cross": "下降", "kd60_k": 49.94, "kd60_d": 59.93, "kd60_cross": "下降"}, {"code": "sh603667", "name": "五洲新春", "sector": "热门标的", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升"], "healthScore": 55, "dailyScore": 46.8, "flow5d": 14807.0, "flow10d": -98.0, "drop20d": -9.5, "consecutive": 2, "kdjBonus": 0, "rsi": 54.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 2223.0, "turnover": 3.36, "isNew": true, "preBreakoutScore": 12, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 量逐日递减"}], "kd30_k": 18.25, "kd30_d": 25.76, "kd30_cross": "下降", "kd5_k": 34.03, "kd5_d": 47.28, "kd5_cross": "下降", "kd60_k": 26.73, "kd60_d": 41.46, "kd60_cross": "下降"}, {"code": "sh605111", "name": "新洁能", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 54, "dailyScore": 48.1, "flow5d": 17703.0, "flow10d": 16809.0, "drop20d": -22.2, "consecutive": 1, "kdjBonus": 0, "rsi": 60.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 14311.0, "turnover": 4.38, "isNew": true, "preBreakoutScore": 28, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=31.8 D=30.6"}, {"signal": "缩量止跌", "score": 8, "detail": "量微缩(比0.9), 量逐日递减"}], "kd30_k": 31.76, "kd30_d": 30.59, "kd30_cross": "上升", "kd5_k": 86.15, "kd5_d": 85.11, "kd5_cross": "上升", "kd60_k": 50.7, "kd60_d": 62.48, "kd60_cross": "下降"}, {"code": "sz002931", "name": "锋龙股份", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 52, "dailyScore": 53.6, "flow5d": 13246.0, "flow10d": 15152.0, "drop20d": -11.0, "consecutive": 2, "kdjBonus": 0, "rsi": 68.0, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 6222.0, "turnover": 4.59, "isNew": true, "preBreakoutScore": 32, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 25, "detail": "金叉收敛: K=28.9->D=29.0, 差0.1"}, {"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.7)"}], "kd30_k": 28.85, "kd30_d": 29.0, "kd30_cross": "下降", "kd5_k": 75.79, "kd5_d": 80.79, "kd5_cross": "下降", "kd60_k": 50.46, "kd60_d": 61.12, "kd60_cross": "下降"}, {"code": "sz002643", "name": "万润股份", "sector": "热门标的", "direction": "超跌,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金回流,止跌回升）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金回流", "止跌回升"], "healthScore": 51, "dailyScore": 54.6, "flow5d": 4261.0, "flow10d": 4419.0, "drop20d": -21.0, "consecutive": 2, "kdjBonus": 0, "rsi": 63.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 59.0, "turnover": 2.31, "isNew": true, "preBreakoutScore": 33, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "金叉收敛: K=29.2->D=33.4, 差4.2"}, {"signal": "缩量止跌", "score": 13, "detail": "量微缩(比0.9), 今日止跌-0.4%, 量逐日递减"}], "kd30_k": 29.21, "kd30_d": 33.42, "kd30_cross": "下降", "kd5_k": 82.72, "kd5_d": 80.99, "kd5_cross": "上升", "kd60_k": 59.44, "kd60_d": 68.22, "kd60_cross": "下降"}, {"code": "sz003018", "name": "金富科技", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,KDJ反转,企稳）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "KDJ反转", "企稳"], "healthScore": 50, "dailyScore": 68.6, "flow5d": 26843.0, "flow10d": 7014.0, "drop20d": -38.4, "consecutive": 8, "kdjBonus": 5, "rsi": 53.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4967.0, "turnover": 4.81, "isNew": true, "preBreakoutScore": 23, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "金叉收敛: K=16.0->D=18.7, 差2.7"}, {"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}], "kd30_k": 15.99, "kd30_d": 18.66, "kd30_cross": "下降", "kd5_k": 89.76, "kd5_d": 86.56, "kd5_cross": "上升", "kd60_k": 26.79, "kd60_d": 43.77, "kd60_cross": "下降"}, {"code": "sz002354", "name": "天娱数科", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：MACD底背离（强度1.5）；量比突变（强度7）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 50, "dailyScore": 47.5, "flow5d": 54845.0, "flow10d": 26329.0, "drop20d": -6.0, "consecutive": 1, "kdjBonus": 0, "rsi": 70.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -1806.0, "turnover": 27.03, "isNew": true, "preBreakoutScore": 30, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升38.9->68.7"}, {"signal": "缩量止跌", "score": 5, "detail": "量逐日递减"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(249543237)<上涨日量(371940118)的70%"}], "kd30_k": 80.33, "kd30_d": 77.62, "kd30_cross": "上升", "kd5_k": 77.33, "kd5_d": 62.93, "kd5_cross": "上升", "kd60_k": 83.67, "kd60_d": 77.07, "kd60_cross": "上升"}, {"code": "sz002446", "name": "盛路通信", "sector": "热门标的", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,企稳）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "企稳"], "healthScore": 49, "dailyScore": 48.7, "flow5d": 4029.0, "flow10d": 568.0, "drop20d": -12.5, "consecutive": 0, "kdjBonus": 0, "rsi": 75.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4458.0, "turnover": 6.68, "isNew": true, "preBreakoutScore": 20, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=19.0 D=18.6"}], "kd30_k": 18.98, "kd30_d": 18.61, "kd30_cross": "上升", "kd5_k": 81.06, "kd5_d": 81.17, "kd5_cross": "下降", "kd60_k": 30.49, "kd60_d": 45.87, "kd60_cross": "下降"}, {"code": "sh603316", "name": "诚邦股份", "sector": "热门标的", "direction": "超跌,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金回流,止跌回升）：MACD底背离（强度5.2）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金回流", "止跌回升"], "healthScore": 46, "dailyScore": 53.3, "flow5d": 4372.0, "flow10d": 2217.0, "drop20d": -23.4, "consecutive": 2, "kdjBonus": 0, "rsi": 59.0, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -181.0, "turnover": 3.94, "isNew": true, "preBreakoutScore": 12, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 量逐日递减"}], "kd30_k": 52.95, "kd30_d": 52.47, "kd30_cross": "上升", "kd5_k": 84.28, "kd5_d": 87.83, "kd5_cross": "下降", "kd60_k": 76.8, "kd60_d": 80.27, "kd60_cross": "下降"}, {"code": "sh603067", "name": "振华股份", "sector": "化工", "direction": "回调到位", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "回调到位"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -18.0, "consecutive": 2, "kdjBonus": 0, "rsi": 55.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+1.2亿"}], "kd30_k": 66.15, "kd30_d": 56.08, "kd30_cross": "上升", "kd5_k": 62.35, "kd5_d": 69.16, "kd5_cross": "下降", "kd60_k": 58.22, "kd60_d": 52.12, "kd60_cross": "上升"}, {"code": "sh600105", "name": "永鼎股份", "sector": "通信", "direction": "超跌", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "超跌"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -20.5, "consecutive": 1, "kdjBonus": 0, "rsi": 55.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 27, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "刚金叉: K=27.0 D=25.6"}, {"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.7)"}], "kd30_k": 27.03, "kd30_d": 25.64, "kd30_cross": "上升", "kd5_k": 80.15, "kd5_d": 80.95, "kd5_cross": "下降", "kd60_k": 35.76, "kd60_d": 52.99, "kd60_cross": "下降"}, {"code": "sh601126", "name": "四方股份", "sector": "电力设备", "direction": "回调到位", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "回调到位"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -15.7, "consecutive": 2, "kdjBonus": 0, "rsi": 57.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 30, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 20, "detail": "金叉收敛: K=19.9->D=24.8, 差4.8"}, {"signal": "缩量止跌", "score": 5, "detail": "今日止跌-0.2%"}, {"signal": "资金反转", "score": 5, "detail": "当日主力+1.1亿"}], "kd30_k": 19.94, "kd30_d": 24.79, "kd30_cross": "下降", "kd5_k": 68.87, "kd5_d": 74.64, "kd5_cross": "下降", "kd60_k": 45.97, "kd60_d": 58.69, "kd60_cross": "下降"}, {"code": "sz000688", "name": "国城矿业", "sector": "有色金属", "direction": "固定关注", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": 0.9, "consecutive": 1, "kdjBonus": 0, "rsi": 72.3, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+0.7亿"}], "kd30_k": 67.07, "kd30_d": 71.95, "kd30_cross": "下降", "kd5_k": 46.0, "kd5_d": 32.62, "kd5_cross": "上升", "kd60_k": 82.37, "kd60_d": 83.41, "kd60_cross": "下降"}];
+const STOCKS = [{"code": "sh603936", "name": "博敏电子", "sector": "电力设备", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,止跌回升,T2板块共振,主力介入）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 65, "dailyScore": 52.6, "flow5d": 9268.0, "flow10d": 3967.0, "drop20d": -17.8, "consecutive": 2, "kdjBonus": 0, "rsi": 67.9, "sectorTier": 2, "ratio5d": 308.93, "ratio10d": 66.12, "dailyFlow": -466.0, "turnover": 4.43, "isNew": true, "preBreakoutScore": 0, "preBreakoutPhase": "weak", "preBreakoutSignals": [], "kd30_k": 51.4, "kd30_d": 33.3, "kd30_cross": "上升", "kd60_k": 43.12, "kd60_d": 55.12, "kd60_cross": "下降"}, {"code": "sh603678", "name": "火炬电子", "sector": "电力设备", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升,T2板块共振,主力介入）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 63, "dailyScore": 48.6, "flow5d": 53666.0, "flow10d": 63827.0, "drop20d": -15.5, "consecutive": 1, "kdjBonus": 0, "rsi": 62.1, "sectorTier": 2, "ratio5d": 564.91, "ratio10d": 335.93, "dailyFlow": -2595.0, "turnover": 4.95, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+0.8亿"}], "kd30_k": 78.96, "kd30_d": 69.76, "kd30_cross": "上升", "kd60_k": 80.31, "kd60_d": 75.23, "kd60_cross": "上升"}, {"code": "sz002138", "name": "顺络电子", "sector": "电力设备", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升,T2板块共振,主力介入）：温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升", "T2板块共振", "主力介入"], "healthScore": 63, "dailyScore": 45.9, "flow5d": 102078.0, "flow10d": 84195.0, "drop20d": -8.0, "consecutive": 0, "kdjBonus": 0, "rsi": 69.2, "sectorTier": 2, "ratio5d": 850.65, "ratio10d": 350.81, "dailyFlow": -4897.0, "turnover": 4.09, "isNew": true, "preBreakoutScore": 15, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.8), 量逐日递减"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 75.42, "kd30_d": 56.49, "kd30_cross": "上升", "kd5_k": 92.08, "kd5_d": 91.28, "kd5_cross": "上升", "kd60_k": 69.58, "kd60_d": 54.86, "kd60_cross": "上升"}, {"code": "sh603328", "name": "依顿电子", "sector": "电力设备", "direction": "资金回流,T2板块共振", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金回流,T2板块共振,主力介入）：缩量至极致（筹码沉淀）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金回流", "T2板块共振", "主力介入"], "healthScore": 45, "dailyScore": 51.1, "flow5d": 6984.0, "flow10d": 11062.0, "drop20d": -0.4, "consecutive": 2, "kdjBonus": 0, "rsi": 81.2, "sectorTier": 2, "ratio5d": 698.4, "ratio10d": 553.1, "dailyFlow": -1165.0, "turnover": 3.69, "isNew": true, "preBreakoutScore": 0, "preBreakoutPhase": "weak", "preBreakoutSignals": [], "kd30_k": 52.37, "kd30_d": 53.02, "kd30_cross": "下降", "kd5_k": 85.52, "kd5_d": 76.05, "kd5_cross": "上升", "kd60_k": 65.9, "kd60_d": 74.34, "kd60_cross": "下降"}, {"code": "sz000962", "name": "东方钽业", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：高开趋势加速中；近20天跌15%，超跌反弹概率大", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 67, "dailyScore": 57.5, "flow5d": 73134.0, "flow10d": 66256.0, "drop20d": -15.1, "consecutive": 1, "kdjBonus": 0, "rsi": 59.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 9853.0, "turnover": 4.25, "isNew": true, "preBreakoutScore": 7, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "量价背离", "score": 7, "detail": "下跌日量(24830577)<上涨日量(37625816)的70%"}], "kd30_k": 42.83, "kd30_d": 45.21, "kd30_cross": "下降", "kd5_k": 89.66, "kd5_d": 82.03, "kd5_cross": "上升", "kd60_k": 61.66, "kd60_d": 65.88, "kd60_cross": "下降"}, {"code": "sh601208", "name": "东材科技", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 66, "dailyScore": 49.5, "flow5d": 86552.0, "flow10d": 29198.0, "drop20d": -15.9, "consecutive": 2, "kdjBonus": 0, "rsi": 59.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 12315.0, "turnover": 5.98, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+2.2亿"}], "kd30_k": 73.39, "kd30_d": 55.24, "kd30_cross": "上升", "kd5_k": 95.33, "kd5_d": 93.05, "kd5_cross": "上升", "kd60_k": 79.96, "kd60_d": 74.99, "kd60_cross": "上升"}, {"code": "sz002655", "name": "共达电声", "sector": "电力设备", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：近30天高开率60%；温和量能，筹码稳定", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 65, "dailyScore": 67.5, "flow5d": 36244.0, "flow10d": 16372.0, "drop20d": -20.1, "consecutive": 5, "kdjBonus": 0, "rsi": 59.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 11080.0, "turnover": 5.54, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+0.9亿"}], "kd30_k": 85.06, "kd30_d": 80.72, "kd30_cross": "上升", "kd5_k": 86.69, "kd5_d": 81.72, "kd5_cross": "上升", "kd60_k": 88.66, "kd60_d": 87.08, "kd60_cross": "上升"}, {"code": "sz002645", "name": "华宏科技", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 65, "dailyScore": 59.8, "flow5d": 25424.0, "flow10d": 27851.0, "drop20d": -13.3, "consecutive": 1, "kdjBonus": 0, "rsi": 68.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 5740.0, "turnover": 4.24, "isNew": true, "preBreakoutScore": 7, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "量价背离", "score": 7, "detail": "下跌日量(33444253)<上涨日量(49828327)的70%"}], "kd30_k": 52.82, "kd30_d": 59.1, "kd30_cross": "下降", "kd5_k": 82.72, "kd5_d": 66.39, "kd5_cross": "上升", "kd60_k": 73.34, "kd60_d": 78.39, "kd60_cross": "下降"}, {"code": "sz001339", "name": "智微智能", "sector": "半导体", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：近期持续缩量，卖盘减少；近20天跌13%，超跌反弹概率大", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 64, "dailyScore": 51.0, "flow5d": 36608.0, "flow10d": 20669.0, "drop20d": -12.8, "consecutive": 1, "kdjBonus": 0, "rsi": 61.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 8766.0, "turnover": 2.82, "isNew": true, "preBreakoutScore": 19, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.7)"}, {"signal": "资金反转", "score": 12, "detail": "持续大额流入"}], "kd30_k": 54.77, "kd30_d": 36.59, "kd30_cross": "上升", "kd5_k": 89.65, "kd5_d": 79.3, "kd5_cross": "上升", "kd60_k": 39.22, "kd60_d": 45.9, "kd60_cross": "下降"}, {"code": "sz002975", "name": "博杰股份", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：地量信号（抛压枯竭）；量比突变（强度10）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 61, "dailyScore": 56.3, "flow5d": 42392.0, "flow10d": 27036.0, "drop20d": -18.9, "consecutive": 0, "kdjBonus": 0, "rsi": 61.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 17816.0, "turnover": 6.98, "isNew": true, "preBreakoutScore": 0, "preBreakoutPhase": "weak", "preBreakoutSignals": [], "kd30_k": 60.97, "kd30_d": 57.77, "kd30_cross": "上升", "kd5_k": 72.53, "kd5_d": 73.14, "kd5_cross": "下降", "kd60_k": 75.22, "kd60_d": 80.28, "kd60_cross": "下降"}, {"code": "sh603011", "name": "合锻智能", "sector": "热门标的", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升）：MACD底背离（强度10）；量比突变（强度7）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升"], "healthScore": 60, "dailyScore": 48.3, "flow5d": 24413.0, "flow10d": 17891.0, "drop20d": -7.8, "consecutive": 1, "kdjBonus": 0, "rsi": 70.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 3175.0, "turnover": 12.32, "isNew": true, "preBreakoutScore": 12, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+0.8亿"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(41452072)<上涨日量(78735641)的70%"}], "kd30_k": 61.71, "kd30_d": 59.87, "kd30_cross": "上升", "kd5_k": 62.31, "kd5_d": 70.11, "kd5_cross": "下降", "kd60_k": 79.91, "kd60_d": 79.65, "kd60_cross": "上升"}, {"code": "sh605376", "name": "博迁新材", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；近30天高开率60%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 59, "dailyScore": 61.1, "flow5d": 77796.0, "flow10d": 90001.0, "drop20d": -17.9, "consecutive": 1, "kdjBonus": 0, "rsi": 62.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 6282.0, "turnover": 4.9, "isNew": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 5, "detail": "当日主力+1.5亿"}], "kd30_k": 90.15, "kd30_d": 83.36, "kd30_cross": "上升", "kd5_k": 86.72, "kd5_d": 77.97, "kd5_cross": "上升", "kd60_k": 87.35, "kd60_d": 81.01, "kd60_cross": "上升"}, {"code": "sz002980", "name": "华盛昌", "sector": "热门标的", "direction": "回调到位,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金流入,止跌回升）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金流入", "止跌回升"], "healthScore": 58, "dailyScore": 57.0, "flow5d": 17213.0, "flow10d": -4804.0, "drop20d": -14.1, "consecutive": 2, "kdjBonus": 0, "rsi": 46.8, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4692.0, "turnover": 3.49, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}], "kd30_k": 62.12, "kd30_d": 51.2, "kd30_cross": "上升", "kd5_k": 85.94, "kd5_d": 83.14, "kd5_cross": "上升", "kd60_k": 72.69, "kd60_d": 75.5, "kd60_cross": "下降"}, {"code": "sz002185", "name": "华天科技", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度6.0）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 57, "dailyScore": 59.0, "flow5d": 49463.0, "flow10d": -136412.0, "drop20d": -29.0, "consecutive": 2, "kdjBonus": 0, "rsi": 55.0, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 15570.0, "turnover": 5.38, "isNew": true, "preBreakoutScore": 23, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 8, "detail": "量微缩(比0.8), 今日止跌+0.4%"}, {"signal": "MACD收敛", "score": 15, "detail": "MACD柱翻正: -0.1117->0.1418"}], "kd30_k": 68.2, "kd30_d": 57.28, "kd30_cross": "上升", "kd5_k": 84.8, "kd5_d": 76.42, "kd5_cross": "上升", "kd60_k": 81.19, "kd60_d": 79.11, "kd60_cross": "上升"}, {"code": "sh603005", "name": "晶方科技", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 57, "dailyScore": 48.9, "flow5d": 32280.0, "flow10d": 2740.0, "drop20d": -23.2, "consecutive": 1, "kdjBonus": 0, "rsi": 67.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 17086.0, "turnover": 2.38, "isNew": true, "preBreakoutScore": 12, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 量逐日递减"}], "kd30_k": 56.4, "kd30_d": 40.86, "kd30_cross": "上升", "kd5_k": 86.07, "kd5_d": 79.14, "kd5_cross": "上升", "kd60_k": 46.36, "kd60_d": 52.99, "kd60_cross": "下降"}, {"code": "sh603667", "name": "五洲新春", "sector": "热门标的", "direction": "资金流入,止跌回升", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,止跌回升）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "止跌回升"], "healthScore": 55, "dailyScore": 46.8, "flow5d": 14807.0, "flow10d": -98.0, "drop20d": -9.5, "consecutive": 2, "kdjBonus": 0, "rsi": 54.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 2223.0, "turnover": 2.4, "isNew": true, "preBreakoutScore": 23, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 量逐日递减"}, {"signal": "资金反转", "score": 11, "detail": "持续流入, 当日资金流入"}], "kd30_k": 55.99, "kd30_d": 39.88, "kd30_cross": "上升", "kd5_k": 65.44, "kd5_d": 72.22, "kd5_cross": "下降", "kd60_k": 57.79, "kd60_d": 48.79, "kd60_cross": "上升"}, {"code": "sh605111", "name": "新洁能", "sector": "热门标的", "direction": "超跌,资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（超跌,资金流入,止跌回升）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "超跌", "资金流入", "止跌回升"], "healthScore": 54, "dailyScore": 48.1, "flow5d": 17703.0, "flow10d": 16809.0, "drop20d": -22.2, "consecutive": 1, "kdjBonus": 0, "rsi": 60.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 14311.0, "turnover": 2.69, "isNew": true, "preBreakoutScore": 13, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 8, "detail": "量微缩(比0.9), 量逐日递减"}, {"signal": "资金反转", "score": 5, "detail": "当日主力+0.5亿"}], "kd30_k": 71.89, "kd30_d": 53.45, "kd30_cross": "上升", "kd5_k": 83.43, "kd5_d": 80.21, "kd5_cross": "上升", "kd60_k": 71.79, "kd60_d": 65.23, "kd60_cross": "上升"}, {"code": "sz002354", "name": "天娱数科", "sector": "热门标的", "direction": "资金流入,KDJ反转", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,KDJ反转）：MACD底背离（强度1.5）；量比突变（强度7）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "KDJ反转"], "healthScore": 54, "dailyScore": 47.5, "flow5d": 54845.0, "flow10d": 26329.0, "drop20d": -6.0, "consecutive": 1, "kdjBonus": 5, "rsi": 70.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -1806.0, "turnover": 16.02, "isNew": true, "preBreakoutScore": 12, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 5, "detail": "量逐日递减"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(249543237)<上涨日量(371940118)的70%"}], "kd30_k": 63.62, "kd30_d": 71.14, "kd30_cross": "下降", "kd5_k": 25.19, "kd5_d": 27.97, "kd5_cross": "下降", "kd60_k": 74.25, "kd60_d": 76.64, "kd60_cross": "下降"}, {"code": "sh603588", "name": "高能环境", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：缩量至极致（筹码沉淀）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 45, "dailyScore": 52.3, "flow5d": 16375.0, "flow10d": 25445.0, "drop20d": -4.3, "consecutive": 0, "kdjBonus": 0, "rsi": 75.1, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 2635.0, "turnover": 2.1, "isNew": true, "preBreakoutScore": 20, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升30.4->65.0"}, {"signal": "缩量止跌", "score": 5, "detail": "量逐日递减"}], "kd30_k": 46.92, "kd30_d": 61.09, "kd30_cross": "下降", "kd5_k": 70.2, "kd5_d": 58.95, "kd5_cross": "上升", "kd60_k": 63.11, "kd60_d": 70.34, "kd60_cross": "下降"}, {"code": "sz002896", "name": "中大力德", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：MACD底背离（强度10）；量比突变（强度5）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 44, "dailyScore": 51.8, "flow5d": 40052.0, "flow10d": 32248.0, "drop20d": 3.9, "consecutive": 2, "kdjBonus": 0, "rsi": 75.1, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 803.0, "turnover": 3.68, "isNew": true, "preBreakoutScore": 28, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "金叉收敛", "score": 25, "detail": "金叉收敛: K=29.9->D=30.8, 差0.9"}, {"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}], "kd30_k": 29.94, "kd30_d": 30.82, "kd30_cross": "下降", "kd5_k": 46.07, "kd5_d": 60.17, "kd5_cross": "下降", "kd60_k": 33.05, "kd60_d": 42.2, "kd60_cross": "下降"}, {"code": "sz002446", "name": "盛路通信", "sector": "热门标的", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,企稳）：MACD底背离（强度10）；地量信号（抛压枯竭）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "企稳"], "healthScore": 43, "dailyScore": 48.7, "flow5d": 4029.0, "flow10d": 568.0, "drop20d": -12.5, "consecutive": 0, "kdjBonus": 0, "rsi": 75.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 4458.0, "turnover": 2.84, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 61.81, "kd30_d": 39.84, "kd30_cross": "上升", "kd5_k": 87.99, "kd5_d": 88.61, "kd5_cross": "下降", "kd60_k": 43.22, "kd60_d": 41.49, "kd60_cross": "上升"}, {"code": "sz001266", "name": "宏英智能", "sector": "热门标的", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流,企稳）：MACD底背离（强度10）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流", "企稳"], "healthScore": 42, "dailyScore": 51.1, "flow5d": 2888.0, "flow10d": 2936.0, "drop20d": -14.4, "consecutive": 1, "kdjBonus": 0, "rsi": 70.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -169.0, "turnover": 3.99, "isNew": true, "preBreakoutScore": 22, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 12, "detail": "缩量(量比0.7), 今日止跌+0.1%"}, {"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(2566200)<上涨日量(4047035)的70%"}], "kd30_k": 63.94, "kd30_d": 54.49, "kd30_cross": "上升", "kd5_k": 73.03, "kd5_d": 77.53, "kd5_cross": "下降", "kd60_k": 77.78, "kd60_d": 75.5, "kd60_cross": "上升"}, {"code": "sz002378", "name": "章源钨业", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：MACD底背离（强度10）；量比突变（强度7）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 40, "dailyScore": 61.5, "flow5d": 22246.0, "flow10d": 10308.0, "drop20d": -1.2, "consecutive": 1, "kdjBonus": 0, "rsi": 74.3, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -1549.0, "turnover": 2.71, "isNew": true, "preBreakoutScore": 19, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "资金反转", "score": 12, "detail": "持续大额流入"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(28187099)<上涨日量(56185697)的70%"}], "kd30_k": 42.93, "kd30_d": 45.94, "kd30_cross": "下降", "kd5_k": 77.35, "kd5_d": 66.46, "kd5_cross": "上升", "kd60_k": 55.64, "kd60_d": 61.36, "kd60_cross": "下降"}, {"code": "sz000960", "name": "锡业股份", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：高开趋势加速中；近期高开率从33%升至67%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 39, "dailyScore": 53.3, "flow5d": 61408.0, "flow10d": 40623.0, "drop20d": 10.7, "consecutive": 0, "kdjBonus": 0, "rsi": 78.8, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -7506.0, "turnover": 2.18, "isNew": true, "preBreakoutScore": 15, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 8, "detail": "量微缩(比0.9), 今日止跌+0.4%"}, {"signal": "量价背离", "score": 7, "detail": "下跌日量(48557552)<上涨日量(70653466)的70%"}], "kd30_k": 32.29, "kd30_d": 39.21, "kd30_cross": "下降", "kd5_k": 70.93, "kd5_d": 54.04, "kd5_cross": "上升", "kd60_k": 49.39, "kd60_d": 63.27, "kd60_cross": "下降"}, {"code": "sh600791", "name": "京能置业", "sector": "热门标的", "direction": "回调到位,资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（回调到位,资金回流）：MACD底背离（强度10）；缩量至极致（筹码沉淀）", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "回调到位", "资金回流"], "healthScore": 38, "dailyScore": 51.7, "flow5d": 1482.0, "flow10d": 1314.0, "drop20d": -12.0, "consecutive": 2, "kdjBonus": 0, "rsi": 66.5, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 10.0, "turnover": 2.57, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 67.8, "kd30_d": 59.38, "kd30_cross": "上升", "kd5_k": 21.76, "kd5_d": 38.95, "kd5_cross": "下降", "kd60_k": 73.59, "kd60_d": 68.35, "kd60_cross": "上升"}, {"code": "sz002674", "name": "兴业科技", "sector": "热门标的", "direction": "资金流入,跌速偏快", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入,跌速偏快）：高开趋势加速中；近期高开率从20%升至53%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入", "跌速偏快"], "healthScore": 37, "dailyScore": 54.5, "flow5d": 10656.0, "flow10d": 3661.0, "drop20d": -8.0, "consecutive": 8, "kdjBonus": 0, "rsi": 71.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -3995.0, "turnover": 5.12, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 3, "detail": "量微缩(比0.9)"}], "kd30_k": 45.14, "kd30_d": 55.46, "kd30_cross": "下降", "kd5_k": 77.57, "kd5_d": 79.14, "kd5_cross": "下降", "kd60_k": 54.3, "kd60_d": 65.55, "kd60_cross": "下降"}, {"code": "sh600961", "name": "株冶集团", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：量比突变（强度7）；高开趋势加速中", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 35, "dailyScore": 60.1, "flow5d": 32610.0, "flow10d": 16893.0, "drop20d": 10.9, "consecutive": 1, "kdjBonus": 0, "rsi": 77.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -463.0, "turnover": 5.54, "isNew": true, "preBreakoutScore": 7, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "量价背离", "score": 7, "detail": "下跌日量(42713337)<上涨日量(65328489)的70%"}], "kd30_k": 39.79, "kd30_d": 50.92, "kd30_cross": "下降", "kd5_k": 60.55, "kd5_d": 48.24, "kd5_cross": "上升", "kd60_k": 70.97, "kd60_d": 77.0, "kd60_cross": "下降"}, {"code": "sz000630", "name": "铜陵有色", "sector": "有色金属", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：高开趋势加速中；近期高开率从33%升至73%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 35, "dailyScore": 55.3, "flow5d": 27195.0, "flow10d": 17541.0, "drop20d": 14.1, "consecutive": 0, "kdjBonus": 0, "rsi": 76.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -24603.0, "turnover": 2.03, "isNew": true, "preBreakoutScore": 15, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升25.4->32.7"}], "kd30_k": 28.0, "kd30_d": 38.88, "kd30_cross": "下降", "kd5_k": 32.06, "kd5_d": 23.53, "kd5_cross": "上升", "kd60_k": 50.21, "kd60_d": 66.73, "kd60_cross": "下降"}, {"code": "sh603823", "name": "百合花", "sector": "热门标的", "direction": "资金流入", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金流入）：高开趋势加速中；近期高开率从20%升至33%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金流入"], "healthScore": 35, "dailyScore": 45.1, "flow5d": 19556.0, "flow10d": 4353.0, "drop20d": -0.4, "consecutive": 3, "kdjBonus": 0, "rsi": 41.3, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": -4201.0, "turnover": 4.45, "isNew": true, "preBreakoutScore": 15, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}, {"signal": "MACD收敛", "score": 12, "detail": "MACD柱收敛: -3.8134->-1.2394"}], "kd30_k": 77.56, "kd30_d": 73.98, "kd30_cross": "上升", "kd5_k": 85.06, "kd5_d": 71.15, "kd5_cross": "上升", "kd60_k": 78.18, "kd60_d": 74.94, "kd60_cross": "上升"}, {"code": "sz003011", "name": "海象新材", "sector": "热门标的", "direction": "资金回流", "pe": 0, "profitGrowth": 0, "reason": "🔄全量选入（资金回流）：高开趋势加速中；近期高开率从20%升至40%", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["🔄全量选入", "资金回流"], "healthScore": 34, "dailyScore": 51.4, "flow5d": 184.0, "flow10d": 59.0, "drop20d": 5.5, "consecutive": 0, "kdjBonus": 0, "rsi": 84.7, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 77.0, "turnover": 2.76, "isNew": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 83.99, "kd30_d": 83.01, "kd30_cross": "上升", "kd5_k": 57.16, "kd5_d": 67.22, "kd5_cross": "下降", "kd60_k": 87.37, "kd60_d": 84.85, "kd60_cross": "上升"}, {"code": "sh603067", "name": "振华股份", "sector": "化工", "direction": "回调到位", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "回调到位"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -18.0, "consecutive": 2, "kdjBonus": 0, "rsi": 55.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 30, "preBreakoutPhase": "approaching_breakout", "preBreakoutSignals": [{"signal": "底背离", "score": 15, "detail": "类背离: 价持平, K回升29.8->35.7"}, {"signal": "金叉收敛", "score": 15, "detail": "金叉收敛: K=35.2->D=40.4, 差5.1"}], "kd30_k": 35.25, "kd30_d": 40.4, "kd30_cross": "下降", "kd5_k": 86.35, "kd5_d": 72.85, "kd5_cross": "上升", "kd60_k": 41.36, "kd60_d": 46.65, "kd60_cross": "下降"}, {"code": "sh600105", "name": "永鼎股份", "sector": "通信", "direction": "超跌", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "超跌"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -20.5, "consecutive": 1, "kdjBonus": 0, "rsi": 55.9, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 19, "preBreakoutPhase": "building_base", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 7, "detail": "缩量(量比0.7)"}, {"signal": "资金反转", "score": 12, "detail": "持续大额流入"}], "kd30_k": 69.14, "kd30_d": 50.03, "kd30_cross": "上升", "kd5_k": 85.75, "kd5_d": 86.5, "kd5_cross": "下降", "kd60_k": 38.83, "kd60_d": 44.29, "kd60_cross": "下降"}, {"code": "sh601126", "name": "四方股份", "sector": "电力设备", "direction": "回调到位", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注", "回调到位"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": -15.7, "consecutive": 2, "kdjBonus": 0, "rsi": 57.6, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 5, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "缩量止跌", "score": 5, "detail": "今日止跌-0.2%"}], "kd30_k": 67.28, "kd30_d": 45.51, "kd30_cross": "上升", "kd5_k": 93.46, "kd5_d": 87.84, "kd5_cross": "上升", "kd60_k": 42.34, "kd60_d": 49.28, "kd60_cross": "下降"}, {"code": "sz000688", "name": "国城矿业", "sector": "有色金属", "direction": "固定关注", "pe": 0, "profitGrowth": 0, "reason": "📌用户固定关注票", "roe": 0, "grossMargin": 0, "debtRatio": 0, "riskFlags": ["📌固定关注"], "healthScore": 0, "dailyScore": 0, "flow5d": 0, "flow10d": 0, "drop20d": 0.9, "consecutive": 1, "kdjBonus": 0, "rsi": 72.3, "sectorTier": null, "ratio5d": null, "ratio10d": null, "dailyFlow": 0, "turnover": null, "isNew": true, "isPinned": true, "preBreakoutScore": 3, "preBreakoutPhase": "weak", "preBreakoutSignals": [{"signal": "资金反转", "score": 3, "detail": "当日资金流入"}], "kd30_k": 83.29, "kd30_d": 75.22, "kd30_cross": "上升", "kd5_k": 86.89, "kd5_d": 71.0, "kd5_cross": "上升", "kd60_k": 87.86, "kd60_d": 84.59, "kd60_cross": "上升"}];
 
 const LAUNCH_STOCKS = [
-  {
-    "code": "sz002733",
-    "name": "雄韬股份",
-    "sector": "热门标的",
-    "direction": "⏳启动在即,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "⏳预启动（⏳启动在即,回调到位,资金反转）①🔵预启动 | 回调到位 | 弱减速 | 止跌 | 近3日流入 | 反转试探｜MACD底背离（强度10）; 地量信号（抛压枯竭）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "⏳预启动",
-      "⏳启动在即",
-      "回调到位",
-      "资金反转",
-      "资金反转",
-      "企稳"
-    ],
-    "healthScore": 58.5,
-    "dailyScore": 49.8,
-    "flow5d": 1398.0,
-    "flow10d": -2203.0,
-    "drop20d": -17.0,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 60.7,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 67,
-    "preLaunchPhase": "on_deck",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "💰强资金反转"
-    ],
-    "dailyFlow": 1929.0,
-    "isNew": true
-  },
-  {
-    "code": "sh603139",
-    "name": "康惠股份",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,资金回流）①🟢资金双正 | 连2日 | 💰低位增量建仓 | ②资金关注｜地量信号（抛压枯竭）; 缩量至极致（筹码沉淀）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "资金回流",
-      "止跌企稳"
-    ],
-    "healthScore": 57.5,
-    "dailyScore": 54.5,
-    "flow5d": 3761.0,
-    "flow10d": 3504.0,
-    "drop20d": -11.9,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 66.3,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 57,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "止跌企稳"
-    ],
-    "dailyFlow": 316.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002772",
-    "name": "众兴菌业",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,10日偏空）①🔵预启动 | 回调到位 | 弱减速 | 止跌 | 近1日流入｜MACD底背离（强度8.2）; 缩量至极致（筹码沉淀）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 52.5,
-    "dailyScore": 51.3,
-    "flow5d": -1728.0,
-    "flow10d": -2359.0,
-    "drop20d": -15.9,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 66.4,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 48,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "止跌企稳"
-    ],
-    "dailyFlow": 410.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002830",
-    "name": "名雕股份",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,10日偏空）①🔵预启动 | 回调到位 | 弱减速 | 止跌｜缩量至极致（筹码沉淀）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 50.5,
-    "dailyScore": 54.3,
-    "flow5d": -421.0,
-    "flow10d": -584.0,
-    "drop20d": -18.1,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 75.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 48,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "止跌企稳"
-    ],
-    "dailyFlow": -131.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002706",
-    "name": "良信股份",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,10日偏空）①🔵预启动 | 回调到位 | 强减速 | 止跌｜MACD底背离（强度10）; 温和量能，筹码稳定",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "10日偏空"
-    ],
-    "healthScore": 50.5,
-    "dailyScore": 53.3,
-    "flow5d": -249.0,
-    "flow10d": -7372.0,
-    "drop20d": -12.4,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 52.7,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 47,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "跌速放缓",
-      "流出减缓"
-    ],
-    "dailyFlow": -5645.0,
-    "isNew": true
-  },
-  {
-    "code": "sz001266",
-    "name": "宏英智能",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,资金回流）①🟢资金双正｜MACD底背离（强度10）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "资金回流",
-      "企稳"
-    ],
-    "healthScore": 47.5,
-    "dailyScore": 51.1,
-    "flow5d": 2888.0,
-    "flow10d": 2936.0,
-    "drop20d": -14.4,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 70.7,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 52,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位"
-    ],
-    "dailyFlow": -169.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002520",
-    "name": "日发精机",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,回调到位",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,10日偏空）①🔵预启动 | 回调到位 | 止跌｜MACD底背离（强度1.4）; 地量信号（抛压枯竭）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "回调到位",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 48.5,
-    "dailyScore": 55.2,
-    "flow5d": -3934.0,
-    "flow10d": -3925.0,
-    "drop20d": -14.1,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 70.0,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 48,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "止跌企稳"
-    ],
-    "dailyFlow": -1943.0,
-    "isNew": true
-  },
   {
     "code": "sz002910",
     "name": "庄园牧场",
@@ -1286,146 +1020,31 @@ const LAUNCH_STOCKS = [
     "isNew": true
   },
   {
-    "code": "sh605488",
-    "name": "福莱新材",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,资金流入",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,资金流入,止跌企稳）①🟢资金双正 | ②独立逻辑｜MACD底背离（强度10）; 近期持续缩量，卖盘减少",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "资金流入",
-      "止跌企稳"
-    ],
-    "healthScore": 46.5,
-    "dailyScore": 45.5,
-    "flow5d": 13654.0,
-    "flow10d": 13738.0,
-    "drop20d": -6.6,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 76.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 50,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "止跌企稳",
-      "💰持续强流入"
-    ],
-    "dailyFlow": -67.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002465",
-    "name": "海格通信",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,超跌",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,超跌,10日偏空）①🔵预启动 | 强减速 | 止跌｜MACD底背离（强度10）; 缩量至极致（筹码沉淀）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "超跌",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 47.5,
-    "dailyScore": 56.3,
-    "flow5d": -1997.0,
-    "flow10d": -6421.0,
-    "drop20d": -20.1,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 72.8,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 45,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "深度回调",
-      "止跌企稳",
-      "流出减缓"
-    ],
-    "dailyFlow": -4867.0,
-    "isNew": true
-  },
-  {
-    "code": "sz001268",
-    "name": "联合精密",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,超跌",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,超跌,10日偏空）①🔵预启动 | 强减速 | 止跌｜MACD底背离（强度10）; 缩量高开+低开放量→抛压枯竭",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "超跌",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 47.5,
-    "dailyScore": 51.4,
-    "flow5d": -419.0,
-    "flow10d": -1732.0,
-    "drop20d": -23.6,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "rsi": 63.8,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 45,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "深度回调",
-      "止跌企稳",
-      "流出减缓"
-    ],
-    "dailyFlow": -441.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002845",
-    "name": "同兴达",
+    "code": "sz002520",
+    "name": "日发精机",
     "sector": "热门标的",
     "direction": "🔍接近启动,回调到位",
-    "pe": -25.04,
+    "pe": 32.94,
     "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,回调到位,资金反转）①🔵预启动 | 回调到位 | 强减速 | 反转试探 | ③壁垒一般｜MACD底背离（强度10）; 地量信号（抛压枯竭）",
-    "roe": -0.0173,
+    "reason": "🔍待启动（🔍接近启动,回调到位,10日偏空）①🔵预启动 | 回调到位 | 止跌 | ③壁垒一般｜MACD底背离（强度1.4）; 地量信号（抛压枯竭）",
+    "roe": 0.1207,
     "grossMargin": 0,
     "debtRatio": 0,
     "riskFlags": [
       "🔍待启动",
       "🔍接近启动",
       "回调到位",
-      "资金反转",
-      "企稳"
+      "10日偏空",
+      "止跌企稳"
     ],
-    "healthScore": 45.8,
-    "dailyScore": 48.7,
-    "flow5d": 262.0,
-    "flow10d": -1820.0,
-    "drop20d": -16.5,
+    "healthScore": 45.5,
+    "dailyScore": 55.2,
+    "flow5d": -3934.0,
+    "flow10d": -3925.0,
+    "drop20d": -14.1,
     "consecutive": 1,
     "kdjBonus": 0,
-    "rsi": 61.6,
+    "rsi": 70.0,
     "sectorTier": null,
     "ratio5d": null,
     "ratio10d": null,
@@ -1433,81 +1052,9 @@ const LAUNCH_STOCKS = [
     "preLaunchPhase": "approaching",
     "preLaunchSignals": [
       "黄金回调位",
-      "已启动",
-      "💰弱反转"
+      "止跌企稳"
     ],
-    "dailyFlow": -612.0,
-    "isNew": true
-  },
-  {
-    "code": "sh603588",
-    "name": "高能环境",
-    "sector": "热门标的",
-    "direction": "🔍接近启动,资金流入",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🔍待启动（🔍接近启动,资金流入,企稳）①🟢资金双正 | 连3日 | ②独立逻辑｜缩量至极致（筹码沉淀）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🔍待启动",
-      "🔍接近启动",
-      "资金流入",
-      "企稳"
-    ],
-    "healthScore": 44.5,
-    "dailyScore": 52.3,
-    "flow5d": 16375.0,
-    "flow10d": 25445.0,
-    "drop20d": -4.3,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "rsi": 75.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 45,
-    "preLaunchPhase": "approaching",
-    "preLaunchSignals": [
-      "💰持续强流入"
-    ],
-    "dailyFlow": 2635.0,
-    "isNew": true
-  },
-  {
-    "code": "sh600791",
-    "name": "京能置业",
-    "sector": "热门标的",
-    "direction": "回调到位,资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（回调到位,资金回流）①🟢资金双正 | 今日流入 | 💰低位增量建仓｜MACD底背离（强度10）; 缩量至极致（筹码沉淀）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "回调到位",
-      "资金回流"
-    ],
-    "healthScore": 43.5,
-    "dailyScore": 51.7,
-    "flow5d": 1482.0,
-    "flow10d": 1314.0,
-    "drop20d": -12.0,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 66.5,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 43,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "黄金回调位"
-    ],
-    "dailyFlow": 10.0,
+    "dailyFlow": -1943.0,
     "isNew": true
   },
   {
@@ -1517,7 +1064,7 @@ const LAUNCH_STOCKS = [
     "direction": "资金反转,资金反转",
     "pe": 0,
     "profitGrowth": 0,
-    "reason": "🚀启动段（资金反转,资金反转,企稳）①🔵预启动 | 弱减速 | 止跌 | 近2日流入 | 反转试探 | ②板块共振T1(一日游)｜低价股(10.01元)，流动性好; 近期放量高开密集，可能有催化事件",
+    "reason": "🚀启动段（资金反转,资金反转,企稳）①🔵预启动 | 弱减速 | 止跌 | 近2日流入 | 反转试探 | ②板块共振T1｜低价股(10.01元)，流动性好; 近期放量高开密集，可能有催化事件",
     "roe": 0,
     "grossMargin": 0,
     "debtRatio": 0,
@@ -1528,7 +1075,7 @@ const LAUNCH_STOCKS = [
       "企稳",
       "T1板块共振"
     ],
-    "healthScore": 42.5,
+    "healthScore": 45.5,
     "dailyScore": 45.8,
     "flow5d": 300.0,
     "flow10d": -475.0,
@@ -1545,191 +1092,6 @@ const LAUNCH_STOCKS = [
       "💰强资金反转"
     ],
     "dailyFlow": 325.0,
-    "isNew": true
-  },
-  {
-    "code": "sz000417",
-    "name": "合百集团",
-    "sector": "热门标的",
-    "direction": "超跌,10日偏空",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（超跌,10日偏空,跌势放缓）①🔵预启动 | 流出减速 | 止跌｜缩量至极致（筹码沉淀）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "超跌",
-      "10日偏空",
-      "跌势放缓"
-    ],
-    "healthScore": 44.5,
-    "dailyScore": 47.9,
-    "flow5d": -2191.0,
-    "flow10d": -5240.0,
-    "drop20d": -23.4,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 61.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 37,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "深度回调",
-      "跌速放缓",
-      "流出减缓"
-    ],
-    "dailyFlow": -195.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002047",
-    "name": "宝鹰股份",
-    "sector": "热门标的",
-    "direction": "超跌,10日偏空",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（超跌,10日偏空,企稳）①🔵预启动 | 弱减速 | 止跌｜MACD底背离（强度10）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "超跌",
-      "10日偏空",
-      "企稳"
-    ],
-    "healthScore": 46.5,
-    "dailyScore": 51.6,
-    "flow5d": -6323.0,
-    "flow10d": -9637.0,
-    "drop20d": -20.5,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "rsi": 49.5,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 30,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "深度回调"
-    ],
-    "dailyFlow": -998.0,
-    "isNew": true
-  },
-  {
-    "code": "sh603507",
-    "name": "振江股份",
-    "sector": "热门标的",
-    "direction": "超跌,止跌企稳",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（超跌,止跌企稳）①🟡回调中｜近期持续缩量，卖盘减少; 近20天跌21%，超跌反弹概率大",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "超跌",
-      "止跌企稳"
-    ],
-    "healthScore": 41.5,
-    "dailyScore": 49.5,
-    "flow5d": -1607.0,
-    "flow10d": 6054.0,
-    "drop20d": -20.9,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 73.6,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 38,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "深度回调",
-      "止跌企稳"
-    ],
-    "dailyFlow": -397.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002782",
-    "name": "可立克",
-    "sector": "热门标的",
-    "direction": "回调到位,10日偏空",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（回调到位,10日偏空,企稳）①🔵预启动 | 回调到位 | 流出减速｜MACD底背离（强度10）; 近20天跌11%，超跌反弹概率大",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "回调到位",
-      "10日偏空",
-      "企稳"
-    ],
-    "healthScore": 40.5,
-    "dailyScore": 53.4,
-    "flow5d": -863.0,
-    "flow10d": -1849.0,
-    "drop20d": -11.4,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 67.0,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 40,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "黄金回调位",
-      "已启动",
-      "流出减缓"
-    ],
-    "dailyFlow": -1184.0,
-    "isNew": true
-  },
-  {
-    "code": "sz000955",
-    "name": "欣龙控股",
-    "sector": "热门标的",
-    "direction": "10日偏空,缩量止跌",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（10日偏空,缩量止跌,止跌企稳）①🔵预启动 | 强减速 | 止跌｜缩量至极致（筹码沉淀）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "10日偏空",
-      "缩量止跌",
-      "止跌企稳"
-    ],
-    "healthScore": 41.5,
-    "dailyScore": 57.3,
-    "flow5d": -328.0,
-    "flow10d": -1001.0,
-    "drop20d": -1.2,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 67.2,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 37,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "止跌企稳",
-      "流出减缓"
-    ],
-    "dailyFlow": -4.0,
     "isNew": true
   },
   {
@@ -1769,41 +1131,6 @@ const LAUNCH_STOCKS = [
     "isNew": true
   },
   {
-    "code": "sz003025",
-    "name": "思进智能",
-    "sector": "热门标的",
-    "direction": "10日偏空,止跌企稳",
-    "pe": 22.59,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（10日偏空,止跌企稳）①🔵预启动 | 回调到位 | 止跌 | ③PE23｜MACD底背离（强度7.0）; 地量信号（抛压枯竭）",
-    "roe": 0.0302,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "10日偏空",
-      "止跌企稳"
-    ],
-    "healthScore": 40.8,
-    "dailyScore": 71.8,
-    "flow5d": -1873.0,
-    "flow10d": -1721.0,
-    "drop20d": -6.8,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 74.4,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 31,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "止跌企稳"
-    ],
-    "dailyFlow": -611.0,
-    "isNew": true
-  },
-  {
     "code": "sz002669",
     "name": "康达新材",
     "sector": "热门标的",
@@ -1837,229 +1164,20 @@ const LAUNCH_STOCKS = [
     ],
     "dailyFlow": -1670.0,
     "isNew": true
-  },
-  {
-    "code": "sh605588",
-    "name": "冠石科技",
-    "sector": "热门标的",
-    "direction": "超跌,止跌企稳",
-    "pe": -38.86,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（超跌,止跌企稳）①🟡回调中 | ③壁垒一般｜MACD底背离（强度10）; 地量信号（抛压枯竭）",
-    "roe": -0.0229,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "超跌",
-      "止跌企稳"
-    ],
-    "healthScore": 36.2,
-    "dailyScore": 63.7,
-    "flow5d": -211.0,
-    "flow10d": 525.0,
-    "drop20d": -22.6,
-    "consecutive": 2,
-    "kdjBonus": 0,
-    "rsi": 72.3,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 38,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "深度回调",
-      "止跌企稳"
-    ],
-    "dailyFlow": -274.0,
-    "isNew": true
-  },
-  {
-    "code": "sh603687",
-    "name": "大胜达",
-    "sector": "热门标的",
-    "direction": "资金回流,止跌企稳",
-    "pe": 91.8,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（资金回流,止跌企稳）①🟢资金双正 | 连3日 | ③壁垒一般｜MACD底背离（强度10）; 地量信号（抛压枯竭）",
-    "roe": 0.0068000000000000005,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "资金回流",
-      "止跌企稳"
-    ],
-    "healthScore": 33.8,
-    "dailyScore": 52.8,
-    "flow5d": 1264.0,
-    "flow10d": 4788.0,
-    "drop20d": -4.8,
-    "consecutive": 3,
-    "kdjBonus": 0,
-    "rsi": 75.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 40,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "止跌企稳"
-    ],
-    "dailyFlow": 1198.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002380",
-    "name": "科远智慧",
-    "sector": "热门标的",
-    "direction": "资金回流",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（资金回流）①🟢资金双正 | 💰低位增量建仓｜MACD底背离（强度10）; 高开趋势加速中",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "资金回流"
-    ],
-    "healthScore": 34.5,
-    "dailyScore": 49.6,
-    "flow5d": 1830.0,
-    "flow10d": 1788.0,
-    "drop20d": -9.0,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 58.7,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 38,
-    "preLaunchPhase": "building",
-    "preLaunchSignals": [
-      "回调到位"
-    ],
-    "dailyFlow": -449.0,
-    "isNew": true
-  },
-  {
-    "code": "sz002664",
-    "name": "信质集团",
-    "sector": "热门标的",
-    "direction": "10日偏空,企稳",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（10日偏空,企稳）①🔵预启动 | 回调到位 | 弱减速｜MACD底背离（强度7.2）; 地量信号（抛压枯竭）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "10日偏空",
-      "企稳"
-    ],
-    "healthScore": 38.5,
-    "dailyScore": 50.0,
-    "flow5d": -1768.0,
-    "flow10d": -2715.0,
-    "drop20d": -6.0,
-    "consecutive": 0,
-    "kdjBonus": 0,
-    "rsi": 67.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 16,
-    "preLaunchPhase": "weak",
-    "preLaunchSignals": [
-      "已启动"
-    ],
-    "dailyFlow": -1372.0,
-    "isNew": true
-  },
-  {
-    "code": "sh603829",
-    "name": "洛凯股份",
-    "sector": "热门标的",
-    "direction": "10日偏空",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（10日偏空）①🔵预启动 | 回调到位 | 强减速 | 跌速放缓 | 近2日流入｜高开趋势加速中; 近期高开率从33%升至47%",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "10日偏空"
-    ],
-    "healthScore": 32.5,
-    "dailyScore": 59.0,
-    "flow5d": -119.0,
-    "flow10d": -624.0,
-    "drop20d": -3.3,
-    "consecutive": 3,
-    "kdjBonus": 0,
-    "rsi": 64.0,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 24,
-    "preLaunchPhase": "weak",
-    "preLaunchSignals": [
-      "流出减缓"
-    ],
-    "dailyFlow": 10.0,
-    "isNew": true
-  },
-  {
-    "code": "sz000420",
-    "name": "吉林化纤",
-    "sector": "光通信",
-    "direction": "10日偏空,跌势放缓",
-    "pe": 0,
-    "profitGrowth": 0,
-    "reason": "🚀启动段（10日偏空,跌势放缓）①🔵预启动 | 流出减速 | 止跌｜MACD底背离（强度0.1）; 地量信号（抛压枯竭）",
-    "roe": 0,
-    "grossMargin": 0,
-    "debtRatio": 0,
-    "riskFlags": [
-      "🚀启动段",
-      "10日偏空",
-      "跌势放缓"
-    ],
-    "healthScore": 33.5,
-    "dailyScore": 52.1,
-    "flow5d": -5455.0,
-    "flow10d": -10615.0,
-    "drop20d": -0.3,
-    "consecutive": 1,
-    "kdjBonus": 0,
-    "rsi": 64.1,
-    "sectorTier": null,
-    "ratio5d": null,
-    "ratio10d": null,
-    "preLaunchScore": 16,
-    "preLaunchPhase": "weak",
-    "preLaunchSignals": [
-      "跌速放缓"
-    ],
-    "dailyFlow": -1465.0,
-    "isNew": true
   }
 ]; // 已移除
 
-// KDJ 预计算数据，生成时间: 2026-08-10 18:49:25
+// KDJ 预计算数据，生成时间: 2026-08-11 03:00:54
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-const KDJ_PRECOMPUTED = {"sh605111": {"code": "sh605111", "kdj5": {"k": 86.15, "d": 85.11, "j": 88.23, "prev_k": 84.94, "prev_d": 84.59}, "kdj30": {"k": 31.76, "d": 30.59, "j": 34.1, "prev_k": 24.82, "prev_d": 30.01}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh600833": {"code": "sh600833", "kdj5": {"k": 50.38, "d": 51.85, "j": 47.43, "prev_k": 50.56, "prev_d": 52.58}, "kdj30": {"k": 98.84, "d": 95.48, "j": 105.57, "prev_k": 98.26, "prev_d": 93.8}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh605376": {"code": "sh605376", "kdj5": {"k": 51.41, "d": 54.5, "j": 45.21, "prev_k": 48.86, "prev_d": 56.05}, "kdj30": {"k": 79.15, "d": 72.63, "j": 92.17, "prev_k": 75.08, "prev_d": 69.38}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000417": {"code": "sz000417", "kdj5": {"k": 73.63, "d": 60.95, "j": 99.0, "prev_k": 70.45, "prev_d": 54.61}, "kdj30": {"k": 83.47, "d": 76.53, "j": 97.34, "prev_k": 78.54, "prev_d": 73.06}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh600877": {"code": "sh600877", "kdj5": {"k": 60.44, "d": 63.23, "j": 54.85, "prev_k": 65.66, "prev_d": 64.63}, "kdj30": {"k": 74.17, "d": 73.71, "j": 75.08, "prev_k": 74.41, "prev_d": 73.48}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603507": {"code": "sh603507", "kdj5": {"k": 72.58, "d": 74.14, "j": 69.44, "prev_k": 73.86, "prev_d": 74.93}, "kdj30": {"k": 31.67, "d": 32.13, "j": 30.76, "prev_k": 28.46, "prev_d": 32.35}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002354": {"code": "sz002354", "kdj5": {"k": 77.33, "d": 62.93, "j": 106.15, "prev_k": 70.17, "prev_d": 55.72}, "kdj30": {"k": 80.33, "d": 77.62, "j": 85.74, "prev_k": 76.49, "prev_d": 76.27}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603687": {"code": "sh603687", "kdj5": {"k": 84.86, "d": 80.81, "j": 92.97, "prev_k": 81.14, "prev_d": 78.78}, "kdj30": {"k": 76.91, "d": 65.17, "j": 100.38, "prev_k": 66.43, "prev_d": 59.31}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603588": {"code": "sh603588", "kdj5": {"k": 89.96, "d": 89.59, "j": 90.69, "prev_k": 92.34, "prev_d": 89.41}, "kdj30": {"k": 85.77, "d": 76.56, "j": 104.18, "prev_k": 81.51, "prev_d": 71.96}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh600791": {"code": "sh600791", "kdj5": {"k": 86.05, "d": 87.1, "j": 83.95, "prev_k": 89.08, "prev_d": 87.63}, "kdj30": {"k": 46.06, "d": 45.03, "j": 48.13, "prev_k": 42.11, "prev_d": 44.51}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002047": {"code": "sz002047", "kdj5": {"k": 57.07, "d": 76.4, "j": 18.4, "prev_k": 75.6, "prev_d": 86.07}, "kdj30": {"k": 54.6, "d": 46.67, "j": 70.46, "prev_k": 47.9, "prev_d": 42.7}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603286": {"code": "sh603286", "kdj5": {"k": 90.86, "d": 88.12, "j": 96.34, "prev_k": 89.62, "prev_d": 86.75}, "kdj30": {"k": 62.71, "d": 52.33, "j": 83.47, "prev_k": 53.15, "prev_d": 47.14}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002446": {"code": "sz002446", "kdj5": {"k": 81.06, "d": 81.17, "j": 80.86, "prev_k": 85.23, "prev_d": 81.22}, "kdj30": {"k": 18.98, "d": 18.61, "j": 19.72, "prev_k": 14.68, "prev_d": 18.43}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002980": {"code": "sz002980", "kdj5": {"k": 87.47, "d": 86.63, "j": 89.15, "prev_k": 88.13, "prev_d": 86.21}, "kdj30": {"k": 49.03, "d": 47.08, "j": 52.94, "prev_k": 40.57, "prev_d": 46.1}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002520": {"code": "sz002520", "kdj5": {"k": 94.38, "d": 90.77, "j": 101.61, "prev_k": 91.58, "prev_d": 88.97}, "kdj30": {"k": 76.78, "d": 77.12, "j": 76.09, "prev_k": 74.63, "prev_d": 77.29}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz001266": {"code": "sz001266", "kdj5": {"k": 86.81, "d": 86.95, "j": 86.52, "prev_k": 85.48, "prev_d": 87.03}, "kdj30": {"k": 52.25, "d": 46.31, "j": 64.13, "prev_k": 42.49, "prev_d": 43.34}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002733": {"code": "sz002733", "kdj5": {"k": 59.47, "d": 66.48, "j": 45.46, "prev_k": 64.21, "prev_d": 69.98}, "kdj30": {"k": 37.21, "d": 35.47, "j": 40.7, "prev_k": 33.02, "prev_d": 34.6}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 62.35, "d": 69.16, "j": 48.74, "prev_k": 64.86, "prev_d": 72.57}, "kdj30": {"k": 66.15, "d": 56.08, "j": 86.3, "prev_k": 62.58, "prev_d": 51.04}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz001339": {"code": "sz001339", "kdj5": {"k": 91.24, "d": 86.55, "j": 100.62, "prev_k": 86.86, "prev_d": 84.2}, "kdj30": {"k": 23.18, "d": 24.42, "j": 20.71, "prev_k": 18.98, "prev_d": 25.03}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603936": {"code": "sh603936", "kdj5": {"k": 75.59, "d": 77.93, "j": 70.93, "prev_k": 74.93, "prev_d": 79.09}, "kdj30": {"k": 19.23, "d": 24.94, "j": 7.81, "prev_k": 17.63, "prev_d": 27.8}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603011": {"code": "sh603011", "kdj5": {"k": 76.3, "d": 72.0, "j": 84.88, "prev_k": 74.65, "prev_d": 69.86}, "kdj30": {"k": 59.44, "d": 63.09, "j": 52.14, "prev_k": 59.76, "prev_d": 64.91}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002782": {"code": "sz002782", "kdj5": {"k": 88.76, "d": 84.64, "j": 97.01, "prev_k": 83.15, "prev_d": 82.58}, "kdj30": {"k": 35.89, "d": 40.34, "j": 26.98, "prev_k": 32.67, "prev_d": 42.56}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 68.87, "d": 74.64, "j": 57.33, "prev_k": 71.59, "prev_d": 77.52}, "kdj30": {"k": 19.94, "d": 24.79, "j": 10.23, "prev_k": 18.24, "prev_d": 27.22}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002465": {"code": "sz002465", "kdj5": {"k": 71.8, "d": 77.89, "j": 59.63, "prev_k": 74.37, "prev_d": 80.93}, "kdj30": {"k": 78.98, "d": 68.29, "j": 100.35, "prev_k": 71.1, "prev_d": 62.95}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh601208": {"code": "sh601208", "kdj5": {"k": 80.88, "d": 81.48, "j": 79.68, "prev_k": 78.67, "prev_d": 81.78}, "kdj30": {"k": 34.58, "d": 34.93, "j": 33.87, "prev_k": 28.93, "prev_d": 35.11}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002845": {"code": "sz002845", "kdj5": {"k": 88.59, "d": 83.72, "j": 98.32, "prev_k": 82.88, "prev_d": 81.29}, "kdj30": {"k": 60.22, "d": 54.08, "j": 72.5, "prev_k": 48.67, "prev_d": 51.02}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000962": {"code": "sz000962", "kdj5": {"k": 48.83, "d": 56.85, "j": 32.78, "prev_k": 53.18, "prev_d": 60.86}, "kdj30": {"k": 58.14, "d": 51.89, "j": 70.64, "prev_k": 50.15, "prev_d": 48.76}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 46.0, "d": 32.62, "j": 72.74, "prev_k": 34.38, "prev_d": 25.94}, "kdj30": {"k": 67.07, "d": 71.95, "j": 57.32, "prev_k": 68.75, "prev_d": 74.38}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000039": {"code": "sz000039", "kdj5": {"k": 73.38, "d": 62.52, "j": 95.12, "prev_k": 65.63, "prev_d": 57.08}, "kdj30": {"k": 89.47, "d": 82.37, "j": 103.67, "prev_k": 85.25, "prev_d": 78.82}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603139": {"code": "sh603139", "kdj5": {"k": 64.78, "d": 68.71, "j": 56.9, "prev_k": 74.75, "prev_d": 70.68}, "kdj30": {"k": 34.88, "d": 38.79, "j": 27.07, "prev_k": 32.45, "prev_d": 40.74}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh605488": {"code": "sh605488", "kdj5": {"k": 85.94, "d": 80.0, "j": 97.81, "prev_k": 82.61, "prev_d": 77.03}, "kdj30": {"k": 51.85, "d": 40.14, "j": 75.28, "prev_k": 38.89, "prev_d": 34.29}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603328": {"code": "sh603328", "kdj5": {"k": 16.88, "d": 27.71, "j": -4.79, "prev_k": 20.78, "prev_d": 33.13}, "kdj30": {"k": 57.78, "d": 62.71, "j": 47.93, "prev_k": 60.53, "prev_d": 65.17}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002169": {"code": "sz002169", "kdj5": {"k": 76.35, "d": 79.29, "j": 70.49, "prev_k": 77.03, "prev_d": 80.75}, "kdj30": {"k": 42.95, "d": 42.64, "j": 43.57, "prev_k": 36.52, "prev_d": 42.49}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002772": {"code": "sz002772", "kdj5": {"k": 35.8, "d": 45.83, "j": 15.75, "prev_k": 33.7, "prev_d": 50.84}, "kdj30": {"k": 92.1, "d": 90.33, "j": 95.64, "prev_k": 93.33, "prev_d": 89.45}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000955": {"code": "sz000955", "kdj5": {"k": 76.03, "d": 61.29, "j": 105.51, "prev_k": 64.05, "prev_d": 53.92}, "kdj30": {"k": 74.02, "d": 72.6, "j": 76.86, "prev_k": 68.72, "prev_d": 71.89}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002706": {"code": "sz002706", "kdj5": {"k": 79.03, "d": 72.24, "j": 92.62, "prev_k": 68.55, "prev_d": 68.85}, "kdj30": {"k": 37.16, "d": 36.91, "j": 37.64, "prev_k": 33.78, "prev_d": 36.79}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh605168": {"code": "sh605168", "kdj5": {"k": 91.55, "d": 86.8, "j": 101.06, "prev_k": 87.33, "prev_d": 84.42}, "kdj30": {"k": 65.15, "d": 58.93, "j": 77.58, "prev_k": 58.37, "prev_d": 55.82}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603005": {"code": "sh603005", "kdj5": {"k": 80.72, "d": 82.2, "j": 77.77, "prev_k": 83.58, "prev_d": 82.93}, "kdj30": {"k": 30.07, "d": 29.82, "j": 30.57, "prev_k": 24.35, "prev_d": 29.7}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002669": {"code": "sz002669", "kdj5": {"k": 81.97, "d": 81.8, "j": 82.32, "prev_k": 81.3, "prev_d": 81.72}, "kdj30": {"k": 62.28, "d": 54.52, "j": 77.8, "prev_k": 53.72, "prev_d": 50.64}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002138": {"code": "sz002138", "kdj5": {"k": 88.74, "d": 85.45, "j": 95.31, "prev_k": 88.3, "prev_d": 83.8}, "kdj30": {"k": 33.02, "d": 32.1, "j": 34.86, "prev_k": 25.74, "prev_d": 31.64}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603667": {"code": "sh603667", "kdj5": {"k": 34.03, "d": 47.28, "j": 7.51, "prev_k": 41.43, "prev_d": 53.91}, "kdj30": {"k": 18.25, "d": 25.76, "j": 3.23, "prev_k": 20.27, "prev_d": 29.51}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz003025": {"code": "sz003025", "kdj5": {"k": 68.19, "d": 76.11, "j": 52.36, "prev_k": 71.04, "prev_d": 80.06}, "kdj30": {"k": 80.97, "d": 79.76, "j": 83.4, "prev_k": 77.02, "prev_d": 79.15}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002830": {"code": "sz002830", "kdj5": {"k": 69.34, "d": 76.7, "j": 54.61, "prev_k": 70.67, "prev_d": 80.39}, "kdj30": {"k": 90.65, "d": 86.63, "j": 98.67, "prev_k": 87.85, "prev_d": 84.63}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002645": {"code": "sz002645", "kdj5": {"k": 83.57, "d": 84.62, "j": 81.46, "prev_k": 83.84, "prev_d": 85.14}, "kdj30": {"k": 78.66, "d": 71.43, "j": 93.1, "prev_k": 72.11, "prev_d": 67.82}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh605588": {"code": "sh605588", "kdj5": {"k": 80.58, "d": 75.82, "j": 90.1, "prev_k": 76.68, "prev_d": 73.44}, "kdj30": {"k": 66.39, "d": 65.05, "j": 69.09, "prev_k": 60.84, "prev_d": 64.37}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002380": {"code": "sz002380", "kdj5": {"k": 87.91, "d": 82.94, "j": 97.87, "prev_k": 84.25, "prev_d": 80.45}, "kdj30": {"k": 72.48, "d": 65.36, "j": 86.7, "prev_k": 64.39, "prev_d": 61.81}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz003018": {"code": "sz003018", "kdj5": {"k": 89.76, "d": 86.56, "j": 96.16, "prev_k": 88.05, "prev_d": 84.96}, "kdj30": {"k": 15.99, "d": 18.66, "j": 10.65, "prev_k": 13.32, "prev_d": 20.0}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603920": {"code": "sh603920", "kdj5": {"k": 60.86, "d": 70.42, "j": 41.75, "prev_k": 66.29, "prev_d": 75.2}, "kdj30": {"k": 30.62, "d": 30.64, "j": 30.58, "prev_k": 26.87, "prev_d": 30.65}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603991": {"code": "sh603991", "kdj5": {"k": 87.99, "d": 84.35, "j": 95.25, "prev_k": 85.7, "prev_d": 82.54}, "kdj30": {"k": 81.51, "d": 73.74, "j": 97.07, "prev_k": 73.34, "prev_d": 69.85}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 80.15, "d": 80.95, "j": 78.55, "prev_k": 83.22, "prev_d": 81.35}, "kdj30": {"k": 27.03, "d": 25.64, "j": 29.81, "prev_k": 20.93, "prev_d": 24.94}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002185": {"code": "sz002185", "kdj5": {"k": 89.57, "d": 87.86, "j": 92.99, "prev_k": 89.19, "prev_d": 87.0}, "kdj30": {"k": 53.62, "d": 46.33, "j": 68.18, "prev_k": 39.98, "prev_d": 42.69}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002975": {"code": "sz002975", "kdj5": {"k": 92.62, "d": 88.43, "j": 101.0, "prev_k": 88.93, "prev_d": 86.33}, "kdj30": {"k": 64.19, "d": 53.62, "j": 85.32, "prev_k": 46.28, "prev_d": 48.34}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002931": {"code": "sz002931", "kdj5": {"k": 75.79, "d": 80.79, "j": 65.79, "prev_k": 81.73, "prev_d": 83.29}, "kdj30": {"k": 28.85, "d": 29.0, "j": 28.55, "prev_k": 25.95, "prev_d": 29.07}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603678": {"code": "sh603678", "kdj5": {"k": 83.32, "d": 78.86, "j": 92.24, "prev_k": 84.5, "prev_d": 76.63}, "kdj30": {"k": 65.96, "d": 57.82, "j": 82.24, "prev_k": 58.09, "prev_d": 53.75}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002643": {"code": "sz002643", "kdj5": {"k": 82.72, "d": 80.99, "j": 86.19, "prev_k": 81.23, "prev_d": 80.12}, "kdj30": {"k": 29.21, "d": 33.42, "j": 20.78, "prev_k": 27.15, "prev_d": 35.53}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603316": {"code": "sh603316", "kdj5": {"k": 84.28, "d": 87.83, "j": 77.17, "prev_k": 91.8, "prev_d": 89.61}, "kdj30": {"k": 52.95, "d": 52.47, "j": 53.9, "prev_k": 47.17, "prev_d": 52.23}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz000420": {"code": "sz000420", "kdj5": {"k": 81.86, "d": 79.98, "j": 85.62, "prev_k": 72.79, "prev_d": 79.04}, "kdj30": {"k": 93.13, "d": 84.39, "j": 110.62, "prev_k": 89.7, "prev_d": 80.02}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh603829": {"code": "sh603829", "kdj5": {"k": 68.26, "d": 75.88, "j": 53.02, "prev_k": 77.38, "prev_d": 79.69}, "kdj30": {"k": 83.96, "d": 76.99, "j": 97.91, "prev_k": 80.11, "prev_d": 73.51}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz001268": {"code": "sz001268", "kdj5": {"k": 40.28, "d": 38.34, "j": 44.16, "prev_k": 26.04, "prev_d": 37.37}, "kdj30": {"k": 60.31, "d": 57.31, "j": 66.31, "prev_k": 59.48, "prev_d": 55.82}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sh605589": {"code": "sh605589", "kdj5": {"k": 56.95, "d": 60.08, "j": 50.71, "prev_k": 53.21, "prev_d": 61.64}, "kdj30": {"k": 40.23, "d": 39.99, "j": 40.73, "prev_k": 36.47, "prev_d": 39.86}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002664": {"code": "sz002664", "kdj5": {"k": 24.99, "d": 38.05, "j": -1.14, "prev_k": 28.11, "prev_d": 44.59}, "kdj30": {"k": 53.72, "d": 48.7, "j": 63.77, "prev_k": 54.31, "prev_d": 46.19}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002655": {"code": "sz002655", "kdj5": {"k": 95.13, "d": 92.22, "j": 100.96, "prev_k": 93.78, "prev_d": 90.76}, "kdj30": {"k": 82.53, "d": 74.19, "j": 99.19, "prev_k": 74.47, "prev_d": 70.03}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}, "sz002910": {"code": "sz002910", "kdj5": {"k": 78.99, "d": 77.52, "j": 81.91, "prev_k": 82.77, "prev_d": 76.79}, "kdj30": {"k": 93.02, "d": 91.06, "j": 96.95, "prev_k": 91.86, "prev_d": 90.08}, "last5minDate": "2026-08-10 15:00:00", "last30minDate": "2026-08-10 15:00:00"}};
-// 主力资金预计算数据，生成时间: 2026-08-10 18:49:25
+const KDJ_PRECOMPUTED = {"sh600961": {"code": "sh600961", "kdj5": {"k": 75.03, "d": 57.95, "j": 109.2, "prev_k": 64.06, "prev_d": 49.41}, "kdj30": {"k": 38.28, "d": 46.88, "j": 21.09, "prev_k": 40.56, "prev_d": 51.18}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz000039": {"code": "sz000039", "kdj5": {"k": 11.6, "d": 12.64, "j": 9.51, "prev_k": 9.06, "prev_d": 13.16}, "kdj30": {"k": 46.15, "d": 60.99, "j": 16.48, "prev_k": 53.81, "prev_d": 68.41}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603936": {"code": "sh603936", "kdj5": {"k": 91.26, "d": 88.26, "j": 97.28, "prev_k": 91.34, "prev_d": 86.75}, "kdj30": {"k": 64.27, "d": 43.25, "j": 106.3, "prev_k": 49.74, "prev_d": 32.74}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 86.89, "d": 71.0, "j": 118.69, "prev_k": 80.87, "prev_d": 63.05}, "kdj30": {"k": 83.29, "d": 75.22, "j": 99.44, "prev_k": 75.37, "prev_d": 71.18}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz001339": {"code": "sz001339", "kdj5": {"k": 90.19, "d": 82.78, "j": 105.02, "prev_k": 88.95, "prev_d": 79.07}, "kdj30": {"k": 67.86, "d": 46.91, "j": 109.77, "prev_k": 54.3, "prev_d": 36.43}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002354": {"code": "sz002354", "kdj5": {"k": 29.08, "d": 28.73, "j": 29.78, "prev_k": 26.95, "prev_d": 28.55}, "kdj30": {"k": 60.07, "d": 67.58, "j": 45.04, "prev_k": 64.21, "prev_d": 71.34}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 87.76, "d": 87.17, "j": 88.95, "prev_k": 88.87, "prev_d": 86.87}, "kdj30": {"k": 70.13, "d": 50.36, "j": 109.68, "prev_k": 58.77, "prev_d": 40.48}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002520": {"code": "sz002520", "kdj5": {"k": 29.32, "d": 40.52, "j": 6.92, "prev_k": 32.88, "prev_d": 46.13}, "kdj30": {"k": 48.8, "d": 61.06, "j": 24.28, "prev_k": 57.29, "prev_d": 67.2}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002910": {"code": "sz002910", "kdj5": {"k": 29.17, "d": 30.77, "j": 25.98, "prev_k": 24.53, "prev_d": 31.57}, "kdj30": {"k": 71.0, "d": 80.38, "j": 52.24, "prev_k": 76.5, "prev_d": 85.07}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603328": {"code": "sh603328", "kdj5": {"k": 91.24, "d": 81.41, "j": 110.9, "prev_k": 86.86, "prev_d": 76.49}, "kdj30": {"k": 59.05, "d": 55.26, "j": 66.63, "prev_k": 53.42, "prev_d": 53.36}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002378": {"code": "sz002378", "kdj5": {"k": 82.47, "d": 72.18, "j": 103.03, "prev_k": 79.1, "prev_d": 67.04}, "kdj30": {"k": 42.35, "d": 44.79, "j": 37.45, "prev_k": 43.17, "prev_d": 46.02}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603678": {"code": "sh603678", "kdj5": {"k": 76.17, "d": 72.49, "j": 83.52, "prev_k": 75.49, "prev_d": 70.65}, "kdj30": {"k": 81.39, "d": 73.21, "j": 97.75, "prev_k": 77.05, "prev_d": 69.12}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz000960": {"code": "sz000960", "kdj5": {"k": 79.92, "d": 63.13, "j": 113.51, "prev_k": 73.01, "prev_d": 54.73}, "kdj30": {"k": 32.83, "d": 37.21, "j": 24.06, "prev_k": 32.86, "prev_d": 39.4}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz000630": {"code": "sz000630", "kdj5": {"k": 49.15, "d": 32.07, "j": 83.31, "prev_k": 32.06, "prev_d": 23.53}, "kdj30": {"k": 24.84, "d": 34.2, "j": 6.12, "prev_k": 28.0, "prev_d": 38.88}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 86.35, "d": 72.85, "j": 113.34, "prev_k": 79.52, "prev_d": 66.1}, "kdj30": {"k": 35.73, "d": 40.56, "j": 26.06, "prev_k": 34.59, "prev_d": 42.97}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002980": {"code": "sz002980", "kdj5": {"k": 86.45, "d": 84.5, "j": 90.33, "prev_k": 87.13, "prev_d": 83.53}, "kdj30": {"k": 72.31, "d": 58.42, "j": 100.08, "prev_k": 62.94, "prev_d": 51.48}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz003011": {"code": "sz003011", "kdj5": {"k": 46.93, "d": 60.46, "j": 19.87, "prev_k": 57.16, "prev_d": 67.22}, "kdj30": {"k": 81.89, "d": 82.64, "j": 80.39, "prev_k": 83.99, "prev_d": 83.01}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz001266": {"code": "sz001266", "kdj5": {"k": 67.6, "d": 74.22, "j": 54.36, "prev_k": 73.03, "prev_d": 77.53}, "kdj30": {"k": 69.25, "d": 59.41, "j": 88.92, "prev_k": 63.94, "prev_d": 54.49}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603011": {"code": "sh603011", "kdj5": {"k": 56.91, "d": 65.55, "j": 39.62, "prev_k": 61.6, "prev_d": 69.87}, "kdj30": {"k": 62.41, "d": 60.61, "j": 65.99, "prev_k": 61.23, "prev_d": 59.72}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz000962": {"code": "sz000962", "kdj5": {"k": 95.01, "d": 86.99, "j": 111.05, "prev_k": 92.52, "prev_d": 82.98}, "kdj30": {"k": 48.89, "d": 46.92, "j": 52.83, "prev_k": 45.01, "prev_d": 45.93}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002185": {"code": "sz002185", "kdj5": {"k": 88.45, "d": 80.97, "j": 103.42, "prev_k": 87.23, "prev_d": 77.23}, "kdj30": {"k": 77.91, "d": 64.49, "j": 104.74, "prev_k": 69.74, "prev_d": 57.79}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh600833": {"code": "sh600833", "kdj5": {"k": 39.43, "d": 55.88, "j": 6.54, "prev_k": 43.53, "prev_d": 64.1}, "kdj30": {"k": 91.05, "d": 94.33, "j": 84.48, "prev_k": 93.91, "prev_d": 95.98}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002446": {"code": "sz002446", "kdj5": {"k": 86.44, "d": 87.88, "j": 83.55, "prev_k": 87.99, "prev_d": 88.61}, "kdj30": {"k": 71.7, "d": 50.46, "j": 114.18, "prev_k": 61.81, "prev_d": 39.84}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 92.33, "d": 87.46, "j": 102.06, "prev_k": 90.61, "prev_d": 85.03}, "kdj30": {"k": 66.66, "d": 45.3, "j": 109.37, "prev_k": 52.8, "prev_d": 34.62}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002669": {"code": "sz002669", "kdj5": {"k": 83.38, "d": 82.95, "j": 84.24, "prev_k": 86.43, "prev_d": 82.73}, "kdj30": {"k": 84.22, "d": 74.46, "j": 103.73, "prev_k": 80.56, "prev_d": 69.58}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002674": {"code": "sz002674", "kdj5": {"k": 76.71, "d": 78.7, "j": 72.74, "prev_k": 79.24, "prev_d": 79.69}, "kdj30": {"k": 43.36, "d": 51.29, "j": 27.49, "prev_k": 44.54, "prev_d": 55.26}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002655": {"code": "sz002655", "kdj5": {"k": 90.4, "d": 85.89, "j": 99.44, "prev_k": 92.4, "prev_d": 83.63}, "kdj30": {"k": 90.58, "d": 84.68, "j": 102.38, "prev_k": 88.09, "prev_d": 81.73}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002975": {"code": "sz002975", "kdj5": {"k": 75.57, "d": 74.65, "j": 77.4, "prev_k": 75.67, "prev_d": 74.19}, "kdj30": {"k": 65.82, "d": 60.77, "j": 75.91, "prev_k": 62.42, "prev_d": 58.25}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603588": {"code": "sh603588", "kdj5": {"k": 77.61, "d": 65.85, "j": 101.13, "prev_k": 73.23, "prev_d": 59.96}, "kdj30": {"k": 43.88, "d": 55.58, "j": 20.49, "prev_k": 47.91, "prev_d": 61.42}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603005": {"code": "sh603005", "kdj5": {"k": 90.0, "d": 83.23, "j": 103.55, "prev_k": 88.18, "prev_d": 79.84}, "kdj30": {"k": 70.46, "d": 51.04, "j": 109.28, "prev_k": 57.83, "prev_d": 41.34}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh605111": {"code": "sh605111", "kdj5": {"k": 89.85, "d": 83.96, "j": 101.61, "prev_k": 85.86, "prev_d": 81.02}, "kdj30": {"k": 81.49, "d": 62.98, "j": 118.5, "prev_k": 72.74, "prev_d": 53.73}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh605376": {"code": "sh605376", "kdj5": {"k": 91.78, "d": 82.79, "j": 109.77, "prev_k": 87.67, "prev_d": 78.29}, "kdj30": {"k": 93.56, "d": 86.81, "j": 107.07, "prev_k": 90.34, "prev_d": 83.43}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603667": {"code": "sh603667", "kdj5": {"k": 58.31, "d": 67.22, "j": 40.5, "prev_k": 63.8, "prev_d": 71.67}, "kdj30": {"k": 60.03, "d": 46.38, "j": 87.35, "prev_k": 54.98, "prev_d": 39.55}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002138": {"code": "sz002138", "kdj5": {"k": 89.36, "d": 90.41, "j": 87.25, "prev_k": 91.04, "prev_d": 90.94}, "kdj30": {"k": 80.71, "d": 64.44, "j": 113.26, "prev_k": 74.86, "prev_d": 56.3}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh600791": {"code": "sh600791", "kdj5": {"k": 16.89, "d": 31.6, "j": -12.53, "prev_k": 21.76, "prev_d": 38.95}, "kdj30": {"k": 67.87, "d": 62.21, "j": 79.19, "prev_k": 67.8, "prev_d": 59.38}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh603823": {"code": "sh603823", "kdj5": {"k": 90.13, "d": 77.57, "j": 115.25, "prev_k": 85.46, "prev_d": 71.28}, "kdj30": {"k": 83.46, "d": 77.19, "j": 96.0, "prev_k": 77.76, "prev_d": 74.05}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sh601208": {"code": "sh601208", "kdj5": {"k": 96.95, "d": 94.47, "j": 101.9, "prev_k": 95.87, "prev_d": 93.23}, "kdj30": {"k": 82.27, "d": 64.31, "j": 118.21, "prev_k": 73.63, "prev_d": 55.32}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002645": {"code": "sz002645", "kdj5": {"k": 86.45, "d": 72.74, "j": 113.86, "prev_k": 81.21, "prev_d": 65.89}, "kdj30": {"k": 60.27, "d": 60.02, "j": 60.78, "prev_k": 55.2, "prev_d": 59.89}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}, "sz002896": {"code": "sz002896", "kdj5": {"k": 37.22, "d": 52.02, "j": 7.62, "prev_k": 43.83, "prev_d": 59.42}, "kdj30": {"k": 36.15, "d": 32.44, "j": 43.58, "prev_k": 29.23, "prev_d": 30.58}, "last5minDate": "2026-08-11 11:05:00", "last30minDate": "2026-08-11 11:30:00"}};
+// 主力资金预计算数据，生成时间: 2026-08-11 03:00:54
 // 数据源: capital_flow.json (最新数据日: 2026-08-06)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-const CAPITAL_FLOW_CACHE = {"sz002931": {"date": "2026-08-06", "mainNetInflow": 6222.0}, "sh605589": {"date": "2026-08-06", "mainNetInflow": 1302.0}, "sh603687": {"date": "2026-08-06", "mainNetInflow": 1198.0}, "sz002975": {"date": "2026-08-06", "mainNetInflow": 17816.0}, "sh605111": {"date": "2026-08-06", "mainNetInflow": 14311.0}, "sz002380": {"date": "2026-08-06", "mainNetInflow": -449.0}, "sz000039": {"date": "2026-08-06", "mainNetInflow": -677.0}, "sh603328": {"date": "2026-08-06", "mainNetInflow": -1165.0}, "sh603507": {"date": "2026-08-06", "mainNetInflow": -397.0}, "sz003025": {"date": "2026-08-06", "mainNetInflow": -611.0}, "sh603991": {"date": "2026-08-06", "mainNetInflow": 4087.0}, "sh600791": {"date": "2026-08-06", "mainNetInflow": 10.0}, "sz002910": {"date": "2026-08-06", "mainNetInflow": -347.0}, "sz002138": {"date": "2026-08-06", "mainNetInflow": -4897.0}, "sz002354": {"date": "2026-08-06", "mainNetInflow": -1806.0}, "sh603829": {"date": "2026-08-06", "mainNetInflow": 10.0}, "sz002733": {"date": "2026-08-06", "mainNetInflow": 1929.0}, "sz002185": {"date": "2026-08-06", "mainNetInflow": 15570.0}, "sh603139": {"date": "2026-08-06", "mainNetInflow": 316.0}, "sz002655": {"date": "2026-08-06", "mainNetInflow": 11080.0}, "sz002446": {"date": "2026-08-06", "mainNetInflow": 4458.0}, "sz001268": {"date": "2026-08-06", "mainNetInflow": -441.0}, "sh603678": {"date": "2026-08-06", "mainNetInflow": -2595.0}, "sh603286": {"date": "2026-08-06", "mainNetInflow": -1804.0}, "sz002830": {"date": "2026-08-06", "mainNetInflow": -131.0}, "sh603920": {"date": "2026-08-06", "mainNetInflow": 2757.0}, "sh601208": {"date": "2026-08-06", "mainNetInflow": 12315.0}, "sh603667": {"date": "2026-08-06", "mainNetInflow": 2223.0}, "sz002782": {"date": "2026-08-06", "mainNetInflow": -1184.0}, "sh603588": {"date": "2026-08-06", "mainNetInflow": 2635.0}, "sh603316": {"date": "2026-08-06", "mainNetInflow": -181.0}, "sz002706": {"date": "2026-08-06", "mainNetInflow": -5645.0}, "sz002643": {"date": "2026-08-06", "mainNetInflow": 59.0}, "sz002845": {"date": "2026-08-06", "mainNetInflow": -612.0}, "sz002465": {"date": "2026-08-06", "mainNetInflow": -4867.0}, "sz002980": {"date": "2026-08-06", "mainNetInflow": 4692.0}, "sh603005": {"date": "2026-08-06", "mainNetInflow": 17086.0}, "sz000417": {"date": "2026-08-06", "mainNetInflow": -195.0}, "sz002047": {"date": "2026-08-06", "mainNetInflow": -998.0}, "sh600833": {"date": "2026-08-06", "mainNetInflow": 325.0}, "sh603011": {"date": "2026-08-06", "mainNetInflow": 3175.0}, "sz000955": {"date": "2026-08-06", "mainNetInflow": -4.0}, "sh600877": {"date": "2026-08-06", "mainNetInflow": -1581.0}, "sz002664": {"date": "2026-08-06", "mainNetInflow": -1372.0}, "sz002520": {"date": "2026-08-06", "mainNetInflow": -1943.0}, "sh605376": {"date": "2026-08-06", "mainNetInflow": 6282.0}, "sh605588": {"date": "2026-08-06", "mainNetInflow": -274.0}, "sz002645": {"date": "2026-08-06", "mainNetInflow": 5740.0}, "sz000420": {"date": "2026-08-06", "mainNetInflow": -1465.0}, "sh605168": {"date": "2026-08-06", "mainNetInflow": 35.0}, "sh603936": {"date": "2026-08-06", "mainNetInflow": -466.0}, "sh605488": {"date": "2026-08-06", "mainNetInflow": -67.0}, "sz002169": {"date": "2026-08-06", "mainNetInflow": 1607.0}, "sz000962": {"date": "2026-08-06", "mainNetInflow": 9853.0}, "sz002772": {"date": "2026-08-06", "mainNetInflow": 410.0}, "sz002669": {"date": "2026-08-06", "mainNetInflow": -1670.0}, "sz003018": {"date": "2026-08-06", "mainNetInflow": 4967.0}, "sz001339": {"date": "2026-08-06", "mainNetInflow": 8766.0}, "sz001266": {"date": "2026-08-06", "mainNetInflow": -169.0}};
-// 大盘跟随度预计算，生成时间: 2026-08-10 18:50:13
+const CAPITAL_FLOW_CACHE = {"sz002138": {"date": "2026-08-06", "mainNetInflow": -4897.0}, "sz000039": {"date": "2026-08-06", "mainNetInflow": -677.0}, "sh603678": {"date": "2026-08-06", "mainNetInflow": -2595.0}, "sh603667": {"date": "2026-08-06", "mainNetInflow": 2223.0}, "sh603011": {"date": "2026-08-06", "mainNetInflow": 3175.0}, "sz002669": {"date": "2026-08-06", "mainNetInflow": -1670.0}, "sh603588": {"date": "2026-08-06", "mainNetInflow": 2635.0}, "sh600791": {"date": "2026-08-06", "mainNetInflow": 10.0}, "sh605376": {"date": "2026-08-06", "mainNetInflow": 6282.0}, "sz001266": {"date": "2026-08-06", "mainNetInflow": -169.0}, "sh600961": {"date": "2026-08-06", "mainNetInflow": -463.0}, "sz002980": {"date": "2026-08-06", "mainNetInflow": 4692.0}, "sh600833": {"date": "2026-08-06", "mainNetInflow": 325.0}, "sz002674": {"date": "2026-08-06", "mainNetInflow": -3995.0}, "sz002446": {"date": "2026-08-06", "mainNetInflow": 4458.0}, "sz002975": {"date": "2026-08-06", "mainNetInflow": 17816.0}, "sz000962": {"date": "2026-08-06", "mainNetInflow": 9853.0}, "sh605111": {"date": "2026-08-06", "mainNetInflow": 14311.0}, "sh603823": {"date": "2026-08-06", "mainNetInflow": -4201.0}, "sz000960": {"date": "2026-08-06", "mainNetInflow": -7506.0}, "sh603936": {"date": "2026-08-06", "mainNetInflow": -466.0}, "sz001339": {"date": "2026-08-06", "mainNetInflow": 8766.0}, "sh603328": {"date": "2026-08-06", "mainNetInflow": -1165.0}, "sz002378": {"date": "2026-08-06", "mainNetInflow": -1549.0}, "sz002185": {"date": "2026-08-06", "mainNetInflow": 15570.0}, "sz002910": {"date": "2026-08-06", "mainNetInflow": -347.0}, "sz000630": {"date": "2026-08-06", "mainNetInflow": -24603.0}, "sz003011": {"date": "2026-08-06", "mainNetInflow": 77.0}, "sz002645": {"date": "2026-08-06", "mainNetInflow": 5740.0}, "sz002655": {"date": "2026-08-06", "mainNetInflow": 11080.0}, "sz002354": {"date": "2026-08-06", "mainNetInflow": -1806.0}, "sz002520": {"date": "2026-08-06", "mainNetInflow": -1943.0}, "sh601208": {"date": "2026-08-06", "mainNetInflow": 12315.0}, "sh603005": {"date": "2026-08-06", "mainNetInflow": 17086.0}, "sz002896": {"date": "2026-08-06", "mainNetInflow": 803.0}};
+// 大盘跟随度预计算，生成时间: 2026-08-11 03:01:24
 // 基准: 上证指数(sh000001), 数据日: 2026-08-10, 上证5日+3.78%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-const MARKET_CORR_CACHE = {"605488": {"beta": 1.15, "corr": 0.282, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 3.87, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "001339": {"beta": 2.67, "corr": 0.626, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 14.49, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002047": {"beta": 1.29, "corr": 0.481, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -1.52, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603286": {"beta": 1.13, "corr": 0.252, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 5.16, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "003025": {"beta": 1.06, "corr": 0.446, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 4.38, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002169": {"beta": 1.65, "corr": 0.544, "label": "跟随", "color": "#e8a735", "align_5d": "3/4", "stock_5d_chg": 10.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600877": {"beta": 2.18, "corr": 0.646, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 6.31, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603678": {"beta": 3.89, "corr": 0.729, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": 15.46, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002664": {"beta": 1.32, "corr": 0.439, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 1.36, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603920": {"beta": 2.8, "corr": 0.79, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": 9.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002465": {"beta": 1.58, "corr": 0.478, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 4.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605588": {"beta": 2.39, "corr": 0.632, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 10.6, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002380": {"beta": 1.89, "corr": 0.644, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -0.31, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000420": {"beta": 0.91, "corr": 0.527, "label": "跟随", "color": "#e8a735", "align_5d": "3/4", "stock_5d_chg": 1.32, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603328": {"beta": 2.35, "corr": 0.662, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 16.53, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605168": {"beta": 2.17, "corr": 0.571, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 12.51, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603991": {"beta": 2.23, "corr": 0.499, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 15.06, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "001268": {"beta": 2.13, "corr": 0.363, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 2.04, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603936": {"beta": 3.17, "corr": 0.667, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 14.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002706": {"beta": 1.49, "corr": 0.572, "label": "跟随", "color": "#e8a735", "align_5d": "3/4", "stock_5d_chg": -3.42, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605111": {"beta": 3.4, "corr": 0.694, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 12.53, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002354": {"beta": 0.66, "corr": 0.131, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 6.22, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002446": {"beta": 1.71, "corr": 0.49, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": 10.26, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603005": {"beta": 2.87, "corr": 0.636, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 8.4, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002733": {"beta": 1.93, "corr": 0.533, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 5.04, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605589": {"beta": 2.95, "corr": 0.667, "label": "跟随", "color": "#e8a735", "align_5d": "1/4", "stock_5d_chg": 14.86, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600791": {"beta": 2.81, "corr": 0.637, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 11.79, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002782": {"beta": 2.25, "corr": 0.744, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 6.9, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002520": {"beta": 1.34, "corr": 0.383, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 4.57, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000688": {"beta": 1.69, "corr": 0.552, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 10.52, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000417": {"beta": 1.59, "corr": 0.43, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 2.56, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000039": {"beta": 1.37, "corr": 0.557, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.37, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002655": {"beta": 3.43, "corr": 0.71, "label": "强跟随", "color": "var(--red)", "align_5d": "2/5", "stock_5d_chg": 27.06, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "003018": {"beta": 3.5, "corr": 0.586, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 10.18, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605376": {"beta": 4.2, "corr": 0.764, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": 21.4, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002830": {"beta": 1.65, "corr": 0.468, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 8.72, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603687": {"beta": 2.56, "corr": 0.701, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": 11.0, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002138": {"beta": 3.21, "corr": 0.661, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 1.84, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002185": {"beta": 2.59, "corr": 0.492, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "1/5", "stock_5d_chg": 16.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002772": {"beta": 0.61, "corr": 0.173, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 4.89, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002975": {"beta": 4.22, "corr": 0.734, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 31.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002669": {"beta": 1.82, "corr": 0.534, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 5.12, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603507": {"beta": 1.72, "corr": 0.38, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": 3.47, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000955": {"beta": 0.21, "corr": 0.067, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 6.57, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002643": {"beta": 2.02, "corr": 0.669, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 6.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002980": {"beta": 3.07, "corr": 0.558, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 22.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002910": {"beta": 0.69, "corr": 0.173, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 6.52, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603139": {"beta": 1.44, "corr": 0.438, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 5.92, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603667": {"beta": 1.7, "corr": 0.467, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -0.26, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600105": {"beta": 3.11, "corr": 0.624, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 9.86, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "601208": {"beta": 3.65, "corr": 0.687, "label": "跟随", "color": "#e8a735", "align_5d": "3/4", "stock_5d_chg": 26.94, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "001266": {"beta": 2.16, "corr": 0.601, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 4.09, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "601126": {"beta": 2.79, "corr": 0.634, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 8.92, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002845": {"beta": 1.44, "corr": 0.495, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 4.83, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603588": {"beta": 2.81, "corr": 0.707, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": 11.97, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600833": {"beta": 0.42, "corr": 0.187, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 11.66, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000962": {"beta": 3.54, "corr": 0.676, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 22.39, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603011": {"beta": 2.28, "corr": 0.51, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 23.2, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603316": {"beta": 2.68, "corr": 0.659, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 12.63, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603067": {"beta": 3.68, "corr": 0.732, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 7.23, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002645": {"beta": 2.74, "corr": 0.669, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 16.79, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002931": {"beta": 0.98, "corr": 0.214, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 6.54, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603829": {"beta": 1.13, "corr": 0.429, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 1.89, "mkt_5d_chg": 3.78, "date": "2026-08-10"}};
+const MARKET_CORR_CACHE = {"002446": {"beta": 1.71, "corr": 0.49, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": 10.26, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603328": {"beta": 2.35, "corr": 0.662, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 16.53, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002655": {"beta": 3.43, "corr": 0.71, "label": "强跟随", "color": "var(--red)", "align_5d": "2/5", "stock_5d_chg": 27.06, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002185": {"beta": 2.59, "corr": 0.492, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "1/5", "stock_5d_chg": 16.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603588": {"beta": 2.81, "corr": 0.707, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": 11.97, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603011": {"beta": 2.28, "corr": 0.51, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 23.2, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600105": {"beta": 3.11, "corr": 0.624, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 9.86, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002674": {"beta": 0.83, "corr": 0.145, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 20.59, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603067": {"beta": 3.68, "corr": 0.732, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 7.23, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603667": {"beta": 1.7, "corr": 0.467, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -0.26, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "601126": {"beta": 2.79, "corr": 0.634, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 8.92, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603678": {"beta": 3.89, "corr": 0.729, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": 15.46, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002138": {"beta": 3.21, "corr": 0.661, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 1.84, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603936": {"beta": 3.17, "corr": 0.667, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 14.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002520": {"beta": 1.34, "corr": 0.383, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 4.57, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "001339": {"beta": 2.67, "corr": 0.626, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 14.49, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000962": {"beta": 3.54, "corr": 0.676, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 22.39, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000960": {"beta": 2.96, "corr": 0.781, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 11.45, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002975": {"beta": 4.22, "corr": 0.734, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 31.29, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000039": {"beta": 1.37, "corr": 0.557, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.37, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "001266": {"beta": 2.16, "corr": 0.601, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 4.09, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "003011": {"beta": 0.85, "corr": 0.29, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 6.85, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603005": {"beta": 2.87, "corr": 0.636, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 8.4, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002669": {"beta": 1.82, "corr": 0.534, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 5.12, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600833": {"beta": 0.42, "corr": 0.187, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 11.66, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002354": {"beta": 0.66, "corr": 0.131, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 6.22, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605111": {"beta": 3.4, "corr": 0.694, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 12.53, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002378": {"beta": 1.79, "corr": 0.476, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": 20.65, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000630": {"beta": 1.66, "corr": 0.699, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 8.83, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002645": {"beta": 2.74, "corr": 0.669, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 16.79, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002910": {"beta": 0.69, "corr": 0.173, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 6.52, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600961": {"beta": 3.17, "corr": 0.732, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": 24.0, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "600791": {"beta": 2.81, "corr": 0.637, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 11.79, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002980": {"beta": 3.07, "corr": 0.558, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 22.1, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "603823": {"beta": -0.12, "corr": -0.021, "label": "逆势", "color": "var(--green)", "align_5d": "1/5", "stock_5d_chg": 23.85, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "601208": {"beta": 3.65, "corr": 0.687, "label": "跟随", "color": "#e8a735", "align_5d": "3/4", "stock_5d_chg": 26.94, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "605376": {"beta": 4.2, "corr": 0.764, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": 21.4, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "002896": {"beta": 1.62, "corr": 0.402, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 1.01, "mkt_5d_chg": 3.78, "date": "2026-08-10"}, "000688": {"beta": 1.69, "corr": 0.552, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 10.52, "mkt_5d_chg": 3.78, "date": "2026-08-10"}};
 
 // ============================================
 // 本周催化日历数据
@@ -2093,8 +1211,8 @@ const HOT_SECTORS = [
   { name: "消费电子", change10d: 20.5, bigOrderInflow: 5.2, leaderStock: "立讯精密", leaderCode: "sz002475", leaderGain: 8.5, stockCount: 10, status: "⬆走强", description: "苹果AI功能落地，果链需求提振" }
 ];
 
-const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz003019", "sz002121", "sh603678", "sh603286", "sz002952", "sh600877", "sh603890", "sz002169"]}, {"name": "AI算力硬件(供需双驱)", "policy": "供给端国产AI芯片补贴+大模型备案开放;需求端AI应用爆发→算力需求每6个月翻倍,服务器/光模块/液冷持续放量", "logic": "国产AI芯片政策降本(供给)+AI应用落地催化算力需求(需求),算力基建确定性最高、业绩弹性最大", "stocks": ["sh603005", "sh601208", "sz001339", "sz002185", "sh603011", "sz002645", "sz003018"]}], "supply": [{"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sz000739", "sh603669", "sh603439", "sh603392", "sz000503", "sz000590", "sh603590", "sz002349"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz003019", "sz002121", "sh603678", "sh603286", "sz002952", "sh600877", "sh603890", "sz002169"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz003019", "sz002121", "sh603678", "sh603286", "sz002952", "sh600877", "sh603890", "sz002169"]}, {"name": "光通信自主可控", "policy": "AI算力需求驱动高速光模块/光器件需求爆发,国产光通信龙头全球份额持续提升", "logic": "海外AI基建扩产→800G/1.6T光模块需求持续放量,国产厂商技术已追平海外,份额提升确定性高", "stocks": ["sz002446"]}], "demand": [{"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sz000739", "sh603669", "sh603439", "sh603392", "sz000503", "sz000590", "sh603590", "sz002349"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sh603005", "sz003019", "sz002121", "sh603678", "sh603286", "sz002185", "sz002952", "sz001339"]}]}; // 已移除
-const EARNINGS_VERIFIED = [{"name": "医药创新(业绩落地)", "policy": "创新药出海加速+国内审批提速,龙头管线进入临床后期/NDA阶段,海外授权收入开始兑现", "logic": "从\"管线预期\"到\"授权收入\",出海+医保谈判双通道放量,创新药企进入收获期", "stocks": ["sz000739", "sh603669", "sh603439", "sh603392", "sz000503", "sz000590", "sh603590", "sz002349"], "status": "订单验证期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sh600877", "sz003019", "sz002121", "sh603890", "sh603678", "sh603286", "sz002197", "sz002169"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sh600877", "sz003019", "sz002121", "sh603890", "sh603678", "sh603286", "sz002197", "sz002169"], "status": "中报密集验证期"}]; // 已移除
+const POLICY_DIRECTIONS = {"dualWheel": [{"name": "半导体设备/材料(供需双驱)", "policy": "供给端海外管制持续收紧,国内晶圆厂加速扩产+设备采购国产化率提升;需求端AI/存储/汽车芯片需求爆发,设备/材料订单确定性最高", "logic": "海外管制倒逼国产替代加速(供给催化)+AI/新能源需求井喷(需求催化),设备厂商在手订单已覆盖未来2年产能,业绩确定性和弹性均最强", "stocks": ["sz002121", "sh603936", "sh603328", "sz002138", "sh603890", "sh603286", "sz002169", "sh603678"]}, {"name": "AI算力硬件(供需双驱)", "policy": "供给端国产AI芯片补贴+大模型备案开放;需求端AI应用爆发→算力需求每6个月翻倍,服务器/光模块/液冷持续放量", "logic": "国产AI芯片政策降本(供给)+AI应用落地催化算力需求(需求),算力基建确定性最高、业绩弹性最大", "stocks": ["sz002645", "sh603005", "sh603011", "sz002674", "sh601208", "sz001339", "sz001266", "sz002185"]}], "supply": [{"name": "创新药国产替代", "policy": "集采政策边际缓和+创新药审批提速,国产创新药出海加速", "logic": "政策支持创新药研发→临床数据读出+出海放量,龙头管线估值有望重塑", "stocks": ["sh601089", "sh601607", "sz001367", "sz000739", "sz002742", "sh603363", "sh603998", "sz002603"]}, {"name": "半导体设备国产替代", "policy": "美国出口管制持续加码,七部委硬科技方案研发费200%加计扣除;国产设备渗透率15%→40%目标,晶圆厂扩产周期持续", "logic": "海外管制收紧+政策补贴双轮驱动,国产设备厂商订单确定性提升,从\"只能相信\"变为\"实际交付\"", "stocks": ["sz002121", "sh603936", "sh603328", "sz002138", "sh603890", "sh603286", "sz002169", "sh603678"]}, {"name": "存储芯片国产化", "policy": "长鑫存储IPO扩产国产DRAM,存储供应链国产化率20%→50%;海外存储巨头确认需求指数级增长", "logic": "长鑫供应链替代空间大,封测/材料/设备全链条受益,国产化加速推进", "stocks": ["sz002121", "sh603936", "sh603328", "sz002138", "sh603890", "sh603286", "sz002169", "sh603678"]}, {"name": "光通信自主可控", "policy": "AI算力需求驱动高速光模块/光器件需求爆发,国产光通信龙头全球份额持续提升", "logic": "海外AI基建扩产→800G/1.6T光模块需求持续放量,国产厂商技术已追平海外,份额提升确定性高", "stocks": ["sz002446"]}, {"name": "战略资源自主", "policy": "海外关键矿产管制+国内战略收储,稀土/锂/钴等战略资源自主可控提速", "logic": "海外供应不确定性推高价格,国内龙头企业产能+成本优势凸显", "stocks": ["sz000630", "sz000960", "sz002378"]}], "demand": [{"name": "医疗基建", "policy": "医疗新基建投资加速,基层医疗机构设备升级需求释放", "logic": "政策推动医疗资源下沉,影像设备/IVD/病房基建需求放量", "stocks": ["sh601089", "sh601607", "sz001367", "sz000739", "sz002742", "sh603363", "sh603998", "sz002603"]}, {"name": "AI算力基建", "policy": "全国智算中心建设加速,特别国债定向算力设备采购;AI应用从大模型→智能体→机器人,算力需求持续爆发", "logic": "AI应用落地+政策基建刺激,服务器PCB/光模块/液冷/IDC需求持续放量,赛道6-12个月内确定性最强", "stocks": ["sz002674", "sz002138", "sh603890", "sh603286", "sz002169", "sh601208", "sz003019", "sh603011"]}, {"name": "新能源材料", "policy": "新能源车+储能双赛道驱动,锂/钴/镍等关键材料需求持续增长", "logic": "需求端新能源渗透率提升+供给端海外矿山减产,价格中枢上移利好龙头", "stocks": ["sz000630", "sz000960", "sz002378"]}]}; // 已移除
+const EARNINGS_VERIFIED = [{"name": "医药创新(业绩落地)", "policy": "创新药出海加速+国内审批提速,龙头管线进入临床后期/NDA阶段,海外授权收入开始兑现", "logic": "从\"管线预期\"到\"授权收入\",出海+医保谈判双通道放量,创新药企进入收获期", "stocks": ["sh601089", "sh601607", "sz001367", "sz000739", "sz002742", "sh603363", "sh603998", "sz002603"], "status": "订单验证期"}, {"name": "AI算力产业链(业绩落地)", "policy": "AI服务器出货量每季度翻倍→PCB/光模块/液冷订单爆满,H1利润增速70%-150%,从预期进入业绩兑现期", "logic": "PCB/液冷/光模块订单已转化为营收,中报集中验证,从预期→兑现确定性最强", "stocks": ["sz002121", "sh603936", "sh603328", "sz002138", "sh603890", "sh603286", "sz002169", "sh603678"], "status": "中报密集验证期"}, {"name": "半导体先进封装(业绩落地)", "policy": "存储/算力需求驱动先进封装产能紧缺,龙头封测厂产能利用率接近满产,H1利润大幅增长", "logic": "Chiplet/3D封装是AI芯片必需环节,产能紧缺→涨价+扩产,龙头业绩已进入兑现期", "stocks": ["sz002121", "sh603936", "sh603328", "sz002138", "sh603890", "sh603286", "sz002169", "sh603678"], "status": "中报密集验证期"}]; // 已移除
 
 // 兜底（数据已在上方注入，此处仅防御性检查）
 if (typeof KDJ_PRECOMPUTED === 'undefined') { window.KDJ_PRECOMPUTED = {}; }
@@ -4404,7 +3522,7 @@ function renderAll() {
 }
 
 // PRE-COMPUTED FALLBACK (extended: 30/60day-KDJ, MACD, MA, PE/PB, openRate30d, 5日资金)
-var KDJ_FALLBACK = {"sh600418":{"kd5_k":36.7,"kd5_d":44.85,"kd30_k":41.02,"kd30_d":43.02,"kd30_cross":"下降","kd60_k":46.55,"kd60_d":39.54,"kd60_cross":"上升","macd":"DIF:-0.56 DEA:-1.19 金叉","ma":"多头排列","ma5":24.54,"ma10":24.21,"ma20":22.73,"maAbove":true,"rsi":62.99,"drop20d":5.73,"volRatio":0.62,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":19.57,"supportDist":17.7,"trend":"震荡偏弱","trendPct":-6.92,"volSignal":"缩量","kd5_cross":"下降"},"sh600686":{"kd5_k":60.96,"kd5_d":51.85,"kd30_k":65.03,"kd30_d":65.01,"kd30_cross":"上升","kd60_k":62.92,"kd60_d":50.26,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.10 金叉","ma":"多头排列","ma5":11.91,"ma10":11.88,"ma20":11.24,"maAbove":true,"rsi":69.01,"drop20d":14.56,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":10.21,"supportDist":15.8,"trend":"上升趋势","trendPct":0.17,"volSignal":"正常","kd5_cross":"上升"},"sh600702":{"kd5_k":30.07,"kd5_d":31.55,"kd30_k":44.16,"kd30_d":57.73,"kd30_cross":"下降","kd60_k":70.3,"kd60_d":68.77,"kd60_cross":"上升","macd":"DIF:+0.57 DEA:-0.00 金叉","ma":"多头排列","ma5":37.82,"ma10":37.07,"ma20":35.28,"maAbove":true,"rsi":70.94,"drop20d":16.83,"volRatio":1.2,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":32.15,"supportDist":15.5,"trend":"上升趋势","trendPct":1.25,"volSignal":"正常","kd5_cross":"下降"},"sh601058":{"kd5_k":51.85,"kd5_d":44.4,"kd30_k":64.22,"kd30_d":64.39,"kd30_cross":"下降","kd60_k":63.72,"kd60_d":60.25,"kd60_cross":"上升","macd":"DIF:+0.29 DEA:+0.33 死叉","ma":"交叉震荡","ma5":13.7,"ma10":13.87,"ma20":13.65,"maAbove":true,"rsi":57.32,"drop20d":7.19,"volRatio":0.88,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":12.66,"supportDist":8.7,"trend":"震荡偏强","trendPct":-1.07,"volSignal":"正常","kd5_cross":"上升"},"sh603156":{"kd5_k":79.68,"kd5_d":84.03,"kd30_k":71.55,"kd30_d":71.05,"kd30_cross":"上升","kd60_k":84.19,"kd60_d":83.75,"kd60_cross":"上升","macd":"DIF:+1.41 DEA:-0.18 金叉","ma":"多头排列","ma5":47.02,"ma10":42.79,"ma20":40.15,"maAbove":true,"rsi":92.27,"drop20d":14.67,"volRatio":1.01,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":32.83,"supportDist":35.5,"trend":"上升趋势","trendPct":19.44,"volSignal":"正常","kd5_cross":"下降"},"sh603345":{"kd5_k":58.13,"kd5_d":40.86,"kd30_k":55.11,"kd30_d":62.4,"kd30_cross":"下降","kd60_k":66.52,"kd60_d":63.36,"kd60_cross":"上升","macd":"DIF:-0.09 DEA:+0.10 死叉","ma":"交叉震荡","ma5":85.2,"ma10":86.92,"ma20":86.91,"maAbove":false,"rsi":47.6,"drop20d":1.35,"volRatio":0.96,"openRate30d":60.0,"openRateTotal":60.0,"openRateScore":2,"supportPrice":82.68,"supportDist":3.7,"trend":"横盘震荡","trendPct":-0.74,"volSignal":"正常","kd5_cross":"上升"},"sh603317":{"kd5_k":44.37,"kd5_d":36.52,"kd30_k":72.91,"kd30_d":71.23,"kd30_cross":"上升","kd60_k":65.43,"kd60_d":50.69,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.18 金叉","ma":"交叉震荡","ma5":14.57,"ma10":14.63,"ma20":14.16,"maAbove":true,"rsi":59.95,"drop20d":10.24,"volRatio":1.27,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":13.15,"supportDist":10.2,"trend":"横盘震荡","trendPct":-1.15,"volSignal":"正常","kd5_cross":"上升"},"sh600741":{"kd5_k":32.38,"kd5_d":36.07,"kd30_k":36.89,"kd30_d":52.29,"kd30_cross":"下降","kd60_k":53.46,"kd60_d":54.76,"kd60_cross":"下降","macd":"DIF:-0.13 DEA:-0.02 死叉","ma":"空头排列","ma5":16.05,"ma10":16.35,"ma20":16.66,"maAbove":false,"rsi":28.72,"drop20d":-1.05,"volRatio":0.82,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":15.8,"supportDist":1.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"正常","kd5_cross":"下降"},"sh601163":{"kd5_k":66.49,"kd5_d":48.78,"kd30_k":78.87,"kd30_d":77.14,"kd30_cross":"上升","kd60_k":79.42,"kd60_d":67.11,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.01 金叉","ma":"多头排列","ma5":13.3,"ma10":13.23,"ma20":12.96,"maAbove":true,"rsi":68.75,"drop20d":3.96,"volRatio":1.03,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":12.35,"supportDist":7.8,"trend":"上升趋势","trendPct":-0.67,"volSignal":"正常","kd5_cross":"上升"},"sh601966":{"kd5_k":48.12,"kd5_d":39.84,"kd30_k":79.98,"kd30_d":77.4,"kd30_cross":"上升","kd60_k":74.01,"kd60_d":56.82,"kd60_cross":"上升","macd":"DIF:+0.08 DEA:+0.06 金叉","ma":"交叉震荡","ma5":11.35,"ma10":11.41,"ma20":11.21,"maAbove":true,"rsi":56.78,"drop20d":5.39,"volRatio":0.78,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":10.53,"supportDist":7.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"缩量","kd5_cross":"上升"},"sh603057":{"kd5_k":47.39,"kd5_d":49.99,"kd30_k":75.32,"kd30_d":72.47,"kd30_cross":"上升","kd60_k":67.55,"kd60_d":53.78,"kd60_cross":"上升","macd":"DIF:+0.06 DEA:-0.27 金叉","ma":"多头排列","ma5":22.59,"ma10":22.34,"ma20":21.31,"maAbove":true,"rsi":70.34,"drop20d":8.22,"volRatio":1.46,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":19.1,"supportDist":17.1,"trend":"上升趋势","trendPct":1.19,"volSignal":"正常","kd5_cross":"下降"},"sh600737":{"kd5_k":40.2,"kd5_d":38.6,"kd30_k":47.86,"kd30_d":52.61,"kd30_cross":"下降","kd60_k":67.92,"kd60_d":65.84,"kd60_cross":"上升","macd":"DIF:+0.28 DEA:+0.07 金叉","ma":"多头排列","ma5":13.22,"ma10":12.78,"ma20":12.39,"maAbove":true,"rsi":72.46,"drop20d":18.1,"volRatio":1.18,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":11.2,"supportDist":19.8,"trend":"上升趋势","trendPct":11.95,"volSignal":"正常","kd5_cross":"上升"},"sh600335":{"kd5_k":14.15,"kd5_d":12.87,"kd30_k":82.53,"kd30_d":79.96,"kd30_cross":"上升","kd60_k":73.62,"kd60_d":57.47,"kd60_cross":"上升","macd":"DIF:+0.02 DEA:+0.01 金叉","ma":"交叉震荡","ma5":5.17,"ma10":5.18,"ma20":5.12,"maAbove":true,"rsi":54.24,"drop20d":2.38,"volRatio":1.0,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":4.83,"supportDist":6.4,"trend":"下降趋势","trendPct":-3.37,"volSignal":"正常","kd5_cross":"上升"},"sh600166":{"kd5_k":46.25,"kd5_d":40.53,"kd30_k":63.96,"kd30_d":58.39,"kd30_cross":"上升","kd60_k":60.79,"kd60_d":45.75,"kd60_cross":"上升","macd":"DIF:+0.00 DEA:-0.00 金叉","ma":"交叉震荡","ma5":3.07,"ma10":3.1,"ma20":3.06,"maAbove":true,"rsi":57.65,"drop20d":0.0,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":2.9,"supportDist":5.5,"trend":"横盘震荡","trendPct":-2.23,"volSignal":"正常","kd5_cross":"上升"},"sh601633":{"kd5_k":34.13,"kd5_d":31.08,"kd30_k":61.55,"kd30_d":60.92,"kd30_cross":"上升","kd60_k":57.51,"kd60_d":45.12,"kd60_cross":"上升","macd":"DIF:-0.06 DEA:-0.01 死叉","ma":"交叉震荡","ma5":15.81,"ma10":16.26,"ma20":16.09,"maAbove":false,"rsi":42.54,"drop20d":4.39,"volRatio":0.82,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":14.88,"supportDist":5.2,"trend":"下降趋势","trendPct":-5.99,"volSignal":"正常","kd5_cross":"上升"},"sh603039":{"kd5_k":81.71,"kd5_d":76.43,"kd30_k":33.97,"kd30_d":26.74,"kd30_cross":"上升","kd60_k":26.48,"kd60_d":34.95,"kd60_cross":"下降","macd":"DIF:+2.75 DEA:+0.74 金叉","ma":"多头排列","ma5":45.23,"ma10":39.81,"ma20":34.81,"maAbove":true,"rsi":80.01,"drop20d":47.0,"volRatio":0.83,"openRate30d":23.3,"openRateTotal":23.3,"openRateScore":1,"supportPrice":28.1,"supportDist":38.0,"trend":"上升趋势","trendPct":14.26,"volSignal":"正常","kd5_cross":"上升"},"sh600475":{"kd5_k":60.39,"kd5_d":58.99,"kd30_k":33.2,"kd30_d":25.42,"kd30_cross":"上升","kd60_k":16.61,"kd60_d":14.68,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.02 金叉","ma":"多头排列","ma5":15.08,"ma10":14.79,"ma20":13.9,"maAbove":true,"rsi":60.71,"drop20d":6.73,"volRatio":0.56,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":12.2,"supportDist":16.3,"trend":"震荡偏弱","trendPct":-4.95,"volSignal":"缩量","kd5_cross":"上升"},"sh601872":{"kd5_k":75.73,"kd5_d":78.14,"kd30_k":61.38,"kd30_d":53.6,"kd30_cross":"上升","kd60_k":57.93,"kd60_d":59.74,"kd60_cross":"下降","macd":"DIF:+0.43 DEA:+0.11 金叉","ma":"多头排列","ma5":17.78,"ma10":17.17,"ma20":16.12,"maAbove":true,"rsi":86.5,"drop20d":20.88,"volRatio":0.66,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":13.81,"supportDist":24.0,"trend":"上升趋势","trendPct":6.75,"volSignal":"缩量","kd5_cross":"下降"},"sh600188":{"kd5_k":67.84,"kd5_d":67.37,"kd30_k":72.6,"kd30_d":75.08,"kd30_cross":"下降","kd60_k":87.17,"kd60_d":89.77,"kd60_cross":"下降","macd":"DIF:+0.27 DEA:+0.08 金叉","ma":"交叉震荡","ma5":20.54,"ma10":20.19,"ma20":20.28,"maAbove":true,"rsi":54.63,"drop20d":13.26,"volRatio":0.85,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":18.21,"supportDist":16.4,"trend":"上升趋势","trendPct":14.93,"volSignal":"正常","kd5_cross":"上升"},"sh603619":{"kd5_k":74.78,"kd5_d":75.07,"kd30_k":68.43,"kd30_d":61.06,"kd30_cross":"上升","kd60_k":82.59,"kd60_d":79.31,"kd60_cross":"上升","macd":"DIF:+0.36 DEA:+0.05 金叉","ma":"多头排列","ma5":22.17,"ma10":21.86,"ma20":21.08,"maAbove":true,"rsi":63.73,"drop20d":11.23,"volRatio":0.82,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":17.64,"supportDist":23.2,"trend":"上升趋势","trendPct":8.5,"volSignal":"正常","kd5_cross":"下降"},"sh600436":{"kd5_k":79.56,"kd5_d":61.23,"kd30_k":75.09,"kd30_d":74.94,"kd30_cross":"上升","kd60_k":80.14,"kd60_d":71.73,"kd60_cross":"上升","macd":"DIF:+3.75 DEA:+4.16 死叉","ma":"交叉震荡","ma5":137.38,"ma10":137.46,"ma20":137.18,"maAbove":true,"rsi":41.62,"drop20d":10.39,"volRatio":1.24,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":120.4,"supportDist":13.9,"trend":"震荡偏强","trendPct":1.2,"volSignal":"正常","kd5_cross":"上升"},"sh600835":{"kd5_k":44.36,"kd5_d":54.87,"kd30_k":63.54,"kd30_d":61.08,"kd30_cross":"上升","kd60_k":46.91,"kd60_d":39.37,"kd60_cross":"上升","macd":"DIF:-0.41 DEA:-0.56 金叉","ma":"多头排列","ma5":19.16,"ma10":19.02,"ma20":18.95,"maAbove":false,"rsi":52.07,"drop20d":-9.76,"volRatio":0.88,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":17.43,"supportDist":8.0,"trend":"震荡偏弱","trendPct":-2.27,"volSignal":"正常","kd5_cross":"下降"},"sh601127":{"kd5_k":56.13,"kd5_d":49.85,"kd30_k":15.96,"kd30_d":24.18,"kd30_cross":"下降","kd60_k":24.19,"kd60_d":24.43,"kd60_cross":"下降","macd":"DIF:-1.19 DEA:-1.61 金叉","ma":"交叉震荡","ma5":57.49,"ma10":58.57,"ma20":56.94,"maAbove":false,"rsi":51.48,"drop20d":4.96,"volRatio":0.64,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":52.01,"supportDist":7.2,"trend":"下降趋势","trendPct":-7.6,"volSignal":"缩量","kd5_cross":"上升"},"sh600895":{"kd5_k":73.77,"kd5_d":74.54,"kd30_k":66.53,"kd30_d":60.5,"kd30_cross":"上升","kd60_k":62.46,"kd60_d":54.15,"kd60_cross":"上升","macd":"DIF:-0.10 DEA:-0.57 金叉","ma":"多头排列","ma5":32.5,"ma10":32.0,"ma20":30.82,"maAbove":true,"rsi":67.94,"drop20d":-5.86,"volRatio":0.74,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":26.78,"supportDist":19.1,"trend":"上升趋势","trendPct":8.74,"volSignal":"缩量","kd5_cross":"下降"},"sh601933":{"kd5_k":62.68,"kd5_d":55.93,"kd30_k":76.59,"kd30_d":73.01,"kd30_cross":"上升","kd60_k":75.21,"kd60_d":58.89,"kd60_cross":"上升","macd":"DIF:+0.03 DEA:+0.01 金叉","ma":"多头排列","ma5":3.26,"ma10":3.23,"ma20":3.17,"maAbove":true,"rsi":60.56,"drop20d":5.48,"volRatio":0.79,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":2.94,"supportDist":10.1,"trend":"上升趋势","trendPct":0.31,"volSignal":"缩量","kd5_cross":"上升"},"sh601606":{"kd5_k":50.0,"kd5_d":50.0,"kd30_k":99.19,"kd30_d":96.26,"kd30_cross":"上升","kd60_k":87.56,"kd60_d":70.35,"kd60_cross":"上升","macd":"DIF:+1.38 DEA:+0.94 金叉","ma":"交叉震荡","ma5":33.77,"ma10":33.81,"ma20":30.84,"maAbove":true,"rsi":73.12,"drop20d":39.8,"volRatio":0.98,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":25.0,"supportDist":30.9,"trend":"震荡偏强","trendPct":10.27,"volSignal":"正常","kd5_cross":"下降"},"sh603171":{"kd5_k":78.15,"kd5_d":69.66,"kd30_k":25.8,"kd30_d":30.82,"kd30_cross":"下降","kd60_k":35.68,"kd60_d":34.36,"kd60_cross":"上升","macd":"DIF:+2.01 DEA:+0.61 金叉","ma":"多头排列","ma5":48.69,"ma10":45.12,"ma20":40.99,"maAbove":true,"rsi":76.73,"drop20d":27.35,"volRatio":0.47,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":34.42,"supportDist":28.2,"trend":"震荡偏弱","trendPct":4.08,"volSignal":"极度缩量","kd5_cross":"上升"},"sh600986":{"kd5_k":78.04,"kd5_d":79.81,"kd30_k":50.33,"kd30_d":51.98,"kd30_cross":"下降","kd60_k":61.63,"kd60_d":54.26,"kd60_cross":"上升","macd":"DIF:+0.23 DEA:+0.05 金叉","ma":"多头排列","ma5":8.07,"ma10":7.72,"ma20":7.19,"maAbove":true,"rsi":76.31,"drop20d":24.88,"volRatio":0.43,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":6.24,"supportDist":22.3,"trend":"横盘震荡","trendPct":1.77,"volSignal":"极度缩量","kd5_cross":"下降"},"sh600426":{"kd5_k":46.2,"kd5_d":53.14,"kd30_k":51.82,"kd30_d":50.56,"kd30_cross":"上升","kd60_k":53.43,"kd60_d":52.17,"kd60_cross":"上升","macd":"DIF:-0.68 DEA:-1.00 金叉","ma":"交叉震荡","ma5":21.2,"ma10":21.35,"ma20":20.77,"maAbove":true,"rsi":61.44,"drop20d":15.04,"volRatio":1.35,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":18.12,"supportDist":16.3,"trend":"震荡偏强","trendPct":0.79,"volSignal":"正常","kd5_cross":"下降"},"sh601799":{"kd5_k":19.19,"kd5_d":17.02,"kd30_k":51.32,"kd30_d":52.62,"kd30_cross":"下降","kd60_k":51.72,"kd60_d":43.24,"kd60_cross":"上升","macd":"DIF:-1.67 DEA:-2.90 金叉","ma":"交叉震荡","ma5":95.01,"ma10":95.5,"ma20":92.67,"maAbove":true,"rsi":63.31,"drop20d":6.22,"volRatio":1.27,"openRate30d":53.3,"openRateTotal":53.3,"openRateScore":2,"supportPrice":85.6,"supportDist":10.9,"trend":"震荡偏强","trendPct":-1.28,"volSignal":"正常","kd5_cross":"上升"},"sh603067":{"rsi":58.04,"macd":"DIF:-1.31 DEA:-1.92 金叉","ma":"交叉震荡","ma5":33.62,"ma10":32.02,"ma20":32.6,"maAbove":true,"drop20d":-10.01,"volRatio":1.33,"supportPrice":28.31,"supportDist":19.8,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":62.35,"kd5_d":69.16,"kd5_cross":"下降","kd30_k":66.15,"kd30_d":56.08,"kd30_cross":"上升","kd60_k":58.22,"kd60_d":52.12,"kd60_cross":"上升","trend":"上升趋势","trendPct":17.26,"volSignal":"正常","beta":3.72,"betaCategory":"跟随","syncRate":60.0},"sh600105":{"rsi":48.73,"macd":"DIF:-3.46 DEA:-4.58 金叉","ma":"交叉震荡","ma5":37.18,"ma10":34.45,"ma20":36.94,"maAbove":true,"drop20d":-22.49,"volRatio":0.72,"supportPrice":29.11,"supportDist":22.7,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":80.15,"kd5_d":80.95,"kd5_cross":"下降","kd30_k":27.03,"kd30_d":25.64,"kd30_cross":"上升","kd60_k":35.76,"kd60_d":52.99,"kd60_cross":"下降","trend":"上升趋势","trendPct":18.91,"volSignal":"缩量","beta":2.86,"betaCategory":"跟随","syncRate":80.0},"sh601126":{"rsi":51.98,"macd":"DIF:-3.59 DEA:-5.02 金叉","ma":"交叉震荡","ma5":44.65,"ma10":41.71,"ma20":43.5,"maAbove":true,"drop20d":-12.76,"volRatio":1.27,"supportPrice":36.5,"supportDist":20.5,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":68.87,"kd5_d":74.64,"kd5_cross":"下降","kd30_k":19.94,"kd30_d":24.79,"kd30_cross":"下降","kd60_k":45.97,"kd60_d":58.69,"kd60_cross":"下降","trend":"上升趋势","trendPct":13.96,"volSignal":"正常","beta":2.49,"betaCategory":"跟随","syncRate":80.0},"sz000688":{"rsi":72.91,"macd":"DIF:-0.74 DEA:-1.61 金叉","ma":"多头排列","ma5":30.71,"ma10":29.41,"ma20":28.6,"maAbove":true,"drop20d":7.09,"volRatio":1.11,"supportPrice":23.88,"supportDist":25.7,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"kd5_k":46.0,"kd5_d":32.62,"kd5_cross":"上升","kd30_k":67.07,"kd30_d":71.95,"kd30_cross":"下降","kd60_k":82.37,"kd60_d":83.41,"kd60_cross":"下降","trend":"上升趋势","trendPct":15.98,"volSignal":"正常","beta":1.56,"betaCategory":"弱关联","syncRate":100.0}};
+var KDJ_FALLBACK = {"sh600418":{"kd5_k":36.7,"kd5_d":44.85,"kd30_k":41.02,"kd30_d":43.02,"kd30_cross":"下降","kd60_k":46.55,"kd60_d":39.54,"kd60_cross":"上升","macd":"DIF:-0.56 DEA:-1.19 金叉","ma":"多头排列","ma5":24.54,"ma10":24.21,"ma20":22.73,"maAbove":true,"rsi":62.99,"drop20d":5.73,"volRatio":0.62,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":19.57,"supportDist":17.7,"trend":"震荡偏弱","trendPct":-6.92,"volSignal":"缩量","kd5_cross":"下降"},"sh600686":{"kd5_k":60.96,"kd5_d":51.85,"kd30_k":65.03,"kd30_d":65.01,"kd30_cross":"上升","kd60_k":62.92,"kd60_d":50.26,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.10 金叉","ma":"多头排列","ma5":11.91,"ma10":11.88,"ma20":11.24,"maAbove":true,"rsi":69.01,"drop20d":14.56,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":10.21,"supportDist":15.8,"trend":"上升趋势","trendPct":0.17,"volSignal":"正常","kd5_cross":"上升"},"sh600702":{"kd5_k":30.07,"kd5_d":31.55,"kd30_k":44.16,"kd30_d":57.73,"kd30_cross":"下降","kd60_k":70.3,"kd60_d":68.77,"kd60_cross":"上升","macd":"DIF:+0.57 DEA:-0.00 金叉","ma":"多头排列","ma5":37.82,"ma10":37.07,"ma20":35.28,"maAbove":true,"rsi":70.94,"drop20d":16.83,"volRatio":1.2,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":32.15,"supportDist":15.5,"trend":"上升趋势","trendPct":1.25,"volSignal":"正常","kd5_cross":"下降"},"sh601058":{"kd5_k":51.85,"kd5_d":44.4,"kd30_k":64.22,"kd30_d":64.39,"kd30_cross":"下降","kd60_k":63.72,"kd60_d":60.25,"kd60_cross":"上升","macd":"DIF:+0.29 DEA:+0.33 死叉","ma":"交叉震荡","ma5":13.7,"ma10":13.87,"ma20":13.65,"maAbove":true,"rsi":57.32,"drop20d":7.19,"volRatio":0.88,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":12.66,"supportDist":8.7,"trend":"震荡偏强","trendPct":-1.07,"volSignal":"正常","kd5_cross":"上升"},"sh603156":{"kd5_k":79.68,"kd5_d":84.03,"kd30_k":71.55,"kd30_d":71.05,"kd30_cross":"上升","kd60_k":84.19,"kd60_d":83.75,"kd60_cross":"上升","macd":"DIF:+1.41 DEA:-0.18 金叉","ma":"多头排列","ma5":47.02,"ma10":42.79,"ma20":40.15,"maAbove":true,"rsi":92.27,"drop20d":14.67,"volRatio":1.01,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":32.83,"supportDist":35.5,"trend":"上升趋势","trendPct":19.44,"volSignal":"正常","kd5_cross":"下降"},"sh603345":{"kd5_k":58.13,"kd5_d":40.86,"kd30_k":55.11,"kd30_d":62.4,"kd30_cross":"下降","kd60_k":66.52,"kd60_d":63.36,"kd60_cross":"上升","macd":"DIF:-0.09 DEA:+0.10 死叉","ma":"交叉震荡","ma5":85.2,"ma10":86.92,"ma20":86.91,"maAbove":false,"rsi":47.6,"drop20d":1.35,"volRatio":0.96,"openRate30d":60.0,"openRateTotal":60.0,"openRateScore":2,"supportPrice":82.68,"supportDist":3.7,"trend":"横盘震荡","trendPct":-0.74,"volSignal":"正常","kd5_cross":"上升"},"sh603317":{"kd5_k":44.37,"kd5_d":36.52,"kd30_k":72.91,"kd30_d":71.23,"kd30_cross":"上升","kd60_k":65.43,"kd60_d":50.69,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.18 金叉","ma":"交叉震荡","ma5":14.57,"ma10":14.63,"ma20":14.16,"maAbove":true,"rsi":59.95,"drop20d":10.24,"volRatio":1.27,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":13.15,"supportDist":10.2,"trend":"横盘震荡","trendPct":-1.15,"volSignal":"正常","kd5_cross":"上升"},"sh600741":{"kd5_k":32.38,"kd5_d":36.07,"kd30_k":36.89,"kd30_d":52.29,"kd30_cross":"下降","kd60_k":53.46,"kd60_d":54.76,"kd60_cross":"下降","macd":"DIF:-0.13 DEA:-0.02 死叉","ma":"空头排列","ma5":16.05,"ma10":16.35,"ma20":16.66,"maAbove":false,"rsi":28.72,"drop20d":-1.05,"volRatio":0.82,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":15.8,"supportDist":1.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"正常","kd5_cross":"下降"},"sh601163":{"kd5_k":66.49,"kd5_d":48.78,"kd30_k":78.87,"kd30_d":77.14,"kd30_cross":"上升","kd60_k":79.42,"kd60_d":67.11,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.01 金叉","ma":"多头排列","ma5":13.3,"ma10":13.23,"ma20":12.96,"maAbove":true,"rsi":68.75,"drop20d":3.96,"volRatio":1.03,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":12.35,"supportDist":7.8,"trend":"上升趋势","trendPct":-0.67,"volSignal":"正常","kd5_cross":"上升"},"sh601966":{"kd5_k":48.12,"kd5_d":39.84,"kd30_k":79.98,"kd30_d":77.4,"kd30_cross":"上升","kd60_k":74.01,"kd60_d":56.82,"kd60_cross":"上升","macd":"DIF:+0.08 DEA:+0.06 金叉","ma":"交叉震荡","ma5":11.35,"ma10":11.41,"ma20":11.21,"maAbove":true,"rsi":56.78,"drop20d":5.39,"volRatio":0.78,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":10.53,"supportDist":7.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"缩量","kd5_cross":"上升"},"sh603057":{"kd5_k":47.39,"kd5_d":49.99,"kd30_k":75.32,"kd30_d":72.47,"kd30_cross":"上升","kd60_k":67.55,"kd60_d":53.78,"kd60_cross":"上升","macd":"DIF:+0.06 DEA:-0.27 金叉","ma":"多头排列","ma5":22.59,"ma10":22.34,"ma20":21.31,"maAbove":true,"rsi":70.34,"drop20d":8.22,"volRatio":1.46,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":19.1,"supportDist":17.1,"trend":"上升趋势","trendPct":1.19,"volSignal":"正常","kd5_cross":"下降"},"sh600737":{"kd5_k":40.2,"kd5_d":38.6,"kd30_k":47.86,"kd30_d":52.61,"kd30_cross":"下降","kd60_k":67.92,"kd60_d":65.84,"kd60_cross":"上升","macd":"DIF:+0.28 DEA:+0.07 金叉","ma":"多头排列","ma5":13.22,"ma10":12.78,"ma20":12.39,"maAbove":true,"rsi":72.46,"drop20d":18.1,"volRatio":1.18,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":11.2,"supportDist":19.8,"trend":"上升趋势","trendPct":11.95,"volSignal":"正常","kd5_cross":"上升"},"sh600335":{"kd5_k":14.15,"kd5_d":12.87,"kd30_k":82.53,"kd30_d":79.96,"kd30_cross":"上升","kd60_k":73.62,"kd60_d":57.47,"kd60_cross":"上升","macd":"DIF:+0.02 DEA:+0.01 金叉","ma":"交叉震荡","ma5":5.17,"ma10":5.18,"ma20":5.12,"maAbove":true,"rsi":54.24,"drop20d":2.38,"volRatio":1.0,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":4.83,"supportDist":6.4,"trend":"下降趋势","trendPct":-3.37,"volSignal":"正常","kd5_cross":"上升"},"sh600166":{"kd5_k":46.25,"kd5_d":40.53,"kd30_k":63.96,"kd30_d":58.39,"kd30_cross":"上升","kd60_k":60.79,"kd60_d":45.75,"kd60_cross":"上升","macd":"DIF:+0.00 DEA:-0.00 金叉","ma":"交叉震荡","ma5":3.07,"ma10":3.1,"ma20":3.06,"maAbove":true,"rsi":57.65,"drop20d":0.0,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":2.9,"supportDist":5.5,"trend":"横盘震荡","trendPct":-2.23,"volSignal":"正常","kd5_cross":"上升"},"sh601633":{"kd5_k":34.13,"kd5_d":31.08,"kd30_k":61.55,"kd30_d":60.92,"kd30_cross":"上升","kd60_k":57.51,"kd60_d":45.12,"kd60_cross":"上升","macd":"DIF:-0.06 DEA:-0.01 死叉","ma":"交叉震荡","ma5":15.81,"ma10":16.26,"ma20":16.09,"maAbove":false,"rsi":42.54,"drop20d":4.39,"volRatio":0.82,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":14.88,"supportDist":5.2,"trend":"下降趋势","trendPct":-5.99,"volSignal":"正常","kd5_cross":"上升"},"sh603039":{"kd5_k":81.71,"kd5_d":76.43,"kd30_k":33.97,"kd30_d":26.74,"kd30_cross":"上升","kd60_k":26.48,"kd60_d":34.95,"kd60_cross":"下降","macd":"DIF:+2.75 DEA:+0.74 金叉","ma":"多头排列","ma5":45.23,"ma10":39.81,"ma20":34.81,"maAbove":true,"rsi":80.01,"drop20d":47.0,"volRatio":0.83,"openRate30d":23.3,"openRateTotal":23.3,"openRateScore":1,"supportPrice":28.1,"supportDist":38.0,"trend":"上升趋势","trendPct":14.26,"volSignal":"正常","kd5_cross":"上升"},"sh600475":{"kd5_k":60.39,"kd5_d":58.99,"kd30_k":33.2,"kd30_d":25.42,"kd30_cross":"上升","kd60_k":16.61,"kd60_d":14.68,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.02 金叉","ma":"多头排列","ma5":15.08,"ma10":14.79,"ma20":13.9,"maAbove":true,"rsi":60.71,"drop20d":6.73,"volRatio":0.56,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":12.2,"supportDist":16.3,"trend":"震荡偏弱","trendPct":-4.95,"volSignal":"缩量","kd5_cross":"上升"},"sh601872":{"kd5_k":75.73,"kd5_d":78.14,"kd30_k":61.38,"kd30_d":53.6,"kd30_cross":"上升","kd60_k":57.93,"kd60_d":59.74,"kd60_cross":"下降","macd":"DIF:+0.43 DEA:+0.11 金叉","ma":"多头排列","ma5":17.78,"ma10":17.17,"ma20":16.12,"maAbove":true,"rsi":86.5,"drop20d":20.88,"volRatio":0.66,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":13.81,"supportDist":24.0,"trend":"上升趋势","trendPct":6.75,"volSignal":"缩量","kd5_cross":"下降"},"sh600188":{"kd5_k":67.84,"kd5_d":67.37,"kd30_k":72.6,"kd30_d":75.08,"kd30_cross":"下降","kd60_k":87.17,"kd60_d":89.77,"kd60_cross":"下降","macd":"DIF:+0.27 DEA:+0.08 金叉","ma":"交叉震荡","ma5":20.54,"ma10":20.19,"ma20":20.28,"maAbove":true,"rsi":54.63,"drop20d":13.26,"volRatio":0.85,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":18.21,"supportDist":16.4,"trend":"上升趋势","trendPct":14.93,"volSignal":"正常","kd5_cross":"上升"},"sh603619":{"kd5_k":74.78,"kd5_d":75.07,"kd30_k":68.43,"kd30_d":61.06,"kd30_cross":"上升","kd60_k":82.59,"kd60_d":79.31,"kd60_cross":"上升","macd":"DIF:+0.36 DEA:+0.05 金叉","ma":"多头排列","ma5":22.17,"ma10":21.86,"ma20":21.08,"maAbove":true,"rsi":63.73,"drop20d":11.23,"volRatio":0.82,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":17.64,"supportDist":23.2,"trend":"上升趋势","trendPct":8.5,"volSignal":"正常","kd5_cross":"下降"},"sh600436":{"kd5_k":79.56,"kd5_d":61.23,"kd30_k":75.09,"kd30_d":74.94,"kd30_cross":"上升","kd60_k":80.14,"kd60_d":71.73,"kd60_cross":"上升","macd":"DIF:+3.75 DEA:+4.16 死叉","ma":"交叉震荡","ma5":137.38,"ma10":137.46,"ma20":137.18,"maAbove":true,"rsi":41.62,"drop20d":10.39,"volRatio":1.24,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":120.4,"supportDist":13.9,"trend":"震荡偏强","trendPct":1.2,"volSignal":"正常","kd5_cross":"上升"},"sh600835":{"kd5_k":44.36,"kd5_d":54.87,"kd30_k":63.54,"kd30_d":61.08,"kd30_cross":"上升","kd60_k":46.91,"kd60_d":39.37,"kd60_cross":"上升","macd":"DIF:-0.41 DEA:-0.56 金叉","ma":"多头排列","ma5":19.16,"ma10":19.02,"ma20":18.95,"maAbove":false,"rsi":52.07,"drop20d":-9.76,"volRatio":0.88,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":17.43,"supportDist":8.0,"trend":"震荡偏弱","trendPct":-2.27,"volSignal":"正常","kd5_cross":"下降"},"sh601127":{"kd5_k":56.13,"kd5_d":49.85,"kd30_k":15.96,"kd30_d":24.18,"kd30_cross":"下降","kd60_k":24.19,"kd60_d":24.43,"kd60_cross":"下降","macd":"DIF:-1.19 DEA:-1.61 金叉","ma":"交叉震荡","ma5":57.49,"ma10":58.57,"ma20":56.94,"maAbove":false,"rsi":51.48,"drop20d":4.96,"volRatio":0.64,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":52.01,"supportDist":7.2,"trend":"下降趋势","trendPct":-7.6,"volSignal":"缩量","kd5_cross":"上升"},"sh600895":{"kd5_k":73.77,"kd5_d":74.54,"kd30_k":66.53,"kd30_d":60.5,"kd30_cross":"上升","kd60_k":62.46,"kd60_d":54.15,"kd60_cross":"上升","macd":"DIF:-0.10 DEA:-0.57 金叉","ma":"多头排列","ma5":32.5,"ma10":32.0,"ma20":30.82,"maAbove":true,"rsi":67.94,"drop20d":-5.86,"volRatio":0.74,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":26.78,"supportDist":19.1,"trend":"上升趋势","trendPct":8.74,"volSignal":"缩量","kd5_cross":"下降"},"sh601933":{"kd5_k":62.68,"kd5_d":55.93,"kd30_k":76.59,"kd30_d":73.01,"kd30_cross":"上升","kd60_k":75.21,"kd60_d":58.89,"kd60_cross":"上升","macd":"DIF:+0.03 DEA:+0.01 金叉","ma":"多头排列","ma5":3.26,"ma10":3.23,"ma20":3.17,"maAbove":true,"rsi":60.56,"drop20d":5.48,"volRatio":0.79,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":2.94,"supportDist":10.1,"trend":"上升趋势","trendPct":0.31,"volSignal":"缩量","kd5_cross":"上升"},"sh601606":{"kd5_k":50.0,"kd5_d":50.0,"kd30_k":99.19,"kd30_d":96.26,"kd30_cross":"上升","kd60_k":87.56,"kd60_d":70.35,"kd60_cross":"上升","macd":"DIF:+1.38 DEA:+0.94 金叉","ma":"交叉震荡","ma5":33.77,"ma10":33.81,"ma20":30.84,"maAbove":true,"rsi":73.12,"drop20d":39.8,"volRatio":0.98,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":25.0,"supportDist":30.9,"trend":"震荡偏强","trendPct":10.27,"volSignal":"正常","kd5_cross":"下降"},"sh603171":{"kd5_k":78.15,"kd5_d":69.66,"kd30_k":25.8,"kd30_d":30.82,"kd30_cross":"下降","kd60_k":35.68,"kd60_d":34.36,"kd60_cross":"上升","macd":"DIF:+2.01 DEA:+0.61 金叉","ma":"多头排列","ma5":48.69,"ma10":45.12,"ma20":40.99,"maAbove":true,"rsi":76.73,"drop20d":27.35,"volRatio":0.47,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":34.42,"supportDist":28.2,"trend":"震荡偏弱","trendPct":4.08,"volSignal":"极度缩量","kd5_cross":"上升"},"sh600986":{"kd5_k":78.04,"kd5_d":79.81,"kd30_k":50.33,"kd30_d":51.98,"kd30_cross":"下降","kd60_k":61.63,"kd60_d":54.26,"kd60_cross":"上升","macd":"DIF:+0.23 DEA:+0.05 金叉","ma":"多头排列","ma5":8.07,"ma10":7.72,"ma20":7.19,"maAbove":true,"rsi":76.31,"drop20d":24.88,"volRatio":0.43,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":6.24,"supportDist":22.3,"trend":"横盘震荡","trendPct":1.77,"volSignal":"极度缩量","kd5_cross":"下降"},"sh600426":{"kd5_k":46.2,"kd5_d":53.14,"kd30_k":51.82,"kd30_d":50.56,"kd30_cross":"上升","kd60_k":53.43,"kd60_d":52.17,"kd60_cross":"上升","macd":"DIF:-0.68 DEA:-1.00 金叉","ma":"交叉震荡","ma5":21.2,"ma10":21.35,"ma20":20.77,"maAbove":true,"rsi":61.44,"drop20d":15.04,"volRatio":1.35,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":18.12,"supportDist":16.3,"trend":"震荡偏强","trendPct":0.79,"volSignal":"正常","kd5_cross":"下降"},"sh601799":{"kd5_k":19.19,"kd5_d":17.02,"kd30_k":51.32,"kd30_d":52.62,"kd30_cross":"下降","kd60_k":51.72,"kd60_d":43.24,"kd60_cross":"上升","macd":"DIF:-1.67 DEA:-2.90 金叉","ma":"交叉震荡","ma5":95.01,"ma10":95.5,"ma20":92.67,"maAbove":true,"rsi":63.31,"drop20d":6.22,"volRatio":1.27,"openRate30d":53.3,"openRateTotal":53.3,"openRateScore":2,"supportPrice":85.6,"supportDist":10.9,"trend":"震荡偏强","trendPct":-1.28,"volSignal":"正常","kd5_cross":"上升"},"sh603067":{"rsi":58.04,"macd":"DIF:-1.31 DEA:-1.92 金叉","ma":"交叉震荡","ma5":33.62,"ma10":32.02,"ma20":32.6,"maAbove":true,"drop20d":-10.01,"volRatio":1.33,"supportPrice":28.31,"supportDist":19.8,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":86.35,"kd5_d":72.85,"kd5_cross":"上升","kd30_k":35.25,"kd30_d":40.4,"kd30_cross":"下降","kd60_k":41.36,"kd60_d":46.65,"kd60_cross":"下降","trend":"上升趋势","trendPct":17.26,"volSignal":"正常","beta":3.72,"betaCategory":"跟随","syncRate":60.0},"sh600105":{"rsi":48.73,"macd":"DIF:-3.46 DEA:-4.58 金叉","ma":"交叉震荡","ma5":37.18,"ma10":34.45,"ma20":36.94,"maAbove":true,"drop20d":-22.49,"volRatio":0.72,"supportPrice":29.11,"supportDist":22.7,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":85.75,"kd5_d":86.5,"kd5_cross":"下降","kd30_k":69.14,"kd30_d":50.03,"kd30_cross":"上升","kd60_k":38.83,"kd60_d":44.29,"kd60_cross":"下降","trend":"上升趋势","trendPct":18.91,"volSignal":"缩量","beta":2.86,"betaCategory":"跟随","syncRate":80.0},"sh601126":{"rsi":51.98,"macd":"DIF:-3.59 DEA:-5.02 金叉","ma":"交叉震荡","ma5":44.65,"ma10":41.71,"ma20":43.5,"maAbove":true,"drop20d":-12.76,"volRatio":1.27,"supportPrice":36.5,"supportDist":20.5,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":93.46,"kd5_d":87.84,"kd5_cross":"上升","kd30_k":67.28,"kd30_d":45.51,"kd30_cross":"上升","kd60_k":42.34,"kd60_d":49.28,"kd60_cross":"下降","trend":"上升趋势","trendPct":13.96,"volSignal":"正常","beta":2.49,"betaCategory":"跟随","syncRate":80.0},"sz000688":{"rsi":72.91,"macd":"DIF:-0.74 DEA:-1.61 金叉","ma":"多头排列","ma5":30.71,"ma10":29.41,"ma20":28.6,"maAbove":true,"drop20d":7.09,"volRatio":1.11,"supportPrice":23.88,"supportDist":25.7,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"kd5_k":86.89,"kd5_d":71.0,"kd5_cross":"上升","kd30_k":83.29,"kd30_d":75.22,"kd30_cross":"上升","kd60_k":87.86,"kd60_d":84.59,"kd60_cross":"上升","trend":"上升趋势","trendPct":15.98,"volSignal":"正常","beta":1.56,"betaCategory":"弱关联","syncRate":100.0}};
 
 // ============================================
 // 初始化
