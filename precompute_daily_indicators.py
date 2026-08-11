@@ -344,35 +344,130 @@ def calc_sector_resonance(stock, all_stocks_in_sector=None):
             }
 
 
-def map_phase(stock):
-    """将 preBreakoutPhase 映射为前端期望的 preLaunchPhase"""
-    pb_phase = stock.get('preBreakoutPhase', '')
-    pb_score = stock.get('preBreakoutScore', 0)
-
-    if not pb_phase:
+def calc_daily_kdj(klines, n=9):
+    """计算日线KDJ(9,3,3)，返回当前K/D/J值"""
+    if len(klines) < n + 3:
         return None
 
-    # 映射表
+    highs = [k['high'] for k in klines]
+    lows = [k['low'] for k in klines]
+    closes = [k['close'] for k in klines]
+
+    rsvs = []
+    for i in range(n - 1, len(closes)):
+        hh = max(highs[i - n + 1:i + 1])
+        ll = min(lows[i - n + 1:i + 1])
+        if hh == ll:
+            rsv = 50
+        else:
+            rsv = (closes[i] - ll) / (hh - ll) * 100
+        rsvs.append(rsv)
+
+    # KDJ递推
+    k = 50
+    d = 50
+    for rsv in rsvs:
+        k = 2 / 3 * k + 1 / 3 * rsv
+        d = 2 / 3 * d + 1 / 3 * k
+    j = 3 * k - 2 * d
+
+    return {'k': round(k, 1), 'd': round(d, 1), 'j': round(j, 1)}
+
+
+def map_phase(stock, klines=None):
+    """
+    智能阶段判定 — 基于实际K线数据(涨幅+KD水位) + preBreakout信号综合判断
+    
+    阶段体系（前端phaseMap）:
+      on_deck         → ⏳启动在即    (预启动信号极强，即将爆发)
+      approaching     → 🔍接近启动    (预启动信号较强，接近突破)
+      building        → 🚀启动段      (低位筑底/启动初期)
+      accelerating    → ⚡加速段      (已经启动且正在加速上涨)
+      tail            → 📉回落段      (涨幅过大+KD高位，鱼尾阶段)
+      overbought_wait → ⚠️KD高位等回调 (KD极高，追高风险大)
+      high_caution    → 🟠KD偏高谨慎   (KD偏高，需警惕)
+    """
+    pb_score = stock.get('preBreakoutScore', 0)
+    drop_20d = stock.get('drop20d', 0)  # 注意：drop20d 是20日涨跌幅，负=跌
+
+    # 如果有K线数据，基于实际市场状态判定
+    if klines and len(klines) >= 15:
+        closes = [k['close'] for k in klines]
+        cur = closes[-1]
+
+        # 5日涨幅
+        ago5 = closes[-6] if len(closes) >= 6 else closes[0]
+        chg_5d = ((cur - ago5) / ago5 * 100) if ago5 != 0 else 0
+
+        # 日线KDJ
+        kdj = calc_daily_kdj(klines)
+        kd_k = kdj['k'] if kdj else 50
+
+        # ===== 优先级1: 已经大涨+KD高位 → 回落段(鱼尾) =====
+        if chg_5d > 10 and kd_k > 80:
+            phase = 'tail'
+        # ===== 优先级2: 正在加速上涨 → 加速段 =====
+        elif chg_5d > 8 and kd_k > 70:
+            phase = 'accelerating'
+        elif chg_5d > 15 and kd_k > 60:
+            phase = 'accelerating'
+        # ===== 优先级3: KD极高 → 高位等回调 =====
+        elif kd_k > 85:
+            phase = 'overbought_wait'
+        # ===== 优先级4: KD偏高 → 偏高谨慎 =====
+        elif kd_k >= 75:
+            phase = 'high_caution'
+        # ===== 优先级5: 预启动信号强 → 启动在即 =====
+        elif pb_score >= 50:
+            phase = 'on_deck'
+        # ===== 优先级6: 预启动信号中等 → 接近启动 =====
+        elif pb_score >= 30:
+            phase = 'approaching'
+        # ===== 优先级7: 低位筑底 → 启动段 =====
+        else:
+            phase = 'building'
+
+        # preLaunchScore：综合预启动分数 + 实际涨幅
+        launch_score = pb_score
+        if chg_5d > 0:
+            launch_score += min(int(chg_5d), 20)  # 涨幅加分最多20
+        launch_score = min(launch_score, 100)
+
+        return {
+            'preLaunchPhase': phase,
+            'preLaunchScore': launch_score,
+            'phase': phase,
+        }
+
+    # 无K线数据时，退回到纯preBreakoutPhase映射
+    pb_phase = stock.get('preBreakoutPhase', '')
+    if not pb_phase:
+        # 最后兜底：基于drop20d判断
+        if drop_20d > 10:
+            return {'preLaunchPhase': 'tail', 'preLaunchScore': pb_score, 'phase': 'tail'}
+        elif drop_20d > 5:
+            return {'preLaunchPhase': 'accelerating', 'preLaunchScore': pb_score, 'phase': 'accelerating'}
+        elif pb_score >= 50:
+            return {'preLaunchPhase': 'on_deck', 'preLaunchScore': pb_score, 'phase': 'on_deck'}
+        elif pb_score >= 30:
+            return {'preLaunchPhase': 'approaching', 'preLaunchScore': pb_score, 'phase': 'approaching'}
+        else:
+            return {'preLaunchPhase': 'building', 'preLaunchScore': pb_score, 'phase': 'building'}
+
+    # preBreakoutPhase 映射
     phase_map = {
         'imminent': 'on_deck',
         'approaching_breakout': 'approaching',
         'building_base': 'building',
         'weak': 'building',
     }
+    launch_phase = phase_map.get(pb_phase, 'building')
 
-    launch_phase = phase_map.get(pb_phase, '')
-    if not launch_phase:
-        return None
-
-    result = {
+    return {
         'preLaunchPhase': launch_phase,
         'preLaunchScore': pb_score,
+        'phase': launch_phase,
     }
-
-    # 同时保留 phase 字段（前端也检查 stock.phase）
-    result['phase'] = launch_phase
-
-    return result
 
 
 def enrich_stock(stock, sector_counts=None):
@@ -421,8 +516,8 @@ def enrich_stock(stock, sector_counts=None):
         stock['sectorResonance'] = resonance['sectorResonance']
         stock['sectorResonanceDetail'] = resonance['sectorResonanceDetail']
 
-    # 阶段映射
-    phase_data = map_phase(stock)
+    # 阶段映射（传入klines进行智能判定）
+    phase_data = map_phase(stock, klines)
     if phase_data:
         stock['preLaunchPhase'] = phase_data['preLaunchPhase']
         stock['preLaunchScore'] = phase_data['preLaunchScore']
@@ -471,7 +566,8 @@ def inject_into_html(html_path):
             enrich_stock(stock, sector_counts)
             # 检查结果
             filled = sum(1 for k in ['macd', 'ma', 'trend', 'supportPrice', 'openRate30d', 'sectorResonance', 'preLaunchPhase'] if stock.get(k))
-            print(f"✅ {filled}/7 字段已填充")
+            phase_label = stock.get('preLaunchPhase', '?')
+            print(f"✅ {filled}/7 字段已填充 | 阶段={phase_label}")
         except Exception as e:
             print(f"❌ {e}")
 
