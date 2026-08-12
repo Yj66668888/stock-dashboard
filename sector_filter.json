@@ -1,6 +1,6 @@
 {
-  "update_time": "2026-08-11 16:36:33",
-  "data_source_time": "2026-08-10 22:34:51",
+  "update_time": "2026-08-12 14:04:47",
+  "data_source_time": "2026-08-12 14:03:27",
   "filter_config": {
     "min_avg_gain": 1.5,
     "min_limit_ups": 1,
@@ -38,11 +38,11 @@
     {
       "sector": "半导体电子",
       "total": 14,
-      "avg_gain": 1.48,
+      "avg_gain": 1.46,
       "limit_up_count": 1,
       "strong_count": 1,
       "high_gain_count": 1,
-      "avg_ratio_5d": 89.45,
+      "avg_ratio_5d": 46.23,
       "qualified": true
     },
     {
@@ -436,12 +436,12 @@
     },
     "半导体电子": {
       "total": 14,
-      "avg_gain": 1.48,
+      "avg_gain": 1.46,
       "limit_up_count": 1,
       "limit_up_names": [
         "博敏电子"
       ],
-      "avg_ratio_5d": 89.45,
+      "avg_ratio_5d": 46.23,
       "strong_count": 1,
       "status": "T2中选",
       "stocks": [
@@ -466,17 +466,6 @@
           "daily_score": 51.1,
           "is_limit_up": false,
           "composite_score": 6998.3
-        },
-        {
-          "code": "603678",
-          "name": "火炬电子",
-          "chg": 2.3,
-          "flow_5d_wan": 53666.0,
-          "ratio_5d": 564.91,
-          "ratio_10d": 335.93,
-          "daily_score": 48.6,
-          "is_limit_up": false,
-          "composite_score": 5658.4
         },
         {
           "code": "603936",
@@ -521,6 +510,17 @@
           "daily_score": 47.8,
           "is_limit_up": false,
           "composite_score": 16.2
+        },
+        {
+          "code": "603678",
+          "name": "火炬电子",
+          "chg": 2.0,
+          "flow_5d_wan": 33420.6,
+          "ratio_5d": null,
+          "ratio_10d": null,
+          "daily_score": 48.6,
+          "is_limit_up": false,
+          "composite_score": 8.4
         },
         {
           "code": "002952",
