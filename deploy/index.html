@@ -254,6 +254,26 @@
     padding: 6px 8px;
     border-bottom: 1px solid var(--border);
   }
+  .filter-quick-actions {
+    display: flex;
+    gap: 4px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .filter-qa-btn {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.25);
+    color: var(--blue);
+    border-radius: 3px;
+    padding: 2px 10px;
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .filter-qa-btn:hover { background: rgba(88,166,255,0.2); }
+  .filter-qa-btn .qa-count { opacity: 0.6; font-size: 9px; margin-left: 2px; }
   .filter-search input {
     width: 100%;
     background: var(--bg);
@@ -4353,6 +4373,11 @@ function toggleFilter(event, field) {
       '</div>' +
     '</div>' +
     '<div class="filter-search"><input type="text" placeholder="搜索…" oninput="filterPanelSearch(this)"></div>' +
+    '<div class="filter-quick-actions">' +
+      '<button class="filter-qa-btn" onclick="selectAllInPanel(\'' + field + '\')">☑ 全选</button>' +
+      '<button class="filter-qa-btn" onclick="deselectAllInPanel(\'' + field + '\')">☐ 全不选</button>' +
+      '<span style="flex:1;text-align:right;color:var(--text-dim);font-size:10px;align-self:center;" id="filterSelectedCount">' + _panelSelected.size + '/' + values.length + ' 已选</span>' +
+    '</div>' +
     '<div class="filter-list" id="filterList">' + itemsHtml + '</div>' +
     '<div class="filter-panel-foot">' +
       '<button class="filter-foot-btn" onclick="clearFilter(\'' + field + '\')">清除筛选</button>' +
@@ -4390,8 +4415,38 @@ function onFilterCheck(field, cb) {
   } else {
     filterState[field] = new Set(_panelSelected);
   }
+  updateFilterSelectedCount(allValues.length);
   updateFilterHeaders();
   renderStocks();
+}
+
+function selectAllInPanel(field) {
+  const allValues = collectFilterValues(field);
+  _panelSelected = new Set(allValues);
+  document.querySelectorAll('#filterList .filter-item input[type=checkbox]').forEach(cb => {
+    cb.checked = true;
+  });
+  filterState[field] = null;
+  updateFilterSelectedCount(allValues.length);
+  updateFilterHeaders();
+  renderStocks();
+}
+
+function deselectAllInPanel(field) {
+  const allValues = collectFilterValues(field);
+  _panelSelected = new Set();
+  document.querySelectorAll('#filterList .filter-item input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+  });
+  filterState[field] = new Set();
+  updateFilterSelectedCount(allValues.length);
+  updateFilterHeaders();
+  renderStocks();
+}
+
+function updateFilterSelectedCount(total) {
+  const el = document.getElementById('filterSelectedCount');
+  if (el) el.textContent = _panelSelected.size + '/' + total + ' 已选';
 }
 
 function clearFilter(field) {
