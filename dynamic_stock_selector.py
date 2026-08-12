@@ -58,8 +58,9 @@ def is_zombie(score, flow_5d):
     """数据缺失票：dailyScore和资金流全为0 → 僵尸票"""
     return score == 0 and flow_5d == 0
 
-# 换手率最低阈值：低于此值的票不选入（流动性太差）
+# 换手率过滤区间：低于2%流动性太差不选，高于7%过热追高风险不选
 MIN_TURNOVER = 2.0
+MAX_TURNOVER = 7.0
 
 def fetch_turnover_batch(codes):
     """
@@ -93,6 +94,72 @@ def fetch_turnover_batch(codes):
                         pass
         except Exception as e:
             print(f"  ⚠️ 换手率获取失败(batch {i//batch_size+1}): {e}")
+    return result
+
+# 30分钟KDJ追高风险过滤阈值
+KDJ30_HARD_KICK = 90   # K>=90 直接踢（严重超买）
+KDJ30_PENALTY_HI = 80  # 80<=K<90 扣-8
+KDJ30_PENALTY_MID = 70 # 70<=K<80 扣-4
+KDJ30_PENALTY_LOW = 60 # 60<=K<70 扣-2
+KDJ30_BONUS = 30       # K<30 加+3（低位有空间）
+
+def fetch_30min_kdj_batch(codes):
+    """
+    从新浪K线API批量获取30分钟KDJ(9,3,3)。
+    codes: ['sh603936', 'sz002138', ...] 带前缀代码列表
+    返回: {'sh603936': {'k': 65.2, 'd': 60.1, 'prev_k': 62.0, 'rising': True}, ...}
+    """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    import json as _json, subprocess as _sp
+
+    def _fetch_one(code_with_prefix):
+        sina_sym = code_with_prefix  # 已经带 sh/sz 前缀
+        num = code_with_prefix[2:]
+        url = (f'https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/'
+               f'CN_MarketData.getKLineData?symbol={sina_sym}&scale=30&datalen=120')
+        try:
+            r = _sp.run(
+                ['curl', '-sL', '--max-time', '8', url,
+                 '-H', 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'],
+                capture_output=True, text=True, timeout=12
+            )
+            raw = r.stdout
+            if not raw or raw.strip() == '[]':
+                return code_with_prefix, None
+            data = _json.loads(raw)
+            if len(data) < 9:
+                return code_with_prefix, None
+            # KDJ(9,3,3)
+            klines = [[float(d['high']), float(d['low']), float(d['close']), float(d['volume'])] for d in data]
+            prev_k, prev_d = 50.0, 50.0
+            k_vals = []
+            for i in range(len(klines)):
+                start = max(0, i - 8)
+                hn = max(kl[0] for kl in klines[start:i+1])
+                ln = min(kl[1] for kl in klines[start:i+1])
+                c = klines[i][2]
+                rsv = (c - ln) / (hn - ln) * 100 if hn != ln else 50.0
+                k = 2/3 * prev_k + 1/3 * rsv
+                d = 2/3 * prev_d + 1/3 * k
+                prev_k, prev_d = k, d
+                k_vals.append(k)
+            if len(k_vals) < 2:
+                return code_with_prefix, None
+            cur_k = round(k_vals[-1], 2)
+            prev_k_val = round(k_vals[-2], 2)
+            cur_d = round(prev_d, 2)
+            rising = cur_k > prev_k_val
+            return code_with_prefix, {'k': cur_k, 'd': cur_d, 'prev_k': prev_k_val, 'rising': rising}
+        except:
+            return code_with_prefix, None
+
+    result = {}
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        futures = {pool.submit(_fetch_one, c): c for c in codes}
+        for fut in as_completed(futures):
+            code, kdj = fut.result()
+            if kdj:
+                result[code] = kdj
     return result
 
 # =====================================================================
@@ -1210,17 +1277,17 @@ def select_launch_pool(all_results, cf_stocks, kdj_stocks, fundamental_data=None
     # 复合排序：70%健康度 + 30%预启动分，预启动高分的票不被埋没
     candidates.sort(key=lambda x: x['launch_health'] * 0.7 + x.get('pre_launch_score', 0) * 0.3, reverse=True)
 
-    # === 换手率过滤：踢掉换手率 <2% 的 ===
+    # === 换手率过滤：踢掉换手率 <2% 和 >7% 的 ===
     if candidates:
         launch_codes = [c['code'] for c in candidates]
         launch_turnover = fetch_turnover_batch(launch_codes)
         for c in candidates:
             c['turnover'] = launch_turnover.get(c['code'], None)
         before_count = len(candidates)
-        candidates = [c for c in candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
+        candidates = [c for c in candidates if c['turnover'] is None or MIN_TURNOVER <= c['turnover'] <= MAX_TURNOVER]
         kicked = before_count - len(candidates)
         if kicked > 0:
-            print(f"  🚫 启动段换手率<{MIN_TURNOVER}% 被踢: {kicked}只")
+            print(f"  🚫 启动段换手率不在[{MIN_TURNOVER}%,{MAX_TURNOVER}%]被踢: {kicked}只")
 
     return candidates[:LAUNCH_COUNT], len(candidates)
 
@@ -1483,27 +1550,106 @@ def main():
     sector_candidates.sort(key=lambda x: x['health'], reverse=True)
     fallback_candidates.sort(key=lambda x: x['health'], reverse=True)
 
-    # === 换手率过滤：批量获取候选票换手率，踢掉 <2% 的 ===
+    # === 换手率过滤：批量获取候选票换手率，踢掉 <2% 和 >7% 的 ===
     all_candidates_ordered = sector_candidates + fallback_candidates
     all_codes = [c['code'] for c in all_candidates_ordered]
-    print(f"\n=== 换手率过滤（阈值≥{MIN_TURNOVER}%）: 批量获取 {len(all_codes)} 只候选票换手率 ===")
+    print(f"\n=== 换手率过滤（{MIN_TURNOVER}%≤换手率≤{MAX_TURNOVER}%）: 批量获取 {len(all_codes)} 只候选票换手率 ===")
     turnover_map = fetch_turnover_batch(all_codes)
     print(f"  获取到换手率: {len(turnover_map)}/{len(all_codes)} 只")
 
     # 标注换手率并过滤
-    low_turnover_kicked = []
     for c in all_candidates_ordered:
         c['turnover'] = turnover_map.get(c['code'], None)
-    sector_candidates = [c for c in sector_candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
-    fallback_candidates = [c for c in fallback_candidates if c['turnover'] is None or c['turnover'] >= MIN_TURNOVER]
+    sector_candidates = [c for c in sector_candidates if c['turnover'] is None or MIN_TURNOVER <= c['turnover'] <= MAX_TURNOVER]
+    fallback_candidates = [c for c in fallback_candidates if c['turnover'] is None or MIN_TURNOVER <= c['turnover'] <= MAX_TURNOVER]
     kicked_by_turnover = [c for c in all_candidates_ordered
-                          if c['turnover'] is not None and c['turnover'] < MIN_TURNOVER]
+                          if c['turnover'] is not None and (c['turnover'] < MIN_TURNOVER or c['turnover'] > MAX_TURNOVER)]
     if kicked_by_turnover:
-        print(f"  🚫 换手率<{MIN_TURNOVER}% 被踢: {len(kicked_by_turnover)} 只")
-        for c in kicked_by_turnover[:10]:
-            print(f"     {c['name']:6s} {c['code']} 换手率{c['turnover']:.2f}%")
-        if len(kicked_by_turnover) > 10:
-            print(f"     ... 及其他 {len(kicked_by_turnover)-10} 只")
+        low_kicked = [c for c in kicked_by_turnover if c['turnover'] < MIN_TURNOVER]
+        high_kicked = [c for c in kicked_by_turnover if c['turnover'] > MAX_TURNOVER]
+        if low_kicked:
+            print(f"  🚫 换手率<{MIN_TURNOVER}% 被踢: {len(low_kicked)} 只")
+            for c in low_kicked[:5]:
+                print(f"     {c['name']:6s} {c['code']} 换手率{c['turnover']:.2f}%")
+            if len(low_kicked) > 5:
+                print(f"     ... 及其他 {len(low_kicked)-5} 只")
+        if high_kicked:
+            print(f"  🚫 换手率>{MAX_TURNOVER}% 被踢: {len(high_kicked)} 只")
+            for c in high_kicked[:5]:
+                print(f"     {c['name']:6s} {c['code']} 换手率{c['turnover']:.2f}%")
+            if len(high_kicked) > 5:
+                print(f"     ... 及其他 {len(high_kicked)-5} 只")
+
+    # === 30分钟KDJ追高风险过滤：高位扣分/踢掉，低位加分 ===
+    all_remaining = sector_candidates + fallback_candidates
+    if all_remaining:
+        all_codes_30 = [to_prefixed_code(c['code']) for c in all_remaining]
+        print(f"\n=== 30分钟KDJ过滤: 批量获取 {len(all_codes_30)} 只候选票30分KDJ ===")
+        kdj30_map = fetch_30min_kdj_batch(all_codes_30)
+        print(f"  获取到30分KDJ: {len(kdj30_map)}/{len(all_codes_30)} 只")
+
+        kdj30_hard_kicked = []
+        for c in all_remaining:
+            kdj30 = kdj30_map.get(to_prefixed_code(c['code']))
+            if kdj30 is None:
+                c['kdj30_k'] = None
+                c['kdj30_rising'] = None
+                c['kdj30_penalty'] = 0
+                continue
+            k = kdj30['k']
+            rising = kdj30['rising']
+            c['kdj30_k'] = k
+            c['kdj30_rising'] = rising
+            # 计算扣分/加分
+            penalty = 0
+            if k >= KDJ30_HARD_KICK:
+                penalty = -999  # 硬踢
+            elif k >= KDJ30_PENALTY_HI:
+                penalty = -8    # 80<=K<90 严重追高
+            elif k >= KDJ30_PENALTY_MID:
+                penalty = -4    # 70<=K<80 偏高
+            elif k >= KDJ30_PENALTY_LOW:
+                penalty = -2    # 60<=K<70 中性偏高
+            elif k < KDJ30_BONUS:
+                penalty = +3     # K<30 低位有空间
+            # 上升中的高位罚更重（硬踢的不再扣）
+            if penalty != -999 and rising and k >= KDJ30_PENALTY_MID:
+                penalty -= 2
+            c['kdj30_penalty'] = penalty
+
+        # 硬踢 K>=90
+        kdj30_hard_kicked = [c for c in all_remaining if c.get('kdj30_penalty', 0) <= -999]
+        if kdj30_hard_kicked:
+            print(f"  🚫 30分KDJ K>={KDJ30_HARD_KICK} 被踢: {len(kdj30_hard_kicked)} 只")
+            for c in kdj30_hard_kicked:
+                print(f"     {c['name']:6s} {c['code']} K={c['kdj30_k']:.1f} {'↑' if c['kdj30_rising'] else '↓'}")
+
+        # 过滤+应用扣分
+        sector_candidates = [c for c in sector_candidates if c.get('kdj30_penalty', 0) > -999]
+        fallback_candidates = [c for c in fallback_candidates if c.get('kdj30_penalty', 0) > -999]
+
+        # 扣分应用到health
+        for c in sector_candidates + fallback_candidates:
+            c['health'] += c.get('kdj30_penalty', 0)
+
+        # 打印扣分明细
+        penalized = [c for c in sector_candidates + fallback_candidates if c.get('kdj30_penalty', 0) != 0 and c.get('kdj30_penalty', 0) > -999]
+        if penalized:
+            print(f"  📊 30分KDJ奖罚明细:")
+            for c in sorted(penalized, key=lambda x: x.get('kdj30_penalty', 0)):
+                k = c.get('kdj30_k', 0)
+                p = c.get('kdj30_penalty', 0)
+                arrow = '↑' if c.get('kdj30_rising') else '↓'
+                tag = ''
+                if k >= KDJ30_PENALTY_HI: tag = '⚠️追高'
+                elif k >= KDJ30_PENALTY_MID: tag = '偏高'
+                elif k >= KDJ30_PENALTY_LOW: tag = '中性偏高'
+                elif k < KDJ30_BONUS: tag = '✅低位'
+                print(f"     {c['name']:6s} K={k:5.1f}{arrow} {p:+d}分 {tag}")
+
+        # 重新排序（扣分后排名变化）
+        sector_candidates.sort(key=lambda x: x['health'], reverse=True)
+        fallback_candidates.sort(key=lambda x: x['health'], reverse=True)
 
     # 取Top30：板块票优先
     final_picks = sector_candidates[:TARGET_POOL_SIZE]
@@ -1549,7 +1695,16 @@ def main():
         sector_flag = f' 🏭T{c_tier_label}' if c_tier_label else ''
         ratio_flag = f' 💹主力{c_ratio_5d:+.1f}%' if c_ratio_5d else ''
         turnover_flag = f' 换手{c["turnover"]:.1f}%' if c.get('turnover') else ''
-        print(f"  #{i+1:2d} {c['health']:5.1f} | {c['name']:6s} | 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{rat_label}{funnel}{sector_flag}{ratio_flag}{turnover_flag}")
+        kdj30_flag = ''
+        if c.get('kdj30_k') is not None:
+            k30 = c['kdj30_k']
+            arrow30 = '↑' if c.get('kdj30_rising') else '↓'
+            p30 = c.get('kdj30_penalty', 0)
+            if p30 != 0:
+                kdj30_flag = f' 30分KD{k30:.0f}{arrow30}{p30:+d}'
+            else:
+                kdj30_flag = f' 30分KD{k30:.0f}{arrow30}'
+        print(f"  #{i+1:2d} {c['health']:5.1f} | {c['name']:6s} | 评分{c['score']:.1f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}% 连{c['consecutive']}天{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag}{rat_label}{funnel}{sector_flag}{ratio_flag}{turnover_flag}{kdj30_flag}")
 
     # 4. 构造新STOCKS数组
     sector_map = {
@@ -1618,6 +1773,9 @@ def main():
             'ratio10d': c.get('ratio_10d'),
             'dailyFlow': get_latest_daily_flow(c['code'], cf_stocks),  # 🔥 当日主力净流入
             'turnover': c.get('turnover'),  # 🔥 换手率(%)
+            'kdj30K': c.get('kdj30_k'),  # 🔥 30分KDJ的K值
+            'kdj30Rising': c.get('kdj30_rising'),  # 🔥 30分KDJ是否上升
+            'kdj30Penalty': c.get('kdj30_penalty', 0),  # 🔥 30分KDJ追高扣分
             'isNew': True
         }
         new_stocks.append(new_stock)
