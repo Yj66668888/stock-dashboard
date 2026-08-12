@@ -2791,15 +2791,27 @@ function initPrecomputedCapitalFlow() {
       entry = CAPITAL_FLOW_CACHE[num];
     }
     
-    // 主力资金（当日）
+    // 主力资金（当日）— 检查缓存日期是否新鲜，过期的跳过等浏览器实时获取
     if (!s.mainFlow && entry) {
       var inflowWan = entry.mainNetInflow;
       if (inflowWan !== undefined && inflowWan !== null) {
-        var inflowYuan = inflowWan * 10000;
-        s.mainFlow = formatFlowAmt(inflowYuan);
-        s.mainFlowToday = inflowYuan;
-        s.mainFlowDate = entry.date || '';
-        count++;
+        // 日期新鲜度检查：缓存日期必须在最近2天内（容忍周末/节假日）
+        var cacheDate = entry.date || '';
+        var isFresh = false;
+        if (cacheDate) {
+          var d = new Date(cacheDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1/$2/$3'));
+          var now = new Date();
+          var diffDays = (now - d) / (1000 * 60 * 60 * 24);
+          isFresh = diffDays <= 3; // 3天内算新鲜（覆盖周五数据周一看的场景）
+        }
+        if (isFresh) {
+          var inflowYuan = inflowWan * 10000;
+          s.mainFlow = formatFlowAmt(inflowYuan);
+          s.mainFlowToday = inflowYuan;
+          s.mainFlowDate = cacheDate;
+          count++;
+        }
+        // 过期缓存不注入，留空让 fetchCapitalFlow() 实时获取
       }
     }
     
@@ -2811,7 +2823,7 @@ function initPrecomputedCapitalFlow() {
       s.flow10d = formatFlowAmt(s.flow10d * 10000);
     }
   });
-  console.log('[Flow] initPrecomputedCapitalFlow: ' + count + ' stocks enriched from CAPITAL_FLOW_CACHE');
+  console.log('[Flow] initPrecomputedCapitalFlow: ' + count + ' stocks enriched from CAPITAL_FLOW_CACHE (stale entries skipped)');
 }
 
 // ============================================

@@ -109,6 +109,27 @@ def main():
             print(f"0. KDJ预计算异常: {e}")
 
     # 预计算主力资金数据并注入
+    # 先检查 capital_flow.json 数据新鲜度
+    cf_json = os.path.join(BASE, "capital_flow.json")
+    if os.path.exists(cf_json):
+        try:
+            with open(cf_json, "r", encoding="utf-8") as f:
+                cf_check = json.load(f)
+            # 找最新日期
+            latest_date = ""
+            for code, s in cf_check.get("stocks", {}).items():
+                for d in s.get("daily", []):
+                    if d.get("date", "") > latest_date:
+                        latest_date = d["date"]
+            today_str = time.strftime("%Y-%m-%d")
+            if latest_date and latest_date < today_str:
+                print(f"  ⚠️ capital_flow.json 最新日期={latest_date}, 今天={today_str} — 缓存过期！")
+                print(f"  ⚠️ 建议先运行 quick_capital_flow.py 刷新资金流数据，否则前端将跳过缓存等待实时获取")
+            elif not latest_date:
+                print(f"  ⚠️ capital_flow.json 无日期信息 — 缓存可能为空")
+        except Exception as e:
+            print(f"  ⚠️ capital_flow.json 检查失败: {e}")
+
     cf_script = os.path.join(BASE, "precompute_capital_flow.py")
     if os.path.exists(cf_script):
         import subprocess as _sp2
