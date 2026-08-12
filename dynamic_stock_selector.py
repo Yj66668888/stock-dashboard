@@ -1715,70 +1715,73 @@ def main():
     print(f"\n=== 本期全量选股 ===")
     print(f"{', '.join(c['name'] for c in final_picks)}")
 
-    # 7. 池B：启动段专属选股
-    print(f"\n{'='*60}")
-    print(f"=== 池B：启动段专属选股 ===")
-    print(f"{'='*60}")
+    # 7. 池B：启动段专属选股（已停用 — 用户要求只用综合最优池）
+    # 以下代码保留但不执行，如需恢复去掉 if False 即可
+    if os.environ.get('ENABLE_LAUNCH_POOL') == '1':
+        print(f"\n{'='*60}")
+        print(f"=== 池B：启动段专属选股 ===")
+        print(f"{'='*60}")
 
-    # 正常选股（已移除大盘风控限制）
-    pool_a_codes = set(pure_code(s['code']) for s in new_stocks)
-    launch_picks, launch_total = select_launch_pool(all_results, cf_stocks, kdj_stocks,
-                                                      fundamental_data=fundamental_data,
-                                                      code_sector_tier=code_sector_tier,
-                                                      code_sector_ratio=code_sector_ratio,
-                                                      code_sector_persistent=code_sector_persistent,
-                                                      exclude_codes=pool_a_codes)
-    deploy_launch = build_launch_stocks(launch_picks, fundamental_data=fundamental_data, cf_stocks=cf_stocks)
+        pool_a_codes = set(pure_code(s['code']) for s in new_stocks)
+        launch_picks, launch_total = select_launch_pool(all_results, cf_stocks, kdj_stocks,
+                                                          fundamental_data=fundamental_data,
+                                                          code_sector_tier=code_sector_tier,
+                                                          code_sector_ratio=code_sector_ratio,
+                                                          code_sector_persistent=code_sector_persistent,
+                                                          exclude_codes=pool_a_codes)
+        deploy_launch = build_launch_stocks(launch_picks, fundamental_data=fundamental_data, cf_stocks=cf_stocks)
 
-    print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(deploy_launch)}只")
-    # 统计预启动票数
-    pre_on_deck = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'on_deck')
-    pre_approaching = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'approaching')
-    print(f"  ⏳预启动在即: {pre_on_deck}只 | 🔍接近启动: {pre_approaching}只 | 🚀已启动: {len(launch_picks) - pre_on_deck - pre_approaching}只")
-    print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 | 预启动 ===")
-    for c in launch_picks:
-        pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
-        # 🔥 10日资金状态
-        f10 = c['flow_10d'] or 0
-        if f10 < 0 and c['flow_5d'] > 0:
-            flow_flag = f'💰反转10日{f10/10000:.1f}→5日{c["flow_5d"]/10000:.1f}亿'
-        elif f10 > 0:
-            flow_flag = f'💰10日+{f10/10000:.1f}亿'
-        elif f10 < 0:
-            flow_flag = f'🔴10日{f10/10000:.1f}亿'
-        else:
-            flow_flag = '⚠️10日无数据'
-        mom_flag = '🟢已回升' if c['latest_chg'] > 0.5 else ('🟡止跌' if c['latest_chg'] > -0.5 else ('🔴阴跌' if c['latest_chg'] > -2 else ''))
-        kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
-        rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
-        pre_flag = f'⏳{c.get("pre_launch_score",0):.0f}' if c.get('pre_launch_phase') in ('on_deck', 'approaching') else ''
-        vol_flag = '📉极度缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.7) else ('📉缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.85) else '')
-        details = c.get('details', {})
-        cap = details.get('capital', (0,0,''))[1] if details.get('capital') else 0
-        rat = details.get('rationale', (0,'',''))[0] if details.get('rationale') else 0
-        moat = details.get('moat', (0,''))[0] if details.get('moat') else 0
-        trad = details.get('trading', 0)
-        funnel = f' ①{cap:.0f}②{rat:.0f}③{moat:.0f}④{trad:.0f}'
-        rat_type = details.get('rationale', (0,'',''))[1] if details.get('rationale') else ''
-        rat_label = f' [{rat_type}]' if rat_type and rat_type != '无明确驱动' else ''
-        print(f"  {c['launch_health']:5.1f} | {c['name']:6s}{funnel}{rat_label} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag} {pre_flag}")
+        print(f"\n启动段候选池: {launch_total}只符合条件, 选入{len(deploy_launch)}只")
+        pre_on_deck = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'on_deck')
+        pre_approaching = sum(1 for c in launch_picks if c.get('pre_launch_phase') == 'approaching')
+        print(f"  ⏳预启动在即: {pre_on_deck}只 | 🔍接近启动: {pre_approaching}只 | 🚀已启动: {len(launch_picks) - pre_on_deck - pre_approaching}只")
+        print(f"\n=== 启动段池 TOP {len(launch_picks)} ①资金②逻辑③壁垒④股性 | 预启动 ===")
+        for c in launch_picks:
+            pos_flag = '✅回调到位' if -20 <= c['drop_20d'] <= -10 else ('💎超跌' if c['drop_20d'] < -20 else '')
+            f10 = c['flow_10d'] or 0
+            if f10 < 0 and c['flow_5d'] > 0:
+                flow_flag = f'💰反转10日{f10/10000:.1f}→5日{c["flow_5d"]/10000:.1f}亿'
+            elif f10 > 0:
+                flow_flag = f'💰10日+{f10/10000:.1f}亿'
+            elif f10 < 0:
+                flow_flag = f'🔴10日{f10/10000:.1f}亿'
+            else:
+                flow_flag = '⚠️10日无数据'
+            mom_flag = '🟢已回升' if c['latest_chg'] > 0.5 else ('🟡止跌' if c['latest_chg'] > -0.5 else ('🔴阴跌' if c['latest_chg'] > -2 else ''))
+            kdj_flag = f'KD+{c["kdj_bonus"]}' if c['kdj_bonus'] > 0 else ''
+            rsi_str = f' RSI{c["rsi"]:.0f}' if c.get('rsi') is not None else ''
+            pre_flag = f'⏳{c.get("pre_launch_score",0):.0f}' if c.get('pre_launch_phase') in ('on_deck', 'approaching') else ''
+            vol_flag = '📉极度缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.7) else ('📉缩量' if (c.get('avg_vol_up') is not None and c['avg_vol_up'] < 0.85) else '')
+            details = c.get('details', {})
+            cap = details.get('capital', (0,0,''))[1] if details.get('capital') else 0
+            rat = details.get('rationale', (0,'',''))[0] if details.get('rationale') else 0
+            moat = details.get('moat', (0,''))[0] if details.get('moat') else 0
+            trad = details.get('trading', 0)
+            funnel = f' ①{cap:.0f}②{rat:.0f}③{moat:.0f}④{trad:.0f}'
+            rat_type = details.get('rationale', (0,'',''))[1] if details.get('rationale') else ''
+            rat_label = f' [{rat_type}]' if rat_type and rat_type != '无明确驱动' else ''
+            print(f"  {c['launch_health']:5.1f} | {c['name']:6s}{funnel}{rat_label} | 评分{c['score']:.0f} 资金{c['flow_5d']:+.0f}万 20日{c['drop_20d']:+.1f}% 当天{c['latest_chg']:+.1f}%{rsi_str} {pos_flag} {flow_flag} {mom_flag} {kdj_flag} {vol_flag} {pre_flag}")
 
-    # 输出启动段池 JSON
-    launch_output = {
-        'update_time': pred.get('update_time', ''),
-        'total': len(deploy_launch),
-        'pool': 'launch',
-        'stocks': deploy_launch
-    }
-    LAUNCH_OUTPUT = os.path.join(BASE, 'launch_stocks.json')
-    with open(LAUNCH_OUTPUT, 'w', encoding='utf-8') as f:
-        json.dump(launch_output, f, ensure_ascii=False, indent=2)
-    print(f"\n✓ 启动段池输出: {LAUNCH_OUTPUT}")
+        launch_output = {
+            'update_time': pred.get('update_time', ''),
+            'total': len(deploy_launch),
+            'pool': 'launch',
+            'stocks': deploy_launch
+        }
+        LAUNCH_OUTPUT = os.path.join(BASE, 'launch_stocks.json')
+        with open(LAUNCH_OUTPUT, 'w', encoding='utf-8') as f:
+            json.dump(launch_output, f, ensure_ascii=False, indent=2)
+        print(f"\n✓ 启动段池输出: {LAUNCH_OUTPUT}")
 
-    # 8. 自动注入到仪表盘 HTML（同时注入池A和池B）
-    print(f"\n=== 注入仪表盘 HTML ===")
-    inject_to_html(new_stocks)
-    inject_launch_to_html(deploy_launch)
+        # 8. 自动注入到仪表盘 HTML
+        print(f"\n=== 注入仪表盘 HTML ===")
+        inject_to_html(new_stocks)
+        inject_launch_to_html(deploy_launch)
+    else:
+        print(f"\nℹ️ 启动段候选池已停用（ENABLE_LAUNCH_POOL 未设为1）")
+        # 只注入池A
+        print(f"\n=== 注入仪表盘 HTML ===")
+        inject_to_html(new_stocks)
 
     # 9. 自动生成政策双轮驱动板块
     print(f"\n=== 生成政策驱动板块 ===")
@@ -1791,7 +1794,7 @@ def main():
     print(f"\n=== 推送 GitHub Pages ===")
     push_to_github()
 
-    print(f"\n✅ 全流程完成：池A选票 → 池B启动段 → 政策板块 → 注入HTML → 推送GitHub")
+    print(f"\n✅ 全流程完成：池A选票(30+4固定) → 政策板块 → 注入HTML → 推送GitHub")
     print(f"⚠️ CloudStudio 部署需要 WorkBuddy 触发，请回复「部署」更新手机端")
 
 
