@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+"""
+低位启动前扫描器
+================
+从 daily_predictions top200 候选票中，拉30分钟K线计算KDJ(9,3,3)，
+筛选出"30分钟KDJ仍在低位但即将金叉/底背离"的票 — 即还没涨起来的启动前候选。
+
+筛选条件：
+1. 30分钟KDJ的K值 < 40（低位）
+2. K正在上升（K > prev_K）或即将金叉（K逼近D）
+3. 排除已大幅上涨的票（当日涨幅 > 5% 排除）
+4. 优先级：底背离 > 即将金叉 > 低位回升
+"""
+import json, subprocess, time, os, sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def curl_get(url, timeout=10):
+    try:
+        r = subprocess.run(
+            ['curl', '-sL', '--max-time', str(timeout), url,
+             '-H', 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'],
+            capture_output=True, text=True, timeout=timeout + 5
+        )
+        return r.stdout
+    except:
+        return ''
+
+def add_prefix(code):
+    """纯数字代码加sh/sz前缀"""
+    if code.startswith(('6', '9')):
+        return 'sh' + code
+    else:
+        return 'sz' + code
+
+def fetch_sina_kline(code, scale, datalen):
+    """新浪K线API"""
+    url = (f'https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/'
+           f'CN_MarketData.getKLineData?symbol={code}&scale={scale}&datalen={datalen}')
+    raw = curl_get(url, 8)
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+        return [[d['day'], float(d['open']), float(d['high']), float(d['low']),
+                 float(d['close']), float(d['volume'])] for d in data]
+    except:
+        return None
+
+def calc_kdj(klines, n=9):
+    """KDJ(9,3,3) — 返回最近几根的K/D/J值"""
+    if not klines or len(klines) < n:
+        return []
+    prev_k, prev_d = 50.0, 50.0
+    results = []
+    for i in range(len(klines)):
+        start = max(0, i - n + 1)
+        hn = max(float(kl[2]) for kl in klines[start:i+1])
+        ln = min(float(kl[3]) for kl in klines[start:i+1])
+        c = float(klines[i][4])
+        rsv = (c - ln) / (hn - ln) * 100 if hn != ln else 50
+        k = 2/3 * prev_k + 1/3 * rsv
+        d = 2/3 * prev_d + 1/3 * k
+        j = 3 * k - 2 * d
+        results.append({
+            'k': round(k, 2), 'd': round(d, 2), 'j': round(j, 2),
+            'close': c, 'low': float(klines[i][3]), 'high': float(klines[i][2]),
+            'vol': float(klines[i][5]),
+        })
+        prev_k, prev_d = k, d
+    return results
+
+def fetch_realtime(code):
+    """新浪实时行情 — 获取当前价和涨幅（GBK编码）"""
+    prefix = 'sh' if code.startswith('sh') else 'sz'
+    num = code[2:]
+    url = f'https://hq.sinajs.cn/list={prefix}{num}'
+    try:
+        r = subprocess.run(
+            ['curl', '-sL', '--max-time', '5', url,
+             '-H', 'Referer: https://finance.sina.com.cn'],
+            capture_output=True, timeout=8
+        )
+        raw = r.stdout.decode('gbk', errors='ignore')
+    except:
+        return None, None
+    if not raw or '"' not in raw:
+        return None, None
+    try:
+        parts = raw.split('"')[1].split(',')
+        price = float(parts[3])
+        prev_close = float(parts[2])
+        chg = (price - prev_close) / prev_close * 100 if prev_close else 0
+        return round(chg, 2), price
+    except:
+        return None, None
+
+def detect_bottom_divergence(kdj_series, lookback=20):
+    """30分钟KDJ底背离"""
+    if len(kdj_series) < lookback:
+        return False, ''
+    recent = kdj_series[-lookback:]
+    mid = len(recent) // 2
+    
+    def find_swing_low(series, start, end):
+        low_idx = start
+        low_price = series[start]['close']
+        for i in range(start, min(end, len(series))):
+            if series[i]['close'] < low_price:
+                low_price = series[i]['close']
+                low_idx = i
+        return low_idx, low_price, series[low_idx]['k']
+    
+    idx1, price1, k1 = find_swing_low(recent, 0, mid)
+    idx2, price2, k2 = find_swing_low(recent, mid, len(recent))
+    
+    if price2 < price1 and k2 > k1:
+        if kdj_series[-1]['k'] < 65:
+            return True, f'底背离: 价{price1:.2f}->{price2:.2f}, K{k1:.1f}->{k2:.1f}'
+    
+    ratio = abs(price2 - price1) / max(0.01, price1)
+    if ratio < 0.03 and k2 > k1 + 5:
+        return True, f'类背离: 价持平, K回升{k1:.1f}->{k2:.1f}'
+    
+    return False, ''
+
+def scan_one(stock_info):
+    """扫描单只股票"""
+    code, name, score = stock_info
+    full_code = add_prefix(code)
+    
+    # 排除创业板/科创板/北交所
+    num = code
+    if num.startswith('30') or num.startswith('68') or num.startswith('8') or num.startswith('4'):
+        return None
+    if num.startswith('00') or num.startswith('60'):
+        pass  # 主板OK
+    else:
+        return None
+    
+    # 1. 获取30分钟K线
+    kl30 = fetch_sina_kline(full_code, 30, 100)
+    if not kl30 or len(kl30) < 12:
+        return None
+    
+    # 2. 计算KDJ
+    kdj = calc_kdj(kl30, 9)
+    if len(kdj) < 5:
+        return None
+    
+    curr = kdj[-1]
+    prev = kdj[-2]
+    k, d, j = curr['k'], curr['d'], curr['j']
+    prev_k = prev['k']
+    
+    # 3. 筛选条件
+    # K必须低位（< 40）
+    if k > 40:
+        return None
+    
+    # K正在上升或即将金叉
+    k_rising = k > prev_k
+    k_approaching_d = k < d and (d - k) < 5 and k > prev_k  # K逼近D且上升
+    just_golden = prev_k < prev['d'] and k >= d and k < 35  # 刚金叉且低位
+    
+    if not (k_rising or k_approaching_d or just_golden):
+        return None
+    
+    # 4. 获取实时涨幅
+    chg, price = fetch_realtime(full_code)
+    if chg is not None and chg > 5:  # 排除已经大涨的
+        return None
+    
+    # 5. 底背离检测
+    div, div_detail = detect_bottom_divergence(kdj, 20)
+    
+    # 6. 缩量检测（最近5根vs前面5根）
+    vols = [kl[5] for kl in kl30[-10:]]
+    recent_vol = sum(vols[-5:]) / 5 if len(vols) >= 5 else 0
+    prev_vol = sum(vols[:5]) / 5 if len(vols) >= 5 else 0
+    vol_shrink = recent_vol < prev_vol * 0.7 if prev_vol > 0 else False
+    
+    # 7. 计算综合得分
+    signals = []
+    total_score = 0
+    
+    if div:
+        signals.append(f'底背离({div_detail})')
+        total_score += 30
+    
+    if just_golden:
+        signals.append(f'30分KDJ刚金叉(K={k:.1f}/D={d:.1f})')
+        total_score += 25
+    elif k_approaching_d:
+        signals.append(f'30分KDJ即将金叉(K={k:.1f}逼近D={d:.1f})')
+        total_score += 20
+    elif k_rising:
+        signals.append(f'30分KDJ低位回升(K={k:.1f},前值={prev_k:.1f})')
+        total_score += 12
+    
+    if vol_shrink:
+        signals.append('缩量止跌(近5根量<前5根70%)')
+        total_score += 10
+    
+    if k < 20:
+        signals.append(f'超低位(K={k:.1f})')
+        total_score += 8
+    
+    if j < 0:
+        signals.append(f'J值负值(J={j:.1f},超卖)')
+        total_score += 5
+    
+    # 日线预测分加成
+    total_score = total_score + min(10, score / 10)
+    
+    return {
+        'code': full_code,
+        'name': name,
+        'chg_pct': chg or 0,
+        'price': price or 0,
+        'kd30_k': k,
+        'kd30_d': d,
+        'kd30_j': j,
+        'kd30_prev_k': prev_k,
+        'k_rising': k_rising,
+        'just_golden': just_golden,
+        'approaching_cross': k_approaching_d,
+        'bottom_divergence': div,
+        'vol_shrink': vol_shrink,
+        'signals': signals,
+        'pre_launch_score': round(total_score, 1),
+        'daily_score': score,
+    }
+
+def main():
+    print('='*60)
+    print('  低位启动前扫描器 — 找30分钟KDJ还在低位的启动前候选')
+    print('='*60)
+    print()
+    
+    # 加载候选票
+    with open('daily_predictions.json') as f:
+        dp = json.load(f)
+    
+    top200 = dp.get('top200', [])
+    # 也加上 all_results 中评分较高的
+    allr = dp.get('all_results', [])
+    # 取 top400 以扩大搜索范围
+    candidates = top200 + allr[:200] if len(allr) > 200 else top200 + allr
+    
+    # 去重
+    seen = set()
+    stock_list = []
+    for s in candidates:
+        code = s.get('code', '')
+        if code not in seen:
+            seen.add(code)
+            stock_list.append((code, s.get('name', ''), s.get('total_score', 0)))
+    
+    print(f'候选池: {len(stock_list)}只 (daily_predictions top + all_results)')
+    print(f'扫描中... (8线程并发拉30分钟K线)')
+    print()
+    
+    results = []
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(scan_one, s): s for s in stock_list}
+        done = 0
+        for future in as_completed(futures):
+            done += 1
+            if done % 50 == 0:
+                print(f'  进度: {done}/{len(stock_list)}')
+            try:
+                r = future.result()
+                if r:
+                    results.append(r)
+            except:
+                pass
+    
+    # 按得分排序
+    results.sort(key=lambda x: x['pre_launch_score'], reverse=True)
+    
+    print(f'\n扫描完成: {len(stock_list)}只中筛选出 {len(results)}只低位启动前候选\n')
+    print('='*80)
+    print(f'{"排名":>4} {"代码":<10} {"名称":<8} {"涨幅":>6} {"30分K":>6} {"30分D":>6} {"30分J":>6} {"得分":>6}  信号')
+    print('-'*80)
+    
+    for i, r in enumerate(results[:30]):
+        signals_str = ' | '.join(r['signals']) if r['signals'] else ''
+        print(f'{i+1:>4}  {r["code"]:<10} {r["name"]:<8} {r["chg_pct"]:>+5.1f}% {r["kd30_k"]:>6.1f} {r["kd30_d"]:>6.1f} {r["kd30_j"]:>6.1f} {r["pre_launch_score"]:>6.1f}  {signals_str}')
+    
+    print('='*80)
+    
+    # 输出JSON
+    output = {
+        'scan_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'total_scanned': len(stock_list),
+        'total_qualified': len(results),
+        'top30': results[:30],
+    }
+    
+    with open('pre_launch_candidates.json', 'w') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    
+    print(f'\n结果已保存: pre_launch_candidates.json')
+    print(f'TOP 30 已输出上方表格')
+    
+    return results[:30]
+
+if __name__ == '__main__':
+    main()
