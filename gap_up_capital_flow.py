@@ -284,6 +284,20 @@ def main():
     elapsed = time.time() - start
     print(f"\n完成: 成功{success} 失败{fail} 耗时{elapsed:.0f}s ({elapsed/60:.1f}分钟)")
     
+    # 安全网：成功率过低时合并旧数据而非覆盖（防止API全挂时数据被清空）
+    if success < len(stocks) * 0.1 and os.path.exists(OUTPUT_FILE):
+        print(f"WARNING: 成功率仅{success}/{len(stocks)}({success/len(stocks)*100:.0f}%)，合并旧数据而非覆盖")
+        try:
+            with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+                old_data = json.load(f)
+            old_stocks = old_data.get('stocks', {})
+            merged = dict(old_stocks)
+            merged.update(results)
+            results = merged
+            print(f"  合并后: {len(results)}只 (旧{len(old_stocks)} + 新{success})")
+        except Exception as e:
+            print(f"  合并失败({e})，仅写入新数据{success}只")
+    
     output = {
         'update_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'total': len(results),
