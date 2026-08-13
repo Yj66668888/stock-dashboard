@@ -133,8 +133,8 @@ def detect_bottom_accumulation(candidates):
         is_low = drop_20d < -5
         # 2. 资金流入
         is_inflow = flow_5d > 0
-        # 3. 缩量
-        is_shrinking = avg_vol_up is not None and avg_vol_up < 0.95
+        # 3. 缩量 (数据缺失时放行, 不阻断检测)
+        is_shrinking = avg_vol_up is None or avg_vol_up < 0.95
         # 4. 30分KDJ不高
         is_low_kdj = kdj30_k is not None and kdj30_k < 50
         # 5. 换手率合理
