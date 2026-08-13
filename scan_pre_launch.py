@@ -14,6 +14,14 @@
 import json, subprocess, time, os, sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# 微信推送
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    from wechat_notify import send_wechat
+    WECHAT_ENABLED = True
+except ImportError:
+    WECHAT_ENABLED = False
+
 def curl_get(url, timeout=10):
     try:
         r = subprocess.run(
@@ -302,6 +310,29 @@ def main():
     
     print(f'\n结果已保存: pre_launch_candidates.json')
     print(f'TOP 30 已输出上方表格')
+    
+    # 微信推送: 如果发现优质低位启动前候选, 推送通知
+    if WECHAT_ENABLED and results:
+        top5 = results[:5]
+        if top5:
+            title = f"低位启动前扫描: {len(results)}只候选"
+            lines = [
+                f"## 低位启动前扫描\n",
+                f"> 扫描时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n",
+                f"> 扫描范围: {len(stock_list)}只 | 筛出: {len(results)}只\n\n",
+                f"---\n\n",
+            ]
+            for i, r in enumerate(top5, 1):
+                signals_str = ' / '.join(r['signals']) if r['signals'] else '无'
+                lines.append(f"### {i}. {r['name']} {r['code']}")
+                lines.append(f"- 得分: **{r['pre_launch_score']:.1f}**")
+                lines.append(f"- 涨幅: {r['chg_pct']:+.1f}%")
+                lines.append(f"- 30分KDJ: K={r['kd30_k']:.1f} D={r['kd30_d']:.1f} J={r['kd30_j']:.1f}")
+                lines.append(f"- 信号: {signals_str}\n")
+            try:
+                send_wechat(title, '\n'.join(lines))
+            except Exception as e:
+                print(f"[WeChat] 推送异常(不影响扫描): {e}")
     
     return results[:30]
 

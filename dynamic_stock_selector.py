@@ -16,6 +16,14 @@ KDJ_FILE = os.path.join(BASE, 'kdj_factor.json')
 FUNDAMENTAL_FILE = os.path.join(BASE, 'fundamental_factors.json')
 OUTPUT = os.path.join(BASE, 'dynamic_stocks.json')
 
+# 微信推送 (Server酱)
+sys.path.insert(0, BASE)
+try:
+    from wechat_notify import notify_bottom_accumulation
+    WECHAT_ENABLED = True
+except ImportError:
+    WECHAT_ENABLED = False
+
 # 每次全量选出30只
 TARGET_POOL_SIZE = 30
 
@@ -1872,6 +1880,13 @@ def main():
     print(f"  输出: {OUTPUT}")
     print(f"\n=== 本期全量选股 ===")
     print(f"{', '.join(c['name'] for c in final_picks)}")
+
+    # 微信推送: 底部缩量建仓预警
+    if WECHAT_ENABLED:
+        try:
+            notify_bottom_accumulation(final_picks, context='全量选股')
+        except Exception as e:
+            print(f"[WeChat] 推送异常(不影响选股): {e}")
 
     # 7. 池B：启动段专属选股（已停用 — 用户要求只用综合最优池）
     # 以下代码保留但不执行，如需恢复去掉 if False 即可

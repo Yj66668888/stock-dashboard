@@ -28,6 +28,8 @@ jobs:
           python-version: '3.11'
 
       - name: Run update pipeline
+        env:
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
         run: python cloud_pipeline.py update
 
       - name: Validate JS syntax (safety net)
