@@ -99,12 +99,11 @@ def fetch_turnover_batch(codes):
             print(f"  ⚠️ 换手率获取失败(batch {i//batch_size+1}): {e}")
     return result
 
-# 30分钟KDJ追高风险过滤阈值
-KDJ30_HARD_KICK = 90   # K>=90 直接踢（严重超买）
-KDJ30_PENALTY_HI = 80  # 80<=K<90 扣-8
-KDJ30_PENALTY_MID = 70 # 70<=K<80 扣-4
-KDJ30_PENALTY_LOW = 60 # 60<=K<70 扣-2
-KDJ30_BONUS = 30       # K<30 加+3（低位有空间）
+# 30分钟KDJ追高风险过滤阈值（2026-08-13 用户收紧：K>=70硬踢，25-45最佳）
+KDJ30_HARD_KICK = 70   # K>=70 直接踢（偏高就踢，不追高）
+KDJ30_PENALTY_HI = 60  # 60<=K<70 扣-4
+KDJ30_PENALTY_MID = 45 # 45<=K<60 扣-2
+KDJ30_SWEET_LO = 25    # 25<=K<45 最佳区间 +3
 
 def fetch_30min_kdj_batch(codes):
     """
@@ -1603,20 +1602,20 @@ def main():
             rising = kdj30['rising']
             c['kdj30_k'] = k
             c['kdj30_rising'] = rising
-            # 计算扣分/加分
+            # 计算扣分/加分（新规则：K>=70硬踢，25-45最佳）
             penalty = 0
             if k >= KDJ30_HARD_KICK:
-                penalty = -999  # 硬踢
+                penalty = -999  # 硬踢 K>=70
             elif k >= KDJ30_PENALTY_HI:
-                penalty = -8    # 80<=K<90 严重追高
+                penalty = -4    # 60<=K<70 偏高
             elif k >= KDJ30_PENALTY_MID:
-                penalty = -4    # 70<=K<80 偏高
-            elif k >= KDJ30_PENALTY_LOW:
-                penalty = -2    # 60<=K<70 中性偏高
-            elif k < KDJ30_BONUS:
-                penalty = +3     # K<30 低位有空间
+                penalty = -2    # 45<=K<60 中性偏强
+            elif k >= KDJ30_SWEET_LO:
+                penalty = +3    # 25<=K<45 最佳区间
+            else:
+                penalty = +1    # K<25 超卖有反弹潜力
             # 上升中的高位罚更重（硬踢的不再扣）
-            if penalty != -999 and rising and k >= KDJ30_PENALTY_MID:
+            if penalty != -999 and rising and k >= KDJ30_PENALTY_HI:
                 penalty -= 2
             c['kdj30_penalty'] = penalty
 
@@ -1644,10 +1643,11 @@ def main():
                 p = c.get('kdj30_penalty', 0)
                 arrow = '↑' if c.get('kdj30_rising') else '↓'
                 tag = ''
-                if k >= KDJ30_PENALTY_HI: tag = '⚠️追高'
-                elif k >= KDJ30_PENALTY_MID: tag = '偏高'
-                elif k >= KDJ30_PENALTY_LOW: tag = '中性偏高'
-                elif k < KDJ30_BONUS: tag = '✅低位'
+                if k >= KDJ30_HARD_KICK: tag = '🚫踢'
+                elif k >= KDJ30_PENALTY_HI: tag = '⚠️偏高'
+                elif k >= KDJ30_PENALTY_MID: tag = '中性偏强'
+                elif k >= KDJ30_SWEET_LO: tag = '✅最佳'
+                else: tag = '🔵超卖'
                 print(f"     {c['name']:6s} K={k:5.1f}{arrow} {p:+d}分 {tag}")
 
         # 重新排序（扣分后排名变化）
