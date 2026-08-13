@@ -6,11 +6,17 @@
 使用方式:
     from wechat_notify import send_wechat, notify_bottom_accumulation
     send_wechat("标题", "内容markdown")
-    notify_bottom_accumulation(final_picks)
+    notify_bottom_accumulation(enriched_stocks, context='指标计算')
 
 SendKey来源优先级:
     1. 环境变量 SERVERCHAN_SENDKEY (GitHub Actions secret)
     2. wechat_config.json (本地配置, gitignored)
+
+底部缩量建仓判定标准 (与仪表盘 lowVolAccum 筛选器完全一致):
+    1. preLaunchPhase in [on_deck, approaching, building, launching]
+    2. turnover > 3%
+    3. volRatio < 0.95 (量比萎缩, volSignal含"缩量")
+    4. dailyFlow > 0 (主力资金当日流入)
 """
 
 import json
@@ -52,7 +58,7 @@ def send_wechat(title, desp=''):
     通过 Server酱 推送消息到微信
 
     Args:
-        title: 消息标题 (不超过32字)
+        title: 消息标题 (不超过100字)
         desp:   消息正文 (Markdown格式, 不超过32KB)
 
     Returns:
@@ -91,141 +97,239 @@ def send_wechat(title, desp=''):
 
 
 # ============================================================
-# 底部缩量建仓检测 + 推送
+# 量比获取 — 从东方财富API批量获取 (与仪表盘 volSignal 同源)
 # ============================================================
 
-def detect_bottom_accumulation(candidates):
+def _to_secid(code):
+    """stock code -> eastmoney secid (sh601208 -> 1.601208, sz001266 -> 0.001266)"""
+    code = code.strip()
+    if code.startswith('sh') or code.startswith('1.'):
+        num = code.lstrip('sh').lstrip('1.')
+        return f'1.{num}'
+    elif code.startswith('sz') or code.startswith('0.'):
+        num = code.lstrip('sz').lstrip('0.')
+        return f'0.{num}'
+    # 纯数字：6开头=沪市，0/3开头=深市
+    if code.startswith('6'):
+        return f'1.{code}'
+    else:
+        return f'0.{code}'
+
+
+def fetch_vol_ratios(codes, timeout=10):
+    """
+    从东方财富API批量获取量比(f10)
+
+    Args:
+        codes: 股票代码列表, 如 ['sh601208', 'sz001266', ...]
+        timeout: 超时秒数
+
+    Returns:
+        dict: {code: volRatio}, 获取失败的code不包含在内
+    """
+    if not codes:
+        return {}
+
+    secids = ','.join(_to_secid(c) for c in codes)
+    # f10=量比, f12=代码, f14=名称
+    url = (f'https://push2.eastmoney.com/api/qt/ulist.np/get'
+           f'?secids={secids}&fields=f10,f12,f14&fltt=2')
+
+    result = {}
+    try:
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0')
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = resp.read().decode('utf-8')
+            data = json.loads(body)
+            if not data or not data.get('data') or not data['data'].get('diff'):
+                print("[WeChat] 量比API返回空数据")
+                return {}
+            for item in data['data']['diff']:
+                vol_ratio = item.get('f10')
+                raw_code = item.get('f12', '')
+                if vol_ratio is None or vol_ratio == '-':
+                    continue
+                # 转换回 sh/sz 格式
+                market = item.get('f13', 0)  # 1=沪, 0=深
+                prefix = 'sh' if market == 1 else 'sz'
+                code = f'{prefix}{raw_code}'
+                result[code] = float(vol_ratio)
+    except Exception as e:
+        print(f"[WeChat] 获取量比失败: {e}")
+
+    return result
+
+
+# ============================================================
+# 底部缩量建仓检测 + 推送 (与仪表盘 lowVolAccum 筛选器一致)
+# ============================================================
+
+# 防重复推送标记 (云端pipeline会对多个HTML文件跑预计算，只需推送一次)
+_notification_sent = False
+
+# 仪表盘 lowVolAccum 筛选器的阶段白名单
+_DASHBOARD_PHASES = {'on_deck', 'approaching', 'building', 'launching'}
+
+
+def detect_bottom_accumulation(stocks, vol_ratios=None):
     """
     从候选票中筛选"底部缩量建仓"形态的票
 
-    判定标准 (全部满足):
-    1. 低位: drop_20d < -5 (20日内跌超5%, 处于相对底部)
-    2. 资金流入: flow_5d > 0 (5日主力净流入为正)
-    3. 缩量: avg_vol_up < 0.95 (近期量能萎缩, 卖盘枯竭)
-    4. 30分KDJ不高: kdj30_k < 50 (30分钟级别未超买, 有上涨空间)
-    5. 换手率合理: 2% <= turnover <= 5% (有流动性但不过热)
-
-    额外加分项 (不强制):
-    - 资金加速: flow_5d > flow_10d * 1.2 (5日流入加速)
-    - 资金反转: flow_10d < 0 且 flow_5d > 0 (资金从流出转流入)
-    - 极度缩量: avg_vol_up < 0.7 (极度萎缩, 变盘前兆)
+    判定标准 (与仪表盘 lowVolAccum 筛选器完全一致):
+    1. preLaunchPhase in [on_deck, approaching, building, launching]
+    2. turnover > 3%
+    3. volRatio < 0.95 (量比萎缩, 等价于 volSignal 含"缩量")
+    4. dailyFlow > 0 (主力资金当日流入)
 
     Args:
-        candidates: 选股结果列表, 每个元素是候选票dict (c)
+        stocks: 经过 precompute_daily_indicators.py 富化后的股票列表
+                (需含 preLaunchPhase, turnover, dailyFlow 字段)
+        vol_ratios: 量比字典 {code: volRatio}, 如为None则自动获取
 
     Returns:
         list of dict — 符合底部缩量建仓形态的票
     """
-    results = []
-    for c in candidates:
-        drop_20d = c.get('drop_20d')
-        flow_5d = c.get('flow_5d', 0) or 0
-        flow_10d = c.get('flow_10d')
-        avg_vol_up = c.get('avg_vol_up')
-        kdj30_k = c.get('kdj30_k')
-        turnover = c.get('turnover')
+    # 如果没传量比数据，自动获取
+    if vol_ratios is None:
+        codes = [s.get('code', '') for s in stocks if s.get('code')]
+        vol_ratios = fetch_vol_ratios(codes)
+        print(f"[WeChat] 量比获取: {len(vol_ratios)}/{len(codes)} 只成功")
 
-        # 跳过数据缺失的
-        if drop_20d is None or flow_5d is None:
+    results = []
+    for s in stocks:
+        code = s.get('code', '')
+        phase = s.get('preLaunchPhase', '')
+        turnover = s.get('turnover')
+        daily_flow = s.get('dailyFlow') or 0
+        vol_ratio = vol_ratios.get(code)
+
+        # 1. 启动阶段
+        if phase not in _DASHBOARD_PHASES:
             continue
 
-        # 1. 低位
-        is_low = drop_20d < -5
-        # 2. 资金流入
-        is_inflow = flow_5d > 0
-        # 3. 缩量 (数据缺失时放行, 不阻断检测)
-        is_shrinking = avg_vol_up is None or avg_vol_up < 0.95
-        # 4. 30分KDJ不高
-        is_low_kdj = kdj30_k is not None and kdj30_k < 50
-        # 5. 换手率合理
-        if turnover is not None:
-            is_reasonable_turnover = 2.0 <= turnover <= 5.0
-        else:
-            is_reasonable_turnover = True  # 无换手率数据时放行
+        # 2. 换手率 > 3%
+        if turnover is None or turnover <= 3:
+            continue
 
-        if is_low and is_inflow and is_shrinking and is_low_kdj and is_reasonable_turnover:
-            # 额外信号
-            signals = []
-            if flow_10d is not None and flow_10d < 0 and flow_5d > 0:
-                signals.append('资金反转')
-            if flow_10d is not None and flow_5d > flow_10d * 1.2 and flow_5d > 0:
-                signals.append('资金加速')
-            if avg_vol_up is not None and avg_vol_up < 0.7:
+        # 3. 量比 < 0.95 (缩量)
+        #    量比数据缺失时放行 (非交易时段API可能返回空)
+        if vol_ratio is not None and vol_ratio >= 0.95:
+            continue
+
+        # 4. 主力资金当日流入
+        if daily_flow <= 0:
+            continue
+
+        # 附加信号 (仅用于展示, 不影响筛选)
+        signals = []
+        drop_20d = s.get('drop20d') or s.get('drop_20d')
+        flow_5d = s.get('flow5d') or s.get('flow_5d') or 0
+        flow_10d = s.get('flow10d') or s.get('flow_10d') or 0
+
+        if vol_ratio is not None:
+            if vol_ratio < 0.7:
                 signals.append('极度缩量')
-            if -20 <= drop_20d <= -10:
-                signals.append('回调到位')
-            elif drop_20d < -20:
-                signals.append('超跌')
+            elif vol_ratio < 0.85:
+                signals.append('明显缩量')
+            else:
+                signals.append('轻微缩量')
 
-            results.append({
-                'name': c.get('name', '?'),
-                'code': c.get('code', '?'),
-                'health': c.get('health', 0),
-                'score': c.get('score', 0),
-                'drop_20d': drop_20d,
-                'flow_5d': flow_5d,
-                'flow_10d': flow_10d or 0,
-                'avg_vol_up': avg_vol_up,
-                'kdj30_k': kdj30_k,
-                'kdj30_rising': c.get('kdj30_rising'),
-                'turnover': turnover,
-                'signals': signals,
-                'sector': c.get('sector_tier'),
-                'consecutive': c.get('consecutive'),
-            })
+        if drop_20d is not None:
+            if drop_20d < -20:
+                signals.append('超跌')
+            elif drop_20d < -10:
+                signals.append('回调到位')
+
+        if flow_10d < 0 and flow_5d > 0:
+            signals.append('资金反转')
+        if flow_5d > flow_10d * 1.2 and flow_5d > 0:
+            signals.append('资金加速')
+
+        phase_labels = {
+            'on_deck': '启动在即',
+            'approaching': '接近启动',
+            'building': '启动段',
+            'launching': '已启动',
+        }
+
+        results.append({
+            'name': s.get('name', '?'),
+            'code': code,
+            'health': s.get('healthScore', 0),
+            'phase': phase,
+            'phase_label': phase_labels.get(phase, phase),
+            'turnover': turnover,
+            'daily_flow': daily_flow,
+            'vol_ratio': vol_ratio,
+            'drop_20d': drop_20d,
+            'flow_5d': flow_5d,
+            'flow_10d': flow_10d,
+            'signals': signals,
+        })
 
     return results
 
 
-def notify_bottom_accumulation(candidates, context='选股'):
+def notify_bottom_accumulation(stocks, context='指标计算', vol_ratios=None):
     """
     检测底部缩量建仓票并推送微信通知
 
     Args:
-        candidates: 选股结果列表
-        context: 推送上下文 (选股/扫描/全量)
+        stocks: 经过 precompute_daily_indicators.py 富化后的股票列表
+        context: 推送上下文
+        vol_ratios: 预获取的量比字典, None则自动获取
 
     Returns:
         list — 符合条件的票 (可能为空)
     """
-    bottom_stocks = detect_bottom_accumulation(candidates)
+    global _notification_sent
+    if _notification_sent:
+        print("[WeChat] 本次运行已推送过, 跳过重复推送")
+        return []
+
+    bottom_stocks = detect_bottom_accumulation(stocks, vol_ratios)
 
     if not bottom_stocks:
         print(f"[WeChat] 本次{context}未发现底部缩量建仓票, 跳过推送")
+        _notification_sent = True
         return []
 
     # 构建Markdown消息
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    title = f"底部缩量建仓预警 ({len(bottom_stocks)}只)"
+    # 标题直接带票名，微信通知栏不用点开就能看到
+    names_str = '/'.join(s['name'] for s in bottom_stocks)
+    title = f"底部建仓{len(bottom_stocks)}只: {names_str}"
 
     lines = [
         f"## 底部缩量建仓预警\n",
         f"> 扫描时间: {now_str}\n",
         f"> 来源: {context}\n",
+        f"> 标准: 与仪表盘一致 (阶段+换手>3%+缩量+主力流入)\n",
         f"> 共发现 **{len(bottom_stocks)}只** 底部缩量建仓形态票\n\n",
         f"---\n\n",
     ]
 
     for i, s in enumerate(bottom_stocks, 1):
-        arrow = 'UP' if s['kdj30_rising'] else 'DOWN'
-        signals_str = ' / '.join(s['signals']) if s['signals'] else '无明显附加信号'
-        sec_str = f" T{s['sector']}" if s['sector'] else ''
+        signals_str = ' / '.join(s['signals']) if s['signals'] else '无'
+        vr_str = f"{s['vol_ratio']:.2f}" if s['vol_ratio'] is not None else "N/A"
+        drop_str = f"{s['drop_20d']:+.1f}%" if s['drop_20d'] is not None else "N/A"
 
-        lines.append(f"### {i}. {s['name']} {s['code']}{sec_str}")
-        lines.append(f"- 健康分: **{s['health']:.1f}** | 评分: {s['score']:.1f}")
-        lines.append(f"- 20日涨跌: **{s['drop_20d']:+.1f}%**")
-        lines.append(f"- 5日主力: **{s['flow_5d']:+.0f}万** | 10日主力: {s['flow_10d']:+.0f}万")
-        lines.append(f"- 30分KDJ: K={s['kdj30_k']:.0f} {arrow}")
-        vol_str = f"{s['avg_vol_up']:.2f}" if s['avg_vol_up'] is not None else "N/A"
-        lines.append(f"- 量比: {vol_str} | 换手率: {s['turnover']:.1f}%" if s['turnover'] else f"- 量比: {vol_str}")
+        lines.append(f"### {i}. {s['name']} {s['code']} [{s['phase_label']}]")
+        lines.append(f"- 健康分: **{s['health']:.0f}** | 换手率: {s['turnover']:.1f}%")
+        lines.append(f"- 量比: **{vr_str}** (缩量) | 当日主力: **{s['daily_flow']:+.0f}万**")
+        lines.append(f"- 20日涨跌: {drop_str}")
+        lines.append(f"- 5日主力: {s['flow_5d']:+.0f}万 | 10日主力: {s['flow_10d']:+.0f}万")
         lines.append(f"- 信号: {signals_str}\n")
 
     desp = '\n'.join(lines)
 
     # 推送
     send_wechat(title, desp)
+    _notification_sent = True
     print(f"[WeChat] 底部缩量建仓预警已推送: {len(bottom_stocks)}只")
     for s in bottom_stocks:
-        print(f"  {s['name']:6s} {s['code']} 20日{s['drop_20d']:+.1f}% 5日{s['flow_5d']:+.0f}万 K30={s['kdj30_k']:.0f}")
+        vr_str = f"{s['vol_ratio']:.2f}" if s['vol_ratio'] is not None else "N/A"
+        print(f"  {s['name']:6s} {s['code']} 阶段={s['phase']:12s} 换手={s['turnover']:.1f}% 量比={vr_str} 当日={s['daily_flow']:+.0f}万")
 
     return bottom_stocks

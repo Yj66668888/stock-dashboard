@@ -19,6 +19,14 @@ import json, os, re, sys, time, urllib.request, ssl
 BASE = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(BASE, 'deploy', 'index.html')
 
+# 微信推送 (Server酱) — 在指标计算完成后触发底部缩量建仓预警
+sys.path.insert(0, BASE)
+try:
+    from wechat_notify import notify_bottom_accumulation
+    WECHAT_ENABLED = True
+except ImportError:
+    WECHAT_ENABLED = False
+
 _CTX = ssl.create_default_context()
 _CTX.check_hostname = False
 _CTX.verify_mode = ssl.CERT_NONE
@@ -590,6 +598,15 @@ def inject_into_html(html_path):
         f.write(new_html)
 
     print(f"\n✅ 注入完成: {html_path}")
+
+    # 微信推送: 底部缩量建仓预警 (与仪表盘 lowVolAccum 筛选器同一标准)
+    # 此时 stocks 已包含 preLaunchPhase, turnover, dailyFlow 等富化字段
+    if WECHAT_ENABLED:
+        try:
+            notify_bottom_accumulation(stocks, context='指标计算')
+        except Exception as e:
+            print(f"[WeChat] 推送异常(不影响指标计算): {e}")
+
     return True
 
 

@@ -315,7 +315,8 @@ def main():
     if WECHAT_ENABLED and results:
         top5 = results[:5]
         if top5:
-            title = f"低位启动前扫描: {len(results)}只候选"
+            names_str = '/'.join(r['name'] for r in top5)
+            title = f"低位启动{len(results)}只: {names_str}"
             lines = [
                 f"## 低位启动前扫描\n",
                 f"> 扫描时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n",
