@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""快速更新仪表盘股票的资金流数据（只更新仪表盘上的~57只票）"""
-import json, re, urllib.request, ssl, time
+"""快速更新仪表盘股票的资金流数据（只更新仪表盘上的~57只票）
+   v2: 用subprocess curl替代urllib，绕过本地代理+TLS兼容问题
+"""
+import json, re, subprocess, time, os
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -9,7 +11,26 @@ DAILY_FILE = f"{BASE}/daily_predictions.json"
 OUTPUT_FILE = f"{BASE}/capital_flow.json"
 DEPLOY_HTML = f"{BASE}/deploy/index.html"
 
-ctx = ssl.create_default_context()
+# 清除代理环境变量（本地代理会导致东方财富/新浪API返回空）
+_CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
+
+
+def curl_get_json(url, retries=5, timeout=10):
+    """用subprocess curl获取JSON，绕过代理，自动重试"""
+    for attempt in range(retries):
+        try:
+            result = subprocess.run(
+                ['curl', '-s', '--noproxy', '*', '--connect-timeout', str(timeout), url],
+                capture_output=True, text=True, timeout=timeout + 5, env=_CLEAN_ENV
+            )
+            if result.returncode == 0 and result.stdout:
+                return json.loads(result.stdout)
+        except (json.JSONDecodeError, subprocess.TimeoutExpired, Exception):
+            pass
+        if attempt < retries - 1:
+            time.sleep(0.3)
+    return None
+
 
 def get_eastmoney_fflow(code, datalen=12):
     """东方财富资金流API"""
@@ -19,54 +40,32 @@ def get_eastmoney_fflow(code, datalen=12):
            f'&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64,f65'
            f'&klt=101&lmt={datalen}'
            f'&ut=b2884a393a59ad64002292a3e90d46a5')
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Referer': 'https://data.eastmoney.com/'
-    })
-    for attempt in range(3):
-        try:
-            with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                klines = data.get('data', {}).get('klines', [])
-                if not klines:
-                    return None
-                daily = []
-                for k in klines:
-                    parts = k.split(',')
-                    if len(parts) >= 7:
-                        daily.append({
-                            'date': parts[0],
-                            'flow_wan': round(float(parts[1]) / 10000, 2),
-                            'chg_pct': float(parts[-1]) if parts[-1] else 0
-                        })
-                return daily
-        except Exception as e:
-            if attempt == 2:
-                return None
-            time.sleep(0.5)
-    return None
+    data = curl_get_json(url, retries=5)
+    if not data:
+        return None
+    klines = data.get('data', {}).get('klines', [])
+    if not klines:
+        return None
+    daily = []
+    for k in klines:
+        parts = k.split(',')
+        if len(parts) >= 7:
+            daily.append({
+                'date': parts[0],
+                'flow_wan': round(float(parts[1]) / 10000, 2),
+                'chg_pct': float(parts[-1]) if parts[-1] else 0
+            })
+    return daily
+
 
 def get_sina_kline(code, datalen=12):
     """新浪K线API"""
     sina_code = ('sh' if code.startswith('6') else 'sz') + code
     url = (f'http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/'
            f'CN_MarketData.getKLineData?symbol={sina_code}&scale=240&ma=no&datalen={datalen}')
-    req = urllib.request.Request(url, headers={
-        'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://finance.sina.com.cn/'
-    })
-    for attempt in range(3):
-        try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                if not data:
-                    return None
-                return data
-        except Exception as e:
-            if attempt == 2:
-                return None
-            time.sleep(0.5)
-    return None
+    data = curl_get_json(url, retries=3)
+    return data if data else None
+
 
 def process_stock(code, name):
     """处理单只股票"""
@@ -134,6 +133,7 @@ def process_stock(code, name):
 
     return code, result
 
+
 def main():
     print(f"=== 快速资金流更新 {datetime.now().strftime('%Y-%m-%d %H:%M')} ===")
 
@@ -158,12 +158,12 @@ def main():
         name = name_map.get(pure, name_map.get(code, ''))
         stocks.append((pure, name))
 
-    # 4. 多线程获取
+    # 4. 多线程获取（curl子进程，每个线程独立）
     results = {}
     success = fail = 0
     start = time.time()
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         futures = {executor.submit(process_stock, code, name): code for code, name in stocks}
         for i, future in enumerate(as_completed(futures)):
             code, flow = future.result()
@@ -172,7 +172,7 @@ def main():
                 success += 1
             else:
                 fail += 1
-            if (i + 1) % 20 == 0:
+            if (i + 1) % 10 == 0:
                 print(f"  进度: {i+1}/{len(stocks)} 成功{success} 失败{fail}")
 
     elapsed = time.time() - start
@@ -205,6 +205,7 @@ def main():
         last_date = daily[-1].get('date', '') if daily else ''
         last_flow = daily[-1].get('flow_wan', 0) if daily else 0
         print(f"  {code} {data['name']}: {last_date} 流入{last_flow:+.0f}万 5日{data['flow_5d_wan']:+.0f}万")
+
 
 if __name__ == '__main__':
     main()
