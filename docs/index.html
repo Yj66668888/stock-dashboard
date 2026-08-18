@@ -4044,12 +4044,51 @@ function calcMACD(klines) {
 
 // 获取单只股票单周期K线（东方财富push2his JSONP）
 var _lastKlineHost = '-';
+// klt → 腾讯分钟周期
+var KLT_TO_TENCENT = { 5: 'm5', 15: 'm15', 30: 'm30', 60: 'm60' };
+
+// 腾讯分钟K线（ifzq.gtimg.cn，CORS开放，fetch直连）
+// 返回与东财相同形状 {data:{klines:["date,open,close,high,low,vol",...]}}
+function fetchKlineTencent(code, mtf, lmt) {
+  var url = 'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param=' + code + ',' + mtf + ',,' + (lmt || 300);
+  return fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+    var node = ((d || {}).data || {})[code] || {};
+    var arr = node[mtf] || [];
+    if (!arr.length) return null;
+    // 腾讯: [time, open, close, high, low, volume] → 东财逗号串格式
+    var klines = arr.map(function(b) {
+      return b[0] + ',' + b[1] + ',' + b[2] + ',' + b[3] + ',' + b[4] + ',' + b[5];
+    });
+    return { data: { klines: klines } };
+  }).catch(function() { return null; });
+}
+
 function fetchKline(secid, klt, lmt) {
   var path = '/api/qt/stock/kline/get?secid=' + secid +
     '&klt=' + klt + '&fqt=1&lmt=' + (lmt || 200) +
     '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57,f58';
-  // 多源降级：push2his → push2delay → 48.push2his
   var urls = KLINE_HOSTS.map(function(h) { return 'https://' + h + path; });
+
+  var mtf = KLT_TO_TENCENT[klt];
+  if (mtf) {
+    // 分钟K线: 腾讯为主源（稳定/CORS开放/实时），东财多源为备
+    var code = secid.indexOf('1.') === 0 ? 'sh' + secid.slice(2) : 'sz' + secid.slice(2);
+    return fetchKlineTencent(code, mtf, lmt).then(function(d) {
+      if (d && d.data && d.data.klines && d.data.klines.length > 9) {
+        _lastKlineHost = 'ifzq.gtimg.cn';
+        return d;
+      }
+      // 腾讯失败 → 东财多源降级
+      return jsonpMulti(urls, 8000).then(function(result) {
+        if (result) {
+          _lastKlineHost = KLINE_HOSTS[result.hostIdx];
+          return result.data;
+        }
+        return null;
+      });
+    });
+  }
+  // 日线: 东财多源降级（保持原行为）
   return jsonpMulti(urls, 8000).then(function(result) {
     if (result) {
       _lastKlineHost = KLINE_HOSTS[result.hostIdx];
@@ -4413,10 +4452,13 @@ function fetchAllKDJ() {
     setTimeout(function() {
       var secid = toSecid(stock.code);
 
-      // 同时获取5分钟、日线K线（30/60分钟API在浏览器不可达，用fallback代替）
+      // 同时获取5分钟、30分钟、60分钟、日线K线
+      // 分钟K线走腾讯ifzq主源（CORS开放稳定），日线走东财；30/60分钟KDJ现在实时计算
       Promise.all([
-        fetchKline(secid, 5, 200),
-        fetchKline(secid, 101, 100)
+        fetchKline(secid, 5, 300),
+        fetchKline(secid, 101, 100),
+        fetchKline(secid, 30, 300),
+        fetchKline(secid, 60, 300)
       ]).then(function(results) {
         var anyUpdate = false;
 
@@ -4436,11 +4478,27 @@ function fetchAllKDJ() {
           }
         }
 
-        // 30分钟KDJ + MACD
-        // 30/60分钟KDJ + MACD: 30/60分钟K线API在浏览器不可达，已通过fallback提供
+        // 30分钟KDJ — 实时计算（腾讯分钟K线，与东财/同花顺差异±1-2点）
+        if (results[2] && results[2].data && results[2].data.klines && results[2].data.klines.length > 9) {
+          var kdj30 = calcKDJ(results[2].data.klines);
+          if (kdj30) {
+            stock.kd30_k = parseFloat(kdj30.k.toFixed(1));
+            stock.kd30_d = parseFloat(kdj30.d.toFixed(1));
+            stock.kd30_cross = kdj30.cross;
+            anyUpdate = true;
+          }
+        }
 
-        // MACD显示：直接使用fallback
-        // 30/60分钟KDJ: 直接使用fallback
+        // 60分钟KDJ — 实时计算
+        if (results[3] && results[3].data && results[3].data.klines && results[3].data.klines.length > 9) {
+          var kdj60 = calcKDJ(results[3].data.klines);
+          if (kdj60) {
+            stock.kd60_k = parseFloat(kdj60.k.toFixed(1));
+            stock.kd60_d = parseFloat(kd60.d.toFixed(1));
+            stock.kd60_cross = kdj60.cross;
+            anyUpdate = true;
+          }
+        }
 
         // 日线指标：RSI / MA / 趋势 / 支撑价 / Beta / 高开率
         if (results[1] && results[1].data && results[1].data.klines && results[1].data.klines.length > 5) {
