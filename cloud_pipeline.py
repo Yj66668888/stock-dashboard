@@ -259,9 +259,14 @@ def full_scan():
     # Step 6: 概念板块预筛选
     run_script("[6/9] 概念板块预筛选", 'sector_pre_filter.py', timeout=120)
 
-    # Step 7: 全量选股 + 注入HTML（跳过推送，由 cloud_pipeline 统一处理）
+    # Step 7: 低位重扫 + 注入HTML（分层KD放宽 + 换手率2-7%硬过滤，与本地规则一致）
+    #         替代旧 dynamic_stock_selector.py（无分层KD/换手率硬过滤，导致云端推送票≠仪表盘票）
     os.environ['SKIP_PUSH'] = '1'
-    run_script("[7/9] 全量选股+注入HTML", 'dynamic_stock_selector.py', timeout=300)
+    run_script("[7/9] 低位重扫+注入HTML(分层KD/换手率硬过滤)", 'rescan_low_position.py', timeout=300)
+
+    # Step 7b: 补齐字段（赛道/PE/PB/ROE/主力资金5日10日/板块共振/逻辑/healthScore）
+    #          rescan 注入的票默认 dailyFlow=0/sector空，必须补数否则前端列全"--"且评分为0
+    run_script("[7b/9] 补齐缺失字段", 'enrich_missing_fields.py', timeout=300)
 
     # Step 8: 起涨前预判
     run_script("[8/9] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
