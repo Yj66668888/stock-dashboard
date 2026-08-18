@@ -220,7 +220,10 @@ def main():
             if q['pe']: s['pe'] = q['pe']
             if q['pb']: s['pb'] = q['pb']
             if q['roe'] is not None: s['roe'] = q['roe']
-            if q['turnover'] is not None: s['turnover'] = q['turnover']
+            # 换手率：只补缺失，不覆盖 —— f168是当日盘中累计(半日值)，
+            # 全天换手由 rescan_low_position.py 用昨日成交量+流通市值推算后写入
+            if s.get('turnover') is None and q['turnover'] is not None:
+                s['turnover'] = q['turnover']
         if f:
             s['dailyFlow'] = f['dailyFlow']
             s['flow5d'] = f['flow5d']
