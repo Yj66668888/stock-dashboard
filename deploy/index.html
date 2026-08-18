@@ -55,6 +55,14 @@
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
   .live-dot { background: #f59e0b; }
   .live-dot.active { background: var(--green); animation: pulse 1.5s infinite; }
+  /* 数据源健康度芯片 */
+  .src-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 8px; font-size: 10px; line-height: 16px; cursor: help; }
+  .src-ok { background: rgba(22,163,74,0.12); color: #16a34a; }
+  .src-degraded { background: rgba(245,158,11,0.12); color: #d97706; }
+  .src-down { background: rgba(220,38,38,0.12); color: #dc2626; }
+  .src-idle { background: rgba(120,120,120,0.1); color: #888; }
+  .src-host { font-size: 9px; opacity: 0.7; margin-left: 2px; }
+  .src-time { font-size: 9px; opacity: 0.6; margin-left: 3px; }
   .flash-up { animation: flashUp 0.8s ease; }
   .flash-down { animation: flashDown 0.8s ease; }
   @keyframes flashUp { 0% { background: rgba(220,38,38,0.25); } 100% { background: transparent; } }
@@ -924,7 +932,7 @@
   <div class="header">
     <div class="header-title">戴维斯双击 <span class="accent">· 实时仪表盘</span></div>
     <div class="header-meta">
-      <span><span class="dot live-dot" id="liveDot"></span> <span id="liveStatus">连接中</span></span>
+      <span><span class="dot live-dot" id="liveDot"></span> <span id="liveStatus"><span class="src-chip src-idle">🚀 启动中</span></span></span>
       <span id="marketIdx">上证 -- | 深成 --</span>
       <span id="lastUpdate">--</span>
       <span>刷新 <span id="quoteCountdown">10</span>s</span>
@@ -3625,7 +3633,28 @@ let liveTimers = { quote: null, flow: null, kdj: null, flow5d: null, countdown: 
 let liveFlags = { quotes: false, flow: false, kdj: false, flow5d: false };
 let _jsonpSeq = 0;
 
-// JSONP辅助函数（用于东方财富API）
+// === 数据源健康度跟踪 ===
+var sourceHealth = {
+  quotes: { status: 'idle', lastOk: null, host: '-', fails: 0, label: '行情' },
+  flow:   { status: 'idle', lastOk: null, host: '-', fails: 0, label: '资金' },
+  kdj:    { status: 'idle', lastOk: null, host: '-', fails: 0, label: 'KDJ' }
+};
+function markSourceOk(name, host) {
+  var s = sourceHealth[name]; if (!s) return;
+  s.status = 'ok'; s.lastOk = new Date(); s.host = host || '-'; s.fails = 0;
+}
+function markSourceFail(name, host) {
+  var s = sourceHealth[name]; if (!s) return;
+  s.fails++;
+  s.status = s.fails >= 3 ? 'down' : 'degraded';
+  s.host = host || '-';
+}
+function fmtTime(d) {
+  if (!d) return '--';
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+}
+
+// JSONP辅助函数（用于东方财富API）— 单URL
 function jsonpRequest(url, timeout, cbParam) {
   timeout = timeout || 8000;
   cbParam = cbParam || 'cb';
@@ -3652,6 +3681,41 @@ function jsonpRequest(url, timeout, cbParam) {
     document.head.appendChild(script);
   });
 }
+
+// === 多源自动降级JSONP ===
+// urls: ['https://host1/api/...', 'https://host2/api/...', ...]
+// 依次尝试，第一个成功就返回；全部失败返回null
+// 返回 { data, hostIdx } 让调用方知道是哪个源成功的
+function jsonpMulti(urls, timeout, cbParam) {
+  timeout = timeout || 8000;
+  cbParam = cbParam || 'cb';
+  if (typeof urls === 'string') urls = [urls];
+  return new Promise(function(resolve) {
+    var idx = 0;
+    function tryNext() {
+      if (idx >= urls.length) { resolve(null); return; }
+      var i = idx++;
+      jsonpRequest(urls[i], timeout, cbParam).then(function(data) {
+        if (data) resolve({ data: data, hostIdx: i });
+        else tryNext();
+      });
+    }
+    tryNext();
+  });
+}
+
+// 东财资金流 host列表（主→备）
+var FLOW_HOSTS = [
+  'push2.eastmoney.com',
+  'push2delay.eastmoney.com',
+  '82.push2.eastmoney.com'
+];
+// 东财K线 host列表（主→备）
+var KLINE_HOSTS = [
+  'push2his.eastmoney.com',
+  'push2delay.eastmoney.com',
+  '48.push2his.eastmoney.com'
+];
 
 // 股票代码转东方财富secid格式
 function toSecid(code) {
@@ -3806,7 +3870,8 @@ function formatFlowAmt(val) {
 
         if (updated > 0) {
           liveFlags.quotes = true;
-          updateLiveStatus();
+          markSourceOk('quotes', 'qt.gtimg.cn');
+          updateHealthPanel();
         }
         updateLastUpdate();
         resolve(updated);
@@ -3816,6 +3881,8 @@ function formatFlowAmt(val) {
       script.onerror = () => {
         if (done) return;
         console.debug('[Quotes] 腾讯API加载失败');
+        markSourceFail('quotes', 'qt.gtimg.cn');
+        updateHealthPanel();
         script.remove();
         resolve(0);
       };
@@ -3834,12 +3901,16 @@ var _flowRetryCount = 0;
 function fetchCapitalFlow() {
   var pool = STOCKS.concat(LAUNCH_STOCKS || []);
   var secids = pool.map(function(s) { return toSecid(s.code); }).join(',');
-  var url = 'https://push2.eastmoney.com/api/qt/ulist.np/get?secids=' + secids +
+  var path = '/api/qt/ulist.np/get?secids=' + secids +
     '&fields=f12,f14,f62,f184,f66,f69,f72,f75,f164,f174&fltt=2&invt=2';
+  // 多源降级：push2 → push2delay → 82.push2
+  var urls = FLOW_HOSTS.map(function(h) { return 'https://' + h + path; });
 
-  return jsonpRequest(url, 10000).then(function(data) {
-    if (!data || !data.data || !data.data.diff) {
-      console.log('[Flow] fetchCapitalFlow: no data returned' + (_flowRetryCount < 3 ? ', will retry in 3s' : ' (max retries)'));
+  return jsonpMulti(urls, 10000).then(function(result) {
+    if (!result || !result.data || !result.data.data || !result.data.data.diff) {
+      console.log('[Flow] fetchCapitalFlow: all hosts failed' + (_flowRetryCount < 3 ? ', retry in 3s' : ' (max)'));
+      markSourceFail('flow', 'all');
+      updateHealthPanel();
       if (_flowRetryCount < 3) {
         _flowRetryCount++;
         setTimeout(function() { fetchCapitalFlow().then(function() { renderStocks(); }); }, 3000);
@@ -3847,6 +3918,10 @@ function fetchCapitalFlow() {
       return;
     }
     _flowRetryCount = 0;
+    var data = result.data;
+    var hostUsed = FLOW_HOSTS[result.hostIdx];
+    if (result.hostIdx > 0) console.log('[Flow] failover to ' + hostUsed);
+    markSourceOk('flow', hostUsed);
 
     var count = 0;
     data.data.diff.forEach(function(item) {
@@ -3886,19 +3961,12 @@ function fetchCapitalFlow() {
       count++;
     });
 
-    // 检查固定票是否成功获取数据
-    var pinnedCodes = ['sh603067', 'sh600105', 'sh601126', 'sz000688'];
-    var pinnedResults = pinnedCodes.map(function(c) {
-      var s = STOCKS.find(function(x) { return x.code === c; });
-      return c + ': flow5d=' + (s ? s.flow5d : 'NOT_FOUND') + ', flow10d=' + (s ? s.flow10d : 'NOT_FOUND') + ', mainFlow=' + (s ? s.mainFlow : 'NOT_FOUND');
-    });
-    console.log('[Flow] fetchCapitalFlow: ' + count + ' stocks updated (main+5d+10d)');
-    console.log('[Flow] Pinned stocks: ' + pinnedResults.join(' | '));
+    console.log('[Flow] fetchCapitalFlow: ' + count + ' stocks updated via ' + hostUsed);
 
     liveFlags.flow = true;
     liveFlags.flow5d = true;
-    updateLiveStatus();
-    renderStocks(); // ★ 确保数据更新后立即渲染
+    updateHealthPanel();
+    renderStocks();
   });
 }
 
@@ -3975,11 +4043,20 @@ function calcMACD(klines) {
 }
 
 // 获取单只股票单周期K线（东方财富push2his JSONP）
+var _lastKlineHost = '-';
 function fetchKline(secid, klt, lmt) {
-  var url = 'https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=' + secid +
+  var path = '/api/qt/stock/kline/get?secid=' + secid +
     '&klt=' + klt + '&fqt=1&lmt=' + (lmt || 200) +
     '&fields1=f1,f2,f3&fields2=f51,f52,f53,f54,f55,f56,f57,f58';
-  return jsonpRequest(url, 8000);
+  // 多源降级：push2his → push2delay → 48.push2his
+  var urls = KLINE_HOSTS.map(function(h) { return 'https://' + h + path; });
+  return jsonpMulti(urls, 8000).then(function(result) {
+    if (result) {
+      _lastKlineHost = KLINE_HOSTS[result.hostIdx];
+      return result.data;
+    }
+    return null;
+  });
 }
 
 // ============================================
@@ -4306,7 +4383,9 @@ function fetchAllKDJ() {
     _fallbackApplied = true;
     if (updated0 > 0) {
       liveFlags.kdj = true;
-      updateLiveStatus();
+      markSourceOk('kdj', 'fallback(预计算)');
+      sourceHealth.kdj.status = 'degraded'; // fallback不是实时
+      updateHealthPanel();
       renderStocks();
       console.log('[fetchAllKDJ] 使用预计算KDJ数据(扩展版): ' + updated0 + '只');
     }
@@ -4447,7 +4526,16 @@ function fetchAllKDJ() {
         if (done % 10 === 0 || done === total) {
           if (updated > 0) {
             liveFlags.kdj = true;
-            updateLiveStatus();
+            if (updated >= total * 0.5) {
+              markSourceOk('kdj', _lastKlineHost);
+            } else if (updated > 0) {
+              sourceHealth.kdj.status = 'degraded';
+              sourceHealth.kdj.host = _lastKlineHost;
+            }
+            updateHealthPanel();
+          } else if (done === total && updated === 0) {
+            markSourceFail('kdj', _lastKlineHost);
+            updateHealthPanel();
           }
           renderStocks();
         }
@@ -4457,25 +4545,46 @@ function fetchAllKDJ() {
 }
 
 // ============================================
-// 状态显示
+// 数据健康度面板 — 每个源单独显示状态/时间/host
 // ============================================
-function updateLiveStatus() {
+function updateHealthPanel() {
   var el = document.getElementById('liveStatus');
   var dot = document.getElementById('liveDot');
   if (!el) return;
+
+  var icon = { ok: '\u{1F7E2}', degraded: '\u{1F7E1}', down: '\u{1F534}', idle: '\u26AA' };
   var parts = [];
-  if (liveFlags.quotes) parts.push('行情');
-  if (liveFlags.flow) parts.push('资金');
-  if (liveFlags.kdj) parts.push('KDJ+日线指标');
-  if (liveFlags.flow5d) parts.push('5/10日资金');
-  if (parts.length > 0) {
-    el.textContent = parts.join('+') + ' 实时';
-    if (dot) dot.classList.add('active');
-  } else {
-    el.textContent = '连接中';
-    if (dot) dot.classList.remove('active');
+  var allOk = true;
+
+  ['quotes', 'flow', 'kdj'].forEach(function(name) {
+    var s = sourceHealth[name];
+    if (!s) return;
+    var label = s.label || name;
+    var st = s.status || 'idle';
+    if (st !== 'ok') allOk = false;
+    var hostShort = s.host === '-' ? '' : s.host.replace(/\.eastmoney\.com/, '').replace(/\.gtimg\.cn/, '');
+    var t = s.lastOk ? fmtTime(s.lastOk) : '';
+    var tip = label + ': ' + st + (hostShort ? ' (' + hostShort + ')' : '') + (t ? ' ' + t : '') + (s.fails > 0 ? ' x' + s.fails : '');
+    parts.push('<span class="src-chip src-' + st + '" title="' + tip + '">' + icon[st] + ' ' + label +
+      (hostShort && st !== 'ok' ? '<span class="src-host">' + hostShort + '</span>' : '') +
+      (t ? '<span class="src-time">' + t + '</span>' : '') +
+      '</span>');
+  });
+
+  // 资金5d/10d 跟随flow状态
+  if (sourceHealth.flow.status === 'ok') {
+    liveFlags.flow5d = true;
+  }
+
+  el.innerHTML = parts.join(' ');
+  if (dot) {
+    if (allOk) { dot.classList.add('active'); dot.style.background = ''; }
+    else { dot.classList.remove('active'); dot.style.background = '#f59e0b'; }
   }
 }
+
+// 向后兼容
+function updateLiveStatus() { updateHealthPanel(); }
 
 function updateLastUpdate() {
   const now = new Date();
