@@ -103,7 +103,7 @@ def fetch_yest_volume(code):
 
 
 def calc_kdj_m30(code):
-    """腾讯30分K线 → KDJ(9,3,3)，返回最新K值"""
+    """腾讯30分K线 → KDJ(9,3,3)，返回最新K/D及最近3根序列（判断方向用）"""
     d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m30,,300',
                   referer='https://gu.qq.com/')
     try:
@@ -115,6 +115,7 @@ def calc_kdj_m30(code):
     # [time, open, close, high, low, vol] → (high, low, close)
     hlc = [(float(b[3]), float(b[4]), float(b[2])) for b in bars]
     k, d_ = 50.0, 50.0
+    series = []
     for i in range(len(hlc)):
         hi = max(x[0] for x in hlc[max(0, i - 8):i + 1])
         lo = min(x[1] for x in hlc[max(0, i - 8):i + 1])
@@ -122,11 +123,42 @@ def calc_kdj_m30(code):
         rsv = 50.0 if hi == lo else (c - lo) / (hi - lo) * 100
         k = (2 / 3) * k + (1 / 3) * rsv
         d_ = (2 / 3) * d_ + (1 / 3) * k
-    return {'k': round(k, 1), 'd': round(d_, 1), 'bars': len(bars)}
+        series.append((k, d_))
+    tail = series[-3:]
+    return {'k': round(k, 1), 'd': round(d_, 1), 'bars': len(bars),
+            'k_prev': round(tail[-2][0], 1), 'd_prev': round(tail[-2][1], 1)}
+
+
+def classify_trend(r):
+    """K30趋势分层：
+       up     = 上升中（K>D）
+       prep_up= 准备上升（K≤D 但 乖离收敛 或 K上拐）
+       down   = 仍在下跌
+    """
+    gap, gap_prev = r['k'] - r['d'], r['k_prev'] - r['d_prev']
+    if r['k'] > r['d']:
+        return 'up'
+    if gap > gap_prev or r['k'] > r['k_prev']:
+        return 'prep_up'
+    return 'down'
+
+
+TIER_NAMES = {0: 'K≤45上升', 1: 'K≤45待升', 2: 'K≤45下跌',
+              3: 'K45-60上升', 4: 'K45-60待升', 5: 'K45-60下跌', 6: 'K60-70补足'}
+
+
+def classify_tier(k, trend):
+    """优先级分层：K≤45+方向 优先；不够名额才逐层放宽到 45-60、60-70"""
+    if k >= K30_HARD_KICK:
+        return None  # 硬踢
+    base = 0 if k <= 45 else (3 if k <= 60 else 6)
+    if base == 6:
+        return 6
+    return base + {'up': 0, 'prep_up': 1, 'down': 2}[trend]
 
 
 def kdj_bonus(k):
-    """K30位置加分（与选股规则一致）"""
+    """K30位置加分（仅作层内排序微调，层优先级见 classify_tier）"""
     if k >= K30_HARD_KICK:
         return -999
     if k >= 60:
@@ -211,25 +243,43 @@ def main():
         r = kdjs.get(s['code'])
         if not r:
             continue
-        bonus = kdj_bonus(r['k'])
-        if bonus <= -900:
+        if r['k'] >= K30_HARD_KICK:
             continue  # K>=70 硬踢
+        trend = classify_trend(r)
+        tier = classify_tier(r['k'], trend)
+        if tier is None:
+            continue
+        dir_bonus = {'up': 2, 'prep_up': 1, 'down': 0}[trend]
         s['kdj30'] = r['k']
-        s['kdj30Dir'] = '↑' if r['k'] > r['d'] else '↓'
-        s['final_rank'] = s['score'] + bonus
+        s['kdj30Dir'] = '↑' if trend == 'up' else ('↗' if trend == 'prep_up' else '↓')
+        s['kdj30Trend'] = trend
+        s['kdj30Tier'] = tier
+        s['final_rank'] = s['score'] + kdj_bonus(r['k']) + dir_bonus
         final.append(s)
-    final.sort(key=lambda x: -x['final_rank'])
-    print(f"30分K<{K30_HARD_KICK}: {len(final)}只")
+
+    # ---- 分层放宽取满：T0(K≤45上升) → T1 → T2 → 45-60各层 → 60-70补足 ----
+    final.sort(key=lambda x: (x['kdj30Tier'], -x['final_rank']))
+    tier_stat = {}
+    for s in final:
+        tier_stat.setdefault(s['kdj30Tier'], 0)
+        tier_stat[s['kdj30Tier']] += 1
+    print(f"30分K<{K30_HARD_KICK}: {len(final)}只，分层分布:")
+    for t in sorted(tier_stat):
+        print(f"  T{t} {TIER_NAMES[t]}: {tier_stat[t]}只")
 
     selected = final[:SELECT_N]
-    print(f"\n=== 选中 {len(selected)} 只 ===")
+    used_tiers = sorted({s['kdj30Tier'] for s in selected})
+    max_tier = max(used_tiers) if used_tiers else 0
+    print(f"\n=== 选中 {len(selected)} 只（放宽到 T{max_tier}: {TIER_NAMES.get(max_tier, '-')}）===")
     for s in selected:
-        print(f"  {s['name']}({s['code']}): 评分{s['score']} 换手{s['turnover']}% "
-              f"K30={s['kdj30']}{s['kdj30Dir']} 今涨{s.get('chg_today')}% 20日{s['drop_20d']}%")
+        print(f"  [T{s['kdj30Tier']}] {s['name']}({s['code']}): 评分{s['score']} "
+              f"换手{s['turnover']}% K30={s['kdj30']}{s['kdj30Dir']} "
+              f"今涨{s.get('chg_today')}% 20日{s['drop_20d']}%")
 
     # ---- 6. 写 dynamic_stocks.json ----
     dyn = {'scan_date': datetime.now().strftime('%Y-%m-%d'), 'total': len(selected),
-           'filter': f'RSI<{RSI_MAX}/跌20d>3%/评分>35/换手{TURNOVER_MIN}-{TURNOVER_MAX}%/K30<70/今涨<{TODAY_CHG_MAX}%',
+           'filter': f'RSI<{RSI_MAX}/跌20d>3%/评分>35/换手{TURNOVER_MIN}-{TURNOVER_MAX}%/今涨<{TODAY_CHG_MAX}%/'
+                     f'K30≤45+上升优先,不足放宽至45-60、60-70,K≥70硬踢',
            'stocks': selected}
     json.dump(dyn, open(DYN_FILE, 'w'), ensure_ascii=False, indent=2)
 
@@ -249,6 +299,8 @@ def main():
         e['turnover'] = s['turnover']
         e['kdj30'] = s['kdj30']
         e['kdj30Dir'] = s['kdj30Dir']
+        e['kdj30Trend'] = s['kdj30Trend']
+        e['kdj30Tier'] = s['kdj30Tier']
         e['dailyFlow'] = 0
         e['flow5d'] = 0
         e['flow10d'] = 0
