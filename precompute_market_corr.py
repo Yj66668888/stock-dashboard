@@ -16,6 +16,7 @@
   - 逆势: R<0
 """
 import urllib.request, json, os, sys, re, time
+import subprocess
 from datetime import datetime
 
 HEADERS = {
@@ -23,18 +24,31 @@ HEADERS = {
     'Referer': 'https://finance.sina.com.cn/'
 }
 
-def get_sina_kline(symbol, datalen=30):
-    """新浪日K线 — 支持指数和个股"""
-    url = f"http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol={symbol}&scale=240&ma=no&datalen={datalen}"
-    for attempt in range(3):
+def _curl_json(url, timeout=10, retries=4):
+    """curl 拉取 JSON（--noproxy 绕开本地代理）"""
+    cmd = ['curl', '-s', '--noproxy', '*', '--max-time', str(timeout),
+           '-H', 'Referer: https://gu.qq.com/', '-H', 'User-Agent: ' + HEADERS['User-Agent'], url]
+    for i in range(retries):
         try:
-            req = urllib.request.Request(url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=10) as r:
-                return json.loads(r.read().decode())
+            out = subprocess.run(cmd, capture_output=True, timeout=timeout + 5).stdout
+            if out:
+                return json.loads(out.decode('utf-8', errors='replace'))
         except Exception:
-            if attempt < 2:
-                time.sleep(0.5)
+            pass
+        time.sleep(0.5 + i * 0.5)
     return None
+
+def get_sina_kline(symbol, datalen=30):
+    """腾讯日K线 — 支持指数和个股（新浪已封IP，2026-08-18切换）"""
+    url = f"https://ifzq.gtimg.cn/appstock/app/kline/kline?param={symbol},day,,,{datalen}"
+    d = _curl_json(url)
+    if not d:
+        return None
+    bars = d.get('data', {}).get(symbol, {}).get('day')
+    if not bars:
+        return None
+    # 腾讯格式: [date, open, close, high, low, volume]
+    return [{'day': b[0], 'close': float(b[2])} for b in bars if len(b) >= 3]
 
 def calc_daily_returns(klines):
     """计算日收益率序列"""

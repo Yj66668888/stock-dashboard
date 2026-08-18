@@ -16,11 +16,26 @@ import urllib.error
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-SINA_KLINE_URL = "http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData?symbol={code}&scale={scale}&ma=no&datalen=300"
-HEADERS = {
-    'Referer': 'https://finance.sina.com.cn/',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-}
+TENCENT_MKLINE_URL = "https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},{mtf},,{count}"
+CURL_HEADERS = [
+    '-H', 'Referer: https://gu.qq.com/',
+    '-H', 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+]
+
+
+def curl_json(url, timeout=10, retries=5):
+    """用 curl 拉取 JSON（--noproxy 绕开本地代理污染），返回 dict 或 None"""
+    import subprocess
+    cmd = ['curl', '-s', '--noproxy', '*', '--max-time', str(timeout)] + CURL_HEADERS + [url]
+    for i in range(retries):
+        try:
+            out = subprocess.run(cmd, capture_output=True, timeout=timeout + 5).stdout
+            if out:
+                return json.loads(out.decode('utf-8', errors='replace'))
+        except Exception:
+            pass
+        time.sleep(0.5 + i * 0.5)
+    return None
 
 
 def extract_stock_codes(html_path):
@@ -46,7 +61,7 @@ def extract_stock_codes(html_path):
 
 
 def fetch_sina_klines(code, scale=5):
-    """从新浪财经获取K线数据
+    """从腾讯 mkline 获取K线数据（新浪已封IP，2026-08-18切换）
 
     Args:
         code: 股票代码，如 sh600519, sz000001
@@ -54,31 +69,29 @@ def fetch_sina_klines(code, scale=5):
     Returns:
         list of dict: [{date, open, high, low, close, volume}, ...]
     """
-    url = SINA_KLINE_URL.format(code=code, scale=scale)
+    mtf = f"m{scale}"
+    url = TENCENT_MKLINE_URL.format(code=code, mtf=mtf, count=300)
 
     try:
-        req = urllib.request.Request(url, headers=HEADERS)
-        resp = urllib.request.urlopen(req, timeout=10)
-        text = resp.read().decode('utf-8', errors='replace')
-
-        # 新浪返回的是 JSON 数组
-        data = json.loads(text)
-        if not data:
+        d = curl_json(url)
+        bars = d.get('data', {}).get(code, {}).get(mtf)
+        if not bars:
             return None
 
         klines = []
-        for bar in data:
+        for b in bars:
+            # 腾讯格式: [time, open, close, high, low, volume]
             try:
                 k = {
-                    'date': bar.get('day', ''),
-                    'open': float(bar['open']),
-                    'high': float(bar['high']),
-                    'low': float(bar['low']),
-                    'close': float(bar['close']),
-                    'volume': float(bar.get('volume', 0)),
+                    'date': b[0],
+                    'open': float(b[1]),
+                    'high': float(b[3]),
+                    'low': float(b[4]),
+                    'close': float(b[2]),
+                    'volume': float(b[5]) if len(b) > 5 else 0,
                 }
                 klines.append(k)
-            except (ValueError, KeyError, TypeError):
+            except (ValueError, IndexError, TypeError):
                 continue
 
         return klines if klines else None
@@ -179,7 +192,7 @@ def main():
     success = 0
     fail = 0
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {executor.submit(compute_kdj_for_code, code): code for code in codes}
         for future in as_completed(futures):
             code = futures[future]
