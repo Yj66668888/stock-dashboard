@@ -778,6 +778,75 @@
     display: block;
   }
 
+  /* ============ 竞价监测面板 ============ */
+  .auction-status-bar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 10px;
+  }
+  .auction-phase-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .phase-wait   { background: rgba(139,148,158,0.15); color: var(--text-muted); }
+  .phase-live   { background: rgba(248,81,73,0.15); color: var(--red); animation: pulse 1.5s infinite; }
+  .phase-done   { background: rgba(88,166,255,0.12); color: var(--blue); }
+  .phase-open   { background: rgba(210,153,34,0.12); color: var(--yellow); }
+  .phase-closed { background: rgba(139,148,158,0.15); color: var(--text-muted); }
+  .auction-clock { font-size: 22px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .auction-countdown { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .auction-meta { font-size: 11px; color: var(--text-muted); }
+  .auction-btn {
+    background: rgba(88,166,255,0.12); border: 1px solid var(--blue); color: var(--blue);
+    padding: 4px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .auction-btn:hover { background: rgba(88,166,255,0.25); }
+  .auction-btn.off { background: transparent; border-color: var(--border); color: var(--text-muted); }
+  .auction-summary { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .auc-stat {
+    min-width: 125px; flex: 1; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px; white-space: nowrap;
+  }
+  .auc-stat-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+  .auc-stat-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .auc-stat-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; }
+  .auction-table-wrap {
+    overflow-x: auto; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 6px; max-height: calc(100vh - 300px); overflow-y: auto;
+  }
+  table.auction-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.auction-table thead th {
+    position: sticky; top: 0; z-index: 2; background: var(--header-bg); color: var(--text-muted);
+    font-size: 11px; padding: 8px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  table.auction-table tbody td {
+    padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: right;
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  table.auction-table tbody tr:hover { background: var(--hover-bg); }
+  table.auction-table .left-align, table.auction-table th.left-align { text-align: left; }
+  .auc-pos { color: var(--red); }
+  .auc-neg { color: var(--green); }
+  .auc-sig {
+    display: inline-block; padding: 1px 7px; border-radius: 9px; font-size: 10px;
+    font-weight: 600; margin-right: 3px; white-space: nowrap;
+  }
+  .sig-strong-up   { background: rgba(248,81,73,0.20); color: var(--red); }
+  .sig-up          { background: rgba(248,81,73,0.10); color: var(--red); }
+  .sig-down        { background: rgba(63,185,80,0.10); color: var(--green); }
+  .sig-strong-down { background: rgba(63,185,80,0.20); color: var(--green); }
+  .sig-amt         { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .auc-bar-bg {
+    display: inline-block; width: 72px; height: 8px; background: rgba(110,118,129,0.15);
+    border-radius: 4px; vertical-align: middle; margin-left: 8px; overflow: hidden; position: relative;
+  }
+  .auc-bar-fill {
+    position: absolute; left: 0; top: 0; height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, rgba(88,166,255,0.45), var(--blue));
+  }
+  .auction-note { font-size: 11px; color: var(--text-dim); margin-top: 8px; line-height: 1.6; }
+
   /* Responsive */
   @media (max-width: 1200px) {
     .stats-row { flex-wrap: wrap; }
@@ -942,6 +1011,7 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <button class="nav-btn active" onclick="switchPage('stocks', event)">📊 选股仪表盘</button>
+    <button class="nav-btn" onclick="switchPage('auction', event)">🔴 竞价监测</button>
   </nav>
 
   <!-- Page: Stocks -->
@@ -1002,6 +1072,46 @@
   </div>
   </div>
 
+  <!-- Page: Auction 竞价监测 -->
+  <div class="page" id="page-auction">
+    <div class="auction-status-bar">
+      <span class="auction-phase-chip phase-wait" id="aucPhase">⏳ 加载中</span>
+      <span class="auction-clock" id="aucClock">--:--:--</span>
+      <span class="auction-countdown" id="aucCountdown"></span>
+      <span class="auction-meta" id="aucMeta">数据时间: --</span>
+      <span style="flex:1"></span>
+      <button class="auction-btn" id="aucAutoBtn" onclick="toggleAuctionAuto()">⏸ 暂停自动刷新</button>
+      <button class="auction-btn" onclick="fetchAuctionData(true)">↻ 立即刷新</button>
+    </div>
+    <div class="auction-summary" id="aucSummary"></div>
+    <div class="auction-table-wrap">
+      <table class="auction-table">
+        <thead>
+          <tr>
+            <th class="left-align">名称</th>
+            <th>代码</th>
+            <th>昨收</th>
+            <th id="aucPriceTh">竞价价</th>
+            <th>高开幅度</th>
+            <th>竞价金额</th>
+            <th>竞价量(手)</th>
+            <th>委买(手)</th>
+            <th>委卖(手)</th>
+            <th>买卖比</th>
+            <th>换手%</th>
+            <th>量比</th>
+            <th class="left-align">信号</th>
+          </tr>
+        </thead>
+        <tbody id="aucBody"></tbody>
+      </table>
+    </div>
+    <div class="auction-note" id="aucNote">
+      信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>
+      委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。
+    </div>
+  </div>
+
   <!-- 已移除：催化日历 / 消息面 / 主线风口 / 政策驱动 页面 -->
 </div>
 
@@ -1015,23 +1125,23 @@ const LAUNCH_STOCKS = []; // 已移除
 
 // KDJ 预计算数据，生成时间: 2026-08-12 04:13:27
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-// KDJ 预计算数据，生成时间: 2026-08-21 13:41:20
+// KDJ 预计算数据，生成时间: 2026-08-23 22:47:01
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-const KDJ_PRECOMPUTED = {"sh600771": {"code": "sh600771", "kdj5": {"k": 47.09, "d": 34.64, "j": 72.0, "prev_k": 34.93, "prev_d": 28.41}, "kdj30": {"k": 14.09, "d": 25.61, "j": -8.95, "prev_k": 16.51, "prev_d": 31.37}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002972": {"code": "sz002972", "kdj5": {"k": 55.47, "d": 54.69, "j": 57.03, "prev_k": 56.54, "prev_d": 54.3}, "kdj30": {"k": 31.98, "d": 27.35, "j": 41.25, "prev_k": 26.55, "prev_d": 25.03}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600285": {"code": "sh600285", "kdj5": {"k": 78.92, "d": 68.11, "j": 100.56, "prev_k": 77.48, "prev_d": 62.7}, "kdj30": {"k": 22.65, "d": 20.54, "j": 26.87, "prev_k": 19.83, "prev_d": 19.49}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz001206": {"code": "sz001206", "kdj5": {"k": 89.54, "d": 81.71, "j": 105.2, "prev_k": 84.31, "prev_d": 77.8}, "kdj30": {"k": 25.05, "d": 24.13, "j": 26.88, "prev_k": 20.21, "prev_d": 23.67}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 28.01, "d": 45.08, "j": -6.12, "prev_k": 39.02, "prev_d": 53.61}, "kdj30": {"k": 67.66, "d": 68.13, "j": 66.74, "prev_k": 70.7, "prev_d": 68.36}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600276": {"code": "sh600276", "kdj5": {"k": 25.95, "d": 27.84, "j": 22.16, "prev_k": 26.8, "prev_d": 28.79}, "kdj30": {"k": 10.73, "d": 17.07, "j": -1.94, "prev_k": 12.53, "prev_d": 20.24}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002541": {"code": "sz002541", "kdj5": {"k": 77.84, "d": 60.61, "j": 112.29, "prev_k": 70.09, "prev_d": 51.99}, "kdj30": {"k": 21.8, "d": 34.37, "j": -3.34, "prev_k": 25.18, "prev_d": 40.66}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 69.24, "d": 59.05, "j": 89.62, "prev_k": 69.01, "prev_d": 53.95}, "kdj30": {"k": 81.52, "d": 71.91, "j": 100.72, "prev_k": 79.78, "prev_d": 67.11}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz001365": {"code": "sz001365", "kdj5": {"k": 71.05, "d": 74.69, "j": 63.77, "prev_k": 73.24, "prev_d": 76.51}, "kdj30": {"k": 35.06, "d": 29.66, "j": 45.84, "prev_k": 28.47, "prev_d": 26.97}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh603938": {"code": "sh603938", "kdj5": {"k": 43.62, "d": 45.73, "j": 39.41, "prev_k": 46.97, "prev_d": 46.78}, "kdj30": {"k": 22.19, "d": 25.26, "j": 16.06, "prev_k": 24.21, "prev_d": 26.79}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600315": {"code": "sh600315", "kdj5": {"k": 47.03, "d": 39.82, "j": 61.46, "prev_k": 45.55, "prev_d": 36.21}, "kdj30": {"k": 18.82, "d": 32.13, "j": -7.8, "prev_k": 23.51, "prev_d": 38.78}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002422": {"code": "sz002422", "kdj5": {"k": 9.39, "d": 13.86, "j": 0.44, "prev_k": 14.08, "prev_d": 16.1}, "kdj30": {"k": 14.81, "d": 29.87, "j": -15.33, "prev_k": 22.21, "prev_d": 37.41}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002261": {"code": "sz002261", "kdj5": {"k": 55.29, "d": 57.53, "j": 50.81, "prev_k": 56.84, "prev_d": 58.65}, "kdj30": {"k": 41.64, "d": 34.83, "j": 55.26, "prev_k": 33.48, "prev_d": 31.43}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002317": {"code": "sz002317", "kdj5": {"k": 16.88, "d": 23.58, "j": 3.48, "prev_k": 21.61, "prev_d": 26.93}, "kdj30": {"k": 24.67, "d": 25.52, "j": 22.98, "prev_k": 24.07, "prev_d": 25.94}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600557": {"code": "sh600557", "kdj5": {"k": 27.12, "d": 24.83, "j": 31.69, "prev_k": 27.04, "prev_d": 23.69}, "kdj30": {"k": 14.39, "d": 27.24, "j": -11.32, "prev_k": 18.57, "prev_d": 33.67}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz003026": {"code": "sz003026", "kdj5": {"k": 30.05, "d": 41.84, "j": 6.47, "prev_k": 37.93, "prev_d": 47.73}, "kdj30": {"k": 42.88, "d": 38.81, "j": 51.01, "prev_k": 45.99, "prev_d": 36.78}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz001339": {"code": "sz001339", "kdj5": {"k": 23.29, "d": 33.86, "j": 2.14, "prev_k": 28.76, "prev_d": 39.15}, "kdj30": {"k": 38.73, "d": 37.83, "j": 40.51, "prev_k": 41.42, "prev_d": 37.39}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh603163": {"code": "sh603163", "kdj5": {"k": 34.0, "d": 41.97, "j": 18.05, "prev_k": 39.96, "prev_d": 45.96}, "kdj30": {"k": 25.52, "d": 26.33, "j": 23.9, "prev_k": 26.55, "prev_d": 26.74}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002364": {"code": "sz002364", "kdj5": {"k": 45.29, "d": 54.47, "j": 26.93, "prev_k": 52.64, "prev_d": 59.06}, "kdj30": {"k": 37.2, "d": 36.27, "j": 39.06, "prev_k": 38.93, "prev_d": 35.81}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz003030": {"code": "sz003030", "kdj5": {"k": 80.8, "d": 74.22, "j": 93.95, "prev_k": 71.2, "prev_d": 70.93}, "kdj30": {"k": 39.14, "d": 31.95, "j": 53.53, "prev_k": 31.6, "prev_d": 28.35}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh603725": {"code": "sh603725", "kdj5": {"k": 74.99, "d": 71.28, "j": 82.39, "prev_k": 79.15, "prev_d": 69.43}, "kdj30": {"k": 33.37, "d": 41.21, "j": 17.7, "prev_k": 32.75, "prev_d": 45.13}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz000963": {"code": "sz000963", "kdj5": {"k": 31.9, "d": 28.61, "j": 38.47, "prev_k": 30.2, "prev_d": 26.97}, "kdj30": {"k": 9.92, "d": 21.99, "j": -14.23, "prev_k": 13.48, "prev_d": 28.03}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 10.54, "d": 19.51, "j": -7.4, "prev_k": 14.66, "prev_d": 24.0}, "kdj30": {"k": 57.84, "d": 52.0, "j": 69.54, "prev_k": 58.9, "prev_d": 49.07}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh603309": {"code": "sh603309", "kdj5": {"k": 49.56, "d": 37.87, "j": 72.96, "prev_k": 41.01, "prev_d": 32.02}, "kdj30": {"k": 19.58, "d": 31.09, "j": -3.45, "prev_k": 22.05, "prev_d": 36.84}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh600118": {"code": "sh600118", "kdj5": {"k": 76.47, "d": 71.43, "j": 86.55, "prev_k": 74.19, "prev_d": 68.91}, "kdj30": {"k": 38.4, "d": 28.3, "j": 58.6, "prev_k": 31.8, "prev_d": 23.25}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz000990": {"code": "sz000990", "kdj5": {"k": 53.13, "d": 45.23, "j": 68.94, "prev_k": 51.13, "prev_d": 41.28}, "kdj30": {"k": 29.27, "d": 34.84, "j": 18.14, "prev_k": 29.2, "prev_d": 37.62}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz000970": {"code": "sz000970", "kdj5": {"k": 52.76, "d": 49.88, "j": 58.51, "prev_k": 54.14, "prev_d": 48.44}, "kdj30": {"k": 35.97, "d": 30.07, "j": 47.77, "prev_k": 32.75, "prev_d": 27.13}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 50.72, "d": 55.39, "j": 41.38, "prev_k": 54.48, "prev_d": 57.72}, "kdj30": {"k": 68.33, "d": 56.96, "j": 91.09, "prev_k": 61.72, "prev_d": 51.27}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002861": {"code": "sz002861", "kdj5": {"k": 46.96, "d": 49.43, "j": 42.01, "prev_k": 47.71, "prev_d": 50.67}, "kdj30": {"k": 35.19, "d": 38.05, "j": 29.48, "prev_k": 33.14, "prev_d": 39.48}, "last5minDate": "202608211345", "last30minDate": "202608211400"}, "sz002290": {"code": "sz002290", "kdj5": {"k": 34.28, "d": 52.9, "j": -2.97, "prev_k": 46.19, "prev_d": 62.22}, "kdj30": {"k": 41.66, "d": 45.45, "j": 34.07, "prev_k": 43.53, "prev_d": 47.34}, "last5minDate": "202608211345", "last30minDate": "202608211400"}};
+const KDJ_PRECOMPUTED = {"sz001365": {"code": "sz001365", "kdj5": {"k": 53.59, "d": 62.04, "j": 36.69, "prev_k": 62.74, "prev_d": 66.26}, "kdj30": {"k": 44.29, "d": 35.97, "j": 60.94, "prev_k": 39.22, "prev_d": 31.8}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz003030": {"code": "sz003030", "kdj5": {"k": 32.37, "d": 48.92, "j": -0.73, "prev_k": 43.56, "prev_d": 57.2}, "kdj30": {"k": 39.4, "d": 34.77, "j": 48.65, "prev_k": 38.01, "prev_d": 32.45}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 66.11, "d": 68.15, "j": 62.05, "prev_k": 70.22, "prev_d": 69.16}, "kdj30": {"k": 81.22, "d": 69.34, "j": 104.98, "prev_k": 77.24, "prev_d": 63.4}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 57.62, "d": 64.47, "j": 43.93, "prev_k": 64.85, "prev_d": 67.89}, "kdj30": {"k": 67.28, "d": 67.68, "j": 66.48, "prev_k": 68.22, "prev_d": 67.88}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz001339": {"code": "sz001339", "kdj5": {"k": 58.84, "d": 66.62, "j": 43.27, "prev_k": 64.07, "prev_d": 70.52}, "kdj30": {"k": 56.52, "d": 46.93, "j": 75.7, "prev_k": 50.83, "prev_d": 42.13}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 62.56, "d": 68.7, "j": 50.29, "prev_k": 71.97, "prev_d": 71.77}, "kdj30": {"k": 57.22, "d": 54.89, "j": 61.9, "prev_k": 57.73, "prev_d": 53.72}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz000970": {"code": "sz000970", "kdj5": {"k": 76.91, "d": 79.25, "j": 72.22, "prev_k": 79.65, "prev_d": 80.42}, "kdj30": {"k": 58.82, "d": 44.64, "j": 87.19, "prev_k": 51.13, "prev_d": 37.54}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002422": {"code": "sz002422", "kdj5": {"k": 60.93, "d": 73.01, "j": 36.75, "prev_k": 76.01, "prev_d": 79.06}, "kdj30": {"k": 15.73, "d": 22.28, "j": 2.63, "prev_k": 16.7, "prev_d": 25.56}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600276": {"code": "sh600276", "kdj5": {"k": 40.97, "d": 40.76, "j": 41.38, "prev_k": 40.61, "prev_d": 40.66}, "kdj30": {"k": 8.93, "d": 12.55, "j": 1.7, "prev_k": 9.48, "prev_d": 14.35}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002541": {"code": "sz002541", "kdj5": {"k": 36.64, "d": 41.47, "j": 26.98, "prev_k": 35.73, "prev_d": 43.89}, "kdj30": {"k": 21.12, "d": 27.59, "j": 8.17, "prev_k": 22.54, "prev_d": 30.83}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz000990": {"code": "sz000990", "kdj5": {"k": 46.5, "d": 56.17, "j": 27.15, "prev_k": 53.08, "prev_d": 61.0}, "kdj30": {"k": 34.25, "d": 34.07, "j": 34.62, "prev_k": 32.26, "prev_d": 33.98}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600771": {"code": "sh600771", "kdj5": {"k": 30.78, "d": 42.73, "j": 6.9, "prev_k": 37.84, "prev_d": 48.7}, "kdj30": {"k": 8.72, "d": 16.51, "j": -6.85, "prev_k": 11.23, "prev_d": 20.4}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh603163": {"code": "sh603163", "kdj5": {"k": 63.2, "d": 69.13, "j": 51.35, "prev_k": 68.18, "prev_d": 72.1}, "kdj30": {"k": 37.77, "d": 31.6, "j": 50.12, "prev_k": 33.36, "prev_d": 28.51}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh603309": {"code": "sh603309", "kdj5": {"k": 21.13, "d": 39.21, "j": -15.01, "prev_k": 31.7, "prev_d": 48.24}, "kdj30": {"k": 12.22, "d": 21.33, "j": -6.0, "prev_k": 17.12, "prev_d": 25.89}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh603725": {"code": "sh603725", "kdj5": {"k": 55.05, "d": 59.34, "j": 46.48, "prev_k": 60.36, "prev_d": 61.48}, "kdj30": {"k": 33.78, "d": 36.61, "j": 28.12, "prev_k": 33.36, "prev_d": 38.02}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600557": {"code": "sh600557", "kdj5": {"k": 33.8, "d": 43.65, "j": 14.1, "prev_k": 40.69, "prev_d": 48.57}, "kdj30": {"k": 7.46, "d": 16.71, "j": -11.03, "prev_k": 10.58, "prev_d": 21.33}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002364": {"code": "sz002364", "kdj5": {"k": 38.02, "d": 49.04, "j": 15.99, "prev_k": 45.79, "prev_d": 54.55}, "kdj30": {"k": 36.58, "d": 36.45, "j": 36.84, "prev_k": 38.0, "prev_d": 36.39}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz000963": {"code": "sz000963", "kdj5": {"k": 80.02, "d": 70.51, "j": 99.04, "prev_k": 70.03, "prev_d": 65.75}, "kdj30": {"k": 6.67, "d": 13.59, "j": -7.17, "prev_k": 7.48, "prev_d": 17.05}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh603938": {"code": "sh603938", "kdj5": {"k": 26.83, "d": 39.11, "j": 2.25, "prev_k": 36.83, "prev_d": 45.26}, "kdj30": {"k": 16.51, "d": 21.14, "j": 7.27, "prev_k": 21.08, "prev_d": 23.45}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600285": {"code": "sh600285", "kdj5": {"k": 70.46, "d": 71.09, "j": 69.2, "prev_k": 68.19, "prev_d": 71.4}, "kdj30": {"k": 31.26, "d": 25.9, "j": 41.98, "prev_k": 27.75, "prev_d": 23.22}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002861": {"code": "sz002861", "kdj5": {"k": 77.9, "d": 75.54, "j": 82.61, "prev_k": 81.55, "prev_d": 74.36}, "kdj30": {"k": 45.87, "d": 40.9, "j": 55.81, "prev_k": 41.12, "prev_d": 38.41}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600118": {"code": "sh600118", "kdj5": {"k": 31.42, "d": 47.57, "j": -0.87, "prev_k": 40.77, "prev_d": 55.64}, "kdj30": {"k": 52.61, "d": 41.57, "j": 74.68, "prev_k": 49.65, "prev_d": 36.05}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz001206": {"code": "sz001206", "kdj5": {"k": 21.39, "d": 40.24, "j": -16.32, "prev_k": 32.08, "prev_d": 49.67}, "kdj30": {"k": 30.83, "d": 27.15, "j": 38.21, "prev_k": 28.89, "prev_d": 25.31}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002972": {"code": "sz002972", "kdj5": {"k": 31.14, "d": 42.9, "j": 7.6, "prev_k": 33.07, "prev_d": 48.79}, "kdj30": {"k": 40.76, "d": 33.71, "j": 54.85, "prev_k": 38.52, "prev_d": 30.19}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002290": {"code": "sz002290", "kdj5": {"k": 82.15, "d": 74.32, "j": 97.83, "prev_k": 75.82, "prev_d": 70.4}, "kdj30": {"k": 41.29, "d": 42.63, "j": 38.63, "prev_k": 39.88, "prev_d": 43.29}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz003026": {"code": "sz003026", "kdj5": {"k": 55.56, "d": 64.93, "j": 36.83, "prev_k": 60.93, "prev_d": 69.61}, "kdj30": {"k": 56.34, "d": 47.9, "j": 73.23, "prev_k": 53.4, "prev_d": 43.68}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002317": {"code": "sz002317", "kdj5": {"k": 77.14, "d": 76.24, "j": 78.93, "prev_k": 80.93, "prev_d": 75.8}, "kdj30": {"k": 28.33, "d": 26.33, "j": 32.32, "prev_k": 25.75, "prev_d": 25.33}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz002261": {"code": "sz002261", "kdj5": {"k": 32.22, "d": 50.29, "j": -3.92, "prev_k": 48.33, "prev_d": 59.32}, "kdj30": {"k": 52.1, "d": 43.57, "j": 69.18, "prev_k": 49.24, "prev_d": 39.3}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sh600315": {"code": "sh600315", "kdj5": {"k": 25.59, "d": 34.02, "j": 8.74, "prev_k": 28.39, "prev_d": 38.23}, "kdj30": {"k": 12.42, "d": 21.95, "j": -6.65, "prev_k": 16.74, "prev_d": 26.72}, "last5minDate": "202608211500", "last30minDate": "202608211500"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 51.99, "d": 54.85, "j": 46.29, "prev_k": 50.72, "prev_d": 56.28}, "kdj30": {"k": 82.9, "d": 77.7, "j": 93.29, "prev_k": 82.26, "prev_d": 75.1}, "last5minDate": "202608211500", "last30minDate": "202608211500"}};
 // 主力资金预计算数据，生成时间: 2026-08-12 04:13:28
 // 数据源: capital_flow.json (最新数据日: 2026-08-06)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-// 主力资金预计算数据，生成时间: 2026-08-21 13:41:20
+// 主力资金预计算数据，生成时间: 2026-08-23 22:47:02
 // 数据源: capital_flow.json (最新数据日: 2026-08-19)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-const CAPITAL_FLOW_CACHE = {"sh603067": {"date": "2026-08-19", "mainNetInflow": -7469.0}, "sh603938": {"date": "2026-08-19", "mainNetInflow": -5677.0}, "sz002861": {"date": "2026-08-19", "mainNetInflow": -814.0}, "sh603725": {"date": "2026-08-19", "mainNetInflow": -1006.0}, "sz002422": {"date": "2026-08-19", "mainNetInflow": -11464.0}, "sz001339": {"date": "2026-08-19", "mainNetInflow": -9486.0}, "sh600105": {"date": "2026-08-19", "mainNetInflow": -104173.0}, "sz003030": {"date": "2026-08-19", "mainNetInflow": 703.0}, "sz002364": {"date": "2026-08-19", "mainNetInflow": -20429.0}, "sz003026": {"date": "2026-08-19", "mainNetInflow": -1697.0}};
+const CAPITAL_FLOW_CACHE = {"sz001339": {"date": "2026-08-19", "mainNetInflow": -9486.0}, "sz003026": {"date": "2026-08-19", "mainNetInflow": -1697.0}, "sz002364": {"date": "2026-08-19", "mainNetInflow": -20429.0}, "sh603067": {"date": "2026-08-19", "mainNetInflow": -7469.0}, "sz002422": {"date": "2026-08-19", "mainNetInflow": -11464.0}, "sh600105": {"date": "2026-08-19", "mainNetInflow": -104173.0}, "sz002861": {"date": "2026-08-19", "mainNetInflow": -814.0}, "sh603938": {"date": "2026-08-19", "mainNetInflow": -5677.0}, "sh603725": {"date": "2026-08-19", "mainNetInflow": -1006.0}, "sz003030": {"date": "2026-08-19", "mainNetInflow": 703.0}};
 // 大盘跟随度预计算，生成时间: 2026-08-12 04:13:44
 // 基准: 上证指数(sh000001), 数据日: 2026-08-11, 上证5日+1.44%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-// 大盘跟随度预计算，生成时间: 2026-08-21 13:41:33
-// 基准: 上证指数(sh000001), 数据日: 2026-08-21, 上证5日-2.11%
+// 大盘跟随度预计算，生成时间: 2026-08-23 22:47:09
+// 基准: 上证指数(sh000001), 数据日: 2026-08-21, 上证5日-1.94%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-const MARKET_CORR_CACHE = {"003026": {"beta": 2.43, "corr": 0.686, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -5.08, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "001365": {"beta": 1.43, "corr": 0.393, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -7.8, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "000970": {"beta": 2.16, "corr": 0.625, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -10.28, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "001339": {"beta": 2.79, "corr": 0.668, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -11.12, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "603067": {"beta": 3.65, "corr": 0.769, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": -6.85, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "000990": {"beta": 1.12, "corr": 0.23, "label": "独立", "color": "var(--blue)", "align_5d": "1/4", "stock_5d_chg": -4.51, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002422": {"beta": 2.13, "corr": 0.591, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": -4.16, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "003030": {"beta": 1.3, "corr": 0.354, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -1.31, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002261": {"beta": 0.78, "corr": 0.245, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -4.42, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002972": {"beta": 0.59, "corr": 0.165, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -4.88, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600557": {"beta": 0.29, "corr": 0.137, "label": "独立", "color": "var(--blue)", "align_5d": "1/5", "stock_5d_chg": -5.39, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600315": {"beta": 0.74, "corr": 0.353, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 2.9, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "603938": {"beta": 3.03, "corr": 0.77, "label": "强跟随", "color": "var(--red)", "align_5d": "5/5", "stock_5d_chg": -5.59, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600771": {"beta": 0.12, "corr": 0.066, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -2.67, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600276": {"beta": 0.54, "corr": 0.26, "label": "独立", "color": "var(--blue)", "align_5d": "2/4", "stock_5d_chg": -9.72, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "603163": {"beta": 3.29, "corr": 0.643, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -10.8, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002861": {"beta": 1.89, "corr": 0.592, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -6.45, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002317": {"beta": 1.12, "corr": 0.326, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": -7.83, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "603309": {"beta": 0.7, "corr": 0.442, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -2.6, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600105": {"beta": 3.23, "corr": 0.638, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -6.68, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600285": {"beta": -0.16, "corr": -0.081, "label": "逆势", "color": "var(--green)", "align_5d": "2/5", "stock_5d_chg": 0.1, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "603725": {"beta": 1.29, "corr": 0.243, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -1.16, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002541": {"beta": 0.55, "corr": 0.176, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 3.38, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "000688": {"beta": 1.78, "corr": 0.582, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": 3.64, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002290": {"beta": 3.1, "corr": 0.682, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -4.68, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "601126": {"beta": 2.96, "corr": 0.681, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -6.42, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "000963": {"beta": 0.82, "corr": 0.351, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -4.72, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "600118": {"beta": 1.75, "corr": 0.434, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -10.05, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "001206": {"beta": 0.56, "corr": 0.146, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -2.37, "mkt_5d_chg": -2.11, "date": "2026-08-21"}, "002364": {"beta": 3.15, "corr": 0.655, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -14.09, "mkt_5d_chg": -2.11, "date": "2026-08-21"}};
+const MARKET_CORR_CACHE = {"002317": {"beta": 1.61, "corr": 0.475, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": -7.33, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "001339": {"beta": 2.68, "corr": 0.636, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -10.15, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "601126": {"beta": 2.99, "corr": 0.668, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -6.21, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002290": {"beta": 3.15, "corr": 0.67, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -4.01, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "000963": {"beta": 0.85, "corr": 0.347, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -4.55, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "603067": {"beta": 3.53, "corr": 0.744, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": -6.41, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002422": {"beta": 2.42, "corr": 0.64, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -3.9, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "001365": {"beta": 1.1, "corr": 0.312, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": -7.74, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "603309": {"beta": 0.75, "corr": 0.445, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": -3.02, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002541": {"beta": 0.66, "corr": 0.199, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 3.49, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "000970": {"beta": 2.27, "corr": 0.628, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -9.62, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600771": {"beta": 0.44, "corr": 0.257, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -2.96, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002261": {"beta": 1.05, "corr": 0.32, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -4.53, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002861": {"beta": 1.6, "corr": 0.533, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -5.92, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "003030": {"beta": 1.96, "corr": 0.562, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -1.72, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600557": {"beta": 0.57, "corr": 0.275, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -5.71, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600105": {"beta": 3.17, "corr": 0.612, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -6.54, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "003026": {"beta": 2.35, "corr": 0.657, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -4.3, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600276": {"beta": 0.61, "corr": 0.28, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -9.7, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "603163": {"beta": 3.53, "corr": 0.658, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -10.12, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600315": {"beta": 0.75, "corr": 0.343, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 2.78, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "000688": {"beta": 1.74, "corr": 0.56, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.58, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002364": {"beta": 3.13, "corr": 0.633, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -14.02, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "603725": {"beta": 0.89, "corr": 0.168, "label": "独立", "color": "var(--blue)", "align_5d": "1/5", "stock_5d_chg": -1.08, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "001206": {"beta": 0.44, "corr": 0.108, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -2.37, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600285": {"beta": 0.06, "corr": 0.032, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 0.26, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "000990": {"beta": 1.59, "corr": 0.318, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/4", "stock_5d_chg": -3.91, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "600118": {"beta": 2.08, "corr": 0.492, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -9.82, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "002972": {"beta": 0.92, "corr": 0.25, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -4.88, "mkt_5d_chg": -1.94, "date": "2026-08-21"}, "603938": {"beta": 2.9, "corr": 0.745, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": -6.11, "mkt_5d_chg": -1.94, "date": "2026-08-21"}};
 
 // ============================================
 // 本周催化日历数据
@@ -2473,6 +2583,8 @@ function switchPage(pageId, event) {
     });
   }
   if (btn) btn.classList.add('active');
+  // 竞价监测页：进入时启动实时刷新，离开时停止
+  if (pageId === 'auction') { startAuctionLoop(); } else { stopAuctionLoop(); }
 }
 
 // ============================================
@@ -3763,6 +3875,296 @@ function applyKDJFallbackEarly() {
   });
   _fallbackApplied = true;
   console.log('[applyKDJFallbackEarly] Applied fallback to ' + updated + ' stocks');
+}
+
+// ============================================
+// 竞价监测面板（腾讯行情源实时）
+// 腾讯字段: [1]名称 [3]竞价/现价 [4]昨收 [5]今开 [6]成交量(手)
+//           [9-18]买五档价量 [19-28]卖五档价量 [30]数据时间
+//           [37]成交额(万) [38]换手 [49]量比 [50]委差
+// 竞价阶段(9:15-9:25): [3]=虚拟撮合价, 买卖五档=未匹配申报
+// ============================================
+var aucState = { ticker: null, auto: true, data: [], lastFetchOk: null, nextFetchAt: 0, fetching: false };
+
+function getAuctionPhase(now) {
+  var day = now.getDay();
+  if (day === 0 || day === 6) return 'closed';
+  var hm = now.getHours() * 60 + now.getMinutes();
+  if (hm < 9 * 60 + 15) return 'wait';
+  if (hm < 9 * 60 + 25) return 'live';
+  if (hm < 9 * 60 + 30) return 'done';
+  if (hm < 15 * 60) return 'open';
+  return 'closed';
+}
+
+function aucPad(n) { return String(n).padStart(2, '0'); }
+
+function updateAuctionStatus() {
+  var now = new Date();
+  var phase = getAuctionPhase(now);
+  var chip = document.getElementById('aucPhase');
+  var cd = document.getElementById('aucCountdown');
+  if (!chip) return;
+  var hm = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  var remain, mm, ss;
+  switch (phase) {
+    case 'wait':
+      chip.className = 'auction-phase-chip phase-wait';
+      chip.textContent = '⏳ 等待集合竞价';
+      remain = (9 * 60 + 15) - hm;
+      mm = Math.floor(remain); ss = Math.floor((remain - mm) * 60);
+      cd.textContent = '距竞价开始 ' + aucPad(mm) + ':' + aucPad(ss);
+      break;
+    case 'live':
+      var frozen = hm >= 9 * 60 + 20;
+      chip.className = 'auction-phase-chip phase-live';
+      chip.textContent = frozen ? '🔴 竞价中 · 不可撤单' : '🔴 竞价中 · 可撤单';
+      remain = (9 * 60 + 25) - hm;
+      mm = Math.floor(remain); ss = Math.floor((remain - mm) * 60);
+      cd.textContent = '距竞价结束 ' + aucPad(mm) + ':' + aucPad(ss);
+      break;
+    case 'done':
+      chip.className = 'auction-phase-chip phase-done';
+      chip.textContent = '✅ 竞价已结束';
+      cd.textContent = '9:30 开盘';
+      break;
+    case 'open':
+      chip.className = 'auction-phase-chip phase-open';
+      chip.textContent = '📈 交易中 · 显示竞价快照';
+      cd.textContent = '';
+      break;
+    default:
+      chip.className = 'auction-phase-chip phase-closed';
+      chip.textContent = '🌙 非交易时段';
+      cd.textContent = '';
+  }
+  document.getElementById('aucClock').textContent =
+    aucPad(now.getHours()) + ':' + aucPad(now.getMinutes()) + ':' + aucPad(now.getSeconds());
+}
+
+function toggleAuctionAuto() {
+  aucState.auto = !aucState.auto;
+  var btn = document.getElementById('aucAutoBtn');
+  if (btn) {
+    btn.textContent = aucState.auto ? '⏸ 暂停自动刷新' : '▶ 开启自动刷新';
+    btn.classList.toggle('off', !aucState.auto);
+  }
+  if (aucState.auto) fetchAuctionData();
+}
+
+function startAuctionLoop() {
+  stopAuctionLoop();
+  updateAuctionStatus();
+  fetchAuctionData();
+  // 1秒ticker：更新时钟/阶段/倒计时；拉取节奏由 nextFetchAt 控制（竞价中5秒/平时30秒）
+  aucState.ticker = setInterval(function() {
+    updateAuctionStatus();
+    if (!aucState.auto || document.hidden || aucState.fetching) return;
+    if (Date.now() >= aucState.nextFetchAt) fetchAuctionData();
+  }, 1000);
+}
+
+function stopAuctionLoop() {
+  if (aucState.ticker) { clearInterval(aucState.ticker); aucState.ticker = null; }
+}
+
+function aucFmtWan(wan) {
+  if (wan === null || wan === undefined || isNaN(wan)) return '--';
+  if (wan >= 1e4) return (wan / 1e4).toFixed(2) + '亿';
+  if (wan >= 100) return wan.toFixed(0) + '万';
+  return wan.toFixed(1) + '万';
+}
+
+function aucParseQuoteTime(t) {
+  // 20260821161448 → 08-21 16:14:48
+  if (!t || t.length !== 14) return '--';
+  return t.slice(4, 6) + '-' + t.slice(6, 8) + ' ' + t.slice(8, 10) + ':' + t.slice(10, 12) + ':' + t.slice(12, 14);
+}
+
+function aucSnapshotKey() {
+  var d = new Date();
+  return 'auc_snap_' + d.getFullYear() + aucPad(d.getMonth() + 1) + aucPad(d.getDate());
+}
+
+function aucSaveSnapshot(data, phase) {
+  try {
+    if (phase === 'live' || phase === 'done') {
+      localStorage.setItem(aucSnapshotKey(), JSON.stringify({
+        time: new Date().toISOString(), phase: phase, data: data
+      }));
+    }
+  } catch (e) { /* localStorage 满了就算了 */ }
+}
+
+function aucLoadSnapshot() {
+  try {
+    var raw = localStorage.getItem(aucSnapshotKey());
+    if (!raw) return null;
+    var obj = JSON.parse(raw);
+    // 只认今天的
+    if (obj && obj.time && obj.time.slice(0, 10) === new Date().toISOString().slice(0, 10)) return obj;
+  } catch (e) {}
+  return null;
+}
+
+// 拉取竞价数据（腾讯源，script标签注入，同fetchQuotes方式）
+function fetchAuctionData(manual) {
+  if (aucState.fetching) return;
+  var phase = getAuctionPhase(new Date());
+  // 非竞价时段优先展示今日竞价快照
+  if (!manual && (phase === 'open' || phase === 'closed')) {
+    var snap = aucLoadSnapshot();
+    if (snap && snap.data && snap.data.length) {
+      aucState.data = snap.data;
+      renderAuction(snap.data, true);
+      aucState.nextFetchAt = Date.now() + 60000;
+      return;
+    }
+  }
+  var codes = STOCKS.map(function(s) { return s.code; }).filter(Boolean);
+  if (!codes.length) return;
+  aucState.fetching = true;
+  aucState.nextFetchAt = Date.now() + (phase === 'live' ? 5000 : 30000);
+
+  var url = 'https://qt.gtimg.cn/q=' + codes.join(',');
+  var script = document.createElement('script');
+  script.src = url;
+  script.charset = 'gbk';
+  var done = false;
+
+  function finish() {
+    if (done) return;
+    done = true;
+    script.onload = null; script.onerror = null;
+    if (script.parentNode) script.parentNode.removeChild(script);
+    var items = [];
+    var lastTime = '';
+    codes.forEach(function(code) {
+      var raw = window['v_' + code];
+      if (!raw || typeof raw !== 'string') return;
+      var f = raw.split('~');
+      if (f.length < 51) return;
+      var price = parseFloat(f[3]), yclose = parseFloat(f[4]), open = parseFloat(f[5]);
+      if (isNaN(price) || isNaN(yclose) || !yclose) return;
+      var bidVol = 0, askVol = 0;
+      [10, 12, 14, 16, 18].forEach(function(i) { var v = parseFloat(f[i]); if (!isNaN(v)) bidVol += v; });
+      [20, 22, 24, 26, 28].forEach(function(i) { var v = parseFloat(f[i]); if (!isNaN(v)) askVol += v; });
+      // 竞价阶段用虚拟撮合价，其余时段用今开（=竞价结果）
+      var aucPrice, gap;
+      if (phase === 'live') { aucPrice = price; gap = (price - yclose) / yclose * 100; }
+      else { aucPrice = isNaN(open) ? price : open; gap = (aucPrice - yclose) / yclose * 100; }
+      items.push({
+        code: code, name: f[1],
+        aucPrice: aucPrice, yclose: yclose, open: isNaN(open) ? null : open,
+        nowPrice: price, gap: Math.round(gap * 100) / 100,
+        vol: parseInt(f[6]) || 0, amtWan: parseFloat(f[37]) || 0,
+        bidVol: bidVol, askVol: askVol,
+        turnover: parseFloat(f[38]) || null, volRatio: parseFloat(f[49]) || null,
+        quoteTime: f[30]
+      });
+      if (f[30] && f[30].length === 14) lastTime = f[30];
+    });
+    aucState.fetching = false;
+    if (!items.length) {
+      document.getElementById('aucMeta').textContent = '❌ 数据获取失败，稍后自动重试';
+      aucState.nextFetchAt = Date.now() + 10000;
+      return;
+    }
+    aucState.data = items;
+    aucSaveSnapshot(items, phase);
+    renderAuction(items, false);
+    document.getElementById('aucMeta').textContent = '数据时间: ' + aucParseQuoteTime(lastTime) + ' · ' + items.length + '只';
+  }
+
+  script.onload = finish;
+  script.onerror = finish;
+  setTimeout(function() { if (!done) finish(); }, 6000);
+  document.head.appendChild(script);
+}
+
+function aucSignals(it) {
+  var s = [];
+  if (it.gap >= 5) s.push('<span class="auc-sig sig-strong-up">★大幅高开' + it.gap.toFixed(1) + '%</span>');
+  else if (it.gap >= 2) s.push('<span class="auc-sig sig-up">↑高开' + it.gap.toFixed(1) + '%</span>');
+  else if (it.gap <= -5) s.push('<span class="auc-sig sig-strong-down">★大幅低开' + it.gap.toFixed(1) + '%</span>');
+  else if (it.gap <= -2) s.push('<span class="auc-sig sig-down">↓低开' + it.gap.toFixed(1) + '%</span>');
+  if (it.amtWan >= 1000) s.push('<span class="auc-sig sig-amt">¥' + aucFmtWan(it.amtWan) + '</span>');
+  return s.join('');
+}
+
+function renderAuction(items, isSnapshot) {
+  var body = document.getElementById('aucBody');
+  var summary = document.getElementById('aucSummary');
+  var priceTh = document.getElementById('aucPriceTh');
+  if (!body) return;
+  var phase = getAuctionPhase(new Date());
+
+  // 表头语义：竞价中显示"竞价价"，其余显示"开盘价(竞价结果)"
+  if (priceTh) priceTh.textContent = (phase === 'live') ? '竞价价' : '开盘价';
+
+  // 排序：高开在前
+  var sorted = items.slice().sort(function(a, b) { return b.gap - a.gap; });
+  var maxAmt = 0;
+  sorted.forEach(function(it) { if (it.amtWan > maxAmt) maxAmt = it.amtWan; });
+
+  var html = '';
+  sorted.forEach(function(it) {
+    var gapCls = it.gap > 0 ? 'auc-pos' : (it.gap < 0 ? 'auc-neg' : '');
+    var ratio = it.askVol > 0 ? it.bidVol / it.askVol : (it.bidVol > 0 ? 99 : 0);
+    var ratioCls = ratio >= 1 ? 'auc-pos' : 'auc-neg';
+    var barW = maxAmt > 0 ? Math.max(2, Math.round(it.amtWan / maxAmt * 100)) : 0;
+    html += '<tr>'
+      + '<td class="left-align" style="font-weight:600;">' + it.name + '</td>'
+      + '<td style="color:var(--text-muted);">' + it.code + '</td>'
+      + '<td>' + it.yclose.toFixed(2) + '</td>'
+      + '<td style="font-weight:700;">' + it.aucPrice.toFixed(2) + '</td>'
+      + '<td class="' + gapCls + '" style="font-weight:700;">' + (it.gap > 0 ? '+' : '') + it.gap.toFixed(2) + '%</td>'
+      + '<td style="font-weight:600;">' + aucFmtWan(it.amtWan)
+      + '<span class="auc-bar-bg"><span class="auc-bar-fill" style="width:' + barW + '%;"></span></span></td>'
+      + '<td>' + (it.vol > 0 ? it.vol.toLocaleString() : '--') + '</td>'
+      + '<td class="auc-pos">' + (it.bidVol ? it.bidVol.toLocaleString() : '--') + '</td>'
+      + '<td class="auc-neg">' + (it.askVol ? it.askVol.toLocaleString() : '--') + '</td>'
+      + '<td class="' + ratioCls + '">' + (ratio > 0 ? ratio.toFixed(2) : '--') + '</td>'
+      + '<td>' + (it.turnover !== null ? it.turnover.toFixed(2) : '--') + '</td>'
+      + '<td>' + (it.volRatio !== null ? it.volRatio.toFixed(2) : '--') + '</td>'
+      + '<td class="left-align">' + aucSignals(it) + '</td>'
+      + '</tr>';
+  });
+  body.innerHTML = html;
+
+  // 汇总卡片
+  var up = 0, down = 0, flat = 0, totalAmt = 0, sumGap = 0, bestUp = null, bigAmt = null;
+  items.forEach(function(it) {
+    if (it.gap > 0.05) up++; else if (it.gap < -0.05) down++; else flat++;
+    totalAmt += it.amtWan; sumGap += it.gap;
+    if (!bestUp || it.gap > bestUp.gap) bestUp = it;
+    if (!bigAmt || it.amtWan > bigAmt.amtWan) bigAmt = it;
+  });
+  var avgGap = items.length ? (sumGap / items.length) : 0;
+  var avgCls = avgGap > 0 ? 'auc-pos' : (avgGap < 0 ? 'auc-neg' : '');
+  function statCard(label, value, sub, cls) {
+    return '<div class="auc-stat"><div class="auc-stat-label">' + label + '</div>'
+      + '<div class="auc-stat-value ' + (cls || '') + '">' + value + '</div>'
+      + '<div class="auc-stat-sub">' + (sub || '') + '</div></div>';
+  }
+  var cards = [
+    statCard('高开', up + '只', '低开 ' + down + ' 只 · 平开 ' + flat + ' 只', 'auc-pos'),
+    statCard('平均开盘幅度', (avgGap > 0 ? '+' : '') + avgGap.toFixed(2) + '%', '相对昨收', avgCls),
+    statCard('竞价总金额', aucFmtWan(totalAmt), items.length + '只合计'),
+    statCard('最强高开', bestUp ? (bestUp.gap > 0 ? '+' : '') + bestUp.gap.toFixed(2) + '%' : '--', bestUp ? bestUp.name : ''),
+    statCard('最大竞价金额', bigAmt ? aucFmtWan(bigAmt.amtWan) : '--', bigAmt ? bigAmt.name : ''),
+    statCard('数据状态', isSnapshot ? '竞价快照' : '实时', isSnapshot ? '来自今日竞价时段存档' : '腾讯行情直连')
+  ];
+  summary.innerHTML = cards.join('');
+
+  // 快照提示
+  var note = document.getElementById('aucNote');
+  if (note) {
+    var extra = isSnapshot ? '⚠️ 当前展示的是今日竞价时段保存的快照数据。' : '';
+    note.innerHTML = extra
+      + '信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>'
+      + '委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。';
+  }
 }
 
 (function init() {
