@@ -245,36 +245,36 @@ def main():
     print('='*60)
     print()
     
-    # 加载候选票
-    with open('daily_predictions.json') as f:
-        dp = json.load(f)
-    
-    top200 = dp.get('top200', [])
-    # 也加上 all_results 中评分较高的
-    allr = dp.get('all_results', [])
-    # 取 top400 以扩大搜索范围
-    candidates = top200 + allr[:200] if len(allr) > 200 else top200 + allr
+    # 从仪表盘 deploy/index.html 读取当天选出的 STOCKS（30只）
+    import re
+    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'deploy', 'index.html')
+    with open(html_path, encoding='utf-8') as f:
+        html = f.read()
+    m = re.search(r'(const STOCKS\s*=\s*)(\[.*?\])(\s*;\s*\n)', html, re.S)
+    if not m:
+        print('❌ 未找到 STOCKS 数组，退出'); return
+    dashboard_stocks = json.loads(m.group(2))
     
     # 去重
     seen = set()
     stock_list = []
-    for s in candidates:
+    for s in dashboard_stocks:
         code = s.get('code', '')
         if code not in seen:
             seen.add(code)
-            stock_list.append((code, s.get('name', ''), s.get('total_score', 0)))
+            stock_list.append((code, s.get('name', ''), s.get('healthScore', 0)))
     
-    print(f'候选池: {len(stock_list)}只 (daily_predictions top + all_results)')
-    print(f'扫描中... (8线程并发拉30分钟K线)')
+    print(f'候选池: {len(stock_list)}只 (仪表盘当日选票)')
+    print(f'扫描中... (3线程并发拉30分钟K线)')
     print()
     
     results = []
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {executor.submit(scan_one, s): s for s in stock_list}
         done = 0
         for future in as_completed(futures):
             done += 1
-            if done % 50 == 0:
+            if done % 10 == 0:
                 print(f'  进度: {done}/{len(stock_list)}')
             try:
                 r = future.result()
@@ -316,11 +316,11 @@ def main():
         top5 = results[:5]
         if top5:
             names_str = '/'.join(r['name'] for r in top5)
-            title = f"低位启动{len(results)}只: {names_str}"
+            title = f"仪表盘选票低位启动{len(results)}只: {names_str}"
             lines = [
-                f"## 低位启动前扫描\n",
+                f"## 低位启动前扫描（仪表盘选票）\n",
                 f"> 扫描时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n",
-                f"> 扫描范围: {len(stock_list)}只 | 筛出: {len(results)}只\n\n",
+                f"> 扫描范围: 仪表盘{len(stock_list)}只选票 | 筛出: {len(results)}只\n\n",
                 f"---\n\n",
             ]
             for i, r in enumerate(top5, 1):
