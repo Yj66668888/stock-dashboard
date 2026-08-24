@@ -50,23 +50,91 @@ def load_sendkey():
 
 
 # ============================================================
+# 推送时间闸门（2026-08-24 用户要求：推送只在指定时间点发出）
+#   - 数据刷新频率不变（云端仍每30分钟跑），只是非时间窗的推送被拦截
+#   - 同一时间窗 + 同一推送类型，每天只发一次（防 docs/root 双跑重复推送）
+#   - FORCE_PUSH=1 环境变量可绕过闸门（手动测试用）
+# ============================================================
+
+_PUSH_TIMES = [(10, 0), (11, 0), (13, 0), (14, 0), (14, 40)]
+_PUSH_TIMES_STR = '10:00/11:00/13:00/14:00/14:40'
+_PUSH_WINDOW_BEFORE = 3   # 提前3分钟开窗
+_PUSH_WINDOW_AFTER = 15   # 延后15分钟关窗（容忍 GitHub Actions cron 延迟）
+_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.wechat_push_state.json')
+
+
+def _beijing_now():
+    from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+    return _dt.now(_tz(_td(hours=8)))
+
+
+def _match_push_window():
+    """当前北京时间落在任一推送时间窗内则返回窗口key(如'1440')，否则返回None"""
+    now = _beijing_now()
+    minutes = now.hour * 60 + now.minute
+    for h, m in _PUSH_TIMES:
+        t = h * 60 + m
+        if t - _PUSH_WINDOW_BEFORE <= minutes <= t + _PUSH_WINDOW_AFTER:
+            return f"{h:02d}{m:02d}", now
+    return None, now
+
+
+def _load_push_state():
+    try:
+        with open(_STATE_FILE, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_push_state(state):
+    try:
+        with open(_STATE_FILE, 'w') as f:
+            json.dump(state, f, ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def push_gate(push_type):
+    """推送闸门检查，返回 (allowed, window, state_key)
+    allowed=False 时 window 携带拦截原因说明"""
+    if os.environ.get('FORCE_PUSH') == '1':
+        return True, 'forced', None
+    window, now = _match_push_window()
+    if not window:
+        return False, f"当前北京时间{now.strftime('%H:%M')}不在推送时间窗({_PUSH_TIMES_STR})内", None
+    state_key = f"{push_type}:{now.strftime('%Y-%m-%d')}"
+    if _load_push_state().get(state_key) == window:
+        return False, f"时间窗{window}类型{push_type}今日已推送过", None
+    return True, window, state_key
+
+
+# ============================================================
 # 核心推送函数
 # ============================================================
 
-def send_wechat(title, desp=''):
+def send_wechat(title, desp='', push_type='default'):
     """
     通过 Server酱 推送消息到微信
 
     Args:
         title: 消息标题 (不超过100字)
         desp:   消息正文 (Markdown格式, 不超过32KB)
+        push_type: 推送类型('bottom'建仓预警/'prelaunch'低位启动)，
+                   用于时间窗去重——同一窗口不同类型互不挤占
 
     Returns:
-        True=推送成功, False=失败或未配置
+        True=推送成功, False=失败/未配置/被时间闸门拦截
     """
     sendkey = load_sendkey()
     if not sendkey:
         print("[WeChat] 未配置 SendKey, 跳过推送")
+        return False
+
+    # 推送时间闸门：非指定时间点一律拦截（FORCE_PUSH=1 可绕过）
+    allowed, window, state_key = push_gate(push_type)
+    if not allowed:
+        print(f"[WeChat] 推送被时间闸门拦截: {window}")
         return False
 
     # 截断防止超限
@@ -90,6 +158,10 @@ def send_wechat(title, desp=''):
             result = json.loads(body)
             if result.get('code') == 0 or result.get('data', {}).get('error') == 'SUCCESS':
                 print(f"[WeChat] 推送成功: {title}")
+                if state_key:
+                    state = _load_push_state()
+                    state[state_key] = window
+                    _save_push_state(state)
                 return True
             else:
                 print(f"[WeChat] 推送失败: {body}")
@@ -328,7 +400,7 @@ def notify_bottom_accumulation(stocks, context='指标计算', vol_ratios=None):
     desp = '\n'.join(lines)
 
     # 推送
-    send_wechat(title, desp)
+    send_wechat(title, desp, push_type='bottom')
     _notification_sent = True
     print(f"[WeChat] 底部缩量建仓预警已推送: {len(bottom_stocks)}只")
     for s in bottom_stocks:

@@ -331,7 +331,7 @@ def main():
                 lines.append(f"- 30分KDJ: K={r['kd30_k']:.1f} D={r['kd30_d']:.1f} J={r['kd30_j']:.1f}")
                 lines.append(f"- 信号: {signals_str}\n")
             try:
-                send_wechat(title, '\n'.join(lines))
+                send_wechat(title, '\n'.join(lines), push_type='prelaunch')
             except Exception as e:
                 print(f"[WeChat] 推送异常(不影响扫描): {e}")
     

@@ -2,8 +2,15 @@ name: Cloud Dashboard Update
 
 on:
   schedule:
-    # 9:00 AM - 3:30 PM Beijing = 1:00-7:30 UTC, every 30 min, Mon-Fri
-    - cron: '*/30 1-7 * * 1-5'
+    # 数据刷新: 9:00-15:30 北京时间每30分钟 (UTC 1:00-7:30)
+    #   - 13:00整点(UTC 5:00)除外——由 cloud-midday-scan 负责该时段推送，避免建仓预警重复
+    #   - 整点仅 UTC 1,2,3,4,6,7 = 北京 9/10/11/12/14/15 点
+    # 推送时间点(北京时间): 10:00 / 11:00 / 13:00(midday) / 14:00 / 14:40
+    #   - 非推送时间点的运行由 wechat_notify.py 时间闸门拦截推送，数据照常刷新
+    - cron: '0 1,2,3,4,6,7 * * 1-5'
+    - cron: '30 1-7 * * 1-5'
+    # 14:40 北京时间 建仓预警推送点
+    - cron: '40 6 * * 1-5'
   workflow_dispatch:
 
 permissions:
