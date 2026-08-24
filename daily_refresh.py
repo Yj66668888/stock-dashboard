@@ -16,8 +16,8 @@
 注意: 不要再运行 auto_update_full.py / dynamic_stock_selector.py(旧换血, 已废弃)
 
 用法:
-  python daily_refresh.py            # 完整流程
-  python daily_refresh.py --no-scan  # 跳过选股, 只做补数+预计算+推送(盘中刷新用)
+  python daily_refresh.py            # 完整流程(选股+低位启动推送)
+  python daily_refresh.py --no-scan  # 跳过选股+低位启动扫描(云端已接管), 只做补数+预计算+推送
 """
 import subprocess
 import sys
@@ -55,14 +55,15 @@ def main():
     if not no_scan:
         run("[1/7] 分层KD选股+注入", 'rescan_low_position.py')
         run("[2/7] 补齐缺失字段", 'enrich_missing_fields.py')
+        run("[7/7] 低位启动扫描", 'scan_pre_launch.py')
     else:
-        print("[选股] 跳过 (--no-scan)")
+        print("[选股] 跳过 (--no-scan, 换票由云端8:30/13:00负责)")
+        print("[低位启动] 跳过 (--no-scan, 微信推送由云端13:00负责)")
 
     run("[3/7] 日线指标+建仓预警", 'precompute_daily_indicators.py')
     run("[4/7] KDJ预计算(腾讯源)", 'precompute_kdj.py')
     run("[5/7] 大盘跟随度", 'precompute_market_corr.py')
     run("[6/7] 起涨前预判", 'pre_breakout_v2.py')
-    run("[7/7] 低位启动扫描", 'scan_pre_launch.py')
 
     # 同步 deploy -> docs
     os.makedirs(os.path.dirname(DOCS_HTML), exist_ok=True)
