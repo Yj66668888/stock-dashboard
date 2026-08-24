@@ -234,10 +234,11 @@ def restore_deploy_placeholders():
             f.write(html)
 
 
-def full_scan():
-    """全量扫描模式：市场扫描 -> 选股 -> 起涨预判 -> 预计算 -> 部署"""
+def full_scan(with_prelaunch=False):
+    """全量扫描模式：市场扫描 -> 选股 -> 起涨预判 -> 预计算 -> 部署
+    with_prelaunch=True 时附带低位启动扫描+微信推送（midday 模式用，13:00午盘数据新鲜）"""
     print("=" * 60)
-    print("  Cloud Pipeline - FULL SCAN MODE")
+    print("  Cloud Pipeline - FULL SCAN MODE" + (" + PRELAUNCH" if with_prelaunch else ""))
     print(f"  {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
 
@@ -270,6 +271,11 @@ def full_scan():
 
     # Step 8: 起涨前预判
     run_script("[8/9] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
+
+    # Step 8b: 低位启动扫描（只扫仪表盘30只选票，有信号则微信推送 channel=9）
+    #          仅 midday 模式执行——8:30盘前30分K线是隔夜数据，会误报
+    if with_prelaunch:
+        run_script("[8b/9] 低位启动扫描(仪表盘选票,微信推送)", 'scan_pre_launch.py', timeout=180)
 
     # Step 9: 复制 deploy -> docs + root + 预计算注入
     print(f"\n{'=' * 60}")
@@ -384,9 +390,12 @@ if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'update'
     if mode == 'full':
         full_scan()
+    elif mode == 'midday':
+        # 午盘模式：换票 + 低位启动扫描微信推送（13:00 workflow 用）
+        full_scan(with_prelaunch=True)
     elif mode == 'update':
         update_only()
     else:
         print(f"未知模式: {mode}")
-        print("用法: python cloud_pipeline.py [full|update]")
+        print("用法: python cloud_pipeline.py [full|midday|update]")
         sys.exit(1)

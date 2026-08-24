@@ -1,9 +1,9 @@
-name: Cloud Full Scan
+name: Cloud Midday Scan
 
 on:
   schedule:
-    # 8:30 AM Beijing = 0:30 UTC, Mon-Fri
-    - cron: '30 0 * * 1-5'
+    # 1:00 PM Beijing = 5:00 UTC, Mon-Fri (午盘换票 + 低位启动扫描微信推送)
+    - cron: '0 5 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  full-scan:
+  midday-scan:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -27,10 +27,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run full pipeline
+      - name: Run midday pipeline (full + prelaunch scan)
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
-        run: python cloud_pipeline.py full
+        run: python cloud_pipeline.py midday
 
       - name: Validate JS syntax (safety net)
         run: |
@@ -61,7 +61,7 @@ jobs:
           if git diff --staged --quiet; then
             echo 'No changes to commit'
           else
-            git commit -m "Cloud full-scan $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
+            git commit -m "Cloud midday-scan $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
             git push
             echo 'Pushed to GitHub - Pages will auto-rebuild'
           fi
