@@ -4,6 +4,8 @@ on:
   schedule:
     # 8:30 AM Beijing = 0:30 UTC, Mon-Fri
     - cron: '30 0 * * 1-5'
+    # 1:00 PM Beijing = 5:00 UTC, Mon-Fri (午盘换票，不依赖本地电脑)
+    - cron: '0 5 * * 1-5'
   workflow_dispatch:
 
 permissions:
