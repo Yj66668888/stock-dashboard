@@ -78,7 +78,10 @@ def send_wechat(title, desp=''):
         url = f'https://sctapi.ftqq.com/{sendkey}.send'
         data = urllib.parse.urlencode({
             'title': title,
-            'desp': desp
+            'desp': desp,
+            # 指定只走微信服务号通道，避免用户在Server酱后台开启的
+            # 邮箱等其他通道同时收到一份推送（2026-08-24 用户要求取消邮件推送）
+            'channel': '9'
         }).encode('utf-8')
         req = urllib.request.Request(url, data=data, method='POST')
         req.add_header('User-Agent', 'StockDashboard/1.0')
