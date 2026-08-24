@@ -600,7 +600,10 @@ def main():
         # 当日资金流
         ft = flow_today_data.get(code, {})
         main_net = ft.get('mainNetInflow')
-        flow_today = main_net / 10000 if main_net is not None else None  # 转万元
+        try:
+            flow_today = float(main_net) / 10000 if main_net is not None else None  # 转万元
+        except (TypeError, ValueError):
+            flow_today = None  # 东财偶发返回 '-' 等非数值
 
         # 综合分析
         r = analyze_stock(code, name, daily_klines, f5, f10, flow_today)

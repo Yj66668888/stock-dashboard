@@ -34,6 +34,36 @@ def extract_stock_codes(html_path):
     return list(all_codes)
 
 
+def extract_stocks_flows(html_path):
+    """从 HTML 的 STOCKS 数组提取 enrich 注入的 dailyFlow/flowDate（最新鲜的数据源）
+    返回 {code: {'date': ..., 'mainNetInflow': ...}}  单位: 万元
+    """
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html = f.read()
+
+    flows = {}
+    m = re.search(r'const STOCKS\s*=\s*(\[.*?\]);', html, re.DOTALL)
+    if not m:
+        return flows
+    try:
+        stocks = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return flows
+
+    for s in stocks:
+        code = s.get('code', '')
+        daily = s.get('dailyFlow')
+        if code and daily is not None and daily != '' and daily != '--':
+            try:
+                flows[code] = {
+                    'date': s.get('flowDate') or '',
+                    'mainNetInflow': float(daily),
+                }
+            except (TypeError, ValueError):
+                pass
+    return flows
+
+
 def load_capital_flow(cf_path):
     """加载 capital_flow.json"""
     if not os.path.exists(cf_path):
@@ -77,6 +107,8 @@ def main():
 
     codes = extract_stock_codes(html_path)
     cf_stocks = load_capital_flow(cf_path)
+    # 优先数据源: HTML STOCKS 里 enrich 注入的 dailyFlow/flowDate（最新鲜）
+    stocks_flows = extract_stocks_flows(html_path)
 
     if not codes:
         print("// 未找到股票代码", file=sys.stderr)
@@ -84,7 +116,7 @@ def main():
         return
 
     unique_codes = list(set(codes))
-    print(f"// 从 capital_flow.json 提取 {len(unique_codes)} 只股票的资金数据...", file=sys.stderr)
+    print(f"// 从 STOCKS.dailyFlow(优先) + capital_flow.json(兜底) 提取 {len(unique_codes)} 只...", file=sys.stderr)
 
     results = {}
     success = 0
@@ -92,7 +124,9 @@ def main():
     latest_date = ''
 
     for code in unique_codes:
-        result = get_latest_flow(code, cf_stocks)
+        result = stocks_flows.get(code)  # 优先 HTML 内嵌数据
+        if not result or not result.get('mainNetInflow'):
+            result = get_latest_flow(code, cf_stocks)  # 兜底 capital_flow.json
         if result:
             results[code] = result
             success += 1

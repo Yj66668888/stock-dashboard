@@ -294,6 +294,8 @@ def main():
         print(f'⚠️ 固定票只找到{len(pinned_entries)}/{len(PINNED)}，缺失的不动其他票')
 
     new_entries = []
+    # 旧池中按代码保留资金流数据（盘前/开盘初期 f62 拉不到当日值时兜底，避免覆盖成0）
+    old_flow = {s['code']: s for s in old_arr if s.get('dailyFlow') not in (None, 0, '', '--')}
     for s in selected:
         e = {k: s[k] for k in ('code', 'name', 'score', 'rsi', 'drop_20d', 'consecutive', 'close') if s.get(k) is not None}
         e['turnover'] = s['turnover']
@@ -301,9 +303,17 @@ def main():
         e['kdj30Dir'] = s['kdj30Dir']
         e['kdj30Trend'] = s['kdj30Trend']
         e['kdj30Tier'] = s['kdj30Tier']
-        e['dailyFlow'] = 0
-        e['flow5d'] = 0
-        e['flow10d'] = 0
+        prev = old_flow.get(s['code'])
+        if prev:
+            # 继承上一轮的资金流数据（enrich 拿到当日新值后会覆盖）
+            e['dailyFlow'] = prev.get('dailyFlow')
+            e['flow5d'] = prev.get('flow5d')
+            e['flow10d'] = prev.get('flow10d')
+            e['flowDate'] = prev.get('flowDate')
+        else:
+            e['dailyFlow'] = 0
+            e['flow5d'] = 0
+            e['flow10d'] = 0
         e['flow_5d'] = 0
         e['flow_10d'] = 0
         new_entries.append(e)
