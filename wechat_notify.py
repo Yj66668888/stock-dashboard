@@ -59,7 +59,7 @@ def load_sendkey():
 _PUSH_TIMES = [(10, 0), (11, 0), (13, 0), (14, 0), (14, 40)]
 _PUSH_TIMES_STR = '10:00/11:00/13:00/14:00/14:40'
 _PUSH_WINDOW_BEFORE = 3   # 提前3分钟开窗
-_PUSH_WINDOW_AFTER = 15   # 延后15分钟关窗（容忍 GitHub Actions cron 延迟）
+_PUSH_WINDOW_AFTER = 45   # 延后45分钟关窗——GitHub cron高峰期实测延迟可达38分钟
 _STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.wechat_push_state.json')
 
 
@@ -68,14 +68,39 @@ def _beijing_now():
     return _dt.now(_tz(_td(hours=8)))
 
 
+def _anchor_now():
+    """闸门锚点时刻：优先用 PIPELINE_START(管道启动epoch秒)。
+
+    云端 GitHub cron 可能延迟几十分钟才启动管道（midday 实测延迟38分钟），
+    判断"本轮属于哪个推送窗口"必须用管道启动时刻，而不是推送执行时刻，
+    否则管道跑完早已出窗，本该推送的会被误拦。本地脚本同理。
+    """
+    try:
+        ts = float(os.environ.get('PIPELINE_START', ''))
+        if ts > 0:
+            from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+            return _dt.fromtimestamp(ts, _tz(_td(hours=8)))
+    except (TypeError, ValueError):
+        pass
+    return _beijing_now()
+
+
 def _match_push_window():
-    """当前北京时间落在任一推送时间窗内则返回窗口key(如'1440')，否则返回None"""
-    now = _beijing_now()
+    """锚点时刻落在任一推送时间窗内则返回窗口key(如'1440')，否则返回None。
+
+    多个窗口重叠时（如14:00窗[13:57,14:42]与14:40窗[14:37,15:25]有交叠）
+    取最晚的目标时间——14:38启动的管道属于14:40档而非14:00档。
+    """
+    now = _anchor_now()
     minutes = now.hour * 60 + now.minute
+    best = None
     for h, m in _PUSH_TIMES:
         t = h * 60 + m
         if t - _PUSH_WINDOW_BEFORE <= minutes <= t + _PUSH_WINDOW_AFTER:
-            return f"{h:02d}{m:02d}", now
+            if best is None or t > best[0]:
+                best = (t, f"{h:02d}{m:02d}")
+    if best:
+        return best[1], now
     return None, now
 
 
@@ -102,7 +127,7 @@ def push_gate(push_type):
         return True, 'forced', None
     window, now = _match_push_window()
     if not window:
-        return False, f"当前北京时间{now.strftime('%H:%M')}不在推送时间窗({_PUSH_TIMES_STR})内", None
+        return False, f"管道启动时刻{now.strftime('%H:%M')}不在推送时间窗({_PUSH_TIMES_STR})内", None
     state_key = f"{push_type}:{now.strftime('%Y-%m-%d')}"
     if _load_push_state().get(state_key) == window:
         return False, f"时间窗{window}类型{push_type}今日已推送过", None

@@ -49,6 +49,9 @@ def run(name, script, timeout=600):
 
 def main():
     no_scan = '--no-scan' in sys.argv
+    # 推送时间闸门锚点：以本轮脚本启动时刻为准(与云端 cloud_pipeline 同机制)，
+    # 本地14:20定时任务启动时刻不在任何推送窗口内，其建仓预警推送会被闸门拦下
+    os.environ.setdefault('PIPELINE_START', str(time.time()))
     print(f"\n### 每日统一更新 {time.strftime('%Y-%m-%d %H:%M')} "
           f"({'只刷新数据' if no_scan else '完整流程: 选股+补数+预计算+推送'})\n")
 

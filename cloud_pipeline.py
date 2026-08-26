@@ -168,7 +168,10 @@ def validate_js_syntax(html_path):
         return True  # 没有 script 块不算错误
 
     js_code = '\n'.join(scripts)
-    tmp_path = html_path + '.js.tmp'
+    # 必须以 .js 结尾：GitHub Runner 2026-08-25 起 Node 升到 24，
+    # node --check 拒绝 .js.tmp 等未知扩展名(ERR_UNKNOWN_FILE_EXTENSION)，
+    # 曾导致安全网误判语法错误、云端管道连续两天全军覆没
+    tmp_path = html_path + '.check.js'
     with open(tmp_path, 'w', encoding='utf-8') as f:
         f.write(js_code)
 
@@ -387,6 +390,10 @@ def update_only():
 
 
 if __name__ == '__main__':
+    # 推送时间闸门锚点：以"本轮管道启动时刻"为准。
+    # GitHub cron 高峰期可能延迟数十分钟（实测 midday 延迟38分钟才启动），
+    # 若按推送执行时刻判断窗口，跑完早就出窗了，本该推送的会被误拦。
+    os.environ.setdefault('PIPELINE_START', str(time.time()))
     mode = sys.argv[1] if len(sys.argv) > 1 else 'update'
     if mode == 'full':
         full_scan()

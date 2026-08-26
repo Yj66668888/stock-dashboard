@@ -16,7 +16,8 @@ concurrency:
 jobs:
   midday-scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # full_scan 实测需 27-30 分钟 + prelaunch 扫描，30 分钟必超时被杀(8/25-8/26连续两天)
+    timeout-minutes: 50
 
     steps:
       - name: Checkout
