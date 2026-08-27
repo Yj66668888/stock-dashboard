@@ -2,8 +2,9 @@ name: Cloud Midday Scan
 
 on:
   schedule:
-    # 1:00 PM Beijing = 5:00 UTC, Mon-Fri (午盘换票 + 低位启动扫描微信推送)
-    - cron: '0 5 * * 1-5'
+    # 1:03 PM Beijing = 5:03 UTC, Mon-Fri (午盘换票 + 低位启动扫描微信推送)
+    # 2026-08-27 错峰: 整点是GitHub高峰易丢run; 13:03仍在wechat_notify的13:00推送窗(12:57-13:45)内
+    - cron: '3 5 * * 1-5'
   workflow_dispatch:
 
 permissions:

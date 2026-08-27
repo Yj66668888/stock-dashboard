@@ -11,6 +11,10 @@ outputs/
 # 微信推送配置 (含SendKey, 勿提交)
 wechat_config.json
 
+# 运行时状态文件（自动任务本地状态，每次运行会变化）
+.wechat_push_state.json
+.intraday_watch_state.json
+
 # Excel 报告（不需要版本管理）
 *.xlsx
 
