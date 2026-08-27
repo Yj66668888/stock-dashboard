@@ -69,6 +69,6 @@ jobs:
             echo 'No changes to commit'
           else
             git commit -m "Cloud update $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
-            git push
+            git push || { echo 'Push rejected - syncing remote changes...'; git pull --rebase origin main && git push; }
             echo 'Pushed to GitHub - Pages will auto-rebuild'
           fi
