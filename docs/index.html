@@ -6,6 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta name="build" content="20260827-1215-b2">
 <title>戴维斯双击 · 实时仪表盘</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -4195,7 +4196,7 @@ function renderDataVersion() {
   var date = flowDate || cfDate || '--';
   var el = document.getElementById('dataVersion');
   if (el) {
-    el.textContent = '数据 ' + date + (kdj5 ? ' · KDJ ' + kdj5.substring(5,16) : '');
+    el.textContent = '数据 ' + date + ' · b2' + (kdj5 ? ' · KDJ ' + kdj5.substring(5,16) : '');
     el.title = '票池日期: ' + (flowDate||'--') + ' | 资金流日期: ' + (cfDate||'--') + ' | 5分KDJ最新: ' + (kdj5||'--') + '\n若与最新推送时间不符，说明看到的是缓存旧版，请强刷(Cmd/Ctrl+Shift+R)';
   }
 }
