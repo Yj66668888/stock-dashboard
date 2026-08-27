@@ -7,12 +7,14 @@
      （已验证与东财 f168 全天值完全一致，误差<0.01%）
   3. 硬过滤：2.0% ≤ 换手率 ≤ 7.0%
   4. 腾讯实时30分KDJ过滤：K<70（追高硬踢），今日涨幅<4%（已涨起来的踢）
-  5. 按评分+K30位置加分排序，取前26只 + 4固定票
-  6. 写 dynamic_stocks.json + 注入 deploy/index.html（固定票原样保留）
+  5. 腾讯实时5分KDJ过滤：K<70（5分钟也已追高的踢），低位上拐加分（2026-08-27新增：
+     解决"推送时5分钟已在高点"——选票要求30分钟+5分钟双重低位）
+  6. 按评分+K30位置加分+5分加分排序，取前26只 + 4固定票
+  7. 写 dynamic_stocks.json + 注入 deploy/index.html（固定票原样保留）
 
 数据源（全部 subprocess curl --noproxy '*' 绕过本地代理）：
   - push2delay.eastmoney.com ulist.np : 价格/涨跌幅/流通市值
-  - ifzq.gtimg.cn fqkline/mkline     : 日线昨日成交量、30分K线
+  - ifzq.gtimg.cn fqkline/mkline     : 日线昨日成交量、30分/5分K线
 """
 import json, re, subprocess, os, sys, time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -28,6 +30,7 @@ _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
 # ---- 硬条件 ----
 TURNOVER_MIN, TURNOVER_MAX = 2.0, 7.0   # 换手率区间（用户规则）
 K30_HARD_KICK = 70.0                     # 30分K追高硬踢
+K5_HARD_KICK = 70.0                      # 5分K追高硬踢（2026-08-27新增：双重低位确认）
 TODAY_CHG_MAX = 4.0                      # 今日已涨幅超此值视为涨起来了
 RSI_MAX, DROP20D_MAX, SCORE_MIN = 65.0, -3.0, 35.0
 SELECT_N = 26
@@ -170,6 +173,48 @@ def kdj_bonus(k):
     return 1
 
 
+def calc_kdj_m5(code):
+    """腾讯5分K线 → KDJ(9,3,3)，返回最新K/D/J及前值（判断5分钟是否低位/是否已拉起）"""
+    d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m5,,120',
+                  referer='https://gu.qq.com/')
+    try:
+        bars = d['data'][code]['m5']
+    except (KeyError, TypeError):
+        return None
+    if len(bars) < 20:
+        return None
+    # [time, open, close, high, low, vol] → (high, low, close)
+    hlc = [(float(b[3]), float(b[4]), float(b[2])) for b in bars]
+    k, d_ = 50.0, 50.0
+    series = []
+    for i in range(len(hlc)):
+        hi = max(x[0] for x in hlc[max(0, i - 8):i + 1])
+        lo = min(x[1] for x in hlc[max(0, i - 8):i + 1])
+        c = hlc[i][2]
+        rsv = 50.0 if hi == lo else (c - lo) / (hi - lo) * 100
+        k = (2 / 3) * k + (1 / 3) * rsv
+        d_ = (2 / 3) * d_ + (1 / 3) * k
+        series.append((k, d_))
+    j = 3 * k - 2 * d_
+    tail = series[-3:]
+    return {'k': round(k, 1), 'd': round(d_, 1), 'j': round(j, 1),
+            'k_prev': round(tail[-2][0], 1), 'bars': len(bars)}
+
+
+def kdj5_bonus(r5):
+    """5分钟KDJ位置加分（2026-08-27新增）：
+       低位且上拐 = 最佳介入点；接近高位 = 降权（避免推送时5分钟已在顶点）"""
+    if r5['k'] >= K5_HARD_KICK:
+        return -999
+    if r5['k'] >= 55:
+        return -4      # 5分钟接近高位，降权
+    if r5['k'] >= 40:
+        return 0
+    if r5['k'] < 30 and r5['k'] > r5['k_prev']:
+        return 4       # 低位上拐，最佳
+    return 2           # 低位但尚未上拐
+
+
 def main():
     # ---- 1. 低位池 ----
     pred = json.load(open(PRED_FILE))
@@ -238,6 +283,18 @@ def main():
             if r:
                 kdjs[c] = r
 
+    # ---- 5b. 实时5分KDJ（2026-08-27新增：5分钟也需低位，避免推送即高点） ----
+    def kdj5_worker(s):
+        r = calc_kdj_m5(s['code'])
+        return s['code'], r
+    kdj5s = {}
+    with ThreadPoolExecutor(max_workers=10) as ex:
+        futs = [ex.submit(kdj5_worker, s) for s in step1]
+        for fu in as_completed(futs):
+            c, r = fu.result()
+            if r:
+                kdj5s[c] = r
+
     final = []
     for s in step1:
         r = kdjs.get(s['code'])
@@ -249,12 +306,20 @@ def main():
         tier = classify_tier(r['k'], trend)
         if tier is None:
             continue
+        r5 = kdj5s.get(s['code'])
+        if not r5:
+            continue
+        if r5['k'] >= K5_HARD_KICK:
+            continue  # 5分钟K>=70 也已追高，硬踢（双重低位确认）
         dir_bonus = {'up': 2, 'prep_up': 1, 'down': 0}[trend]
         s['kdj30'] = r['k']
         s['kdj30Dir'] = '↑' if trend == 'up' else ('↗' if trend == 'prep_up' else '↓')
         s['kdj30Trend'] = trend
         s['kdj30Tier'] = tier
-        s['final_rank'] = s['score'] + kdj_bonus(r['k']) + dir_bonus
+        s['kdj5'] = r5['k']
+        s['kdj5Dir'] = '↑' if r5['k'] > r5['k_prev'] else '↓'
+        s['kdj5J'] = r5['j']
+        s['final_rank'] = s['score'] + kdj_bonus(r['k']) + kdj5_bonus(r5) + dir_bonus
         final.append(s)
 
     # ---- 分层放宽取满：T0(K≤45上升) → T1 → T2 → 45-60各层 → 60-70补足 ----
@@ -263,7 +328,7 @@ def main():
     for s in final:
         tier_stat.setdefault(s['kdj30Tier'], 0)
         tier_stat[s['kdj30Tier']] += 1
-    print(f"30分K<{K30_HARD_KICK}: {len(final)}只，分层分布:")
+    print(f"30分K<{K30_HARD_KICK} + 5分K<{K5_HARD_KICK}: {len(final)}只，分层分布:")
     for t in sorted(tier_stat):
         print(f"  T{t} {TIER_NAMES[t]}: {tier_stat[t]}只")
 
@@ -274,12 +339,14 @@ def main():
     for s in selected:
         print(f"  [T{s['kdj30Tier']}] {s['name']}({s['code']}): 评分{s['score']} "
               f"换手{s['turnover']}% K30={s['kdj30']}{s['kdj30Dir']} "
+              f"K5={s['kdj5']}{s['kdj5Dir']}(J{s['kdj5J']}) "
               f"今涨{s.get('chg_today')}% 20日{s['drop_20d']}%")
 
     # ---- 6. 写 dynamic_stocks.json ----
     dyn = {'scan_date': datetime.now().strftime('%Y-%m-%d'), 'total': len(selected),
            'filter': f'RSI<{RSI_MAX}/跌20d>3%/评分>35/换手{TURNOVER_MIN}-{TURNOVER_MAX}%/今涨<{TODAY_CHG_MAX}%/'
-                     f'K30≤45+上升优先,不足放宽至45-60、60-70,K≥70硬踢',
+                     f'K30≤45+上升优先,不足放宽至45-60、60-70,K30≥70硬踢/'
+                     f'K5≥70硬踢,低位上拐加分(双重低位确认)',
            'stocks': selected}
     json.dump(dyn, open(DYN_FILE, 'w'), ensure_ascii=False, indent=2)
 
@@ -303,6 +370,9 @@ def main():
         e['kdj30Dir'] = s['kdj30Dir']
         e['kdj30Trend'] = s['kdj30Trend']
         e['kdj30Tier'] = s['kdj30Tier']
+        e['kdj5'] = s['kdj5']
+        e['kdj5Dir'] = s['kdj5Dir']
+        e['kdj5J'] = s['kdj5J']
         prev = old_flow.get(s['code'])
         if prev:
             # 继承上一轮的资金流数据（enrich 拿到当日新值后会覆盖）

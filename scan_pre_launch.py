@@ -10,6 +10,8 @@
 2. K正在上升（K > prev_K）或即将金叉（K逼近D）
 3. 排除已大幅上涨的票（当日涨幅 > 5% 排除）
 4. 优先级：底背离 > 即将金叉 > 低位回升
+5. 5分钟KDJ低位过滤（2026-08-27新增）：5分K>=65 剔除（已拉起的不要），
+   5分K<30且上拐加分——保证推送时5分钟也在低位，不追高
 """
 import json, subprocess, time, os, sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -172,6 +174,19 @@ def scan_one(stock_info):
     
     if not (k_rising or k_approaching_d or just_golden):
         return None
+
+    # ---- 3b. 5分钟KDJ低位检查（2026-08-27新增：推送时5分钟不在高位） ----
+    kl5 = fetch_sina_kline(full_code, 5, 100)
+    kdj5_series = calc_kdj(kl5, 9) if kl5 and len(kl5) >= 9 else []
+    k5_info = None
+    if len(kdj5_series) >= 3:
+        c5 = kdj5_series[-1]
+        p5 = kdj5_series[-2]
+        k5_info = {'k': c5['k'], 'd': c5['d'], 'j': c5['j'], 'prev_k': p5['k']}
+        if c5['k'] >= 65:   # 5分钟已拉起 → 剔除，避免推送即高点
+            return None
+    else:
+        return None  # 5分钟K线拉不到 → 保守剔除
     
     # 4. 获取实时涨幅
     chg, price = fetch_realtime(full_code)
@@ -217,6 +232,21 @@ def scan_one(stock_info):
         signals.append(f'J值负值(J={j:.1f},超卖)')
         total_score += 5
     
+    # 5分钟KDJ加分（2026-08-27新增）
+    if k5_info:
+        k5, k5_prev, j5 = k5_info['k'], k5_info['prev_k'], k5_info['j']
+        if k5 < 30 and k5 > k5_prev:
+            signals.append(f'5分低位上拐(K5={k5:.1f})')
+            total_score += 10
+        elif k5 < 30:
+            signals.append(f'5分超卖待拐(K5={k5:.1f})')
+            total_score += 6
+        elif k5 < 45:
+            signals.append(f'5分偏低(K5={k5:.1f})')
+            total_score += 3
+        else:
+            signals.append(f'5分中位(K5={k5:.1f})')
+    
     # 日线预测分加成
     total_score = total_score + min(10, score / 10)
     
@@ -229,6 +259,9 @@ def scan_one(stock_info):
         'kd30_d': d,
         'kd30_j': j,
         'kd30_prev_k': prev_k,
+        'kd5_k': k5_info['k'] if k5_info else None,
+        'kd5_d': k5_info['d'] if k5_info else None,
+        'kd5_j': k5_info['j'] if k5_info else None,
         'k_rising': k_rising,
         'just_golden': just_golden,
         'approaching_cross': k_approaching_d,
@@ -288,12 +321,12 @@ def main():
     
     print(f'\n扫描完成: {len(stock_list)}只中筛选出 {len(results)}只低位启动前候选\n')
     print('='*80)
-    print(f'{"排名":>4} {"代码":<10} {"名称":<8} {"涨幅":>6} {"30分K":>6} {"30分D":>6} {"30分J":>6} {"得分":>6}  信号')
+    print(f'{"排名":>4} {"代码":<10} {"名称":<8} {"涨幅":>6} {"30分K":>6} {"30分D":>6} {"30分J":>6} {"5分K":>6} {"得分":>6}  信号')
     print('-'*80)
     
     for i, r in enumerate(results[:30]):
         signals_str = ' | '.join(r['signals']) if r['signals'] else ''
-        print(f'{i+1:>4}  {r["code"]:<10} {r["name"]:<8} {r["chg_pct"]:>+5.1f}% {r["kd30_k"]:>6.1f} {r["kd30_d"]:>6.1f} {r["kd30_j"]:>6.1f} {r["pre_launch_score"]:>6.1f}  {signals_str}')
+        print(f'{i+1:>4}  {r["code"]:<10} {r["name"]:<8} {r["chg_pct"]:>+5.1f}% {r["kd30_k"]:>6.1f} {r["kd30_d"]:>6.1f} {r["kd30_j"]:>6.1f} {r["kd5_k"] if r.get("kd5_k") is not None else "--":>6} {r["pre_launch_score"]:>6.1f}  {signals_str}')
     
     print('='*80)
     
@@ -329,6 +362,9 @@ def main():
                 lines.append(f"- 得分: **{r['pre_launch_score']:.1f}**")
                 lines.append(f"- 涨幅: {r['chg_pct']:+.1f}%")
                 lines.append(f"- 30分KDJ: K={r['kd30_k']:.1f} D={r['kd30_d']:.1f} J={r['kd30_j']:.1f}")
+                k5 = r.get('kd5_k')
+                if k5 is not None:
+                    lines.append(f"- 5分KDJ: K={k5:.1f} D={r['kd5_d']:.1f} J={r['kd5_j']:.1f}（低位=低吸窗口，高位勿追）")
                 lines.append(f"- 信号: {signals_str}\n")
             try:
                 send_wechat(title, '\n'.join(lines), push_type='prelaunch')
