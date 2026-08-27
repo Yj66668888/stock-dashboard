@@ -1,18 +1,18 @@
 {
-  "update_time": "2026-08-12 14:04:47",
-  "data_source_time": "2026-08-12 14:03:27",
+  "update_time": "2026-08-27 10:26:48",
+  "data_source_time": "2026-08-18 14:02:03",
   "filter_config": {
     "min_avg_gain": 1.5,
     "min_limit_ups": 1,
     "loose_mode": true
   },
   "market_summary": {
-    "total_stocks_analyzed": 412,
+    "total_stocks_analyzed": 416,
     "sectors_mapped": 18,
-    "sectors_qualified": 2,
-    "total_qualified_stocks": 34,
-    "persistent_sectors": 2,
-    "one_day_sectors": 0
+    "sectors_qualified": 1,
+    "total_qualified_stocks": 20,
+    "persistent_sectors": 0,
+    "one_day_sectors": 1
   },
   "all_sectors": [
     {
@@ -27,23 +27,13 @@
     },
     {
       "sector": "有色金属",
-      "total": 9,
-      "avg_gain": 1.8,
+      "total": 10,
+      "avg_gain": 1.56,
       "limit_up_count": 0,
       "strong_count": 0,
       "high_gain_count": 2,
-      "avg_ratio_5d": 20.67,
+      "avg_ratio_5d": -303.86,
       "qualified": false
-    },
-    {
-      "sector": "半导体电子",
-      "total": 14,
-      "avg_gain": 1.46,
-      "limit_up_count": 1,
-      "strong_count": 1,
-      "high_gain_count": 1,
-      "avg_ratio_5d": 46.23,
-      "qualified": true
     },
     {
       "sector": "化工",
@@ -112,17 +102,17 @@
       "limit_up_count": 0,
       "strong_count": 0,
       "high_gain_count": 0,
-      "avg_ratio_5d": 128.47,
+      "avg_ratio_5d": 29.57,
       "qualified": false
     },
     {
-      "sector": "传媒教育",
-      "total": 5,
-      "avg_gain": -0.4,
+      "sector": "半导体电子",
+      "total": 14,
+      "avg_gain": -0.45,
       "limit_up_count": 0,
       "strong_count": 0,
       "high_gain_count": 0,
-      "avg_ratio_5d": -17.42,
+      "avg_ratio_5d": -259.83,
       "qualified": false
     },
     {
@@ -137,22 +127,12 @@
     },
     {
       "sector": "其他",
-      "total": 264,
-      "avg_gain": -0.63,
+      "total": 267,
+      "avg_gain": -0.83,
       "limit_up_count": 8,
       "strong_count": 11,
       "high_gain_count": 15,
-      "avg_ratio_5d": -0.82,
-      "qualified": false
-    },
-    {
-      "sector": "计算机/软件",
-      "total": 47,
-      "avg_gain": -0.74,
-      "limit_up_count": 0,
-      "strong_count": 2,
-      "high_gain_count": 3,
-      "avg_ratio_5d": 148.72,
+      "avg_ratio_5d": -81.27,
       "qualified": false
     },
     {
@@ -166,13 +146,23 @@
       "qualified": false
     },
     {
-      "sector": "地产基建",
-      "total": 2,
-      "avg_gain": -1.27,
+      "sector": "传媒教育",
+      "total": 5,
+      "avg_gain": -1.4,
       "limit_up_count": 0,
       "strong_count": 0,
       "high_gain_count": 0,
-      "avg_ratio_5d": 179.76,
+      "avg_ratio_5d": -110.73,
+      "qualified": false
+    },
+    {
+      "sector": "计算机/软件",
+      "total": 47,
+      "avg_gain": -1.42,
+      "limit_up_count": 0,
+      "strong_count": 2,
+      "high_gain_count": 2,
+      "avg_ratio_5d": -0.91,
       "qualified": false
     },
     {
@@ -183,6 +173,16 @@
       "strong_count": 0,
       "high_gain_count": 0,
       "avg_ratio_5d": -232.7,
+      "qualified": false
+    },
+    {
+      "sector": "地产基建",
+      "total": 2,
+      "avg_gain": -3.06,
+      "limit_up_count": 0,
+      "strong_count": 0,
+      "high_gain_count": 0,
+      "avg_ratio_5d": 63.12,
       "qualified": false
     },
     {
@@ -208,7 +208,7 @@
       ],
       "avg_ratio_5d": -149.24,
       "strong_count": 3,
-      "status": "T1严格入选",
+      "status": "T1严格入选(一日游)",
       "stocks": [
         {
           "code": "603363",
@@ -217,9 +217,9 @@
           "flow_5d_wan": 1217.0,
           "ratio_5d": 243.4,
           "ratio_10d": -20.1,
-          "daily_score": 37.8,
+          "daily_score": 34.4,
           "is_limit_up": false,
-          "composite_score": 2431.7
+          "composite_score": 2431.5
         },
         {
           "code": "002004",
@@ -228,9 +228,9 @@
           "flow_5d_wan": 600.0,
           "ratio_5d": 120.0,
           "ratio_10d": 15.5,
-          "daily_score": 40.7,
+          "daily_score": 39.8,
           "is_limit_up": false,
-          "composite_score": 1206.2
+          "composite_score": 1206.1
         },
         {
           "code": "603590",
@@ -239,9 +239,9 @@
           "flow_5d_wan": 525.0,
           "ratio_5d": 105.0,
           "ratio_10d": -145.7,
-          "daily_score": 57.1,
+          "daily_score": 54.1,
           "is_limit_up": false,
-          "composite_score": 1070.2
+          "composite_score": 1070.0
         },
         {
           "code": "000739",
@@ -250,9 +250,9 @@
           "flow_5d_wan": 33.0,
           "ratio_5d": 1.32,
           "ratio_10d": -142.72,
-          "daily_score": 51.1,
+          "daily_score": 45.1,
           "is_limit_up": true,
-          "composite_score": 47.6
+          "composite_score": 47.3
         },
         {
           "code": "603439",
@@ -261,9 +261,9 @@
           "flow_5d_wan": 2296.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 44.2,
+          "daily_score": 39.0,
           "is_limit_up": true,
-          "composite_score": 35.7
+          "composite_score": 35.5
         },
         {
           "code": "002742",
@@ -272,9 +272,9 @@
           "flow_5d_wan": -570.0,
           "ratio_5d": null,
           "ratio_10d": -308.0,
-          "daily_score": 50.7,
+          "daily_score": 37.5,
           "is_limit_up": true,
-          "composite_score": 32.9
+          "composite_score": 32.3
         },
         {
           "code": "603669",
@@ -283,9 +283,9 @@
           "flow_5d_wan": 3.0,
           "ratio_5d": 0.6,
           "ratio_10d": -237.6,
-          "daily_score": 48.1,
+          "daily_score": 57.5,
           "is_limit_up": false,
-          "composite_score": 29.0
+          "composite_score": 29.5
         },
         {
           "code": "603998",
@@ -294,9 +294,9 @@
           "flow_5d_wan": -268.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 64.1,
+          "daily_score": 49.1,
           "is_limit_up": false,
-          "composite_score": 21.0
+          "composite_score": 20.2
         },
         {
           "code": "601089",
@@ -305,9 +305,9 @@
           "flow_5d_wan": -1293.0,
           "ratio_5d": null,
           "ratio_10d": -546.33,
-          "daily_score": 49.4,
+          "daily_score": 52.1,
           "is_limit_up": false,
-          "composite_score": 11.7
+          "composite_score": 11.9
         },
         {
           "code": "001367",
@@ -316,9 +316,9 @@
           "flow_5d_wan": -1071.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 57.8,
+          "daily_score": 56.9,
           "is_limit_up": false,
-          "composite_score": 9.0
+          "composite_score": 8.9
         },
         {
           "code": "000590",
@@ -327,9 +327,9 @@
           "flow_5d_wan": 194.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 67.6,
+          "daily_score": 64.9,
           "is_limit_up": false,
-          "composite_score": 7.9
+          "composite_score": 7.7
         },
         {
           "code": "600833",
@@ -338,9 +338,9 @@
           "flow_5d_wan": 300.0,
           "ratio_5d": null,
           "ratio_10d": -475.0,
-          "daily_score": 45.8,
+          "daily_score": 42.8,
           "is_limit_up": false,
-          "composite_score": 4.7
+          "composite_score": 4.6
         },
         {
           "code": "603392",
@@ -349,9 +349,9 @@
           "flow_5d_wan": -1306.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 38.4,
+          "daily_score": 40.5,
           "is_limit_up": false,
-          "composite_score": -5.8
+          "composite_score": -5.7
         },
         {
           "code": "002349",
@@ -360,9 +360,9 @@
           "flow_5d_wan": -837.0,
           "ratio_5d": null,
           "ratio_10d": null,
-          "daily_score": 45.1,
+          "daily_score": 48.1,
           "is_limit_up": false,
-          "composite_score": -10.1
+          "composite_score": -9.9
         },
         {
           "code": "002007",
@@ -371,9 +371,9 @@
           "flow_5d_wan": -1185.0,
           "ratio_5d": -118.5,
           "ratio_10d": -158.3,
-          "daily_score": 57.1,
+          "daily_score": 47.2,
           "is_limit_up": false,
-          "composite_score": -1176.0
+          "composite_score": -1176.5
         },
         {
           "code": "000504",
@@ -382,9 +382,9 @@
           "flow_5d_wan": -689.0,
           "ratio_5d": -137.8,
           "ratio_10d": -35.1,
-          "daily_score": 47.0,
+          "daily_score": 53.1,
           "is_limit_up": false,
-          "composite_score": -1365.8
+          "composite_score": -1365.5
         },
         {
           "code": "000503",
@@ -393,9 +393,9 @@
           "flow_5d_wan": -1916.0,
           "ratio_5d": -191.6,
           "ratio_10d": 34.4,
-          "daily_score": 31.2,
+          "daily_score": 32.3,
           "is_limit_up": false,
-          "composite_score": -1920.8
+          "composite_score": -1920.7
         },
         {
           "code": "601607",
@@ -404,9 +404,9 @@
           "flow_5d_wan": -2426.0,
           "ratio_5d": -242.6,
           "ratio_10d": -211.9,
-          "daily_score": 41.8,
+          "daily_score": 47.9,
           "is_limit_up": false,
-          "composite_score": -2419.2
+          "composite_score": -2418.9
         },
         {
           "code": "003020",
@@ -415,9 +415,9 @@
           "flow_5d_wan": -2446.0,
           "ratio_5d": -244.6,
           "ratio_10d": -61.8,
-          "daily_score": 43.4,
+          "daily_score": 41.0,
           "is_limit_up": false,
-          "composite_score": -2428.8
+          "composite_score": -2428.9
         },
         {
           "code": "002603",
@@ -426,182 +426,13 @@
           "flow_5d_wan": -11127.0,
           "ratio_5d": -556.35,
           "ratio_10d": -417.15,
-          "daily_score": 45.2,
-          "is_limit_up": false,
-          "composite_score": -5547.2
-        }
-      ],
-      "persistent": true,
-      "persistent_days": 2
-    },
-    "半导体电子": {
-      "total": 14,
-      "avg_gain": 1.46,
-      "limit_up_count": 1,
-      "limit_up_names": [
-        "博敏电子"
-      ],
-      "avg_ratio_5d": 46.23,
-      "strong_count": 1,
-      "status": "T2中选",
-      "stocks": [
-        {
-          "code": "002138",
-          "name": "顺络电子",
-          "chg": 3.1,
-          "flow_5d_wan": 102078.0,
-          "ratio_5d": 850.65,
-          "ratio_10d": 350.81,
-          "daily_score": 45.9,
-          "is_limit_up": false,
-          "composite_score": 8518.1
-        },
-        {
-          "code": "603328",
-          "name": "依顿电子",
-          "chg": 3.93,
-          "flow_5d_wan": 6984.0,
-          "ratio_5d": 698.4,
-          "ratio_10d": 553.1,
-          "daily_score": 51.1,
-          "is_limit_up": false,
-          "composite_score": 6998.3
-        },
-        {
-          "code": "603936",
-          "name": "博敏电子",
-          "chg": 9.94,
-          "flow_5d_wan": 9268.0,
-          "ratio_5d": 308.93,
-          "ratio_10d": 66.12,
-          "daily_score": 52.6,
-          "is_limit_up": true,
-          "composite_score": 3121.8
-        },
-        {
-          "code": "603920",
-          "name": "世运电路",
-          "chg": 3.63,
-          "flow_5d_wan": 13109.0,
-          "ratio_5d": 291.31,
-          "ratio_10d": 178.41,
-          "daily_score": 58.2,
-          "is_limit_up": false,
-          "composite_score": 2926.9
-        },
-        {
-          "code": "603286",
-          "name": "日盈电子",
-          "chg": -0.46,
-          "flow_5d_wan": 1704.0,
-          "ratio_5d": 170.4,
-          "ratio_10d": 1.8,
-          "daily_score": 54.1,
-          "is_limit_up": false,
-          "composite_score": 1705.3
-        },
-        {
-          "code": "002169",
-          "name": "智光电气",
-          "chg": 4.6,
-          "flow_5d_wan": 11969.0,
-          "ratio_5d": null,
-          "ratio_10d": null,
           "daily_score": 47.8,
           "is_limit_up": false,
-          "composite_score": 16.2
-        },
-        {
-          "code": "603678",
-          "name": "火炬电子",
-          "chg": 2.0,
-          "flow_5d_wan": 33420.6,
-          "ratio_5d": null,
-          "ratio_10d": null,
-          "daily_score": 48.6,
-          "is_limit_up": false,
-          "composite_score": 8.4
-        },
-        {
-          "code": "002952",
-          "name": "亚世光电",
-          "chg": -4.37,
-          "flow_5d_wan": -319.0,
-          "ratio_5d": null,
-          "ratio_10d": null,
-          "daily_score": 43.2,
-          "is_limit_up": false,
-          "composite_score": -10.9
-        },
-        {
-          "code": "600877",
-          "name": "电科芯片",
-          "chg": -0.78,
-          "flow_5d_wan": -607.0,
-          "ratio_5d": -40.47,
-          "ratio_10d": 75.87,
-          "daily_score": 55.1,
-          "is_limit_up": false,
-          "composite_score": -404.3
-        },
-        {
-          "code": "002121",
-          "name": "科陆电子",
-          "chg": -1.54,
-          "flow_5d_wan": -589.0,
-          "ratio_5d": -58.9,
-          "ratio_10d": -166.7,
-          "daily_score": 44.3,
-          "is_limit_up": false,
-          "composite_score": -591.4
-        },
-        {
-          "code": "002197",
-          "name": "证通电子",
-          "chg": -0.56,
-          "flow_5d_wan": -1779.0,
-          "ratio_5d": -71.16,
-          "ratio_10d": -214.16,
-          "daily_score": 45.4,
-          "is_limit_up": false,
-          "composite_score": -711.0
-        },
-        {
-          "code": "002339",
-          "name": "积成电子",
-          "chg": -1.23,
-          "flow_5d_wan": -1819.0,
-          "ratio_5d": -363.8,
-          "ratio_10d": -176.5,
-          "daily_score": 47.4,
-          "is_limit_up": false,
-          "composite_score": -3639.3
-        },
-        {
-          "code": "003019",
-          "name": "宸展光电",
-          "chg": 0.72,
-          "flow_5d_wan": -2191.0,
-          "ratio_5d": -438.2,
-          "ratio_10d": -114.2,
-          "daily_score": 46.8,
-          "is_limit_up": false,
-          "composite_score": -4377.5
-        },
-        {
-          "code": "603890",
-          "name": "春秋电子",
-          "chg": 1.5,
-          "flow_5d_wan": -16773.0,
-          "ratio_5d": -838.65,
-          "ratio_10d": -584.3,
-          "daily_score": 40.3,
-          "is_limit_up": false,
-          "composite_score": -8380.0
+          "composite_score": -5547.0
         }
       ],
-      "persistent": true,
-      "persistent_days": 2
+      "persistent": false,
+      "persistent_days": 1
     }
   },
   "qualified_codes": [
@@ -612,32 +443,18 @@
     "001367",
     "002004",
     "002007",
-    "002121",
-    "002138",
-    "002169",
-    "002197",
-    "002339",
     "002349",
     "002603",
     "002742",
-    "002952",
-    "003019",
     "003020",
     "600833",
-    "600877",
     "601089",
     "601607",
-    "603286",
-    "603328",
     "603363",
     "603392",
     "603439",
     "603590",
     "603669",
-    "603678",
-    "603890",
-    "603920",
-    "603936",
     "603998"
   ]
 }
