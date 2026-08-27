@@ -81,7 +81,8 @@ def load_stocks():
 
 
 def fetch_m5_kdj(code):
-    """腾讯5分K线 → KDJ(9,3,3)，返回最新K/D/J/前值/最新价"""
+    """腾讯5分K线 → KDJ(9,3,3)，返回最新K/D/J/前值/最新价
+    2026-08-27: 丢弃盘中未走完的当根bar（时间戳为终点标注，bar时间>now即未完成）"""
     raw = curl_get(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m5,,120',
                    referer='https://gu.qq.com/')
     if not raw:
@@ -91,6 +92,11 @@ def fetch_m5_kdj(code):
         bars = d['data'][code]['m5']
     except (KeyError, TypeError, json.JSONDecodeError):
         return None
+    try:
+        if bars and datetime.strptime(bars[-1][0][:12], '%Y%m%d%H%M') > datetime.now():
+            bars = bars[:-1]
+    except (ValueError, TypeError, IndexError):
+        pass
     if not bars or len(bars) < 20:
         return None
     # [time, open, close, high, low, vol] → (high, low, close)

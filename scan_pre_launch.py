@@ -14,7 +14,23 @@
    5分K<30且上拐加分——保证推送时5分钟也在低位，不追高
 """
 import json, subprocess, time, os, sys
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
+def drop_incomplete_kl(klines):
+    """丢弃盘中未走完的当根K线（2026-08-27新增）。
+    新浪day字段为bar终点标注：bar时间 > 当前时间 → 该bar未走完，K值临时不可靠，
+    曾导致"推送时看着要拐头，之后一路向下"的半根K线幻觉"""
+    if not klines:
+        return klines
+    try:
+        bar_time = datetime.strptime(klines[-1][0], '%Y-%m-%d %H:%M:%S')
+    except (ValueError, TypeError):
+        return klines
+    if bar_time > datetime.now():
+        return klines[:-1]
+    return klines
 
 # 微信推送
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -147,8 +163,8 @@ def scan_one(stock_info):
     else:
         return None
     
-    # 1. 获取30分钟K线
-    kl30 = fetch_sina_kline(full_code, 30, 100)
+    # 1. 获取30分钟K线（丢弃未走完的当根）
+    kl30 = drop_incomplete_kl(fetch_sina_kline(full_code, 30, 100))
     if not kl30 or len(kl30) < 12:
         return None
     
@@ -167,16 +183,20 @@ def scan_one(stock_info):
     if k > 40:
         return None
     
-    # K正在上升或即将金叉
-    k_rising = k > prev_k
-    k_approaching_d = k < d and (d - k) < 5 and k > prev_k  # K逼近D且上升
+    # K正在上升或即将金叉（2026-08-27加固：单根上拐→连续2根上拐，
+    # 避免下跌途中一根反抽就触发推送；真金叉交叉本身是强确认，保持单根）
+    prev2 = kdj[-3]
+    prev_prev_k = prev2['k']
+    two_bar_rise = k > prev_k and prev_k >= prev_prev_k
+    k_rising = two_bar_rise
+    k_approaching_d = k < d and (d - k) < 5 and two_bar_rise
     just_golden = prev_k < prev['d'] and k >= d and k < 35  # 刚金叉且低位
     
     if not (k_rising or k_approaching_d or just_golden):
         return None
 
     # ---- 3b. 5分钟KDJ低位检查（2026-08-27新增：推送时5分钟不在高位） ----
-    kl5 = fetch_sina_kline(full_code, 5, 100)
+    kl5 = drop_incomplete_kl(fetch_sina_kline(full_code, 5, 100))
     kdj5_series = calc_kdj(kl5, 9) if kl5 and len(kl5) >= 9 else []
     k5_info = None
     if len(kdj5_series) >= 3:
@@ -259,6 +279,8 @@ def scan_one(stock_info):
         'kd30_d': d,
         'kd30_j': j,
         'kd30_prev_k': prev_k,
+        'trend30': ('up' if k > d else
+                    ('prep_up' if (k - d) > (prev_k - prev['d']) or k > prev_k else 'down')),
         'kd5_k': k5_info['k'] if k5_info else None,
         'kd5_d': k5_info['d'] if k5_info else None,
         'kd5_j': k5_info['j'] if k5_info else None,
@@ -358,9 +380,12 @@ def main():
             ]
             for i, r in enumerate(top5, 1):
                 signals_str = ' / '.join(r['signals']) if r['signals'] else '无'
+                trend_txt = {'up': '↑ 上升(K>D)', 'prep_up': '↗ 待升(收敛/上拐)',
+                             'down': '↓ 下跌(左侧观察,勿急)'}[r.get('trend30', 'down')]
                 lines.append(f"### {i}. {r['name']} {r['code']}")
                 lines.append(f"- 得分: **{r['pre_launch_score']:.1f}**")
                 lines.append(f"- 涨幅: {r['chg_pct']:+.1f}%")
+                lines.append(f"- 30分K趋势: {trend_txt}")
                 lines.append(f"- 30分KDJ: K={r['kd30_k']:.1f} D={r['kd30_d']:.1f} J={r['kd30_j']:.1f}")
                 k5 = r.get('kd5_k')
                 if k5 is not None:

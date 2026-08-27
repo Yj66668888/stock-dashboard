@@ -1217,6 +1217,12 @@ function initPrecomputedKDJ() {
         s.kd30_cross = kdj30.k > kdj30.d ? '金叉' : '死叉';
       }
     }
+
+    // 30分K趋势箭头（2026-08-27新增：K>D=↑；K≤D但K上拐=↗；否则=↓）
+    if (kdj30.k !== undefined && kdj30.d !== undefined) {
+      s.kdj30Dir = kdj30.k > kdj30.d ? '↑'
+                 : (kdj30.prev_k !== undefined && kdj30.k > kdj30.prev_k ? '↗' : '↓');
+    }
     
     if (kdj5.k !== undefined || kdj30.k !== undefined) count++;
   });
@@ -2145,8 +2151,18 @@ function renderStockRow(stock, index) {
   if (_kdEarly) {
     kd30EarlyHtml = '<div class="kd-sub" style="color:rgba(29,158,117,1);font-weight:600;">' + _kdEarly.label + '</div>';
   }
+  // 30分K趋势箭头（2026-08-27新增：↑上升绿/↗待升黄/↓下跌红，明示左侧票）
+  var _kdDir = stock.kdj30Dir || '';
+  var _kdDirHtml = '';
+  if (_kdDir === '↑') {
+    _kdDirHtml = '<span style="color:rgba(93,202,165,1);font-weight:600;margin-right:2px;" title="30分K上升(K>D)">↑</span>';
+  } else if (_kdDir === '↗') {
+    _kdDirHtml = '<span style="color:rgba(250,199,117,1);font-weight:600;margin-right:2px;" title="30分K待升(K≤D但K上拐)">↗</span>';
+  } else if (_kdDir === '↓') {
+    _kdDirHtml = '<span style="color:rgba(240,149,149,1);font-weight:600;margin-right:2px;" title="30分K下跌(左侧观察,勿急)">↓</span>';
+  }
   const kd30Html = stock.kd30_k !== undefined
-    ? `<span class="kd-cell ${kd30Cls}">${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
+    ? `<span class="kd-cell ${kd30Cls}">${_kdDirHtml}${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
       `<div class="kd-sub">${kd30Cross}${kd30EarlyHtml ? '' : ''}</div>${kd30EarlyHtml}`
     : '<span class="kd-cell">--</span>';
 
@@ -2372,13 +2388,14 @@ function renderMobileCard(stock) {
   else if (resonance.indexOf('部分') >= 0) resonShort = '部分共振';
   else if (resonance) resonShort = resonance;
 
-  // 30分KD
+  // 30分KD（2026-08-27：附趋势箭头）
   const kd30k = stock.kd30_k;
   const kd30Cross = stock.kd30_cross || '';
+  const kd30DirM = stock.kdj30Dir || '';
   let kd30Str = '--';
   let kd30Cls = '';
   if (kd30k !== undefined) {
-    kd30Str = 'K' + kd30k.toFixed(1);
+    kd30Str = kd30DirM + 'K' + kd30k.toFixed(1);
     if (kd30Cross === '金叉') kd30Cls = 'up';
     else if (kd30Cross === '死叉') kd30Cls = 'down';
   }

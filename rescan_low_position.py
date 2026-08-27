@@ -105,12 +105,26 @@ def fetch_yest_volume(code):
         return None
 
 
+def drop_incomplete_bar(bars):
+    """丢弃盘中未走完的当根K线（2026-08-27新增）。
+    腾讯mkline时间戳为bar终点标注：bar时间 > 当前时间 → 该bar未走完，K值临时不可靠"""
+    if not bars:
+        return bars
+    try:
+        bar_time = datetime.strptime(bars[-1][0][:12], '%Y%m%d%H%M')
+    except (ValueError, TypeError, IndexError):
+        return bars
+    if bar_time > datetime.now():
+        return bars[:-1]
+    return bars
+
+
 def calc_kdj_m30(code):
     """腾讯30分K线 → KDJ(9,3,3)，返回最新K/D及最近3根序列（判断方向用）"""
     d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m30,,300',
                   referer='https://gu.qq.com/')
     try:
-        bars = d['data'][code]['m30']
+        bars = drop_incomplete_bar(d['data'][code]['m30'])
     except (KeyError, TypeError):
         return None
     if len(bars) < 20:
@@ -178,7 +192,7 @@ def calc_kdj_m5(code):
     d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m5,,120',
                   referer='https://gu.qq.com/')
     try:
-        bars = d['data'][code]['m5']
+        bars = drop_incomplete_bar(d['data'][code]['m5'])
     except (KeyError, TypeError):
         return None
     if len(bars) < 20:
