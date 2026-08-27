@@ -425,9 +425,12 @@ def notify_bottom_accumulation(stocks, context='指标计算', vol_ratios=None):
     desp = '\n'.join(lines)
 
     # 推送
-    send_wechat(title, desp, push_type='bottom')
+    ok = send_wechat(title, desp, push_type='bottom')
     _notification_sent = True
-    print(f"[WeChat] 底部缩量建仓预警已推送: {len(bottom_stocks)}只")
+    if ok:
+        print(f"[WeChat] 底部缩量建仓预警已推送: {len(bottom_stocks)}只")
+    else:
+        print(f"[WeChat] 底部缩量建仓预警未发送(时间闸门拦截或推送失败): {len(bottom_stocks)}只")
     for s in bottom_stocks:
         vr_str = f"{s['vol_ratio']:.2f}" if s['vol_ratio'] is not None else "N/A"
         print(f"  {s['name']:6s} {s['code']} 阶段={s['phase']:12s} 换手={s['turnover']:.1f}% 量比={vr_str} 当日={s['daily_flow']:+.0f}万")
