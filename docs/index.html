@@ -4013,11 +4013,18 @@ function fetchAuctionData(manual) {
   if (aucState.fetching) return;
   var phase = getAuctionPhase(new Date());
   // 非竞价时段优先展示今日竞价快照
-  if (!manual && (phase === 'open' || phase === 'closed')) {
+  if (!manual && phase === 'done') { // 仅竞价刚结束(9:25-9:30)展示快照, 其余时段实时拉取
     var snap = aucLoadSnapshot();
     if (snap && snap.data && snap.data.length) {
       aucState.data = snap.data;
       renderAuction(snap.data, true);
+      var _meta = document.getElementById('aucMeta');
+      if (_meta) {
+        try {
+          var _t = new Date(snap.time);
+          _meta.textContent = '竞价快照 ' + aucPad(_t.getHours()) + ':' + aucPad(_t.getMinutes()) + ' · ' + snap.data.length + '只';
+        } catch (e) {}
+      }
       aucState.nextFetchAt = Date.now() + 60000;
       return;
     }
