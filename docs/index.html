@@ -1004,6 +1004,7 @@
       <span><span class="dot live-dot" id="liveDot"></span> <span id="liveStatus"><span class="src-chip src-idle">🚀 启动中</span></span></span>
       <span id="marketIdx">上证 -- | 深成 --</span>
       <span id="lastUpdate">--</span>
+      <span id="dataVersion" title="数据版本戳：票池日期 / 资金流日期 / KDJ最新时间。与最新推送时间不符说明是缓存旧版，请强刷(Cmd/Ctrl+Shift+R)">数据: --</span>
       <span>刷新 <span id="quoteCountdown">10</span>s</span>
     </div>
   </div>
@@ -4167,8 +4168,34 @@ function renderAuction(items, isSnapshot) {
   }
 }
 
-(function init() {
+(function renderDataVersion() {
+  // ★ 数据版本戳：从内嵌数据提取生成时间，用于辨别是否缓存旧版
+  var flowDate = '', cfDate = '', kdj5 = '';
   try {
+    if (typeof STOCKS !== 'undefined' && STOCKS.length && STOCKS[0] && STOCKS[0].flowDate) flowDate = STOCKS[0].flowDate;
+    if (typeof CAPITAL_FLOW_CACHE !== 'undefined') {
+      var _k = Object.keys(CAPITAL_FLOW_CACHE);
+      if (_k.length && CAPITAL_FLOW_CACHE[_k[0]] && CAPITAL_FLOW_CACHE[_k[0]].date) cfDate = CAPITAL_FLOW_CACHE[_k[0]].date;
+    }
+    if (typeof KDJ_PRECOMPUTED !== 'undefined') {
+      var _k2 = Object.keys(KDJ_PRECOMPUTED);
+      if (_k2.length && KDJ_PRECOMPUTED[_k2[0]] && KDJ_PRECOMPUTED[_k2[0]].last5minDate) {
+        var d = String(KDJ_PRECOMPUTED[_k2[0]].last5minDate); // 202608270950
+        if (d.length === 12) kdj5 = d.substring(0,4) + '-' + d.substring(4,6) + '-' + d.substring(6,8) + ' ' + d.substring(8,10) + ':' + d.substring(10,12);
+      }
+    }
+  } catch(e) {}
+  var date = flowDate || cfDate || '--';
+  var el = document.getElementById('dataVersion');
+  if (el) {
+    el.textContent = '数据 ' + date + (kdj5 ? ' · KDJ ' + kdj5.substring(5,16) : '');
+    el.title = '票池日期: ' + (flowDate||'--') + ' | 资金流日期: ' + (cfDate||'--') + ' | 5分KDJ最新: ' + (kdj5||'--') + '\n若与最新推送时间不符，说明看到的是缓存旧版，请强刷(Cmd/Ctrl+Shift+R)';
+  }
+}
+
+function init() {
+  try {
+    renderDataVersion(); // ★ 数据版本戳（辨别缓存新旧）
     // 立即更新badges，确保即使后面出错也能看到数据
     const _bs = document.getElementById('badgeStocks');
     if (_bs) _bs.textContent = STOCKS.length;
