@@ -1144,42 +1144,47 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 8,
-    "preBreakoutPhase": "weak",
+    "preBreakoutScore": 41,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
-        "signal": "缩量止跌",
-        "score": 5,
-        "detail": "今日止跌+0.0%"
+        "signal": "底背离",
+        "score": 15,
+        "detail": "类背离: 价持平, K回升9.2->42.7"
       },
       {
         "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
+        "score": 11,
+        "detail": "持续流入, 当日资金流入"
+      },
+      {
+        "signal": "MACD收敛",
+        "score": 15,
+        "detail": "MACD柱翻正: -0.0588->0.2246"
       }
     ],
-    "kd30_k": 42.13,
-    "kd30_d": 38.91,
+    "kd30_k": 92.46,
+    "kd30_d": 81.1,
     "kd30_cross": "上升",
-    "kd5_k": 37.2,
-    "kd5_d": 38.95,
+    "kd5_k": 50.38,
+    "kd5_d": 51.87,
     "kd5_cross": "下降",
-    "kd60_k": 16.66,
-    "kd60_d": 24.4,
-    "kd60_cross": "下降",
-    "macd": "死叉",
-    "ma": "空头排列",
-    "ma20": 22.07,
+    "kd60_k": 72.21,
+    "kd60_d": 49.93,
+    "kd60_cross": "上升",
+    "macd": "金叉",
+    "ma": "多头排列",
+    "ma20": 22.21,
     "openRate30d": 43,
     "openRateTotal": 46,
     "openRateScore": 2,
-    "trend": "下降",
-    "trendPct": -0.2,
-    "supportPrice": 20.33,
-    "supportDist": 7.8,
-    "preLaunchPhase": "building",
-    "preLaunchScore": 8,
-    "phase": "building"
+    "trend": "上升",
+    "trendPct": 11.2,
+    "supportPrice": 20.37,
+    "supportDist": 18.4,
+    "preLaunchPhase": "approaching",
+    "preLaunchScore": 52,
+    "phase": "approaching"
   },
   {
     "code": "sh605377",
@@ -1203,37 +1208,47 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 25,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 45,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
-        "score": 25,
-        "detail": "底背离: 价8.61->8.16, K14.9->22.9"
+        "score": 27,
+        "detail": "底背离: 价8.21->8.16, K14.3->22.9"
+      },
+      {
+        "signal": "缩量止跌",
+        "score": 15,
+        "detail": "缩量(量比0.7), 3日跌-7.6%但今日企稳+0.2%"
+      },
+      {
+        "signal": "资金反转",
+        "score": 3,
+        "detail": "当日资金流入"
       }
     ],
-    "kd30_k": 22.48,
-    "kd30_d": 21.77,
-    "kd30_cross": "上升",
-    "kd5_k": 27.37,
-    "kd5_d": 24.38,
+    "kd30_k": 41.35,
+    "kd30_d": 43.51,
+    "kd30_cross": "下降",
+    "kd5_k": 24.57,
+    "kd5_d": 23.11,
     "kd5_cross": "上升",
-    "kd60_k": 15.96,
-    "kd60_d": 18.36,
-    "kd60_cross": "下降",
+    "kd60_k": 20.67,
+    "kd60_d": 19.02,
+    "kd60_cross": "上升",
     "macd": "死叉",
     "ma": "空头排列",
-    "ma20": 8.95,
+    "ma20": 8.92,
     "openRate30d": 23,
     "openRateTotal": 30,
     "openRateScore": 1,
     "trend": "下降",
-    "trendPct": -8.1,
+    "trendPct": -7.8,
     "supportPrice": 8.02,
-    "supportDist": 1.7,
-    "preLaunchPhase": "building",
-    "preLaunchScore": 25,
-    "phase": "building"
+    "supportDist": 2.0,
+    "preLaunchPhase": "approaching",
+    "preLaunchScore": 45,
+    "phase": "approaching"
   },
   {
     "code": "sz001206",
@@ -1257,36 +1272,41 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 7,
+    "preBreakoutScore": 6,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
         "signal": "缩量止跌",
-        "score": 7,
-        "detail": "缩量(量比0.7)"
+        "score": 3,
+        "detail": "量微缩(比0.8)"
+      },
+      {
+        "signal": "资金反转",
+        "score": 3,
+        "detail": "当日资金流入"
       }
     ],
-    "kd30_k": 37.59,
-    "kd30_d": 34.18,
+    "kd30_k": 84.95,
+    "kd30_d": 76.78,
     "kd30_cross": "上升",
-    "kd5_k": 62.72,
-    "kd5_d": 49.18,
-    "kd5_cross": "上升",
-    "kd60_k": 29.56,
-    "kd60_d": 38.87,
-    "kd60_cross": "下降",
+    "kd5_k": 42.77,
+    "kd5_d": 56.26,
+    "kd5_cross": "下降",
+    "kd60_k": 66.22,
+    "kd60_d": 52.59,
+    "kd60_cross": "上升",
     "macd": "金叉",
     "ma": "空头排列",
-    "ma20": 16.7,
+    "ma20": 16.73,
     "openRate30d": 23,
     "openRateTotal": 40,
     "openRateScore": 1,
     "trend": "下降",
-    "trendPct": -3.8,
-    "supportPrice": 15.08,
-    "supportDist": 8.2,
+    "trendPct": -0.1,
+    "supportPrice": 15.6,
+    "supportDist": 5.6,
     "preLaunchPhase": "building",
-    "preLaunchScore": 7,
+    "preLaunchScore": 6,
     "phase": "building"
   },
   {
@@ -1311,36 +1331,30 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 20,
-    "preBreakoutPhase": "building_base",
-    "preBreakoutSignals": [
-      {
-        "signal": "金叉收敛",
-        "score": 20,
-        "detail": "刚金叉: K=18.2 D=18.0"
-      }
-    ],
-    "kd30_k": 18.17,
-    "kd30_d": 18.02,
-    "kd30_cross": "上升",
-    "kd5_k": 38.99,
-    "kd5_d": 57.94,
+    "preBreakoutScore": 0,
+    "preBreakoutPhase": "weak",
+    "preBreakoutSignals": [],
+    "kd30_k": 6.38,
+    "kd30_d": 8.88,
+    "kd30_cross": "下降",
+    "kd5_k": 10.02,
+    "kd5_d": 16.03,
     "kd5_cross": "下降",
-    "kd60_k": 23.62,
-    "kd60_d": 40.45,
+    "kd60_k": 8.11,
+    "kd60_d": 17.29,
     "kd60_cross": "下降",
     "macd": "金叉",
     "ma": "交叉震荡",
-    "ma20": 11.29,
+    "ma20": 11.36,
     "openRate30d": 33,
     "openRateTotal": 40,
     "openRateScore": 1,
     "trend": "下降",
-    "trendPct": -1.3,
-    "supportPrice": 9.06,
-    "supportDist": 32.3,
+    "trendPct": -9.2,
+    "supportPrice": 9.17,
+    "supportDist": 17.8,
     "preLaunchPhase": "building",
-    "preLaunchScore": 20,
+    "preLaunchScore": 0,
     "phase": "building"
   },
   {
@@ -1365,36 +1379,36 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 5,
+    "preBreakoutScore": 7,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
-        "signal": "缩量止跌",
-        "score": 5,
-        "detail": "今日止跌-0.3%"
+        "signal": "量价背离",
+        "score": 7,
+        "detail": "下跌日量(3406095)<上涨日量(5299233)的70%"
       }
     ],
-    "kd30_k": 39.16,
-    "kd30_d": 49.69,
+    "kd30_k": 37.84,
+    "kd30_d": 45.89,
     "kd30_cross": "下降",
-    "kd5_k": 12.17,
-    "kd5_d": 11.45,
-    "kd5_cross": "上升",
-    "kd60_k": 59.02,
-    "kd60_d": 67.67,
+    "kd5_k": 14.24,
+    "kd5_d": 27.21,
+    "kd5_cross": "下降",
+    "kd60_k": 51.92,
+    "kd60_d": 60.57,
     "kd60_cross": "下降",
-    "macd": "金叉",
-    "ma": "空头排列",
+    "macd": "金叉(底背离)",
+    "ma": "交叉震荡",
     "ma20": 18.87,
     "openRate30d": 37,
     "openRateTotal": 38,
     "openRateScore": 1,
     "trend": "上升",
-    "trendPct": 4.4,
+    "trendPct": 6.6,
     "supportPrice": 17.42,
-    "supportDist": 7.3,
+    "supportDist": 8.1,
     "preLaunchPhase": "building",
-    "preLaunchScore": 9,
+    "preLaunchScore": 13,
     "phase": "building"
   },
   {
@@ -1419,41 +1433,41 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 6,
-    "preBreakoutPhase": "weak",
+    "preBreakoutScore": 18,
+    "preBreakoutPhase": "building_base",
     "preBreakoutSignals": [
+      {
+        "signal": "底背离",
+        "score": 15,
+        "detail": "类背离: 价持平, K回升26.9->40.1"
+      },
       {
         "signal": "缩量止跌",
         "score": 3,
         "detail": "量微缩(比0.9)"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
       }
     ],
-    "kd30_k": 39.53,
-    "kd30_d": 40.24,
-    "kd30_cross": "下降",
-    "kd5_k": 60.34,
-    "kd5_d": 67.29,
+    "kd30_k": 71.71,
+    "kd30_d": 67.08,
+    "kd30_cross": "上升",
+    "kd5_k": 27.73,
+    "kd5_d": 32.59,
     "kd5_cross": "下降",
-    "kd60_k": 40.98,
-    "kd60_d": 41.02,
-    "kd60_cross": "下降",
+    "kd60_k": 60.26,
+    "kd60_d": 53.42,
+    "kd60_cross": "上升",
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 14.61,
-    "openRate30d": 20,
-    "openRateTotal": 34,
+    "ma20": 14.65,
+    "openRate30d": 23,
+    "openRateTotal": 35,
     "openRateScore": 1,
-    "trend": "下降",
-    "trendPct": -3.3,
+    "trend": "上升",
+    "trendPct": 0.3,
     "supportPrice": 13.0,
-    "supportDist": 14.3,
+    "supportDist": 16.6,
     "preLaunchPhase": "building",
-    "preLaunchScore": 6,
+    "preLaunchScore": 18,
     "phase": "building"
   },
   {
@@ -1478,41 +1492,36 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 13,
+    "preBreakoutScore": 5,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
         "signal": "缩量止跌",
-        "score": 10,
-        "detail": "今日止跌+0.5%, 量逐日递减"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
+        "score": 5,
+        "detail": "量逐日递减"
       }
     ],
-    "kd30_k": 49.92,
-    "kd30_d": 48.85,
-    "kd30_cross": "上升",
-    "kd5_k": 63.07,
-    "kd5_d": 56.05,
-    "kd5_cross": "上升",
-    "kd60_k": 61.17,
-    "kd60_d": 61.04,
-    "kd60_cross": "上升",
+    "kd30_k": 26.28,
+    "kd30_d": 42.27,
+    "kd30_cross": "下降",
+    "kd5_k": 5.75,
+    "kd5_d": 7.38,
+    "kd5_cross": "下降",
+    "kd60_k": 47.7,
+    "kd60_d": 58.44,
+    "kd60_cross": "下降",
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 19.06,
+    "ma20": 19.11,
     "openRate30d": 40,
     "openRateTotal": 37,
     "openRateScore": 2,
     "trend": "上升",
-    "trendPct": 2.4,
-    "supportPrice": 18.03,
-    "supportDist": 7.9,
+    "trendPct": 0.5,
+    "supportPrice": 18.14,
+    "supportDist": 6.6,
     "preLaunchPhase": "building",
-    "preLaunchScore": 15,
+    "preLaunchScore": 5,
     "phase": "building"
   },
   {
@@ -1536,36 +1545,36 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 3,
+    "preBreakoutScore": 5,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
+        "signal": "缩量止跌",
+        "score": 5,
+        "detail": "量逐日递减"
       }
     ],
-    "kd30_k": 50.43,
-    "kd30_d": 57.44,
+    "kd30_k": 4.98,
+    "kd30_d": 11.21,
     "kd30_cross": "下降",
-    "kd5_k": 54.67,
-    "kd5_d": 57.56,
+    "kd5_k": 37.55,
+    "kd5_d": 41.0,
     "kd5_cross": "下降",
-    "kd60_k": 60.51,
-    "kd60_d": 69.11,
+    "kd60_k": 13.65,
+    "kd60_d": 31.14,
     "kd60_cross": "下降",
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 59.22,
-    "openRate30d": 50,
+    "ma20": 59.69,
+    "openRate30d": 47,
     "openRateTotal": 44,
-    "openRateScore": 3,
-    "trend": "上升",
-    "trendPct": 14.2,
+    "openRateScore": 2,
+    "trend": "震荡",
+    "trendPct": -0.3,
     "supportPrice": 46.89,
-    "supportDist": 38.9,
+    "supportDist": 27.6,
     "preLaunchPhase": "building",
-    "preLaunchScore": 17,
+    "preLaunchScore": 5,
     "phase": "building"
   },
   {
@@ -1590,30 +1599,36 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 0,
-    "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
-    "kd30_k": 52.58,
-    "kd30_d": 55.31,
+    "preBreakoutScore": 15,
+    "preBreakoutPhase": "building_base",
+    "preBreakoutSignals": [
+      {
+        "signal": "底背离",
+        "score": 15,
+        "detail": "类背离: 价持平, K回升41.3->46.3"
+      }
+    ],
+    "kd30_k": 46.34,
+    "kd30_d": 52.09,
     "kd30_cross": "下降",
-    "kd5_k": 54.82,
-    "kd5_d": 61.35,
+    "kd5_k": 11.72,
+    "kd5_d": 18.08,
     "kd5_cross": "下降",
-    "kd60_k": 53.67,
-    "kd60_d": 48.5,
-    "kd60_cross": "上升",
+    "kd60_k": 53.66,
+    "kd60_d": 55.65,
+    "kd60_cross": "下降",
     "macd": "死叉",
     "ma": "交叉震荡",
-    "ma20": 47.39,
+    "ma20": 47.45,
     "openRate30d": 33,
     "openRateTotal": 34,
     "openRateScore": 1,
     "trend": "下降",
-    "trendPct": -3.2,
-    "supportPrice": 42.0,
-    "supportDist": 9.8,
+    "trendPct": -4.9,
+    "supportPrice": 43.5,
+    "supportDist": 5.4,
     "preLaunchPhase": "building",
-    "preLaunchScore": 0,
+    "preLaunchScore": 15,
     "phase": "building"
   },
   {
@@ -1637,30 +1652,36 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 0,
-    "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
-    "kd30_k": 48.72,
-    "kd30_d": 52.3,
-    "kd30_cross": "下降",
-    "kd5_k": 20.12,
-    "kd5_d": 24.24,
-    "kd5_cross": "下降",
-    "kd60_k": 43.23,
-    "kd60_d": 56.04,
-    "kd60_cross": "下降",
+    "preBreakoutScore": 15,
+    "preBreakoutPhase": "building_base",
+    "preBreakoutSignals": [
+      {
+        "signal": "底背离",
+        "score": 15,
+        "detail": "类背离: 价持平, K回升21.8->39.9"
+      }
+    ],
+    "kd30_k": 69.96,
+    "kd30_d": 58.41,
+    "kd30_cross": "上升",
+    "kd5_k": 60.38,
+    "kd5_d": 51.32,
+    "kd5_cross": "上升",
+    "kd60_k": 54.55,
+    "kd60_d": 49.67,
+    "kd60_cross": "上升",
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 7.21,
+    "ma20": 7.26,
     "openRate30d": 43,
     "openRateTotal": 42,
     "openRateScore": 2,
     "trend": "上升",
-    "trendPct": 6.2,
-    "supportPrice": 6.43,
-    "supportDist": 17.6,
+    "trendPct": 4.9,
+    "supportPrice": 6.64,
+    "supportDist": 15.1,
     "preLaunchPhase": "building",
-    "preLaunchScore": 6,
+    "preLaunchScore": 19,
     "phase": "building"
   },
   {
@@ -1685,42 +1706,52 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 22,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 32,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
-        "signal": "缩量止跌",
+        "signal": "底背离",
         "score": 15,
-        "detail": "极度缩量(量比0.5), 今日止跌-0.4%"
+        "detail": "类背离: 价持平, K回升40.8->50.5"
+      },
+      {
+        "signal": "缩量止跌",
+        "score": 7,
+        "detail": "缩量(量比0.8)"
+      },
+      {
+        "signal": "资金反转",
+        "score": 3,
+        "detail": "当日资金流入"
       },
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(14795782)<上涨日量(24699819)的70%"
+        "detail": "下跌日量(15243222)<上涨日量(23433760)的70%"
       }
     ],
-    "kd30_k": 50.45,
-    "kd30_d": 56.19,
-    "kd30_cross": "下降",
-    "kd5_k": 35.16,
-    "kd5_d": 53.47,
+    "kd30_k": 66.81,
+    "kd30_d": 65.51,
+    "kd30_cross": "上升",
+    "kd5_k": 8.21,
+    "kd5_d": 18.89,
     "kd5_cross": "下降",
-    "kd60_k": 68.41,
-    "kd60_d": 69.06,
-    "kd60_cross": "下降",
+    "kd60_k": 74.1,
+    "kd60_d": 73.94,
+    "kd60_cross": "上升",
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 7.31,
+    "ma20": 7.34,
     "openRate30d": 40,
-    "openRateTotal": 41,
+    "openRateTotal": 42,
     "openRateScore": 2,
     "trend": "上升",
-    "trendPct": 4.7,
+    "trendPct": 5.6,
     "supportPrice": 7.02,
-    "supportDist": 7.8,
-    "preLaunchPhase": "building",
-    "preLaunchScore": 26,
-    "phase": "building"
+    "supportDist": 9.8,
+    "preLaunchPhase": "approaching",
+    "preLaunchScore": 37,
+    "phase": "approaching"
   },
   {
     "code": "sz002965",
@@ -1743,30 +1774,41 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 0,
+    "preBreakoutScore": 6,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
-    "kd30_k": 62.33,
-    "kd30_d": 59.43,
-    "kd30_cross": "上升",
-    "kd5_k": 65.76,
-    "kd5_d": 72.49,
+    "preBreakoutSignals": [
+      {
+        "signal": "缩量止跌",
+        "score": 3,
+        "detail": "量微缩(比0.8)"
+      },
+      {
+        "signal": "资金反转",
+        "score": 3,
+        "detail": "当日资金流入"
+      }
+    ],
+    "kd30_k": 12.37,
+    "kd30_d": 25.43,
+    "kd30_cross": "下降",
+    "kd5_k": 10.63,
+    "kd5_d": 17.62,
     "kd5_cross": "下降",
-    "kd60_k": 63.29,
-    "kd60_d": 58.64,
-    "kd60_cross": "上升",
+    "kd60_k": 33.91,
+    "kd60_d": 47.01,
+    "kd60_cross": "下降",
     "macd": "金叉",
     "ma": "交叉震荡",
-    "ma20": 31.26,
-    "openRate30d": 47,
+    "ma20": 31.35,
+    "openRate30d": 43,
     "openRateTotal": 42,
     "openRateScore": 2,
-    "trend": "上升",
-    "trendPct": 4.1,
+    "trend": "下降",
+    "trendPct": -2.7,
     "supportPrice": 27.05,
-    "supportDist": 16.0,
+    "supportDist": 13.5,
     "preLaunchPhase": "building",
-    "preLaunchScore": 4,
+    "preLaunchScore": 6,
     "phase": "building"
   },
   {
@@ -1791,47 +1833,47 @@ const STOCKS = [
     "flowDate": "2026-08-27",
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 18,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 35,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
-        "signal": "缩量止跌",
-        "score": 5,
-        "detail": "今日止跌+0.3%"
+        "signal": "底背离",
+        "score": 15,
+        "detail": "类背离: 价持平, K回升46.6->69.5"
       },
       {
-        "signal": "资金反转",
-        "score": 5,
-        "detail": "当日主力+0.7亿"
+        "signal": "缩量止跌",
+        "score": 12,
+        "detail": "缩量(量比0.8), 今日止跌+0.1%"
       },
       {
         "signal": "MACD收敛",
         "score": 8,
-        "detail": "MACD柱缩小: -1.6477->-1.5077"
+        "detail": "MACD柱缩小: -1.6570->-1.3150"
       }
     ],
-    "kd30_k": 69.54,
-    "kd30_d": 63.6,
-    "kd30_cross": "上升",
-    "kd5_k": 29.23,
-    "kd5_d": 27.43,
+    "kd30_k": 52.52,
+    "kd30_d": 62.23,
+    "kd30_cross": "下降",
+    "kd5_k": 29.81,
+    "kd5_d": 27.49,
     "kd5_cross": "上升",
-    "kd60_k": 59.69,
-    "kd60_d": 50.42,
+    "kd60_k": 68.47,
+    "kd60_d": 65.74,
     "kd60_cross": "上升",
     "macd": "死叉(底背离)",
     "ma": "空头排列",
-    "ma20": 82.96,
+    "ma20": 82.34,
     "openRate30d": 23,
     "openRateTotal": 41,
     "openRateScore": 1,
     "trend": "下降",
-    "trendPct": -4.9,
+    "trendPct": -1.9,
     "supportPrice": 75.59,
-    "supportDist": 2.5,
-    "preLaunchPhase": "building",
-    "preLaunchScore": 18,
-    "phase": "building"
+    "supportDist": 2.6,
+    "preLaunchPhase": "approaching",
+    "preLaunchScore": 35,
+    "phase": "approaching"
   },
   {
     "code": "sz001388",
@@ -1854,30 +1896,36 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 0,
+    "preBreakoutScore": 13,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
-    "kd30_k": 64.13,
-    "kd30_d": 63.95,
+    "preBreakoutSignals": [
+      {
+        "signal": "缩量止跌",
+        "score": 13,
+        "detail": "量微缩(比0.9), 今日止跌+0.1%, 量逐日递减"
+      }
+    ],
+    "kd30_k": 56.31,
+    "kd30_d": 51.52,
     "kd30_cross": "上升",
-    "kd5_k": 60.89,
-    "kd5_d": 59.04,
-    "kd5_cross": "上升",
-    "kd60_k": 67.03,
-    "kd60_d": 69.44,
-    "kd60_cross": "下降",
+    "kd5_k": 31.96,
+    "kd5_d": 44.25,
+    "kd5_cross": "下降",
+    "kd60_k": 64.77,
+    "kd60_d": 64.32,
+    "kd60_cross": "上升",
     "macd": "金叉",
     "ma": "空头排列",
-    "ma20": 22.26,
+    "ma20": 22.33,
     "openRate30d": 30,
     "openRateTotal": 35,
     "openRateScore": 1,
-    "trend": "下降",
-    "trendPct": -0.5,
-    "supportPrice": 19.47,
-    "supportDist": 9.7,
+    "trend": "震荡",
+    "trendPct": 0.3,
+    "supportPrice": 19.68,
+    "supportDist": 8.7,
     "preLaunchPhase": "building",
-    "preLaunchScore": 0,
+    "preLaunchScore": 13,
     "phase": "building"
   },
   {
@@ -1893,16 +1941,16 @@ const STOCKS = [
     "consecutive": 0,
     "macd": "金叉",
     "ma": "交叉震荡",
-    "ma20": 33.98,
-    "openRate30d": 50,
+    "ma20": 34.17,
+    "openRate30d": 53,
     "openRateTotal": 47,
     "openRateScore": 3,
     "trend": "上升",
-    "trendPct": 4.3,
-    "supportPrice": 30.0,
-    "supportDist": 18.9,
+    "trendPct": 2.0,
+    "supportPrice": 30.62,
+    "supportDist": 13.9,
     "preLaunchPhase": "building",
-    "preLaunchScore": 7,
+    "preLaunchScore": 2,
     "phase": "building",
     "sector": "化工",
     "industry": "化学原料",
@@ -1916,24 +1964,18 @@ const STOCKS = [
     "healthScore": 0,
     "flowDate": "2026-08-27",
     "sectorResonanceDetail": "化工 个股行情",
-    "preBreakoutScore": 3,
+    "preBreakoutScore": 0,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [
-      {
-        "signal": "缩量止跌",
-        "score": 3,
-        "detail": "量微缩(比0.9)"
-      }
-    ],
-    "kd30_k": 85.73,
-    "kd30_d": 84.3,
-    "kd30_cross": "上升",
-    "kd5_k": 76.59,
-    "kd5_d": 69.84,
-    "kd5_cross": "上升",
-    "kd60_k": 91.03,
-    "kd60_d": 85.46,
-    "kd60_cross": "上升"
+    "preBreakoutSignals": [],
+    "kd30_k": 20.04,
+    "kd30_d": 30.75,
+    "kd30_cross": "下降",
+    "kd5_k": 42.71,
+    "kd5_d": 55.37,
+    "kd5_cross": "下降",
+    "kd60_k": 37.77,
+    "kd60_d": 58.3,
+    "kd60_cross": "下降"
   },
   {
     "code": "sh600105",
@@ -1948,16 +1990,16 @@ const STOCKS = [
     "consecutive": 0,
     "macd": "金叉",
     "ma": "交叉震荡",
-    "ma20": 38.39,
+    "ma20": 38.77,
     "openRate30d": 57,
     "openRateTotal": 45,
     "openRateScore": 3,
-    "trend": "上升",
-    "trendPct": 5.5,
+    "trend": "震荡",
+    "trendPct": 0.2,
     "supportPrice": 30.57,
-    "supportDist": 34.1,
+    "supportDist": 30.2,
     "preLaunchPhase": "building",
-    "preLaunchScore": 30,
+    "preLaunchScore": 5,
     "phase": "building",
     "sector": "通信",
     "industry": "通信设备",
@@ -1971,34 +2013,24 @@ const STOCKS = [
     "healthScore": 0,
     "flowDate": "2026-08-27",
     "sectorResonanceDetail": "通信 个股行情",
-    "preBreakoutScore": 25,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 5,
+    "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
-      {
-        "signal": "底背离",
-        "score": 15,
-        "detail": "类背离: 价持平, K回升57.1->70.3"
-      },
       {
         "signal": "缩量止跌",
         "score": 5,
         "detail": "量逐日递减"
-      },
-      {
-        "signal": "资金反转",
-        "score": 5,
-        "detail": "当日主力+5.5亿"
       }
     ],
-    "kd30_k": 81.04,
-    "kd30_d": 80.29,
-    "kd30_cross": "上升",
-    "kd5_k": 82.9,
-    "kd5_d": 87.55,
+    "kd30_k": 11.31,
+    "kd30_d": 26.31,
+    "kd30_cross": "下降",
+    "kd5_k": 8.18,
+    "kd5_d": 15.16,
     "kd5_cross": "下降",
-    "kd60_k": 84.97,
-    "kd60_d": 79.3,
-    "kd60_cross": "上升"
+    "kd60_k": 53.79,
+    "kd60_d": 67.63,
+    "kd60_cross": "下降"
   },
   {
     "code": "sh601126",
@@ -2013,16 +2045,16 @@ const STOCKS = [
     "consecutive": 0,
     "macd": "金叉",
     "ma": "交叉震荡",
-    "ma20": 44.36,
-    "openRate30d": 50,
+    "ma20": 44.57,
+    "openRate30d": 47,
     "openRateTotal": 46,
-    "openRateScore": 3,
-    "trend": "震荡",
-    "trendPct": -0.6,
+    "openRateScore": 2,
+    "trend": "下降",
+    "trendPct": -7.3,
     "supportPrice": 37.78,
-    "supportDist": 14.4,
+    "supportDist": 11.5,
     "preLaunchPhase": "building",
-    "preLaunchScore": 0,
+    "preLaunchScore": 3,
     "phase": "building",
     "sector": "电力设备",
     "industry": "电网设备",
@@ -2036,18 +2068,24 @@ const STOCKS = [
     "healthScore": 0,
     "flowDate": "2026-08-27",
     "sectorResonanceDetail": "电力设备 个股行情",
-    "preBreakoutScore": 0,
+    "preBreakoutScore": 3,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
-    "kd30_k": 53.62,
-    "kd30_d": 46.88,
-    "kd30_cross": "上升",
-    "kd5_k": 83.17,
-    "kd5_d": 81.0,
-    "kd5_cross": "上升",
-    "kd60_k": 39.6,
-    "kd60_d": 35.98,
-    "kd60_cross": "上升"
+    "preBreakoutSignals": [
+      {
+        "signal": "缩量止跌",
+        "score": 3,
+        "detail": "量微缩(比0.8)"
+      }
+    ],
+    "kd30_k": 14.37,
+    "kd30_d": 23.7,
+    "kd30_cross": "下降",
+    "kd5_k": 37.86,
+    "kd5_d": 39.55,
+    "kd5_cross": "下降",
+    "kd60_k": 26.15,
+    "kd60_d": 32.11,
+    "kd60_cross": "下降"
   },
   {
     "code": "sz000688",
@@ -2062,16 +2100,16 @@ const STOCKS = [
     "consecutive": 0,
     "macd": "金叉",
     "ma": "多头排列",
-    "ma20": 31.23,
+    "ma20": 31.41,
     "openRate30d": 53,
     "openRateTotal": 43,
     "openRateScore": 3,
-    "trend": "上升",
-    "trendPct": 0.8,
+    "trend": "下降",
+    "trendPct": -5.3,
     "supportPrice": 27.26,
-    "supportDist": 13.8,
+    "supportDist": 15.6,
     "preLaunchPhase": "approaching",
-    "preLaunchScore": 37,
+    "preLaunchScore": 30,
     "phase": "approaching",
     "sector": "有色金属",
     "industry": "小金属",
@@ -2085,29 +2123,34 @@ const STOCKS = [
     "healthScore": 0,
     "flowDate": "2026-08-27",
     "sectorResonanceDetail": "有色金属 个股行情",
-    "preBreakoutScore": 37,
+    "preBreakoutScore": 30,
     "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
-        "score": 34,
-        "detail": "底背离: 价30.97->30.38, K13.3->25.5"
+        "score": 15,
+        "detail": "类背离: 价持平, K回升25.5->40.4"
       },
       {
         "signal": "缩量止跌",
+        "score": 12,
+        "detail": "缩量(量比0.8), 量逐日递减"
+      },
+      {
+        "signal": "资金反转",
         "score": 3,
-        "detail": "量微缩(比0.9)"
+        "detail": "当日资金流入"
       }
     ],
-    "kd30_k": 37.73,
-    "kd30_d": 34.35,
+    "kd30_k": 68.16,
+    "kd30_d": 63.36,
     "kd30_cross": "上升",
-    "kd5_k": 67.85,
-    "kd5_d": 67.1,
-    "kd5_cross": "上升",
-    "kd60_k": 27.36,
-    "kd60_d": 28.51,
-    "kd60_cross": "下降"
+    "kd5_k": 53.64,
+    "kd5_d": 57.18,
+    "kd5_cross": "下降",
+    "kd60_k": 51.24,
+    "kd60_d": 40.5,
+    "kd60_cross": "上升"
   }
 ];
 
@@ -2115,23 +2158,23 @@ const LAUNCH_STOCKS = []; // 已移除
 
 // KDJ 预计算数据，生成时间: 2026-08-12 04:13:27
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-// KDJ 预计算数据，生成时间: 2026-08-27 11:57:11
+// KDJ 预计算数据，生成时间: 2026-08-28 12:44:15
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-const KDJ_PRECOMPUTED = {"sh600539": {"code": "sh600539", "kdj5": {"k": 58.38, "d": 65.03, "j": 45.08, "prev_k": 67.57, "prev_d": 68.36}, "kdj30": {"k": 40.6, "d": 40.92, "j": 39.94, "prev_k": 41.16, "prev_d": 41.09}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603969": {"code": "sh603969", "kdj5": {"k": 35.37, "d": 53.84, "j": -1.58, "prev_k": 44.72, "prev_d": 63.08}, "kdj30": {"k": 51.73, "d": 56.94, "j": 41.3, "prev_k": 57.59, "prev_d": 59.55}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 72.59, "d": 72.93, "j": 71.92, "prev_k": 74.27, "prev_d": 73.1}, "kdj30": {"k": 36.85, "d": 33.53, "j": 43.51, "prev_k": 34.31, "prev_d": 31.87}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz002723": {"code": "sz002723", "kdj5": {"k": 16.06, "d": 17.79, "j": 12.62, "prev_k": 11.6, "prev_d": 18.65}, "kdj30": {"k": 48.73, "d": 52.31, "j": 41.55, "prev_k": 57.71, "prev_d": 54.11}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603075": {"code": "sh603075", "kdj5": {"k": 63.35, "d": 56.87, "j": 76.3, "prev_k": 57.52, "prev_d": 53.64}, "kdj30": {"k": 52.38, "d": 51.09, "j": 54.95, "prev_k": 49.82, "prev_d": 50.45}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz001388": {"code": "sz001388", "kdj5": {"k": 56.29, "d": 54.94, "j": 58.97, "prev_k": 53.18, "prev_d": 54.27}, "kdj30": {"k": 64.47, "d": 65.01, "j": 63.39, "prev_k": 64.63, "prev_d": 65.28}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 84.51, "d": 88.24, "j": 77.06, "prev_k": 90.66, "prev_d": 90.1}, "kdj30": {"k": 81.09, "d": 80.58, "j": 82.11, "prev_k": 79.97, "prev_d": 80.33}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz003030": {"code": "sz003030", "kdj5": {"k": 46.71, "d": 46.97, "j": 46.2, "prev_k": 58.96, "prev_d": 47.1}, "kdj30": {"k": 36.94, "d": 34.75, "j": 41.34, "prev_k": 37.92, "prev_d": 33.65}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz002965": {"code": "sz002965", "kdj5": {"k": 63.73, "d": 70.49, "j": 50.22, "prev_k": 76.85, "prev_d": 73.86}, "kdj30": {"k": 63.2, "d": 61.03, "j": 67.55, "prev_k": 60.55, "prev_d": 59.94}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh605377": {"code": "sh605377", "kdj5": {"k": 23.1, "d": 22.44, "j": 24.44, "prev_k": 22.16, "prev_d": 22.1}, "kdj30": {"k": 20.34, "d": 20.06, "j": 20.89, "prev_k": 20.98, "prev_d": 19.92}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603120": {"code": "sh603120", "kdj5": {"k": 58.56, "d": 67.14, "j": 41.39, "prev_k": 65.43, "prev_d": 71.44}, "kdj30": {"k": 53.34, "d": 55.81, "j": 48.42, "prev_k": 54.13, "prev_d": 57.04}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603262": {"code": "sh603262", "kdj5": {"k": 12.17, "d": 11.45, "j": 13.61, "prev_k": 6.72, "prev_d": 11.09}, "kdj30": {"k": 39.64, "d": 50.23, "j": 18.48, "prev_k": 46.97, "prev_d": 55.52}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sz001206": {"code": "sz001206", "kdj5": {"k": 64.3, "d": 49.27, "j": 94.35, "prev_k": 52.7, "prev_d": 41.76}, "kdj30": {"k": 37.84, "d": 34.45, "j": 44.62, "prev_k": 32.96, "prev_d": 32.76}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 83.85, "d": 81.63, "j": 88.29, "prev_k": 83.28, "prev_d": 80.53}, "kdj30": {"k": 52.45, "d": 45.73, "j": 65.88, "prev_k": 46.38, "prev_d": 42.38}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603950": {"code": "sh603950", "kdj5": {"k": 54.44, "d": 57.38, "j": 48.56, "prev_k": 63.7, "prev_d": 58.85}, "kdj30": {"k": 50.31, "d": 57.02, "j": 36.89, "prev_k": 53.36, "prev_d": 60.38}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603725": {"code": "sh603725", "kdj5": {"k": 36.84, "d": 55.83, "j": -1.13, "prev_k": 49.01, "prev_d": 65.32}, "kdj30": {"k": 17.63, "d": 18.06, "j": 16.77, "prev_k": 17.66, "prev_d": 18.28}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 77.5, "d": 68.86, "j": 94.8, "prev_k": 72.25, "prev_d": 64.53}, "kdj30": {"k": 85.86, "d": 84.6, "j": 88.37, "prev_k": 82.74, "prev_d": 83.97}, "last5minDate": "202608271500", "last30minDate": "202608271500"}, "sh603345": {"code": "sh603345", "kdj5": {"k": 26.68, "d": 26.05, "j": 27.94, "prev_k": 19.43, "prev_d": 25.74}, "kdj30": {"k": 69.81, "d": 63.73, "j": 81.96, "prev_k": 68.2, "prev_d": 60.69}, "last5minDate": "202608271500", "last30minDate": "202608271500"}};
+const KDJ_PRECOMPUTED = {"sz001206": {"code": "sz001206", "kdj5": {"k": 49.12, "d": 60.49, "j": 26.36, "prev_k": 51.45, "prev_d": 66.18}, "kdj30": {"k": 84.7, "d": 76.79, "j": 100.52, "prev_k": 84.63, "prev_d": 72.84}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002965": {"code": "sz002965", "kdj5": {"k": 11.93, "d": 17.79, "j": 0.21, "prev_k": 15.52, "prev_d": 20.72}, "kdj30": {"k": 12.1, "d": 25.23, "j": -14.16, "prev_k": 17.8, "prev_d": 31.8}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603969": {"code": "sh603969", "kdj5": {"k": 7.99, "d": 18.24, "j": -12.53, "prev_k": 11.98, "prev_d": 23.37}, "kdj30": {"k": 67.92, "d": 67.18, "j": 69.38, "prev_k": 71.52, "prev_d": 66.82}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605377": {"code": "sh605377", "kdj5": {"k": 19.65, "d": 21.68, "j": 15.59, "prev_k": 16.97, "prev_d": 22.69}, "kdj30": {"k": 42.28, "d": 44.17, "j": 38.5, "prev_k": 45.56, "prev_d": 45.12}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz001388": {"code": "sz001388", "kdj5": {"k": 31.96, "d": 44.29, "j": 7.31, "prev_k": 29.76, "prev_d": 50.45}, "kdj30": {"k": 56.56, "d": 52.11, "j": 65.46, "prev_k": 54.84, "prev_d": 49.88}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603262": {"code": "sh603262", "kdj5": {"k": 14.73, "d": 27.03, "j": -9.88, "prev_k": 22.09, "prev_d": 33.18}, "kdj30": {"k": 38.31, "d": 46.45, "j": 22.05, "prev_k": 46.43, "prev_d": 50.51}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 53.77, "d": 57.39, "j": 46.54, "prev_k": 59.51, "prev_d": 59.2}, "kdj30": {"k": 68.55, "d": 63.58, "j": 78.49, "prev_k": 65.33, "prev_d": 61.1}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603725": {"code": "sh603725", "kdj5": {"k": 10.28, "d": 15.4, "j": 0.04, "prev_k": 12.64, "prev_d": 17.96}, "kdj30": {"k": 6.04, "d": 8.61, "j": 0.88, "prev_k": 8.67, "prev_d": 9.9}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 42.05, "d": 55.48, "j": 15.19, "prev_k": 50.89, "prev_d": 62.2}, "kdj30": {"k": 20.19, "d": 31.01, "j": -1.46, "prev_k": 23.0, "prev_d": 36.42}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603075": {"code": "sh603075", "kdj5": {"k": 5.92, "d": 8.08, "j": 1.6, "prev_k": 6.1, "prev_d": 9.16}, "kdj30": {"k": 26.38, "d": 42.61, "j": -6.1, "prev_k": 38.48, "prev_d": 50.73}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 7.91, "d": 14.3, "j": -4.87, "prev_k": 10.7, "prev_d": 17.49}, "kdj30": {"k": 11.35, "d": 26.5, "j": -18.94, "prev_k": 16.78, "prev_d": 34.07}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz003030": {"code": "sz003030", "kdj5": {"k": 50.38, "d": 51.87, "j": 47.39, "prev_k": 50.57, "prev_d": 52.62}, "kdj30": {"k": 92.24, "d": 80.34, "j": 116.03, "prev_k": 88.36, "prev_d": 74.4}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603120": {"code": "sh603120", "kdj5": {"k": 11.5, "d": 17.99, "j": -1.47, "prev_k": 12.35, "prev_d": 21.24}, "kdj30": {"k": 46.65, "d": 52.45, "j": 35.05, "prev_k": 59.77, "prev_d": 55.36}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603345": {"code": "sh603345", "kdj5": {"k": 29.45, "d": 26.51, "j": 35.35, "prev_k": 26.44, "prev_d": 25.03}, "kdj30": {"k": 49.28, "d": 60.54, "j": 26.75, "prev_k": 56.98, "prev_d": 66.17}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600539": {"code": "sh600539", "kdj5": {"k": 28.53, "d": 34.02, "j": 17.54, "prev_k": 34.46, "prev_d": 36.77}, "kdj30": {"k": 71.58, "d": 66.97, "j": 80.8, "prev_k": 74.03, "prev_d": 64.66}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002723": {"code": "sz002723", "kdj5": {"k": 60.24, "d": 50.79, "j": 79.14, "prev_k": 54.0, "prev_d": 46.06}, "kdj30": {"k": 70.05, "d": 58.61, "j": 92.92, "prev_k": 60.63, "prev_d": 52.89}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603950": {"code": "sh603950", "kdj5": {"k": 37.77, "d": 40.32, "j": 32.67, "prev_k": 44.16, "prev_d": 41.6}, "kdj30": {"k": 4.68, "d": 10.97, "j": -7.91, "prev_k": 6.15, "prev_d": 14.12}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 15.33, "d": 18.96, "j": 8.05, "prev_k": 15.64, "prev_d": 20.78}, "kdj30": {"k": 12.93, "d": 23.41, "j": -8.02, "prev_k": 17.82, "prev_d": 28.65}, "last5minDate": "202608281500", "last30minDate": "202608281500"}};
 // 主力资金预计算数据，生成时间: 2026-08-12 04:13:28
 // 数据源: capital_flow.json (最新数据日: 2026-08-06)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-// 主力资金预计算数据，生成时间: 2026-08-27 11:57:11
+// 主力资金预计算数据，生成时间: 2026-08-28 12:44:15
 // 数据源: capital_flow.json (最新数据日: 2026-08-27)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-const CAPITAL_FLOW_CACHE = {"sh603345": {"date": "2026-08-27", "mainNetInflow": 4626.0}, "sh603067": {"date": "2026-08-27", "mainNetInflow": 1567.0}, "sz003030": {"date": "2026-08-27", "mainNetInflow": 97.0}, "sh603262": {"date": "2026-08-27", "mainNetInflow": -525.0}, "sh601126": {"date": "2026-08-27", "mainNetInflow": -14238.0}, "sh603075": {"date": "2026-08-27", "mainNetInflow": 45.0}, "sz000688": {"date": "2026-08-27", "mainNetInflow": -1641.0}, "sh603725": {"date": "2026-08-27", "mainNetInflow": -2058.0}, "sh603120": {"date": "2026-08-27", "mainNetInflow": 126.0}, "sh600539": {"date": "2026-08-27", "mainNetInflow": 1536.0}, "sz001206": {"date": "2026-08-27", "mainNetInflow": 21.0}, "sh605377": {"date": "2026-08-27", "mainNetInflow": -672.0}, "sh600105": {"date": "2026-08-27", "mainNetInflow": 54292.0}, "sh603969": {"date": "2026-08-27", "mainNetInflow": -373.0}};
+const CAPITAL_FLOW_CACHE = {"sh600105": {"date": "2026-08-27", "mainNetInflow": 54292.0}, "sh605377": {"date": "2026-08-27", "mainNetInflow": -672.0}, "sz000688": {"date": "2026-08-27", "mainNetInflow": -1641.0}, "sh603969": {"date": "2026-08-27", "mainNetInflow": -373.0}, "sh603262": {"date": "2026-08-27", "mainNetInflow": -525.0}, "sz001206": {"date": "2026-08-27", "mainNetInflow": 21.0}, "sh603120": {"date": "2026-08-27", "mainNetInflow": 126.0}, "sh603345": {"date": "2026-08-27", "mainNetInflow": 4626.0}, "sh603067": {"date": "2026-08-27", "mainNetInflow": 1567.0}, "sh601126": {"date": "2026-08-27", "mainNetInflow": -14238.0}, "sh600539": {"date": "2026-08-27", "mainNetInflow": 1536.0}, "sh603075": {"date": "2026-08-27", "mainNetInflow": 45.0}, "sz003030": {"date": "2026-08-27", "mainNetInflow": 97.0}, "sh603725": {"date": "2026-08-27", "mainNetInflow": -2058.0}};
 // 大盘跟随度预计算，生成时间: 2026-08-12 04:13:44
 // 基准: 上证指数(sh000001), 数据日: 2026-08-11, 上证5日+1.44%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-// 大盘跟随度预计算，生成时间: 2026-08-27 11:57:28
-// 基准: 上证指数(sh000001), 数据日: 2026-08-27, 上证5日+1.32%
+// 大盘跟随度预计算，生成时间: 2026-08-28 12:44:29
+// 基准: 上证指数(sh000001), 数据日: 2026-08-28, 上证5日+1.81%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-const MARKET_CORR_CACHE = {"603950": {"beta": 4.17, "corr": 0.634, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 8.51, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "002723": {"beta": 0.2, "corr": 0.052, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 3.85, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "001388": {"beta": 2.49, "corr": 0.414, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 0.19, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603262": {"beta": 0.6, "corr": 0.2, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 5.77, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603120": {"beta": 1.53, "corr": 0.317, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -4.38, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "601126": {"beta": 3.39, "corr": 0.644, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -4.91, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "000688": {"beta": 1.57, "corr": 0.381, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -6.82, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603345": {"beta": 0.51, "corr": 0.299, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -1.92, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "605377": {"beta": 0.65, "corr": 0.272, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -8.0, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603067": {"beta": 3.59, "corr": 0.675, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 4.36, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "003030": {"beta": 1.13, "corr": 0.331, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": 1.11, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603969": {"beta": 1.61, "corr": 0.544, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.7, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "600539": {"beta": 0.83, "corr": 0.148, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -1.65, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603725": {"beta": 1.85, "corr": 0.289, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 0.76, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "002965": {"beta": 3.48, "corr": 0.604, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": -0.6, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "001206": {"beta": 1.0, "corr": 0.219, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": -1.09, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "603075": {"beta": 1.14, "corr": 0.41, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "1/5", "stock_5d_chg": 1.09, "mkt_5d_chg": 1.32, "date": "2026-08-27"}, "600105": {"beta": 3.1, "corr": 0.525, "label": "跟随", "color": "#e8a735", "align_5d": "2/5", "stock_5d_chg": 3.22, "mkt_5d_chg": 1.32, "date": "2026-08-27"}};
+const MARKET_CORR_CACHE = {"603262": {"beta": 0.86, "corr": 0.362, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": 2.34, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603969": {"beta": 1.58, "corr": 0.531, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 8.59, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603345": {"beta": 0.44, "corr": 0.267, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -1.36, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "003030": {"beta": 1.18, "corr": 0.308, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 10.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603120": {"beta": 1.83, "corr": 0.412, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": -2.84, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603067": {"beta": 3.82, "corr": 0.72, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 6.83, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600105": {"beta": 3.48, "corr": 0.621, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 4.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605377": {"beta": 0.7, "corr": 0.289, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": -8.4, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603075": {"beta": 1.16, "corr": 0.412, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": 1.58, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "001388": {"beta": 2.29, "corr": 0.392, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 2.1, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601126": {"beta": 3.67, "corr": 0.716, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": -4.53, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "001206": {"beta": 0.75, "corr": 0.176, "label": "独立", "color": "var(--blue)", "align_5d": "1/5", "stock_5d_chg": 1.48, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603950": {"beta": 4.56, "corr": 0.687, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -2.05, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002723": {"beta": 0.48, "corr": 0.147, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 3.66, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603725": {"beta": 2.26, "corr": 0.351, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "2/5", "stock_5d_chg": -6.57, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600539": {"beta": 1.1, "corr": 0.208, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 2.02, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000688": {"beta": 1.71, "corr": 0.422, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": -7.08, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002965": {"beta": 3.8, "corr": 0.69, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 2.74, "mkt_5d_chg": 1.81, "date": "2026-08-28"}};
 
 // ============================================
 // 本周催化日历数据
@@ -2212,6 +2255,12 @@ function initPrecomputedKDJ() {
       if (kdj30.d !== undefined) {
         s.kd30_cross = kdj30.k > kdj30.d ? '金叉' : '死叉';
       }
+    }
+
+    // 30分K趋势箭头（2026-08-27新增：K>D=↑；K≤D但K上拐=↗；否则=↓）
+    if (kdj30.k !== undefined && kdj30.d !== undefined) {
+      s.kdj30Dir = kdj30.k > kdj30.d ? '↑'
+                 : (kdj30.prev_k !== undefined && kdj30.k > kdj30.prev_k ? '↗' : '↓');
     }
     
     if (kdj5.k !== undefined || kdj30.k !== undefined) count++;
@@ -3141,8 +3190,18 @@ function renderStockRow(stock, index) {
   if (_kdEarly) {
     kd30EarlyHtml = '<div class="kd-sub" style="color:rgba(29,158,117,1);font-weight:600;">' + _kdEarly.label + '</div>';
   }
+  // 30分K趋势箭头（2026-08-27新增：↑上升绿/↗待升黄/↓下跌红，明示左侧票）
+  var _kdDir = stock.kdj30Dir || '';
+  var _kdDirHtml = '';
+  if (_kdDir === '↑') {
+    _kdDirHtml = '<span style="color:rgba(93,202,165,1);font-weight:600;margin-right:2px;" title="30分K上升(K>D)">↑</span>';
+  } else if (_kdDir === '↗') {
+    _kdDirHtml = '<span style="color:rgba(250,199,117,1);font-weight:600;margin-right:2px;" title="30分K待升(K≤D但K上拐)">↗</span>';
+  } else if (_kdDir === '↓') {
+    _kdDirHtml = '<span style="color:rgba(240,149,149,1);font-weight:600;margin-right:2px;" title="30分K下跌(左侧观察,勿急)">↓</span>';
+  }
   const kd30Html = stock.kd30_k !== undefined
-    ? `<span class="kd-cell ${kd30Cls}">${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
+    ? `<span class="kd-cell ${kd30Cls}">${_kdDirHtml}${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
       `<div class="kd-sub">${kd30Cross}${kd30EarlyHtml ? '' : ''}</div>${kd30EarlyHtml}`
     : '<span class="kd-cell">--</span>';
 
@@ -3368,13 +3427,14 @@ function renderMobileCard(stock) {
   else if (resonance.indexOf('部分') >= 0) resonShort = '部分共振';
   else if (resonance) resonShort = resonance;
 
-  // 30分KD
+  // 30分KD（2026-08-27：附趋势箭头）
   const kd30k = stock.kd30_k;
   const kd30Cross = stock.kd30_cross || '';
+  const kd30DirM = stock.kdj30Dir || '';
   let kd30Str = '--';
   let kd30Cls = '';
   if (kd30k !== undefined) {
-    kd30Str = 'K' + kd30k.toFixed(1);
+    kd30Str = kd30DirM + 'K' + kd30k.toFixed(1);
     if (kd30Cross === '金叉') kd30Cls = 'up';
     else if (kd30Cross === '死叉') kd30Cls = 'down';
   }
@@ -4812,7 +4872,7 @@ function renderAll() {
 }
 
 // PRE-COMPUTED FALLBACK (extended: 30/60day-KDJ, MACD, MA, PE/PB, openRate30d, 5日资金)
-var KDJ_FALLBACK = {"sh600418":{"kd5_k":36.7,"kd5_d":44.85,"kd30_k":41.02,"kd30_d":43.02,"kd30_cross":"下降","kd60_k":46.55,"kd60_d":39.54,"kd60_cross":"上升","macd":"DIF:-0.56 DEA:-1.19 金叉","ma":"多头排列","ma5":24.54,"ma10":24.21,"ma20":22.73,"maAbove":true,"rsi":62.99,"drop20d":5.73,"volRatio":0.62,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":19.57,"supportDist":17.7,"trend":"震荡偏弱","trendPct":-6.92,"volSignal":"缩量","kd5_cross":"下降"},"sh600686":{"kd5_k":60.96,"kd5_d":51.85,"kd30_k":65.03,"kd30_d":65.01,"kd30_cross":"上升","kd60_k":62.92,"kd60_d":50.26,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.10 金叉","ma":"多头排列","ma5":11.91,"ma10":11.88,"ma20":11.24,"maAbove":true,"rsi":69.01,"drop20d":14.56,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":10.21,"supportDist":15.8,"trend":"上升趋势","trendPct":0.17,"volSignal":"正常","kd5_cross":"上升"},"sh600702":{"kd5_k":30.07,"kd5_d":31.55,"kd30_k":44.16,"kd30_d":57.73,"kd30_cross":"下降","kd60_k":70.3,"kd60_d":68.77,"kd60_cross":"上升","macd":"DIF:+0.57 DEA:-0.00 金叉","ma":"多头排列","ma5":37.82,"ma10":37.07,"ma20":35.28,"maAbove":true,"rsi":70.94,"drop20d":16.83,"volRatio":1.2,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":32.15,"supportDist":15.5,"trend":"上升趋势","trendPct":1.25,"volSignal":"正常","kd5_cross":"下降"},"sh601058":{"kd5_k":51.85,"kd5_d":44.4,"kd30_k":64.22,"kd30_d":64.39,"kd30_cross":"下降","kd60_k":63.72,"kd60_d":60.25,"kd60_cross":"上升","macd":"DIF:+0.29 DEA:+0.33 死叉","ma":"交叉震荡","ma5":13.7,"ma10":13.87,"ma20":13.65,"maAbove":true,"rsi":57.32,"drop20d":7.19,"volRatio":0.88,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":12.66,"supportDist":8.7,"trend":"震荡偏强","trendPct":-1.07,"volSignal":"正常","kd5_cross":"上升"},"sh603156":{"kd5_k":79.68,"kd5_d":84.03,"kd30_k":71.55,"kd30_d":71.05,"kd30_cross":"上升","kd60_k":84.19,"kd60_d":83.75,"kd60_cross":"上升","macd":"DIF:+1.41 DEA:-0.18 金叉","ma":"多头排列","ma5":47.02,"ma10":42.79,"ma20":40.15,"maAbove":true,"rsi":92.27,"drop20d":14.67,"volRatio":1.01,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":32.83,"supportDist":35.5,"trend":"上升趋势","trendPct":19.44,"volSignal":"正常","kd5_cross":"下降"},"sh603345":{"kd5_k":29.23,"kd5_d":27.43,"kd30_k":69.54,"kd30_d":63.6,"kd30_cross":"上升","kd60_k":59.69,"kd60_d":50.42,"kd60_cross":"上升","macd":"DIF:-0.09 DEA:+0.10 死叉","ma":"交叉震荡","ma5":85.2,"ma10":86.92,"ma20":86.91,"maAbove":false,"rsi":47.6,"drop20d":1.35,"volRatio":0.96,"openRate30d":60.0,"openRateTotal":60.0,"openRateScore":2,"supportPrice":82.68,"supportDist":3.7,"trend":"横盘震荡","trendPct":-0.74,"volSignal":"正常","kd5_cross":"上升"},"sh603317":{"kd5_k":44.37,"kd5_d":36.52,"kd30_k":72.91,"kd30_d":71.23,"kd30_cross":"上升","kd60_k":65.43,"kd60_d":50.69,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.18 金叉","ma":"交叉震荡","ma5":14.57,"ma10":14.63,"ma20":14.16,"maAbove":true,"rsi":59.95,"drop20d":10.24,"volRatio":1.27,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":13.15,"supportDist":10.2,"trend":"横盘震荡","trendPct":-1.15,"volSignal":"正常","kd5_cross":"上升"},"sh600741":{"kd5_k":32.38,"kd5_d":36.07,"kd30_k":36.89,"kd30_d":52.29,"kd30_cross":"下降","kd60_k":53.46,"kd60_d":54.76,"kd60_cross":"下降","macd":"DIF:-0.13 DEA:-0.02 死叉","ma":"空头排列","ma5":16.05,"ma10":16.35,"ma20":16.66,"maAbove":false,"rsi":28.72,"drop20d":-1.05,"volRatio":0.82,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":15.8,"supportDist":1.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"正常","kd5_cross":"下降"},"sh601163":{"kd5_k":66.49,"kd5_d":48.78,"kd30_k":78.87,"kd30_d":77.14,"kd30_cross":"上升","kd60_k":79.42,"kd60_d":67.11,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.01 金叉","ma":"多头排列","ma5":13.3,"ma10":13.23,"ma20":12.96,"maAbove":true,"rsi":68.75,"drop20d":3.96,"volRatio":1.03,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":12.35,"supportDist":7.8,"trend":"上升趋势","trendPct":-0.67,"volSignal":"正常","kd5_cross":"上升"},"sh601966":{"kd5_k":48.12,"kd5_d":39.84,"kd30_k":79.98,"kd30_d":77.4,"kd30_cross":"上升","kd60_k":74.01,"kd60_d":56.82,"kd60_cross":"上升","macd":"DIF:+0.08 DEA:+0.06 金叉","ma":"交叉震荡","ma5":11.35,"ma10":11.41,"ma20":11.21,"maAbove":true,"rsi":56.78,"drop20d":5.39,"volRatio":0.78,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":10.53,"supportDist":7.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"缩量","kd5_cross":"上升"},"sh603057":{"kd5_k":47.39,"kd5_d":49.99,"kd30_k":75.32,"kd30_d":72.47,"kd30_cross":"上升","kd60_k":67.55,"kd60_d":53.78,"kd60_cross":"上升","macd":"DIF:+0.06 DEA:-0.27 金叉","ma":"多头排列","ma5":22.59,"ma10":22.34,"ma20":21.31,"maAbove":true,"rsi":70.34,"drop20d":8.22,"volRatio":1.46,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":19.1,"supportDist":17.1,"trend":"上升趋势","trendPct":1.19,"volSignal":"正常","kd5_cross":"下降"},"sh600737":{"kd5_k":40.2,"kd5_d":38.6,"kd30_k":47.86,"kd30_d":52.61,"kd30_cross":"下降","kd60_k":67.92,"kd60_d":65.84,"kd60_cross":"上升","macd":"DIF:+0.28 DEA:+0.07 金叉","ma":"多头排列","ma5":13.22,"ma10":12.78,"ma20":12.39,"maAbove":true,"rsi":72.46,"drop20d":18.1,"volRatio":1.18,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":11.2,"supportDist":19.8,"trend":"上升趋势","trendPct":11.95,"volSignal":"正常","kd5_cross":"上升"},"sh600335":{"kd5_k":14.15,"kd5_d":12.87,"kd30_k":82.53,"kd30_d":79.96,"kd30_cross":"上升","kd60_k":73.62,"kd60_d":57.47,"kd60_cross":"上升","macd":"DIF:+0.02 DEA:+0.01 金叉","ma":"交叉震荡","ma5":5.17,"ma10":5.18,"ma20":5.12,"maAbove":true,"rsi":54.24,"drop20d":2.38,"volRatio":1.0,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":4.83,"supportDist":6.4,"trend":"下降趋势","trendPct":-3.37,"volSignal":"正常","kd5_cross":"上升"},"sh600166":{"kd5_k":46.25,"kd5_d":40.53,"kd30_k":63.96,"kd30_d":58.39,"kd30_cross":"上升","kd60_k":60.79,"kd60_d":45.75,"kd60_cross":"上升","macd":"DIF:+0.00 DEA:-0.00 金叉","ma":"交叉震荡","ma5":3.07,"ma10":3.1,"ma20":3.06,"maAbove":true,"rsi":57.65,"drop20d":0.0,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":2.9,"supportDist":5.5,"trend":"横盘震荡","trendPct":-2.23,"volSignal":"正常","kd5_cross":"上升"},"sh601633":{"kd5_k":34.13,"kd5_d":31.08,"kd30_k":61.55,"kd30_d":60.92,"kd30_cross":"上升","kd60_k":57.51,"kd60_d":45.12,"kd60_cross":"上升","macd":"DIF:-0.06 DEA:-0.01 死叉","ma":"交叉震荡","ma5":15.81,"ma10":16.26,"ma20":16.09,"maAbove":false,"rsi":42.54,"drop20d":4.39,"volRatio":0.82,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":14.88,"supportDist":5.2,"trend":"下降趋势","trendPct":-5.99,"volSignal":"正常","kd5_cross":"上升"},"sh603039":{"kd5_k":81.71,"kd5_d":76.43,"kd30_k":33.97,"kd30_d":26.74,"kd30_cross":"上升","kd60_k":26.48,"kd60_d":34.95,"kd60_cross":"下降","macd":"DIF:+2.75 DEA:+0.74 金叉","ma":"多头排列","ma5":45.23,"ma10":39.81,"ma20":34.81,"maAbove":true,"rsi":80.01,"drop20d":47.0,"volRatio":0.83,"openRate30d":23.3,"openRateTotal":23.3,"openRateScore":1,"supportPrice":28.1,"supportDist":38.0,"trend":"上升趋势","trendPct":14.26,"volSignal":"正常","kd5_cross":"上升"},"sh600475":{"kd5_k":60.39,"kd5_d":58.99,"kd30_k":33.2,"kd30_d":25.42,"kd30_cross":"上升","kd60_k":16.61,"kd60_d":14.68,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.02 金叉","ma":"多头排列","ma5":15.08,"ma10":14.79,"ma20":13.9,"maAbove":true,"rsi":60.71,"drop20d":6.73,"volRatio":0.56,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":12.2,"supportDist":16.3,"trend":"震荡偏弱","trendPct":-4.95,"volSignal":"缩量","kd5_cross":"上升"},"sh601872":{"kd5_k":75.73,"kd5_d":78.14,"kd30_k":61.38,"kd30_d":53.6,"kd30_cross":"上升","kd60_k":57.93,"kd60_d":59.74,"kd60_cross":"下降","macd":"DIF:+0.43 DEA:+0.11 金叉","ma":"多头排列","ma5":17.78,"ma10":17.17,"ma20":16.12,"maAbove":true,"rsi":86.5,"drop20d":20.88,"volRatio":0.66,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":13.81,"supportDist":24.0,"trend":"上升趋势","trendPct":6.75,"volSignal":"缩量","kd5_cross":"下降"},"sh600188":{"kd5_k":67.84,"kd5_d":67.37,"kd30_k":72.6,"kd30_d":75.08,"kd30_cross":"下降","kd60_k":87.17,"kd60_d":89.77,"kd60_cross":"下降","macd":"DIF:+0.27 DEA:+0.08 金叉","ma":"交叉震荡","ma5":20.54,"ma10":20.19,"ma20":20.28,"maAbove":true,"rsi":54.63,"drop20d":13.26,"volRatio":0.85,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":18.21,"supportDist":16.4,"trend":"上升趋势","trendPct":14.93,"volSignal":"正常","kd5_cross":"上升"},"sh603619":{"kd5_k":74.78,"kd5_d":75.07,"kd30_k":68.43,"kd30_d":61.06,"kd30_cross":"上升","kd60_k":82.59,"kd60_d":79.31,"kd60_cross":"上升","macd":"DIF:+0.36 DEA:+0.05 金叉","ma":"多头排列","ma5":22.17,"ma10":21.86,"ma20":21.08,"maAbove":true,"rsi":63.73,"drop20d":11.23,"volRatio":0.82,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":17.64,"supportDist":23.2,"trend":"上升趋势","trendPct":8.5,"volSignal":"正常","kd5_cross":"下降"},"sh600436":{"kd5_k":79.56,"kd5_d":61.23,"kd30_k":75.09,"kd30_d":74.94,"kd30_cross":"上升","kd60_k":80.14,"kd60_d":71.73,"kd60_cross":"上升","macd":"DIF:+3.75 DEA:+4.16 死叉","ma":"交叉震荡","ma5":137.38,"ma10":137.46,"ma20":137.18,"maAbove":true,"rsi":41.62,"drop20d":10.39,"volRatio":1.24,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":120.4,"supportDist":13.9,"trend":"震荡偏强","trendPct":1.2,"volSignal":"正常","kd5_cross":"上升"},"sh600835":{"kd5_k":44.36,"kd5_d":54.87,"kd30_k":63.54,"kd30_d":61.08,"kd30_cross":"上升","kd60_k":46.91,"kd60_d":39.37,"kd60_cross":"上升","macd":"DIF:-0.41 DEA:-0.56 金叉","ma":"多头排列","ma5":19.16,"ma10":19.02,"ma20":18.95,"maAbove":false,"rsi":52.07,"drop20d":-9.76,"volRatio":0.88,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":17.43,"supportDist":8.0,"trend":"震荡偏弱","trendPct":-2.27,"volSignal":"正常","kd5_cross":"下降"},"sh601127":{"kd5_k":56.13,"kd5_d":49.85,"kd30_k":15.96,"kd30_d":24.18,"kd30_cross":"下降","kd60_k":24.19,"kd60_d":24.43,"kd60_cross":"下降","macd":"DIF:-1.19 DEA:-1.61 金叉","ma":"交叉震荡","ma5":57.49,"ma10":58.57,"ma20":56.94,"maAbove":false,"rsi":51.48,"drop20d":4.96,"volRatio":0.64,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":52.01,"supportDist":7.2,"trend":"下降趋势","trendPct":-7.6,"volSignal":"缩量","kd5_cross":"上升"},"sh600895":{"kd5_k":73.77,"kd5_d":74.54,"kd30_k":66.53,"kd30_d":60.5,"kd30_cross":"上升","kd60_k":62.46,"kd60_d":54.15,"kd60_cross":"上升","macd":"DIF:-0.10 DEA:-0.57 金叉","ma":"多头排列","ma5":32.5,"ma10":32.0,"ma20":30.82,"maAbove":true,"rsi":67.94,"drop20d":-5.86,"volRatio":0.74,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":26.78,"supportDist":19.1,"trend":"上升趋势","trendPct":8.74,"volSignal":"缩量","kd5_cross":"下降"},"sh601933":{"kd5_k":62.68,"kd5_d":55.93,"kd30_k":76.59,"kd30_d":73.01,"kd30_cross":"上升","kd60_k":75.21,"kd60_d":58.89,"kd60_cross":"上升","macd":"DIF:+0.03 DEA:+0.01 金叉","ma":"多头排列","ma5":3.26,"ma10":3.23,"ma20":3.17,"maAbove":true,"rsi":60.56,"drop20d":5.48,"volRatio":0.79,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":2.94,"supportDist":10.1,"trend":"上升趋势","trendPct":0.31,"volSignal":"缩量","kd5_cross":"上升"},"sh601606":{"kd5_k":50.0,"kd5_d":50.0,"kd30_k":99.19,"kd30_d":96.26,"kd30_cross":"上升","kd60_k":87.56,"kd60_d":70.35,"kd60_cross":"上升","macd":"DIF:+1.38 DEA:+0.94 金叉","ma":"交叉震荡","ma5":33.77,"ma10":33.81,"ma20":30.84,"maAbove":true,"rsi":73.12,"drop20d":39.8,"volRatio":0.98,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":25.0,"supportDist":30.9,"trend":"震荡偏强","trendPct":10.27,"volSignal":"正常","kd5_cross":"下降"},"sh603171":{"kd5_k":78.15,"kd5_d":69.66,"kd30_k":25.8,"kd30_d":30.82,"kd30_cross":"下降","kd60_k":35.68,"kd60_d":34.36,"kd60_cross":"上升","macd":"DIF:+2.01 DEA:+0.61 金叉","ma":"多头排列","ma5":48.69,"ma10":45.12,"ma20":40.99,"maAbove":true,"rsi":76.73,"drop20d":27.35,"volRatio":0.47,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":34.42,"supportDist":28.2,"trend":"震荡偏弱","trendPct":4.08,"volSignal":"极度缩量","kd5_cross":"上升"},"sh600986":{"kd5_k":78.04,"kd5_d":79.81,"kd30_k":50.33,"kd30_d":51.98,"kd30_cross":"下降","kd60_k":61.63,"kd60_d":54.26,"kd60_cross":"上升","macd":"DIF:+0.23 DEA:+0.05 金叉","ma":"多头排列","ma5":8.07,"ma10":7.72,"ma20":7.19,"maAbove":true,"rsi":76.31,"drop20d":24.88,"volRatio":0.43,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":6.24,"supportDist":22.3,"trend":"横盘震荡","trendPct":1.77,"volSignal":"极度缩量","kd5_cross":"下降"},"sh600426":{"kd5_k":46.2,"kd5_d":53.14,"kd30_k":51.82,"kd30_d":50.56,"kd30_cross":"上升","kd60_k":53.43,"kd60_d":52.17,"kd60_cross":"上升","macd":"DIF:-0.68 DEA:-1.00 金叉","ma":"交叉震荡","ma5":21.2,"ma10":21.35,"ma20":20.77,"maAbove":true,"rsi":61.44,"drop20d":15.04,"volRatio":1.35,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":18.12,"supportDist":16.3,"trend":"震荡偏强","trendPct":0.79,"volSignal":"正常","kd5_cross":"下降"},"sh601799":{"kd5_k":19.19,"kd5_d":17.02,"kd30_k":51.32,"kd30_d":52.62,"kd30_cross":"下降","kd60_k":51.72,"kd60_d":43.24,"kd60_cross":"上升","macd":"DIF:-1.67 DEA:-2.90 金叉","ma":"交叉震荡","ma5":95.01,"ma10":95.5,"ma20":92.67,"maAbove":true,"rsi":63.31,"drop20d":6.22,"volRatio":1.27,"openRate30d":53.3,"openRateTotal":53.3,"openRateScore":2,"supportPrice":85.6,"supportDist":10.9,"trend":"震荡偏强","trendPct":-1.28,"volSignal":"正常","kd5_cross":"上升"},"sh603067":{"rsi":58.04,"macd":"DIF:-1.31 DEA:-1.92 金叉","ma":"交叉震荡","ma5":33.62,"ma10":32.02,"ma20":32.6,"maAbove":true,"drop20d":-10.01,"volRatio":1.33,"supportPrice":28.31,"supportDist":19.8,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":76.59,"kd5_d":69.84,"kd5_cross":"上升","kd30_k":85.73,"kd30_d":84.3,"kd30_cross":"上升","kd60_k":91.03,"kd60_d":85.46,"kd60_cross":"上升","trend":"上升趋势","trendPct":17.26,"volSignal":"正常","beta":3.72,"betaCategory":"跟随","syncRate":60.0},"sh600105":{"rsi":48.73,"macd":"DIF:-3.46 DEA:-4.58 金叉","ma":"交叉震荡","ma5":37.18,"ma10":34.45,"ma20":36.94,"maAbove":true,"drop20d":-22.49,"volRatio":0.72,"supportPrice":29.11,"supportDist":22.7,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":82.9,"kd5_d":87.55,"kd5_cross":"下降","kd30_k":81.04,"kd30_d":80.29,"kd30_cross":"上升","kd60_k":84.97,"kd60_d":79.3,"kd60_cross":"上升","trend":"上升趋势","trendPct":18.91,"volSignal":"缩量","beta":2.86,"betaCategory":"跟随","syncRate":80.0},"sh601126":{"rsi":51.98,"macd":"DIF:-3.59 DEA:-5.02 金叉","ma":"交叉震荡","ma5":44.65,"ma10":41.71,"ma20":43.5,"maAbove":true,"drop20d":-12.76,"volRatio":1.27,"supportPrice":36.5,"supportDist":20.5,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":83.17,"kd5_d":81.0,"kd5_cross":"上升","kd30_k":53.62,"kd30_d":46.88,"kd30_cross":"上升","kd60_k":39.6,"kd60_d":35.98,"kd60_cross":"上升","trend":"上升趋势","trendPct":13.96,"volSignal":"正常","beta":2.49,"betaCategory":"跟随","syncRate":80.0},"sz000688":{"rsi":72.91,"macd":"DIF:-0.74 DEA:-1.61 金叉","ma":"多头排列","ma5":30.71,"ma10":29.41,"ma20":28.6,"maAbove":true,"drop20d":7.09,"volRatio":1.11,"supportPrice":23.88,"supportDist":25.7,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"kd5_k":67.85,"kd5_d":67.1,"kd5_cross":"上升","kd30_k":37.73,"kd30_d":34.35,"kd30_cross":"上升","kd60_k":27.36,"kd60_d":28.51,"kd60_cross":"下降","trend":"上升趋势","trendPct":15.98,"volSignal":"正常","beta":1.56,"betaCategory":"弱关联","syncRate":100.0}};
+var KDJ_FALLBACK = {"sh600418":{"kd5_k":36.7,"kd5_d":44.85,"kd30_k":41.02,"kd30_d":43.02,"kd30_cross":"下降","kd60_k":46.55,"kd60_d":39.54,"kd60_cross":"上升","macd":"DIF:-0.56 DEA:-1.19 金叉","ma":"多头排列","ma5":24.54,"ma10":24.21,"ma20":22.73,"maAbove":true,"rsi":62.99,"drop20d":5.73,"volRatio":0.62,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":19.57,"supportDist":17.7,"trend":"震荡偏弱","trendPct":-6.92,"volSignal":"缩量","kd5_cross":"下降"},"sh600686":{"kd5_k":60.96,"kd5_d":51.85,"kd30_k":65.03,"kd30_d":65.01,"kd30_cross":"上升","kd60_k":62.92,"kd60_d":50.26,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.10 金叉","ma":"多头排列","ma5":11.91,"ma10":11.88,"ma20":11.24,"maAbove":true,"rsi":69.01,"drop20d":14.56,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":10.21,"supportDist":15.8,"trend":"上升趋势","trendPct":0.17,"volSignal":"正常","kd5_cross":"上升"},"sh600702":{"kd5_k":30.07,"kd5_d":31.55,"kd30_k":44.16,"kd30_d":57.73,"kd30_cross":"下降","kd60_k":70.3,"kd60_d":68.77,"kd60_cross":"上升","macd":"DIF:+0.57 DEA:-0.00 金叉","ma":"多头排列","ma5":37.82,"ma10":37.07,"ma20":35.28,"maAbove":true,"rsi":70.94,"drop20d":16.83,"volRatio":1.2,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":32.15,"supportDist":15.5,"trend":"上升趋势","trendPct":1.25,"volSignal":"正常","kd5_cross":"下降"},"sh601058":{"kd5_k":51.85,"kd5_d":44.4,"kd30_k":64.22,"kd30_d":64.39,"kd30_cross":"下降","kd60_k":63.72,"kd60_d":60.25,"kd60_cross":"上升","macd":"DIF:+0.29 DEA:+0.33 死叉","ma":"交叉震荡","ma5":13.7,"ma10":13.87,"ma20":13.65,"maAbove":true,"rsi":57.32,"drop20d":7.19,"volRatio":0.88,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":12.66,"supportDist":8.7,"trend":"震荡偏强","trendPct":-1.07,"volSignal":"正常","kd5_cross":"上升"},"sh603156":{"kd5_k":79.68,"kd5_d":84.03,"kd30_k":71.55,"kd30_d":71.05,"kd30_cross":"上升","kd60_k":84.19,"kd60_d":83.75,"kd60_cross":"上升","macd":"DIF:+1.41 DEA:-0.18 金叉","ma":"多头排列","ma5":47.02,"ma10":42.79,"ma20":40.15,"maAbove":true,"rsi":92.27,"drop20d":14.67,"volRatio":1.01,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":32.83,"supportDist":35.5,"trend":"上升趋势","trendPct":19.44,"volSignal":"正常","kd5_cross":"下降"},"sh603345":{"kd5_k":29.81,"kd5_d":27.49,"kd30_k":52.52,"kd30_d":62.23,"kd30_cross":"下降","kd60_k":68.47,"kd60_d":65.74,"kd60_cross":"上升","macd":"DIF:-0.09 DEA:+0.10 死叉","ma":"交叉震荡","ma5":85.2,"ma10":86.92,"ma20":86.91,"maAbove":false,"rsi":47.6,"drop20d":1.35,"volRatio":0.96,"openRate30d":60.0,"openRateTotal":60.0,"openRateScore":2,"supportPrice":82.68,"supportDist":3.7,"trend":"横盘震荡","trendPct":-0.74,"volSignal":"正常","kd5_cross":"上升"},"sh603317":{"kd5_k":44.37,"kd5_d":36.52,"kd30_k":72.91,"kd30_d":71.23,"kd30_cross":"上升","kd60_k":65.43,"kd60_d":50.69,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.18 金叉","ma":"交叉震荡","ma5":14.57,"ma10":14.63,"ma20":14.16,"maAbove":true,"rsi":59.95,"drop20d":10.24,"volRatio":1.27,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":13.15,"supportDist":10.2,"trend":"横盘震荡","trendPct":-1.15,"volSignal":"正常","kd5_cross":"上升"},"sh600741":{"kd5_k":32.38,"kd5_d":36.07,"kd30_k":36.89,"kd30_d":52.29,"kd30_cross":"下降","kd60_k":53.46,"kd60_d":54.76,"kd60_cross":"下降","macd":"DIF:-0.13 DEA:-0.02 死叉","ma":"空头排列","ma5":16.05,"ma10":16.35,"ma20":16.66,"maAbove":false,"rsi":28.72,"drop20d":-1.05,"volRatio":0.82,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":15.8,"supportDist":1.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"正常","kd5_cross":"下降"},"sh601163":{"kd5_k":66.49,"kd5_d":48.78,"kd30_k":78.87,"kd30_d":77.14,"kd30_cross":"上升","kd60_k":79.42,"kd60_d":67.11,"kd60_cross":"上升","macd":"DIF:+0.07 DEA:-0.01 金叉","ma":"多头排列","ma5":13.3,"ma10":13.23,"ma20":12.96,"maAbove":true,"rsi":68.75,"drop20d":3.96,"volRatio":1.03,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":12.35,"supportDist":7.8,"trend":"上升趋势","trendPct":-0.67,"volSignal":"正常","kd5_cross":"上升"},"sh601966":{"kd5_k":48.12,"kd5_d":39.84,"kd30_k":79.98,"kd30_d":77.4,"kd30_cross":"上升","kd60_k":74.01,"kd60_d":56.82,"kd60_cross":"上升","macd":"DIF:+0.08 DEA:+0.06 金叉","ma":"交叉震荡","ma5":11.35,"ma10":11.41,"ma20":11.21,"maAbove":true,"rsi":56.78,"drop20d":5.39,"volRatio":0.78,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":10.53,"supportDist":7.1,"trend":"下降趋势","trendPct":-4.14,"volSignal":"缩量","kd5_cross":"上升"},"sh603057":{"kd5_k":47.39,"kd5_d":49.99,"kd30_k":75.32,"kd30_d":72.47,"kd30_cross":"上升","kd60_k":67.55,"kd60_d":53.78,"kd60_cross":"上升","macd":"DIF:+0.06 DEA:-0.27 金叉","ma":"多头排列","ma5":22.59,"ma10":22.34,"ma20":21.31,"maAbove":true,"rsi":70.34,"drop20d":8.22,"volRatio":1.46,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":19.1,"supportDist":17.1,"trend":"上升趋势","trendPct":1.19,"volSignal":"正常","kd5_cross":"下降"},"sh600737":{"kd5_k":40.2,"kd5_d":38.6,"kd30_k":47.86,"kd30_d":52.61,"kd30_cross":"下降","kd60_k":67.92,"kd60_d":65.84,"kd60_cross":"上升","macd":"DIF:+0.28 DEA:+0.07 金叉","ma":"多头排列","ma5":13.22,"ma10":12.78,"ma20":12.39,"maAbove":true,"rsi":72.46,"drop20d":18.1,"volRatio":1.18,"openRate30d":46.7,"openRateTotal":46.7,"openRateScore":2,"supportPrice":11.2,"supportDist":19.8,"trend":"上升趋势","trendPct":11.95,"volSignal":"正常","kd5_cross":"上升"},"sh600335":{"kd5_k":14.15,"kd5_d":12.87,"kd30_k":82.53,"kd30_d":79.96,"kd30_cross":"上升","kd60_k":73.62,"kd60_d":57.47,"kd60_cross":"上升","macd":"DIF:+0.02 DEA:+0.01 金叉","ma":"交叉震荡","ma5":5.17,"ma10":5.18,"ma20":5.12,"maAbove":true,"rsi":54.24,"drop20d":2.38,"volRatio":1.0,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":4.83,"supportDist":6.4,"trend":"下降趋势","trendPct":-3.37,"volSignal":"正常","kd5_cross":"上升"},"sh600166":{"kd5_k":46.25,"kd5_d":40.53,"kd30_k":63.96,"kd30_d":58.39,"kd30_cross":"上升","kd60_k":60.79,"kd60_d":45.75,"kd60_cross":"上升","macd":"DIF:+0.00 DEA:-0.00 金叉","ma":"交叉震荡","ma5":3.07,"ma10":3.1,"ma20":3.06,"maAbove":true,"rsi":57.65,"drop20d":0.0,"volRatio":0.9,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":2.9,"supportDist":5.5,"trend":"横盘震荡","trendPct":-2.23,"volSignal":"正常","kd5_cross":"上升"},"sh601633":{"kd5_k":34.13,"kd5_d":31.08,"kd30_k":61.55,"kd30_d":60.92,"kd30_cross":"上升","kd60_k":57.51,"kd60_d":45.12,"kd60_cross":"上升","macd":"DIF:-0.06 DEA:-0.01 死叉","ma":"交叉震荡","ma5":15.81,"ma10":16.26,"ma20":16.09,"maAbove":false,"rsi":42.54,"drop20d":4.39,"volRatio":0.82,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":14.88,"supportDist":5.2,"trend":"下降趋势","trendPct":-5.99,"volSignal":"正常","kd5_cross":"上升"},"sh603039":{"kd5_k":81.71,"kd5_d":76.43,"kd30_k":33.97,"kd30_d":26.74,"kd30_cross":"上升","kd60_k":26.48,"kd60_d":34.95,"kd60_cross":"下降","macd":"DIF:+2.75 DEA:+0.74 金叉","ma":"多头排列","ma5":45.23,"ma10":39.81,"ma20":34.81,"maAbove":true,"rsi":80.01,"drop20d":47.0,"volRatio":0.83,"openRate30d":23.3,"openRateTotal":23.3,"openRateScore":1,"supportPrice":28.1,"supportDist":38.0,"trend":"上升趋势","trendPct":14.26,"volSignal":"正常","kd5_cross":"上升"},"sh600475":{"kd5_k":60.39,"kd5_d":58.99,"kd30_k":33.2,"kd30_d":25.42,"kd30_cross":"上升","kd60_k":16.61,"kd60_d":14.68,"kd60_cross":"上升","macd":"DIF:+0.21 DEA:+0.02 金叉","ma":"多头排列","ma5":15.08,"ma10":14.79,"ma20":13.9,"maAbove":true,"rsi":60.71,"drop20d":6.73,"volRatio":0.56,"openRate30d":33.3,"openRateTotal":33.3,"openRateScore":1,"supportPrice":12.2,"supportDist":16.3,"trend":"震荡偏弱","trendPct":-4.95,"volSignal":"缩量","kd5_cross":"上升"},"sh601872":{"kd5_k":75.73,"kd5_d":78.14,"kd30_k":61.38,"kd30_d":53.6,"kd30_cross":"上升","kd60_k":57.93,"kd60_d":59.74,"kd60_cross":"下降","macd":"DIF:+0.43 DEA:+0.11 金叉","ma":"多头排列","ma5":17.78,"ma10":17.17,"ma20":16.12,"maAbove":true,"rsi":86.5,"drop20d":20.88,"volRatio":0.66,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":13.81,"supportDist":24.0,"trend":"上升趋势","trendPct":6.75,"volSignal":"缩量","kd5_cross":"下降"},"sh600188":{"kd5_k":67.84,"kd5_d":67.37,"kd30_k":72.6,"kd30_d":75.08,"kd30_cross":"下降","kd60_k":87.17,"kd60_d":89.77,"kd60_cross":"下降","macd":"DIF:+0.27 DEA:+0.08 金叉","ma":"交叉震荡","ma5":20.54,"ma10":20.19,"ma20":20.28,"maAbove":true,"rsi":54.63,"drop20d":13.26,"volRatio":0.85,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":18.21,"supportDist":16.4,"trend":"上升趋势","trendPct":14.93,"volSignal":"正常","kd5_cross":"上升"},"sh603619":{"kd5_k":74.78,"kd5_d":75.07,"kd30_k":68.43,"kd30_d":61.06,"kd30_cross":"上升","kd60_k":82.59,"kd60_d":79.31,"kd60_cross":"上升","macd":"DIF:+0.36 DEA:+0.05 金叉","ma":"多头排列","ma5":22.17,"ma10":21.86,"ma20":21.08,"maAbove":true,"rsi":63.73,"drop20d":11.23,"volRatio":0.82,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"supportPrice":17.64,"supportDist":23.2,"trend":"上升趋势","trendPct":8.5,"volSignal":"正常","kd5_cross":"下降"},"sh600436":{"kd5_k":79.56,"kd5_d":61.23,"kd30_k":75.09,"kd30_d":74.94,"kd30_cross":"上升","kd60_k":80.14,"kd60_d":71.73,"kd60_cross":"上升","macd":"DIF:+3.75 DEA:+4.16 死叉","ma":"交叉震荡","ma5":137.38,"ma10":137.46,"ma20":137.18,"maAbove":true,"rsi":41.62,"drop20d":10.39,"volRatio":1.24,"openRate30d":30.0,"openRateTotal":30.0,"openRateScore":1,"supportPrice":120.4,"supportDist":13.9,"trend":"震荡偏强","trendPct":1.2,"volSignal":"正常","kd5_cross":"上升"},"sh600835":{"kd5_k":44.36,"kd5_d":54.87,"kd30_k":63.54,"kd30_d":61.08,"kd30_cross":"上升","kd60_k":46.91,"kd60_d":39.37,"kd60_cross":"上升","macd":"DIF:-0.41 DEA:-0.56 金叉","ma":"多头排列","ma5":19.16,"ma10":19.02,"ma20":18.95,"maAbove":false,"rsi":52.07,"drop20d":-9.76,"volRatio":0.88,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":17.43,"supportDist":8.0,"trend":"震荡偏弱","trendPct":-2.27,"volSignal":"正常","kd5_cross":"下降"},"sh601127":{"kd5_k":56.13,"kd5_d":49.85,"kd30_k":15.96,"kd30_d":24.18,"kd30_cross":"下降","kd60_k":24.19,"kd60_d":24.43,"kd60_cross":"下降","macd":"DIF:-1.19 DEA:-1.61 金叉","ma":"交叉震荡","ma5":57.49,"ma10":58.57,"ma20":56.94,"maAbove":false,"rsi":51.48,"drop20d":4.96,"volRatio":0.64,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":52.01,"supportDist":7.2,"trend":"下降趋势","trendPct":-7.6,"volSignal":"缩量","kd5_cross":"上升"},"sh600895":{"kd5_k":73.77,"kd5_d":74.54,"kd30_k":66.53,"kd30_d":60.5,"kd30_cross":"上升","kd60_k":62.46,"kd60_d":54.15,"kd60_cross":"上升","macd":"DIF:-0.10 DEA:-0.57 金叉","ma":"多头排列","ma5":32.5,"ma10":32.0,"ma20":30.82,"maAbove":true,"rsi":67.94,"drop20d":-5.86,"volRatio":0.74,"openRate30d":36.7,"openRateTotal":36.7,"openRateScore":1,"supportPrice":26.78,"supportDist":19.1,"trend":"上升趋势","trendPct":8.74,"volSignal":"缩量","kd5_cross":"下降"},"sh601933":{"kd5_k":62.68,"kd5_d":55.93,"kd30_k":76.59,"kd30_d":73.01,"kd30_cross":"上升","kd60_k":75.21,"kd60_d":58.89,"kd60_cross":"上升","macd":"DIF:+0.03 DEA:+0.01 金叉","ma":"多头排列","ma5":3.26,"ma10":3.23,"ma20":3.17,"maAbove":true,"rsi":60.56,"drop20d":5.48,"volRatio":0.79,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":2.94,"supportDist":10.1,"trend":"上升趋势","trendPct":0.31,"volSignal":"缩量","kd5_cross":"上升"},"sh601606":{"kd5_k":50.0,"kd5_d":50.0,"kd30_k":99.19,"kd30_d":96.26,"kd30_cross":"上升","kd60_k":87.56,"kd60_d":70.35,"kd60_cross":"上升","macd":"DIF:+1.38 DEA:+0.94 金叉","ma":"交叉震荡","ma5":33.77,"ma10":33.81,"ma20":30.84,"maAbove":true,"rsi":73.12,"drop20d":39.8,"volRatio":0.98,"openRate30d":26.7,"openRateTotal":26.7,"openRateScore":1,"supportPrice":25.0,"supportDist":30.9,"trend":"震荡偏强","trendPct":10.27,"volSignal":"正常","kd5_cross":"下降"},"sh603171":{"kd5_k":78.15,"kd5_d":69.66,"kd30_k":25.8,"kd30_d":30.82,"kd30_cross":"下降","kd60_k":35.68,"kd60_d":34.36,"kd60_cross":"上升","macd":"DIF:+2.01 DEA:+0.61 金叉","ma":"多头排列","ma5":48.69,"ma10":45.12,"ma20":40.99,"maAbove":true,"rsi":76.73,"drop20d":27.35,"volRatio":0.47,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":34.42,"supportDist":28.2,"trend":"震荡偏弱","trendPct":4.08,"volSignal":"极度缩量","kd5_cross":"上升"},"sh600986":{"kd5_k":78.04,"kd5_d":79.81,"kd30_k":50.33,"kd30_d":51.98,"kd30_cross":"下降","kd60_k":61.63,"kd60_d":54.26,"kd60_cross":"上升","macd":"DIF:+0.23 DEA:+0.05 金叉","ma":"多头排列","ma5":8.07,"ma10":7.72,"ma20":7.19,"maAbove":true,"rsi":76.31,"drop20d":24.88,"volRatio":0.43,"openRate30d":50.0,"openRateTotal":50.0,"openRateScore":2,"supportPrice":6.24,"supportDist":22.3,"trend":"横盘震荡","trendPct":1.77,"volSignal":"极度缩量","kd5_cross":"下降"},"sh600426":{"kd5_k":46.2,"kd5_d":53.14,"kd30_k":51.82,"kd30_d":50.56,"kd30_cross":"上升","kd60_k":53.43,"kd60_d":52.17,"kd60_cross":"上升","macd":"DIF:-0.68 DEA:-1.00 金叉","ma":"交叉震荡","ma5":21.2,"ma10":21.35,"ma20":20.77,"maAbove":true,"rsi":61.44,"drop20d":15.04,"volRatio":1.35,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"supportPrice":18.12,"supportDist":16.3,"trend":"震荡偏强","trendPct":0.79,"volSignal":"正常","kd5_cross":"下降"},"sh601799":{"kd5_k":19.19,"kd5_d":17.02,"kd30_k":51.32,"kd30_d":52.62,"kd30_cross":"下降","kd60_k":51.72,"kd60_d":43.24,"kd60_cross":"上升","macd":"DIF:-1.67 DEA:-2.90 金叉","ma":"交叉震荡","ma5":95.01,"ma10":95.5,"ma20":92.67,"maAbove":true,"rsi":63.31,"drop20d":6.22,"volRatio":1.27,"openRate30d":53.3,"openRateTotal":53.3,"openRateScore":2,"supportPrice":85.6,"supportDist":10.9,"trend":"震荡偏强","trendPct":-1.28,"volSignal":"正常","kd5_cross":"上升"},"sh603067":{"rsi":58.04,"macd":"DIF:-1.31 DEA:-1.92 金叉","ma":"交叉震荡","ma5":33.62,"ma10":32.02,"ma20":32.6,"maAbove":true,"drop20d":-10.01,"volRatio":1.33,"supportPrice":28.31,"supportDist":19.8,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":42.71,"kd5_d":55.37,"kd5_cross":"下降","kd30_k":20.04,"kd30_d":30.75,"kd30_cross":"下降","kd60_k":37.77,"kd60_d":58.3,"kd60_cross":"下降","trend":"上升趋势","trendPct":17.26,"volSignal":"正常","beta":3.72,"betaCategory":"跟随","syncRate":60.0},"sh600105":{"rsi":48.73,"macd":"DIF:-3.46 DEA:-4.58 金叉","ma":"交叉震荡","ma5":37.18,"ma10":34.45,"ma20":36.94,"maAbove":true,"drop20d":-22.49,"volRatio":0.72,"supportPrice":29.11,"supportDist":22.7,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":8.18,"kd5_d":15.16,"kd5_cross":"下降","kd30_k":11.31,"kd30_d":26.31,"kd30_cross":"下降","kd60_k":53.79,"kd60_d":67.63,"kd60_cross":"下降","trend":"上升趋势","trendPct":18.91,"volSignal":"缩量","beta":2.86,"betaCategory":"跟随","syncRate":80.0},"sh601126":{"rsi":51.98,"macd":"DIF:-3.59 DEA:-5.02 金叉","ma":"交叉震荡","ma5":44.65,"ma10":41.71,"ma20":43.5,"maAbove":true,"drop20d":-12.76,"volRatio":1.27,"supportPrice":36.5,"supportDist":20.5,"openRate30d":43.3,"openRateTotal":43.3,"openRateScore":2,"kd5_k":37.86,"kd5_d":39.55,"kd5_cross":"下降","kd30_k":14.37,"kd30_d":23.7,"kd30_cross":"下降","kd60_k":26.15,"kd60_d":32.11,"kd60_cross":"下降","trend":"上升趋势","trendPct":13.96,"volSignal":"正常","beta":2.49,"betaCategory":"跟随","syncRate":80.0},"sz000688":{"rsi":72.91,"macd":"DIF:-0.74 DEA:-1.61 金叉","ma":"多头排列","ma5":30.71,"ma10":29.41,"ma20":28.6,"maAbove":true,"drop20d":7.09,"volRatio":1.11,"supportPrice":23.88,"supportDist":25.7,"openRate30d":40.0,"openRateTotal":40.0,"openRateScore":2,"kd5_k":53.64,"kd5_d":57.18,"kd5_cross":"下降","kd30_k":68.16,"kd30_d":63.36,"kd30_cross":"上升","kd60_k":51.24,"kd60_d":40.5,"kd60_cross":"上升","trend":"上升趋势","trendPct":15.98,"volSignal":"正常","beta":1.56,"betaCategory":"弱关联","syncRate":100.0}};
 
 // ============================================
 // 初始化
