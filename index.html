@@ -1196,7 +1196,7 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 35,
+    "preBreakoutScore": 32,
     "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
@@ -1208,11 +1208,6 @@ const STOCKS = [
         "signal": "缩量止跌",
         "score": 17,
         "detail": "缩量(量比0.6), 今日止跌+0.2%, 量逐日递减"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
       }
     ],
     "kd30_k": 42.81,
@@ -1235,7 +1230,7 @@ const STOCKS = [
     "supportPrice": 30.35,
     "supportDist": 16.0,
     "preLaunchPhase": "approaching",
-    "preLaunchScore": 35,
+    "preLaunchScore": 32,
     "phase": "approaching"
   },
   {
@@ -2155,18 +2150,13 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 11,
+    "preBreakoutScore": 8,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
         "signal": "缩量止跌",
         "score": 8,
         "detail": "3日跌-3.5%但今日企稳-0.5%"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
       }
     ],
     "kd30_k": 17.6,
@@ -2189,7 +2179,7 @@ const STOCKS = [
     "supportPrice": 81.0,
     "supportDist": 0.6,
     "preLaunchPhase": "building",
-    "preLaunchScore": 11,
+    "preLaunchScore": 8,
     "phase": "building"
   },
   {
@@ -2213,18 +2203,13 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 11,
+    "preBreakoutScore": 8,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
         "signal": "缩量止跌",
         "score": 8,
         "detail": "3日跌-5.6%但今日企稳+0.4%"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
       }
     ],
     "kd30_k": 60.89,
@@ -2247,7 +2232,7 @@ const STOCKS = [
     "supportPrice": 15.68,
     "supportDist": 1.5,
     "preLaunchPhase": "building",
-    "preLaunchScore": 11,
+    "preLaunchScore": 8,
     "phase": "building"
   },
   {
@@ -2271,14 +2256,9 @@ const STOCKS = [
     "flow10d": 0,
     "flow_5d": 0,
     "flow_10d": 0,
-    "preBreakoutScore": 12,
+    "preBreakoutScore": 7,
     "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
-      {
-        "signal": "资金反转",
-        "score": 5,
-        "detail": "当日主力+0.5亿"
-      },
       {
         "signal": "量价背离",
         "score": 7,
@@ -2305,7 +2285,7 @@ const STOCKS = [
     "supportPrice": 10.5,
     "supportDist": 14.8,
     "preLaunchPhase": "building",
-    "preLaunchScore": 24,
+    "preLaunchScore": 19,
     "phase": "building"
   },
   {
@@ -2794,9 +2774,9 @@ const STOCKS = [
     "trendPct": -5.3,
     "supportPrice": 27.26,
     "supportDist": 15.6,
-    "preLaunchPhase": "approaching",
-    "preLaunchScore": 30,
-    "phase": "approaching",
+    "preLaunchPhase": "building",
+    "preLaunchScore": 27,
+    "phase": "building",
     "sector": "有色金属",
     "industry": "小金属",
     "pe": 20.17,
@@ -2809,8 +2789,8 @@ const STOCKS = [
     "healthScore": 0,
     "flowDate": "2026-08-27",
     "sectorResonanceDetail": "有色金属 个股行情",
-    "preBreakoutScore": 30,
-    "preBreakoutPhase": "approaching_breakout",
+    "preBreakoutScore": 27,
+    "preBreakoutPhase": "building_base",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
@@ -2821,11 +2801,6 @@ const STOCKS = [
         "signal": "缩量止跌",
         "score": 12,
         "detail": "缩量(量比0.8), 量逐日递减"
-      },
-      {
-        "signal": "资金反转",
-        "score": 3,
-        "detail": "当日资金流入"
       }
     ],
     "kd30_k": 68.16,
@@ -2844,23 +2819,23 @@ const LAUNCH_STOCKS = []; // 已移除
 
 // KDJ 预计算数据，生成时间: 2026-08-12 04:13:27
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-// KDJ 预计算数据，生成时间: 2026-08-28 17:38:36
+// KDJ 预计算数据，生成时间: 2026-08-28 19:04:24
 // 数据源: 新浪财经 5分钟/30分钟K线 → KDJ(9,3,3)
-const KDJ_PRECOMPUTED = {"sz003001": {"code": "sz003001", "kdj5": {"k": 36.46, "d": 41.55, "j": 26.27, "prev_k": 29.69, "prev_d": 44.1}, "kdj30": {"k": 28.39, "d": 33.39, "j": 18.4, "prev_k": 30.39, "prev_d": 35.88}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002249": {"code": "sz002249", "kdj5": {"k": 45.78, "d": 44.83, "j": 47.69, "prev_k": 35.33, "prev_d": 44.35}, "kdj30": {"k": 41.43, "d": 46.82, "j": 30.65, "prev_k": 43.4, "prev_d": 49.51}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000951": {"code": "sz000951", "kdj5": {"k": 19.91, "d": 35.49, "j": -11.23, "prev_k": 26.17, "prev_d": 43.27}, "kdj30": {"k": 34.16, "d": 39.11, "j": 24.27, "prev_k": 36.65, "prev_d": 41.58}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600363": {"code": "sh600363", "kdj5": {"k": 10.04, "d": 15.85, "j": -1.57, "prev_k": 11.73, "prev_d": 18.76}, "kdj30": {"k": 44.98, "d": 57.36, "j": 20.23, "prev_k": 55.37, "prev_d": 63.55}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601128": {"code": "sh601128", "kdj5": {"k": 34.72, "d": 33.56, "j": 37.05, "prev_k": 27.08, "prev_d": 32.98}, "kdj30": {"k": 15.6, "d": 21.05, "j": 4.69, "prev_k": 17.84, "prev_d": 23.78}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000948": {"code": "sz000948", "kdj5": {"k": 42.78, "d": 47.82, "j": 32.7, "prev_k": 45.42, "prev_d": 50.34}, "kdj30": {"k": 16.9, "d": 29.18, "j": -7.65, "prev_k": 21.78, "prev_d": 35.31}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 15.33, "d": 18.96, "j": 8.05, "prev_k": 15.64, "prev_d": 20.78}, "kdj30": {"k": 12.93, "d": 23.41, "j": -8.02, "prev_k": 17.82, "prev_d": 28.65}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002112": {"code": "sz002112", "kdj5": {"k": 20.99, "d": 38.66, "j": -14.35, "prev_k": 27.32, "prev_d": 47.5}, "kdj30": {"k": 30.55, "d": 33.51, "j": 24.63, "prev_k": 36.56, "prev_d": 34.99}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002074": {"code": "sz002074", "kdj5": {"k": 18.39, "d": 30.45, "j": -5.73, "prev_k": 22.58, "prev_d": 36.48}, "kdj30": {"k": 17.72, "d": 26.53, "j": 0.1, "prev_k": 23.58, "prev_d": 30.94}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000528": {"code": "sz000528", "kdj5": {"k": 23.95, "d": 34.47, "j": 2.9, "prev_k": 35.92, "prev_d": 39.73}, "kdj30": {"k": 33.74, "d": 31.73, "j": 37.75, "prev_k": 35.22, "prev_d": 30.73}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000526": {"code": "sz000526", "kdj5": {"k": 26.24, "d": 34.88, "j": 8.97, "prev_k": 26.32, "prev_d": 39.19}, "kdj30": {"k": 44.09, "d": 43.32, "j": 45.63, "prev_k": 45.52, "prev_d": 42.93}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603093": {"code": "sh603093", "kdj5": {"k": 17.84, "d": 28.17, "j": -2.82, "prev_k": 22.22, "prev_d": 33.34}, "kdj30": {"k": 25.37, "d": 47.32, "j": -18.54, "prev_k": 37.13, "prev_d": 58.3}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605266": {"code": "sh605266", "kdj5": {"k": 45.33, "d": 44.28, "j": 47.43, "prev_k": 49.24, "prev_d": 43.76}, "kdj30": {"k": 59.95, "d": 54.85, "j": 70.17, "prev_k": 60.2, "prev_d": 52.29}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605189": {"code": "sh605189", "kdj5": {"k": 24.58, "d": 37.58, "j": -1.43, "prev_k": 31.6, "prev_d": 44.09}, "kdj30": {"k": 44.69, "d": 50.78, "j": 32.5, "prev_k": 52.26, "prev_d": 53.82}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 53.77, "d": 57.39, "j": 46.54, "prev_k": 59.51, "prev_d": 59.2}, "kdj30": {"k": 68.55, "d": 63.58, "j": 78.49, "prev_k": 65.33, "prev_d": 61.1}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002670": {"code": "sz002670", "kdj5": {"k": 25.12, "d": 32.48, "j": 10.4, "prev_k": 18.93, "prev_d": 36.16}, "kdj30": {"k": 55.72, "d": 58.36, "j": 50.43, "prev_k": 56.94, "prev_d": 59.68}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600418": {"code": "sh600418", "kdj5": {"k": 16.06, "d": 24.2, "j": -0.2, "prev_k": 15.76, "prev_d": 28.26}, "kdj30": {"k": 52.64, "d": 54.92, "j": 48.08, "prev_k": 58.45, "prev_d": 56.06}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605305": {"code": "sh605305", "kdj5": {"k": 41.9, "d": 23.27, "j": 79.15, "prev_k": 12.84, "prev_d": 13.95}, "kdj30": {"k": 49.44, "d": 50.19, "j": 47.94, "prev_k": 49.16, "prev_d": 50.57}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz003006": {"code": "sz003006", "kdj5": {"k": 50.24, "d": 42.38, "j": 65.94, "prev_k": 37.85, "prev_d": 38.45}, "kdj30": {"k": 37.5, "d": 48.63, "j": 15.25, "prev_k": 41.74, "prev_d": 54.2}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002379": {"code": "sz002379", "kdj5": {"k": 28.55, "d": 41.04, "j": 3.55, "prev_k": 37.56, "prev_d": 47.29}, "kdj30": {"k": 50.65, "d": 53.78, "j": 44.4, "prev_k": 55.01, "prev_d": 55.34}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600756": {"code": "sh600756", "kdj5": {"k": 18.77, "d": 35.25, "j": -14.19, "prev_k": 24.59, "prev_d": 43.49}, "kdj30": {"k": 34.36, "d": 44.71, "j": 13.64, "prev_k": 42.53, "prev_d": 49.89}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603345": {"code": "sh603345", "kdj5": {"k": 29.45, "d": 26.51, "j": 35.35, "prev_k": 26.44, "prev_d": 25.03}, "kdj30": {"k": 49.28, "d": 60.54, "j": 26.75, "prev_k": 56.98, "prev_d": 66.17}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601799": {"code": "sh601799", "kdj5": {"k": 17.83, "d": 20.97, "j": 11.54, "prev_k": 16.85, "prev_d": 22.54}, "kdj30": {"k": 18.45, "d": 19.92, "j": 15.51, "prev_k": 21.16, "prev_d": 20.66}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603567": {"code": "sh603567", "kdj5": {"k": 37.0, "d": 47.59, "j": 15.83, "prev_k": 45.5, "prev_d": 52.88}, "kdj30": {"k": 39.84, "d": 47.38, "j": 24.75, "prev_k": 43.09, "prev_d": 51.16}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002298": {"code": "sz002298", "kdj5": {"k": 26.18, "d": 41.36, "j": -4.19, "prev_k": 32.13, "prev_d": 48.95}, "kdj30": {"k": 47.11, "d": 47.42, "j": 46.49, "prev_k": 49.83, "prev_d": 47.58}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603267": {"code": "sh603267", "kdj5": {"k": 12.3, "d": 19.63, "j": -2.36, "prev_k": 14.28, "prev_d": 23.29}, "kdj30": {"k": 30.0, "d": 48.83, "j": -7.66, "prev_k": 43.54, "prev_d": 58.24}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600884": {"code": "sh600884", "kdj5": {"k": 20.81, "d": 28.46, "j": 5.51, "prev_k": 16.93, "prev_d": 32.28}, "kdj30": {"k": 30.66, "d": 36.52, "j": 18.95, "prev_k": 35.12, "prev_d": 39.44}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000534": {"code": "sz000534", "kdj5": {"k": 67.88, "d": 70.06, "j": 63.5, "prev_k": 72.97, "prev_d": 71.16}, "kdj30": {"k": 27.95, "d": 27.25, "j": 29.36, "prev_k": 25.11, "prev_d": 26.9}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 7.91, "d": 14.3, "j": -4.87, "prev_k": 10.7, "prev_d": 17.49}, "kdj30": {"k": 11.35, "d": 26.5, "j": -18.94, "prev_k": 16.78, "prev_d": 34.07}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 42.05, "d": 55.48, "j": 15.19, "prev_k": 50.89, "prev_d": 62.2}, "kdj30": {"k": 20.19, "d": 31.01, "j": -1.46, "prev_k": 23.0, "prev_d": 36.42}, "last5minDate": "202608281500", "last30minDate": "202608281500"}};
+const KDJ_PRECOMPUTED = {"sz002074": {"code": "sz002074", "kdj5": {"k": 18.39, "d": 30.45, "j": -5.73, "prev_k": 22.58, "prev_d": 36.48}, "kdj30": {"k": 17.72, "d": 26.53, "j": 0.1, "prev_k": 23.58, "prev_d": 30.94}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603267": {"code": "sh603267", "kdj5": {"k": 12.3, "d": 19.63, "j": -2.36, "prev_k": 14.28, "prev_d": 23.29}, "kdj30": {"k": 30.0, "d": 48.83, "j": -7.66, "prev_k": 43.54, "prev_d": 58.24}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000526": {"code": "sz000526", "kdj5": {"k": 26.24, "d": 34.88, "j": 8.97, "prev_k": 26.32, "prev_d": 39.19}, "kdj30": {"k": 44.09, "d": 43.32, "j": 45.63, "prev_k": 45.52, "prev_d": 42.93}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603567": {"code": "sh603567", "kdj5": {"k": 37.0, "d": 47.59, "j": 15.83, "prev_k": 45.5, "prev_d": 52.88}, "kdj30": {"k": 39.84, "d": 47.38, "j": 24.75, "prev_k": 43.09, "prev_d": 51.16}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600363": {"code": "sh600363", "kdj5": {"k": 10.04, "d": 15.85, "j": -1.57, "prev_k": 11.73, "prev_d": 18.76}, "kdj30": {"k": 44.98, "d": 57.36, "j": 20.23, "prev_k": 55.37, "prev_d": 63.55}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601128": {"code": "sh601128", "kdj5": {"k": 34.72, "d": 33.56, "j": 37.05, "prev_k": 27.08, "prev_d": 32.98}, "kdj30": {"k": 15.6, "d": 21.05, "j": 4.69, "prev_k": 17.84, "prev_d": 23.78}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz003006": {"code": "sz003006", "kdj5": {"k": 50.24, "d": 42.38, "j": 65.94, "prev_k": 37.85, "prev_d": 38.45}, "kdj30": {"k": 37.5, "d": 48.63, "j": 15.25, "prev_k": 41.74, "prev_d": 54.2}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600756": {"code": "sh600756", "kdj5": {"k": 18.77, "d": 35.25, "j": -14.19, "prev_k": 24.59, "prev_d": 43.49}, "kdj30": {"k": 34.36, "d": 44.71, "j": 13.64, "prev_k": 42.53, "prev_d": 49.89}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000948": {"code": "sz000948", "kdj5": {"k": 42.78, "d": 47.82, "j": 32.7, "prev_k": 45.42, "prev_d": 50.34}, "kdj30": {"k": 16.9, "d": 29.18, "j": -7.65, "prev_k": 21.78, "prev_d": 35.31}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002112": {"code": "sz002112", "kdj5": {"k": 20.99, "d": 38.66, "j": -14.35, "prev_k": 27.32, "prev_d": 47.5}, "kdj30": {"k": 30.55, "d": 33.51, "j": 24.63, "prev_k": 36.56, "prev_d": 34.99}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002298": {"code": "sz002298", "kdj5": {"k": 26.18, "d": 41.36, "j": -4.19, "prev_k": 32.13, "prev_d": 48.95}, "kdj30": {"k": 47.11, "d": 47.42, "j": 46.49, "prev_k": 49.83, "prev_d": 47.58}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000528": {"code": "sz000528", "kdj5": {"k": 23.95, "d": 34.47, "j": 2.9, "prev_k": 35.92, "prev_d": 39.73}, "kdj30": {"k": 33.74, "d": 31.73, "j": 37.75, "prev_k": 35.22, "prev_d": 30.73}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000951": {"code": "sz000951", "kdj5": {"k": 19.91, "d": 35.49, "j": -11.23, "prev_k": 26.17, "prev_d": 43.27}, "kdj30": {"k": 34.16, "d": 39.11, "j": 24.27, "prev_k": 36.65, "prev_d": 41.58}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002670": {"code": "sz002670", "kdj5": {"k": 25.12, "d": 32.48, "j": 10.4, "prev_k": 18.93, "prev_d": 36.16}, "kdj30": {"k": 55.72, "d": 58.36, "j": 50.43, "prev_k": 56.94, "prev_d": 59.68}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000534": {"code": "sz000534", "kdj5": {"k": 67.88, "d": 70.06, "j": 63.5, "prev_k": 72.97, "prev_d": 71.16}, "kdj30": {"k": 27.95, "d": 27.25, "j": 29.36, "prev_k": 25.11, "prev_d": 26.9}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002249": {"code": "sz002249", "kdj5": {"k": 45.78, "d": 44.83, "j": 47.69, "prev_k": 35.33, "prev_d": 44.35}, "kdj30": {"k": 41.43, "d": 46.82, "j": 30.65, "prev_k": 43.4, "prev_d": 49.51}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605305": {"code": "sh605305", "kdj5": {"k": 41.9, "d": 23.27, "j": 79.15, "prev_k": 12.84, "prev_d": 13.95}, "kdj30": {"k": 49.44, "d": 50.19, "j": 47.94, "prev_k": 49.16, "prev_d": 50.57}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603067": {"code": "sh603067", "kdj5": {"k": 42.05, "d": 55.48, "j": 15.19, "prev_k": 50.89, "prev_d": 62.2}, "kdj30": {"k": 20.19, "d": 31.01, "j": -1.46, "prev_k": 23.0, "prev_d": 36.42}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600105": {"code": "sh600105", "kdj5": {"k": 7.91, "d": 14.3, "j": -4.87, "prev_k": 10.7, "prev_d": 17.49}, "kdj30": {"k": 11.35, "d": 26.5, "j": -18.94, "prev_k": 16.78, "prev_d": 34.07}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601799": {"code": "sh601799", "kdj5": {"k": 17.83, "d": 20.97, "j": 11.54, "prev_k": 16.85, "prev_d": 22.54}, "kdj30": {"k": 18.45, "d": 19.92, "j": 15.51, "prev_k": 21.16, "prev_d": 20.66}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605266": {"code": "sh605266", "kdj5": {"k": 45.33, "d": 44.28, "j": 47.43, "prev_k": 49.24, "prev_d": 43.76}, "kdj30": {"k": 59.95, "d": 54.85, "j": 70.17, "prev_k": 60.2, "prev_d": 52.29}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz000688": {"code": "sz000688", "kdj5": {"k": 53.77, "d": 57.39, "j": 46.54, "prev_k": 59.51, "prev_d": 59.2}, "kdj30": {"k": 68.55, "d": 63.58, "j": 78.49, "prev_k": 65.33, "prev_d": 61.1}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603345": {"code": "sh603345", "kdj5": {"k": 29.45, "d": 26.51, "j": 35.35, "prev_k": 26.44, "prev_d": 25.03}, "kdj30": {"k": 49.28, "d": 60.54, "j": 26.75, "prev_k": 56.98, "prev_d": 66.17}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600418": {"code": "sh600418", "kdj5": {"k": 16.06, "d": 24.2, "j": -0.2, "prev_k": 15.76, "prev_d": 28.26}, "kdj30": {"k": 52.64, "d": 54.92, "j": 48.08, "prev_k": 58.45, "prev_d": 56.06}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz002379": {"code": "sz002379", "kdj5": {"k": 28.55, "d": 41.04, "j": 3.55, "prev_k": 37.56, "prev_d": 47.29}, "kdj30": {"k": 50.65, "d": 53.78, "j": 44.4, "prev_k": 55.01, "prev_d": 55.34}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh605189": {"code": "sh605189", "kdj5": {"k": 24.58, "d": 37.58, "j": -1.43, "prev_k": 31.6, "prev_d": 44.09}, "kdj30": {"k": 44.69, "d": 50.78, "j": 32.5, "prev_k": 52.26, "prev_d": 53.82}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh601126": {"code": "sh601126", "kdj5": {"k": 15.33, "d": 18.96, "j": 8.05, "prev_k": 15.64, "prev_d": 20.78}, "kdj30": {"k": 12.93, "d": 23.41, "j": -8.02, "prev_k": 17.82, "prev_d": 28.65}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh600884": {"code": "sh600884", "kdj5": {"k": 20.81, "d": 28.46, "j": 5.51, "prev_k": 16.93, "prev_d": 32.28}, "kdj30": {"k": 30.66, "d": 36.52, "j": 18.95, "prev_k": 35.12, "prev_d": 39.44}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sh603093": {"code": "sh603093", "kdj5": {"k": 17.84, "d": 28.17, "j": -2.82, "prev_k": 22.22, "prev_d": 33.34}, "kdj30": {"k": 25.37, "d": 47.32, "j": -18.54, "prev_k": 37.13, "prev_d": 58.3}, "last5minDate": "202608281500", "last30minDate": "202608281500"}, "sz003001": {"code": "sz003001", "kdj5": {"k": 36.46, "d": 41.55, "j": 26.27, "prev_k": 29.69, "prev_d": 44.1}, "kdj30": {"k": 28.39, "d": 33.39, "j": 18.4, "prev_k": 30.39, "prev_d": 35.88}, "last5minDate": "202608281500", "last30minDate": "202608281500"}};
 // 主力资金预计算数据，生成时间: 2026-08-12 04:13:28
 // 数据源: capital_flow.json (最新数据日: 2026-08-06)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-// 主力资金预计算数据，生成时间: 2026-08-28 17:38:36
+// 主力资金预计算数据，生成时间: 2026-08-28 19:04:24
 // 数据源: capital_flow.json (最新数据日: 2026-08-27)
 // 字段: mainNetInflow=主力净流入(万元), date=数据日期
-const CAPITAL_FLOW_CACHE = {"sh603345": {"date": "2026-08-27", "mainNetInflow": 4626.0}, "sz000688": {"date": "2026-08-27", "mainNetInflow": -1641.0}, "sh603067": {"date": "2026-08-27", "mainNetInflow": 1567.0}, "sz000951": {"date": "2026-08-06", "mainNetInflow": -913.0}, "sh603093": {"date": "2026-08-06", "mainNetInflow": -561.0}, "sh600105": {"date": "2026-08-27", "mainNetInflow": 54292.0}, "sz000526": {"date": "2026-08-06", "mainNetInflow": 178.0}, "sz002298": {"date": "2026-08-06", "mainNetInflow": -6458.0}, "sh601126": {"date": "2026-08-27", "mainNetInflow": -14238.0}};
+const CAPITAL_FLOW_CACHE = {"sh601126": {"date": "2026-08-27", "mainNetInflow": -14238.0}, "sz000951": {"date": "2026-08-06", "mainNetInflow": -913.0}, "sz000688": {"date": "2026-08-27", "mainNetInflow": -1641.0}, "sh603345": {"date": "2026-08-27", "mainNetInflow": 4626.0}, "sh600105": {"date": "2026-08-27", "mainNetInflow": 54292.0}, "sh603093": {"date": "2026-08-06", "mainNetInflow": -561.0}, "sz002298": {"date": "2026-08-06", "mainNetInflow": -6458.0}, "sz000526": {"date": "2026-08-06", "mainNetInflow": 178.0}, "sh603067": {"date": "2026-08-27", "mainNetInflow": 1567.0}};
 // 大盘跟随度预计算，生成时间: 2026-08-12 04:13:44
 // 基准: 上证指数(sh000001), 数据日: 2026-08-11, 上证5日+1.44%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-// 大盘跟随度预计算，生成时间: 2026-08-28 17:38:58
+// 大盘跟随度预计算，生成时间: 2026-08-28 19:04:42
 // 基准: 上证指数(sh000001), 数据日: 2026-08-28, 上证5日+1.81%
 // 字段: beta=贝塔, corr=相关系数, label=分类, align_5d=5日同步率
-const MARKET_CORR_CACHE = {"600884": {"beta": 1.42, "corr": 0.521, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -0.5, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002670": {"beta": 1.45, "corr": 0.456, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 12.72, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002112": {"beta": 1.01, "corr": 0.22, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -0.39, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603567": {"beta": 2.94, "corr": 0.455, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 9.4, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603093": {"beta": 1.32, "corr": 0.185, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 16.89, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "003006": {"beta": 0.46, "corr": 0.214, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 5.17, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600756": {"beta": 1.38, "corr": 0.343, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 3.97, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "003001": {"beta": 1.74, "corr": 0.269, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 4.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605305": {"beta": 1.2, "corr": 0.386, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": -9.46, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000951": {"beta": 1.62, "corr": 0.454, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 10.95, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603067": {"beta": 3.82, "corr": 0.72, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 6.83, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601799": {"beta": 0.68, "corr": 0.28, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": -2.63, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002249": {"beta": 1.47, "corr": 0.604, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -3.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601126": {"beta": 3.67, "corr": 0.716, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": -4.53, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002379": {"beta": 1.54, "corr": 0.313, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 0.22, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605266": {"beta": -0.22, "corr": -0.103, "label": "逆势", "color": "var(--green)", "align_5d": "3/5", "stock_5d_chg": -3.34, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603345": {"beta": 0.44, "corr": 0.267, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -1.36, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600105": {"beta": 3.48, "corr": 0.621, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 4.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603267": {"beta": 2.09, "corr": 0.602, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.29, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000528": {"beta": 0.28, "corr": 0.171, "label": "独立", "color": "var(--blue)", "align_5d": "5/5", "stock_5d_chg": -2.24, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601128": {"beta": -0.4, "corr": -0.338, "label": "逆势", "color": "var(--green)", "align_5d": "3/4", "stock_5d_chg": -2.54, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002074": {"beta": 1.44, "corr": 0.607, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 0.26, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605189": {"beta": 1.3, "corr": 0.305, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -0.67, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000688": {"beta": 1.71, "corr": 0.422, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": -7.08, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002298": {"beta": 1.13, "corr": 0.242, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 1.51, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000534": {"beta": 3.08, "corr": 0.676, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -4.64, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600363": {"beta": 1.49, "corr": 0.296, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 6.75, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000526": {"beta": -0.48, "corr": -0.1, "label": "逆势", "color": "var(--green)", "align_5d": "5/5", "stock_5d_chg": 1.85, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000948": {"beta": 0.41, "corr": 0.108, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 4.53, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600418": {"beta": 0.87, "corr": 0.201, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 4.57, "mkt_5d_chg": 1.81, "date": "2026-08-28"}};
+const MARKET_CORR_CACHE = {"002670": {"beta": 1.45, "corr": 0.456, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": 12.72, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002379": {"beta": 1.54, "corr": 0.313, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 0.22, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601126": {"beta": 3.67, "corr": 0.716, "label": "强跟随", "color": "var(--red)", "align_5d": "4/5", "stock_5d_chg": -4.53, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603567": {"beta": 2.94, "corr": 0.455, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 9.4, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600756": {"beta": 1.38, "corr": 0.343, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 3.97, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002074": {"beta": 1.44, "corr": 0.607, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 0.26, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601799": {"beta": 0.68, "corr": 0.28, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": -2.63, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "003001": {"beta": 1.74, "corr": 0.269, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 4.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000948": {"beta": 0.41, "corr": 0.108, "label": "独立", "color": "var(--blue)", "align_5d": "2/5", "stock_5d_chg": 4.53, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605189": {"beta": 1.3, "corr": 0.305, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "3/5", "stock_5d_chg": -0.67, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600418": {"beta": 0.87, "corr": 0.201, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 4.57, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600884": {"beta": 1.42, "corr": 0.521, "label": "跟随", "color": "#e8a735", "align_5d": "5/5", "stock_5d_chg": -0.5, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603267": {"beta": 2.09, "corr": 0.602, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": 3.29, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000526": {"beta": -0.48, "corr": -0.1, "label": "逆势", "color": "var(--green)", "align_5d": "5/5", "stock_5d_chg": 1.85, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "003006": {"beta": 0.46, "corr": 0.214, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 5.17, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002249": {"beta": 1.47, "corr": 0.604, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -3.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603093": {"beta": 1.32, "corr": 0.185, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 16.89, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603067": {"beta": 3.82, "corr": 0.72, "label": "强跟随", "color": "var(--red)", "align_5d": "3/5", "stock_5d_chg": 6.83, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605266": {"beta": -0.22, "corr": -0.103, "label": "逆势", "color": "var(--green)", "align_5d": "3/5", "stock_5d_chg": -3.34, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000534": {"beta": 3.08, "corr": 0.676, "label": "跟随", "color": "#e8a735", "align_5d": "4/5", "stock_5d_chg": -4.64, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002112": {"beta": 1.01, "corr": 0.22, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -0.39, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "605305": {"beta": 1.2, "corr": 0.386, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": -9.46, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "601128": {"beta": -0.4, "corr": -0.338, "label": "逆势", "color": "var(--green)", "align_5d": "3/4", "stock_5d_chg": -2.54, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600105": {"beta": 3.48, "corr": 0.621, "label": "跟随", "color": "#e8a735", "align_5d": "3/5", "stock_5d_chg": 4.6, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "603345": {"beta": 0.44, "corr": 0.267, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": -1.36, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "600363": {"beta": 1.49, "corr": 0.296, "label": "独立", "color": "var(--blue)", "align_5d": "4/5", "stock_5d_chg": 6.75, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "002298": {"beta": 1.13, "corr": 0.242, "label": "独立", "color": "var(--blue)", "align_5d": "3/5", "stock_5d_chg": 1.51, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000951": {"beta": 1.62, "corr": 0.454, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "4/5", "stock_5d_chg": 10.95, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000528": {"beta": 0.28, "corr": 0.171, "label": "独立", "color": "var(--blue)", "align_5d": "5/5", "stock_5d_chg": -2.24, "mkt_5d_chg": 1.81, "date": "2026-08-28"}, "000688": {"beta": 1.71, "corr": 0.422, "label": "弱关联", "color": "var(--text-dim)", "align_5d": "5/5", "stock_5d_chg": -7.08, "mkt_5d_chg": 1.81, "date": "2026-08-28"}};
 
 // ============================================
 // 本周催化日历数据
