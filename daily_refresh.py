@@ -67,6 +67,8 @@ def main():
     run("[4/7] KDJ预计算(腾讯源)", 'precompute_kdj.py')
     run("[5/7] 大盘跟随度", 'precompute_market_corr.py')
     run("[6/7] 起涨前预判", 'pre_breakout_v2.py')
+    # 全市场30分KDJ竞价候选池（「低位竞价」Tab用，收盘后跑=当日完整K线，云端8:30会再刷新一遍）
+    run("[6b/7] 全市场KDJ竞价候选池", 'scan_kdj_auction_watchlist.py', timeout=900)
 
     # 同步 deploy -> docs
     os.makedirs(os.path.dirname(DOCS_HTML), exist_ok=True)

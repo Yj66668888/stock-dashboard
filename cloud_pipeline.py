@@ -272,6 +272,10 @@ def full_scan(with_prelaunch=False):
     #          rescan 注入的票默认 dailyFlow=0/sector空，必须补数否则前端列全"--"且评分为0
     run_script("[7b/9] 补齐缺失字段", 'enrich_missing_fields.py', timeout=300)
 
+    # Step 7c: 全市场30分KDJ竞价候选池（供「低位竞价」Tab：60/00主板 K≤35 且上升/待升，注入 deploy/index.html）
+    #          竞价阶段当天首根30分K未走完，30分KDJ停在上一交易日收盘状态 → 盘前预扫即可
+    run_script("[7c/9] 全市场KDJ竞价候选池", 'scan_kdj_auction_watchlist.py', timeout=900)
+
     # Step 8: 起涨前预判
     run_script("[8/9] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
 
