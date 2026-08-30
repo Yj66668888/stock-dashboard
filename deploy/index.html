@@ -1095,7 +1095,7 @@
             <th>昨收</th>
             <th id="aucPriceTh">竞价价</th>
             <th>高开幅度</th>
-            <th>竞价金额</th>
+            <th>竞价金额↓</th>
             <th>竞价量(手)</th>
             <th>委买(手)</th>
             <th>委卖(手)</th>
@@ -1110,7 +1110,7 @@
     </div>
     <div class="auction-note" id="aucNote">
       信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>
-      委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。
+      表格按竞价金额由高到低排序（同金额按高开幅度）。委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。
     </div>
   </div>
 
@@ -4120,8 +4120,11 @@ function renderAuction(items, isSnapshot) {
   // 表头语义：竞价中显示"竞价价"，其余显示"开盘价(竞价结果)"
   if (priceTh) priceTh.textContent = (phase === 'live') ? '竞价价' : '开盘价';
 
-  // 排序：高开在前
-  var sorted = items.slice().sort(function(a, b) { return b.gap - a.gap; });
+  // 排序：竞价金额大的在前（资金抢筹力度优先），同金额按高开幅度
+  var sorted = items.slice().sort(function(a, b) {
+    if (b.amtWan !== a.amtWan) return b.amtWan - a.amtWan;
+    return b.gap - a.gap;
+  });
   var maxAmt = 0;
   sorted.forEach(function(it) { if (it.amtWan > maxAmt) maxAmt = it.amtWan; });
 
@@ -4181,7 +4184,7 @@ function renderAuction(items, isSnapshot) {
     var extra = isSnapshot ? '⚠️ 当前展示的是今日竞价时段保存的快照数据。' : '';
     note.innerHTML = extra
       + '信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>'
-      + '委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。';
+      + '表格按竞价金额由高到低排序（同金额按高开幅度）。委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。';
   }
 }
 
