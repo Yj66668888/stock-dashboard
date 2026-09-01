@@ -1143,14 +1143,27 @@
             <th>委卖(手)</th>
             <th>买卖比</th>
             <th class="left-align">信号</th>
+            <th id="laConfirmTh">盘中确认</th>
           </tr>
         </thead>
         <tbody id="laBody"></tbody>
       </table>
     </div>
+    <details style="margin:10px 0;border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card-bg);">
+      <summary style="cursor:pointer;font-weight:600;color:var(--text);">📋 三线确认法 · 买入确认标准（点击展开）</summary>
+      <div style="font-size:12.5px;line-height:1.9;margin-top:8px;color:var(--text-muted);">
+        <b>三线关系：</b>白线=现价 · 黄线=分时均价线（当日成交额÷成交量） · 虚线=昨收<br>
+        ① <b style="color:#5DCAA5;">✅ 强势</b>：现价 &gt; 均价线 &gt; 昨收 → 回踩均价线不破可参与<br>
+        ② <b style="color:#EF9F27;">⚠️ 修复观察</b>：现价 &gt; 均价线，但仍在昨收下方 → 弱势修复，次日高开站稳均价线才算确认<br>
+        ③ <b style="color:#E24B4A;">❌ 破位</b>：现价跌破均价线，反弹收不回 → 直接放弃，竞价再漂亮也不碰<br>
+        <b>量能：</b>量比 1.0~2.5 温和放大最健康；&gt;3 警惕爆量出货；&lt;0.8 无承接<br>
+        <b>口诀：价在黄线上、量比一到二、回踩不破就动手；破了黄线，竞价再漂亮也不碰。</b>开盘30分钟（10:00）后判定最可靠，盘中确认列 9:35 起实时更新。
+      </div>
+    </details>
     <div class="auction-note" id="laNote">
       候选池口径：全市场 60/00 主板（排除ST）· 30分钟KDJ K≤35 且 趋势上升(K&gt;D)或待升(乖离收敛/K上拐) · 每日8:30云端扫描生成<br>
-      表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。
+      表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。<br>
+      盘中确认（三线确认法）：✅强势=现价&gt;分时均价线&gt;昨收 · ⚠️修复观察=现价在均价线上但未收复昨收 · ❌破位=现价跌破均价线。量比1.0~2.5温和放大，&gt;3警惕爆量、&lt;0.8无承接。
     </div>
   </div>
 
@@ -4236,7 +4249,7 @@ function renderAuction(items, isSnapshot) {
 // 低位竞价（全市场30分KDJ低位候选池 × 竞价实时监测）
 // 候选池由 scan_kdj_auction_watchlist.py 每日8:30云端扫描注入 KDJ_AUCTION_WATCHLIST
 // ============================================
-var lowAucState = { ticker: null, auto: true, quotes: [], nextFetchAt: 0, fetching: false };
+var lowAucState = { ticker: null, auto: true, quotes: [], nextFetchAt: 0, fetching: false, confirm: null, confirmFetching: false, nextConfirmAt: 0 };
 
 function lowAucWatch() {
   return (typeof KDJ_AUCTION_WATCHLIST !== 'undefined' && KDJ_AUCTION_WATCHLIST && KDJ_AUCTION_WATCHLIST.items) ? KDJ_AUCTION_WATCHLIST : null;
@@ -4331,6 +4344,87 @@ function lowAucLoadSnapshot() {
   } catch (e) { return null; }
 }
 
+// ===== 三线确认法（盘中确认）：现价 vs 分时均价线 vs 昨收 + 量比 =====
+function laConfirmKey() {
+  var d = new Date();
+  return 'lowauc_conf_' + d.getFullYear() + aucPad(d.getMonth() + 1) + aucPad(d.getDate());
+}
+
+function lowAucLoadConfirm() {
+  try {
+    var raw = localStorage.getItem(laConfirmKey());
+    if (!raw) return null;
+    var s = JSON.parse(raw);
+    return (s && s.data) ? s : null;
+  } catch (e) { return null; }
+}
+
+// 盘中独立拉实时行情，计算 现价/均价线/昨收/量比（不复用竞价 quotes，避免污染竞价快照）
+function fetchLowAucConfirm() {
+  if (lowAucState.confirmFetching) return;
+  var w = lowAucWatch();
+  if (!w || !w.items.length) return;
+  lowAucState.confirmFetching = true;
+  var codes = w.items.map(function(it) { return it.code; });
+  var chunks = [];
+  for (var i = 0; i < codes.length; i += 60) chunks.push(codes.slice(i, i + 60));
+  var acc = {};
+  function next(idx) {
+    if (idx >= chunks.length) {
+      lowAucState.confirmFetching = false;
+      var snap = { time: new Date().toISOString(), data: acc };
+      lowAucState.confirm = snap;
+      try { localStorage.setItem(laConfirmKey(), JSON.stringify(snap)); } catch (e) {}
+      renderLowAuc(false);
+      lowAucState.nextConfirmAt = Date.now() + 60000;
+      return;
+    }
+    laFetchChunk(chunks[idx], function() {
+      chunks[idx].forEach(function(c) {
+        var raw = window['v_' + c];
+        if (!raw || typeof raw !== 'string') return;
+        var f = raw.split('~');
+        if (f.length < 51) return;
+        var price = parseFloat(f[3]), yclose = parseFloat(f[4]);
+        var vol = parseInt(f[6]) || 0, amt = parseFloat(f[37]) || 0;
+        if (isNaN(price) || isNaN(yclose) || !yclose || price <= 0) return;
+        // 均价线 = 累计成交额(万元×10000) ÷ 累计成交量(手×100)
+        var vwap = vol > 0 ? (amt * 10000) / (vol * 100) : 0;
+        var vr = parseFloat(f[49]);
+        acc[c] = {
+          name: f[1], price: price, yclose: yclose,
+          vwap: Math.round(vwap * 100) / 100,
+          volRatio: isNaN(vr) ? null : vr, t: f[30]
+        };
+      });
+      next(idx + 1);
+    });
+  }
+  next(0);
+}
+
+// 盘中确认单元格：✅强势 / ⚠️修复观察 / ❌破位 + 量比
+function laConfirmCell(code, phase) {
+  if (phase !== 'open' && phase !== 'closed') return '<span style="color:var(--text-muted);">--</span>';
+  var cf = (lowAucState.confirm && lowAucState.confirm.data) ? lowAucState.confirm.data[code] : null;
+  if (!cf || !cf.vwap) {
+    if (phase === 'open') return '<span style="color:var(--text-muted);">⏳ 等待确认</span>';
+    return '<span style="color:var(--text-muted);">--</span>';
+  }
+  var vr = (cf.volRatio !== null && cf.volRatio !== undefined && !isNaN(cf.volRatio)) ? cf.volRatio : null;
+  var vrTxt = vr !== null ? '量比 ' + vr.toFixed(1) : '';
+  var vrWarn = (vr !== null && (vr > 3 || vr < 0.8)) ? ' ⚠️' : '';
+  var sub = (vrTxt || vrWarn) ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + vrTxt + vrWarn + '</div>' : '';
+  if (cf.price > cf.vwap && cf.price > cf.yclose) {
+    return '<span class="auc-pos" style="font-weight:600;">✅ 强势</span>' + sub;
+  }
+  if (cf.price > cf.vwap && cf.price <= cf.yclose) {
+    return '<span style="color:#EF9F27;font-weight:600;">⚠️ 修复观察</span>' + sub;
+  }
+  return '<span class="auc-neg" style="font-weight:600;">❌ 破位</span>' + sub;
+}
+
+
 function toggleLowAucAuto() {
   lowAucState.auto = !lowAucState.auto;
   var btn = document.getElementById('laAutoBtn');
@@ -4348,8 +4442,18 @@ function startLowAucLoop() {
   fetchLowAucData();
   lowAucState.ticker = setInterval(function() {
     updateLowAucStatus();
-    if (!lowAucState.auto || document.hidden || lowAucState.fetching) return;
-    if (Date.now() >= lowAucState.nextFetchAt) fetchLowAucData();
+    if (!lowAucState.auto || document.hidden) return;
+    if (!lowAucState.fetching && Date.now() >= lowAucState.nextFetchAt) fetchLowAucData();
+    // 盘中确认（三线确认法）：9:35 起每 60 秒拉一次现价/均价线/量比
+    if (!lowAucState.confirmFetching) {
+      var cph = getAuctionPhase(new Date());
+      if (cph === 'open') {
+        var cnw = new Date();
+        if ((cnw.getHours() > 9 || (cnw.getHours() === 9 && cnw.getMinutes() >= 35)) && Date.now() >= lowAucState.nextConfirmAt) {
+          fetchLowAucConfirm();
+        }
+      }
+    }
   }, 1000);
 }
 
@@ -4443,10 +4547,17 @@ function renderLowAuc(isSnapshot) {
   if (!body) return;
   var phase = getAuctionPhase(new Date());
   if (priceTh) priceTh.textContent = (phase === 'live') ? '竞价价' : '开盘价';
+  // 盘中确认数据兜底加载（当日 localStorage）
+  if (!lowAucState.confirm) lowAucState.confirm = lowAucLoadConfirm();
+  var confTh = document.getElementById('laConfirmTh');
+  if (confTh) {
+    var nwMin = new Date().getHours() * 60 + new Date().getMinutes();
+    confTh.textContent = (phase === 'open' && nwMin < 600) ? '盘中确认·10点前参考' : '盘中确认';
+  }
 
   var w = lowAucWatch();
   if (!w || !w.items.length) {
-    body.innerHTML = '<tr><td colspan="12" style="color:var(--text-muted);padding:20px;">候选池为空（等待每日8:30云端扫描生成）</td></tr>';
+    body.innerHTML = '<tr><td colspan="13" style="color:var(--text-muted);padding:20px;">候选池为空（等待每日8:30云端扫描生成）</td></tr>';
     if (summary) summary.innerHTML = '';
     return;
   }
@@ -4507,6 +4618,7 @@ function renderLowAuc(isSnapshot) {
       + '<td class="auc-neg">' + (it.askVol ? it.askVol.toLocaleString() : '--') + '</td>'
       + '<td class="' + ratioCls + '">' + (ratio > 0 ? ratio.toFixed(2) : '--') + '</td>'
       + '<td class="left-align">' + laSignals(it) + '</td>'
+      + '<td class="left-align">' + laConfirmCell(it.code, phase) + '</td>'
       + '</tr>';
   });
   body.innerHTML = html;
@@ -4538,6 +4650,21 @@ function renderLowAuc(isSnapshot) {
       laCard('最大竞价金额', bigAmt ? aucFmtWan(bigAmt.amtWan) : '--', bigAmt ? bigAmt.name : ''),
       laCard('数据状态', status, statusSub)
     ];
+    // 盘中确认统计卡（三线确认法）
+    var confData = (lowAucState.confirm && lowAucState.confirm.data) ? lowAucState.confirm.data : null;
+    if (confData) {
+      var cOk = 0, cRep = 0, cBad = 0;
+      w.items.forEach(function(it) {
+        var cf = confData[it.code];
+        if (!cf || !cf.vwap) return;
+        if (cf.price > cf.vwap && cf.price > cf.yclose) cOk++;
+        else if (cf.price > cf.vwap) cRep++;
+        else cBad++;
+      });
+      if (cOk + cRep + cBad > 0) {
+        cards.push(laCard('盘中确认', '✅' + cOk + ' ⚠️' + cRep, '❌破位 ' + cBad + ' 只', cOk >= cBad ? 'auc-pos' : 'auc-neg'));
+      }
+    }
     summary.innerHTML = cards.join('');
   }
 
@@ -4547,7 +4674,8 @@ function renderLowAuc(isSnapshot) {
     var extra = isSnapshot ? '⚠️ 当前展示今日竞价时段保存的快照数据。<br>' : '';
     note.innerHTML = extra
       + '候选池口径：全市场 60/00 主板（排除ST）· 30分钟KDJ K≤35 且 趋势上升(K&gt;D)或待升(乖离收敛/K上拐) · 每日8:30云端扫描生成<br>'
-      + '表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。';
+      + '表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。<br>'
+      + '盘中确认（三线确认法）：✅强势=现价&gt;分时均价线&gt;昨收 · ⚠️修复观察=现价在均价线上但未收复昨收（次日高开站稳才确认） · ❌破位=现价跌破均价线。量比1.0~2.5温和放大，&gt;3警惕爆量、&lt;0.8无承接。9:35起实时更新，10:00后判定最可靠。';
   }
 }
 
