@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: cloud-pipeline
+  group: cloud-fullscan  # 2026-09-01拆组：独立组防止被30分钟一次的update挤掉pending槽
   cancel-in-progress: false
 
 jobs:

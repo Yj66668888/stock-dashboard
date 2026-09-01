@@ -9,10 +9,10 @@ import json, re, subprocess, time, os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
-BASE = "/Users/fuckyouasshole/WorkBuddy/2026-07-01-11-18-34"
-HTML = f"{BASE}/deploy/index.html"
-DYN_FILE = f"{BASE}/dynamic_stocks.json"
-SECTOR_FILTER_FILE = f"{BASE}/sector_filter.json"
+BASE = os.path.dirname(os.path.abspath(__file__))  # 动态路径：本地/GitHub runner 通用
+HTML = os.path.join(BASE, "deploy", "index.html")
+DYN_FILE = os.path.join(BASE, "dynamic_stocks.json")
+SECTOR_FILTER_FILE = os.path.join(BASE, "sector_filter.json")
 
 _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
 

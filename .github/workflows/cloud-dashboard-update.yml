@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: cloud-pipeline
+  group: cloud-update  # 2026-09-01拆组：update只跟update排队，不再挤掉full-scan/midday的pending
   cancel-in-progress: false
 
 jobs:

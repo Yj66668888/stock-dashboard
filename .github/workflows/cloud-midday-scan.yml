@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: cloud-pipeline
+  group: cloud-midday  # 2026-09-01拆组：独立组防止被update挤掉pending槽
   cancel-in-progress: false
 
 jobs:
