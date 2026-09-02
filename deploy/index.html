@@ -2214,8 +2214,18 @@ function renderStockRow(stock, index) {
   } else if (_kdDir === '↓') {
     _kdDirHtml = '<span style="color:rgba(240,149,149,1);font-weight:600;margin-right:2px;" title="30分K下跌(左侧观察,勿急)">↓</span>';
   }
+  // 日线趋势箭头（2026-09-03新增：选股已加日K朝上过滤，↑优先→补足、↓阴跌硬踢）
+  var _dailyTrend = stock.dailyTrend || '';
+  var _dailyDirHtml = '';
+  if (_dailyTrend === '↑') {
+    _dailyDirHtml = '<span style="color:rgba(93,202,165,1);font-weight:700;margin-right:2px;" title="日线朝上(收盘≥MA5且MA5上行)">日↑</span>';
+  } else if (_dailyTrend === '→') {
+    _dailyDirHtml = '<span style="color:rgba(250,199,117,1);font-weight:700;margin-right:2px;" title="日线站上MA5但MA5未上行(趋势待确认)">日→</span>';
+  } else if (_dailyTrend === '↓') {
+    _dailyDirHtml = '<span style="color:rgba(240,149,149,1);font-weight:700;margin-right:2px;" title="日线在MA5下方(阴跌未止)">日↓</span>';
+  }
   const kd30Html = stock.kd30_k !== undefined
-    ? `<span class="kd-cell ${kd30Cls}">${_kdDirHtml}${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
+    ? `<span class="kd-cell ${kd30Cls}">${_dailyDirHtml}${_kdDirHtml}${stock.kd30_k.toFixed(1)} / ${stock.kd30_d.toFixed(1)}</span>${kd30BadgeHtml}` +
       `<div class="kd-sub">${kd30Cross}${kd30EarlyHtml ? '' : ''}</div>${kd30EarlyHtml}`
     : '<span class="kd-cell">--</span>';
 

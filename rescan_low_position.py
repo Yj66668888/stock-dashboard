@@ -6,10 +6,12 @@
   2. 推算昨日真实换手率 = 昨日成交量(腾讯日线) × 100股 × 现价 / 流通市值(f21)
      （已验证与东财 f168 全天值完全一致，误差<0.01%）
   3. 硬过滤：2.0% ≤ 换手率 ≤ 7.0%
-  4. 腾讯实时30分KDJ过滤：K<70（追高硬踢），今日涨幅<4%（已涨起来的踢）
-  5. 腾讯实时5分KDJ过滤：K<70（5分钟也已追高的踢），低位上拐加分（2026-08-27新增：
+  4. 日K朝上过滤（2026-09-03新增）：收盘<MA5(阴跌)硬踢；收盘≥MA5且MA5上行(↑)优先，
+     仅站上MA5(→)在排序靠后补足——"回调到位且日线开始朝上"
+  5. 腾讯实时30分KDJ过滤：K<70（追高硬踢），今日涨幅<4%（已涨起来的踢）
+  6. 腾讯实时5分KDJ过滤：K<70（5分钟也已追高的踢），低位上拐加分（2026-08-27新增：
      解决"推送时5分钟已在高点"——选票要求30分钟+5分钟双重低位）
-  6. 按评分+K30位置加分+5分加分排序，取前26只 + 4固定票
+  7. 按评分+K30位置加分+5分加分排序，取前30只 + 4固定票（2026-09-03: 26→30）
   7. 写 dynamic_stocks.json + 注入 deploy/index.html（固定票原样保留）
 
 数据源（全部 subprocess curl --noproxy '*' 绕过本地代理）：
@@ -33,7 +35,7 @@ K30_HARD_KICK = 70.0                     # 30分K追高硬踢
 K5_HARD_KICK = 70.0                      # 5分K追高硬踢（2026-08-27新增：双重低位确认）
 TODAY_CHG_MAX = 4.0                      # 今日已涨幅超此值视为涨起来了
 RSI_MAX, DROP20D_MAX, SCORE_MIN = 65.0, -3.0, 35.0
-SELECT_N = 26
+SELECT_N = 30   # 2026-09-03: 26→30（用户要求加量），+4固定票 = 池子34只
 
 PINNED = ['sh603067', 'sh600105', 'sh601126', 'sz000688']
 
@@ -92,17 +94,41 @@ def fetch_quotes_batch(codes):
 
 
 def fetch_yest_volume(code):
-    """腾讯日线 → 昨日成交量（手）"""
-    d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={code},day,,,4,qfq',
+    """腾讯日线 → 昨日成交量（手）+ 已走完的收盘序列（2026-09-03改：兼供日线趋势判断）"""
+    d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={code},day,,,12,qfq',
                   referer='https://gu.qq.com/')
     try:
         k = d['data'][code].get('qfqday') or d['data'][code].get('day')
         if not k or len(k) < 2:
             return None
-        yest = k[-2]  # k[-1]是今日进行中，k[-2]是昨日
-        return {'date': yest[0], 'vol_shou': float(yest[5])}
+        # 剔除今日进行中的K线（盘前拉取时今日bar尚不存在，天然安全；盘中拉取时剔除）
+        today = datetime.now().strftime('%Y-%m-%d')
+        done = [b for b in k if not str(b[0]).startswith(today)]
+        if len(done) < 2:
+            return None
+        yest = done[-1]  # 最后一根已走完的K线（盘前=昨日，盘中=昨日）
+        closes = [float(b[2]) for b in done]
+        return {'date': yest[0], 'vol_shou': float(yest[5]), 'closes': closes}
     except (KeyError, TypeError, IndexError, ValueError):
         return None
+
+
+def daily_trend(closes):
+    """日线趋势判定（2026-09-03新增：日K朝上过滤，优先↑不足时放宽→补足）。
+    up:   收盘 ≥ MA5 且 MA5 走平/上行（MA5 ≥ 昨日MA5）→ 回调到位且日线开始朝上（优先选）
+    flat: 收盘 ≥ MA5 但 MA5 仍下行 → 站上5日线但趋势未确认（↑不足30只时补足）
+    down: 收盘 < MA5 → 日线仍在5日线下方，阴跌未止（硬踢）
+    返回 (是否站上MA5, 标签'↑'/'→'/'↓')；数据不足返回 (False, '')"""
+    if not closes or len(closes) < 6:
+        return False, ''
+    ma5 = sum(closes[-5:]) / 5.0
+    ma5_prev = sum(closes[-6:-1]) / 5.0
+    close = closes[-1]
+    if close < ma5:
+        return False, '↓'
+    if ma5 >= ma5_prev:
+        return True, '↑'
+    return True, '→'
 
 
 def drop_incomplete_bar(bars):
@@ -274,16 +300,23 @@ def main():
             s['turnover'] = round(v['vol_shou'] * 100 * q['price'] / q['float_mv'] * 100, 2)
             s['chg_today'] = q['chg_today']
             s['close'] = q['price']  # 用实时价
+        # 日线趋势（2026-09-03新增：日K朝上过滤，↓硬踢，↑优先→补足）
+        s['dailyUp'], s['dailyTrend'] = daily_trend(v.get('closes')) if v else (False, '')
     got = [s for s in pool if s['turnover'] is not None]
     print(f"换手率推算: {len(got)}/{len(pool)} | 分布: "
           f"<2%: {sum(1 for s in got if s['turnover'] < 2)} | "
           f"2-7%: {sum(1 for s in got if 2 <= s['turnover'] <= 7)} | "
           f">7%: {sum(1 for s in got if s['turnover'] > 7)}")
 
-    # ---- 4. 换手率硬过滤 + 今日涨幅过滤 ----
+    # ---- 4. 换手率硬过滤 + 今日涨幅过滤 + 日K朝上过滤（2026-09-03新增）----
     step1 = [s for s in got if TURNOVER_MIN <= s['turnover'] <= TURNOVER_MAX]
-    step1 = [s for s in step1 if s.get('chg_today') is None or s['chg_today'] < TODAY_CHG_MAX]
-    print(f"换手{TURNOVER_MIN}-{TURNOVER_MAX}% + 今日涨幅<{TODAY_CHG_MAX}%: {len(step1)}只")
+    step1 = [s for s in step1 if s.get('chg_today') is None or s.get('chg_today') < TODAY_CHG_MAX]
+    n_before = len(step1)
+    # ↓(收盘<MA5,日线阴跌)硬踢；↑(MA5也上行)优先，→(仅站上MA5)在排序时靠后补足
+    step1 = [s for s in step1 if s.get('dailyTrend') in ('↑', '→')]
+    n_up = sum(1 for s in step1 if s.get('dailyTrend') == '↑')
+    print(f"换手{TURNOVER_MIN}-{TURNOVER_MAX}% + 今日涨幅<{TODAY_CHG_MAX}%: {n_before}只")
+    print(f"日K站上MA5(踢↓阴跌): {len(step1)}只 = ↑朝上{n_up} + →待确认{len(step1)-n_up}（剔除{n_before-len(step1)}只日线仍弱的）")
 
     # ---- 5. 实时30分KDJ过滤 ----
     def kdj_worker(s):
@@ -333,7 +366,8 @@ def main():
         s['kdj5'] = r5['k']
         s['kdj5Dir'] = '↑' if r5['k'] > r5['k_prev'] else '↓'
         s['kdj5J'] = r5['j']
-        s['final_rank'] = s['score'] + kdj_bonus(r['k']) + kdj5_bonus(r5) + dir_bonus
+        s['final_rank'] = s['score'] + kdj_bonus(r['k']) + kdj5_bonus(r5) + dir_bonus \
+            + (3 if s.get('dailyTrend') == '↑' else 0)  # 日线朝上加分(2026-09-03)
         final.append(s)
 
     # ---- 分层放宽取满：T0(K≤45上升) → T1 → T2 → 45-60各层 → 60-70补足 ----
@@ -349,16 +383,18 @@ def main():
     selected = final[:SELECT_N]
     used_tiers = sorted({s['kdj30Tier'] for s in selected})
     max_tier = max(used_tiers) if used_tiers else 0
-    print(f"\n=== 选中 {len(selected)} 只（放宽到 T{max_tier}: {TIER_NAMES.get(max_tier, '-')}）===")
+    n_up_sel = sum(1 for s in selected if s.get('dailyTrend') == '↑')
+    print(f"\n=== 选中 {len(selected)} 只（放宽到 T{max_tier}: {TIER_NAMES.get(max_tier, '-')}）| 日线↑{n_up_sel} + →{len(selected)-n_up_sel} ===")
     for s in selected:
         print(f"  [T{s['kdj30Tier']}] {s['name']}({s['code']}): 评分{s['score']} "
-              f"换手{s['turnover']}% K30={s['kdj30']}{s['kdj30Dir']} "
+              f"换手{s['turnover']}% K30={s['kdj30']}{s['kdj30Dir']} 日线{s.get('dailyTrend', '?')} "
               f"K5={s['kdj5']}{s['kdj5Dir']}(J{s['kdj5J']}) "
               f"今涨{s.get('chg_today')}% 20日{s['drop_20d']}%")
 
     # ---- 6. 写 dynamic_stocks.json ----
     dyn = {'scan_date': datetime.now().strftime('%Y-%m-%d'), 'total': len(selected),
            'filter': f'RSI<{RSI_MAX}/跌20d>3%/评分>35/换手{TURNOVER_MIN}-{TURNOVER_MAX}%/今涨<{TODAY_CHG_MAX}%/'
+                     f'日K站上MA5(收盘<MA5阴跌硬踢,MA5上行↑优先,2026-09-03新增)/'
                      f'K30≤45+上升优先,不足放宽至45-60、60-70,K30≥70硬踢/'
                      f'K5≥70硬踢,低位上拐加分(双重低位确认)',
            'stocks': selected}
@@ -384,6 +420,7 @@ def main():
         e['kdj30Dir'] = s['kdj30Dir']
         e['kdj30Trend'] = s['kdj30Trend']
         e['kdj30Tier'] = s['kdj30Tier']
+        e['dailyTrend'] = s.get('dailyTrend', '')  # 日线趋势: ↑朝上(新硬过滤)
         e['kdj5'] = s['kdj5']
         e['kdj5Dir'] = s['kdj5Dir']
         e['kdj5J'] = s['kdj5J']
