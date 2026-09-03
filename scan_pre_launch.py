@@ -6,11 +6,14 @@
 筛选出"30分钟KDJ仍在低位但即将金叉/底背离"的票 — 即还没涨起来的启动前候选。
 
 筛选条件：
-1. 30分钟KDJ的K值 < 40（低位）
+1. 30分钟KDJ的K值 < 35（低位，2026-09-03从40收紧：半山腰的不要）
 2. K正在上升（K > prev_K）或即将金叉（K逼近D）
-3. 排除已大幅上涨的票（当日涨幅 > 5% 排除）
-4. 优先级：底背离 > 即将金叉 > 低位回升
-5. 5分钟KDJ低位过滤（2026-08-27新增）：5分K>=65 剔除（已拉起的不要），
+3. 现价站在当日分时均价线上方（2026-09-03新增：
+   现价 > 当日VWAP(累计成交额÷累计成交量)，即三线确认法的"黄线之上"——
+   说明当日买盘持续承接、启动已确认但KD仍低位未过热，组合过滤提高胜率）
+4. 排除已大幅上涨的票（当日涨幅 > 5% 排除）
+5. 优先级：底背离 > 即将金叉 > 低位回升
+6. 5分钟KDJ低位过滤（2026-08-27新增）：5分K>=65 剔除（已拉起的不要），
    5分K<30且上拐加分——保证推送时5分钟也在低位，不追高
 """
 import json, subprocess, time, os, sys
@@ -52,7 +55,10 @@ def curl_get(url, timeout=10):
         return ''
 
 def add_prefix(code):
-    """纯数字代码加sh/sz前缀"""
+    """加sh/sz前缀（兼容已带前缀的code——2026-09-03修复：
+    STOCKS里存的是'sz002199'格式，原版会拼成'szsz002199'导致全部拉取失败）"""
+    if code.startswith(('sh', 'sz', 'bj')):
+        return code
     if code.startswith(('6', '9')):
         return 'sh' + code
     else:
@@ -149,13 +155,36 @@ def detect_bottom_divergence(kdj_series, lookback=20):
     
     return False, ''
 
+def fetch_vwap(code):
+    """腾讯分时接口 — 返回 (当日VWAP均价, 分时末笔价)。
+    minute/query 每条为 "HHMM 价格 累计量(手) 累计额(元)"，最后一行即全天累计，
+    VWAP = 累计额 ÷ (累计量×100)。含09:30竞价柱，13:03午盘刚开盘时为9:30-11:30+13:00后的实时均价。
+    失败返回 (None, None) — 调用方按保守剔除处理"""
+    url = f'https://web.ifzq.gtimg.cn/appstock/app/minute/query?code={code}'
+    raw = curl_get(url, 8)
+    if not raw:
+        return None, None
+    try:
+        arr = json.loads(raw)['data'][code]['data']['data']
+        if not arr:
+            return None, None
+        last = arr[-1].split()
+        price = float(last[1])
+        cum_vol = float(last[2])   # 手
+        cum_amt = float(last[3])   # 元
+        if cum_vol <= 0:
+            return None, None
+        return round(cum_amt / (cum_vol * 100), 3), price
+    except:
+        return None, None
+
 def scan_one(stock_info):
     """扫描单只股票"""
     code, name, score = stock_info
     full_code = add_prefix(code)
     
-    # 排除创业板/科创板/北交所
-    num = code
+    # 排除创业板/科创板/北交所（code可能带sh/sz前缀，取后6位纯数字判断）
+    num = code[-6:] if len(code) == 8 else code
     if num.startswith('30') or num.startswith('68') or num.startswith('8') or num.startswith('4'):
         return None
     if num.startswith('00') or num.startswith('60'):
@@ -179,8 +208,8 @@ def scan_one(stock_info):
     prev_k = prev['k']
     
     # 3. 筛选条件
-    # K必须低位（< 40）
-    if k > 40:
+    # K必须低位（< 35，2026-09-03从40收紧）
+    if k > 35:
         return None
     
     # K正在上升或即将金叉（2026-08-27加固：单根上拐→连续2根上拐，
@@ -212,6 +241,15 @@ def scan_one(stock_info):
     chg, price = fetch_realtime(full_code)
     if chg is not None and chg > 5:  # 排除已经大涨的
         return None
+
+    # ---- 4b. 站上当日分时均价线（2026-09-03新增：VWAP之上才推） ----
+    vwap, min_price = fetch_vwap(full_code)
+    if vwap is None:
+        return None  # 分时拉不到 → 保守剔除
+    cmp_price = price if price else min_price  # 优先新浪实时价，兜底分时末笔价
+    if cmp_price <= vwap:
+        return None  # 均价线之下 = 当日买盘不占优，剔除
+    above_vwap_pct = (cmp_price - vwap) / vwap * 100 if vwap else 0
     
     # 5. 底背离检测
     div, div_detail = detect_bottom_divergence(kdj, 20)
@@ -267,6 +305,14 @@ def scan_one(stock_info):
         else:
             signals.append(f'5分中位(K5={k5:.1f})')
     
+    # 站上分时均价线（2026-09-03新增）——距均线太近(±0.5%内)算贴线，减半加分
+    if above_vwap_pct > 0.5:
+        signals.append(f'站上分时均价线(+{above_vwap_pct:.1f}%)')
+        total_score += 8
+    else:
+        signals.append(f'贴分时均价线(+{above_vwap_pct:.1f}%)')
+        total_score += 4
+
     # 日线预测分加成
     total_score = total_score + min(10, score / 10)
     
@@ -284,6 +330,8 @@ def scan_one(stock_info):
         'kd5_k': k5_info['k'] if k5_info else None,
         'kd5_d': k5_info['d'] if k5_info else None,
         'kd5_j': k5_info['j'] if k5_info else None,
+        'vwap': vwap,
+        'above_vwap_pct': round(above_vwap_pct, 2),
         'k_rising': k_rising,
         'just_golden': just_golden,
         'approaching_cross': k_approaching_d,
@@ -390,6 +438,9 @@ def main():
                 k5 = r.get('kd5_k')
                 if k5 is not None:
                     lines.append(f"- 5分KDJ: K={k5:.1f} D={r['kd5_d']:.1f} J={r['kd5_j']:.1f}（低位=低吸窗口，高位勿追）")
+                vwap = r.get('vwap')
+                if vwap:
+                    lines.append(f"- 分时均价: 现价{r['price']:.2f} > 均价{vwap:.2f} (+{r['above_vwap_pct']:.1f}%)")
                 lines.append(f"- 信号: {signals_str}\n")
             try:
                 send_wechat(title, '\n'.join(lines), push_type='prelaunch')
