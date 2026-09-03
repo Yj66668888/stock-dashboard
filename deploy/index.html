@@ -804,6 +804,25 @@
   }
   .auction-btn:hover { background: rgba(88,166,255,0.25); }
   .auction-btn.off { background: transparent; border-color: var(--border); color: var(--text-muted); }
+
+  /* 竞价筛选条 */
+  .auc-filter-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px;
+    margin: 8px 0 0; padding: 8px 12px;
+    background: var(--card-bg); border: 0.5px solid var(--border); border-radius: 10px;
+  }
+  .auc-fgroup { display: flex; align-items: center; gap: 4px; }
+  .auc-fgroup-label { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+  .auc-fpill {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 2.5px 11px; border-radius: 999px; cursor: pointer; font-size: 12px;
+    white-space: nowrap; transition: all 0.15s;
+  }
+  .auc-fpill:hover { border-color: var(--blue); color: var(--blue); }
+  .auc-fpill.on { background: rgba(88,166,255,0.15); border-color: var(--blue); color: var(--blue); font-weight: 600; }
+  .auc-fpill.auc-fclear { border-color: #E24B4A; color: #E24B4A; }
+  .auc-fpill.auc-fclear:hover { background: rgba(226,75,74,0.12); }
+  .auc-fcount { margin-left: auto; font-size: 12px; color: var(--text); font-weight: 600; white-space: nowrap; }
   .auction-summary { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
   .auc-stat {
     min-width: 125px; flex: 1; background: var(--card-bg); border: 1px solid var(--border);
@@ -1086,6 +1105,7 @@
       <button class="auction-btn" id="aucAutoBtn" onclick="toggleAuctionAuto()">⏸ 暂停自动刷新</button>
       <button class="auction-btn" onclick="fetchAuctionData(true)">↻ 立即刷新</button>
     </div>
+    <div class="auc-filter-bar" id="aucFilterBar"></div>
     <div class="auction-summary" id="aucSummary"></div>
     <div class="auction-table-wrap">
       <table class="auction-table">
@@ -1126,6 +1146,7 @@
       <button class="auction-btn" id="laAutoBtn" onclick="toggleLowAucAuto()">⏸ 暂停自动刷新</button>
       <button class="auction-btn" onclick="fetchLowAucData(true)">↻ 立即刷新</button>
     </div>
+    <div class="auc-filter-bar" id="laFilterBar"></div>
     <div class="auction-summary" id="laSummary"></div>
     <div class="auction-table-wrap">
       <table class="auction-table">
@@ -4182,11 +4203,118 @@ function aucSignals(it) {
   return s.join('');
 }
 
+// ============================================
+// 竞价筛选条（竞价监测 + 低位竞价）
+// ============================================
+var aucFilters = { gap: 'all', ratio: 'all', amt: 'all' };
+var laFilters = { gap: 'all', ratio: 'all', amt: 'all', tier: 'all', conf: 'all' };
+
+var AUC_FILTER_DEFS = [
+  { key: 'gap', label: '开盘', opts: [
+    { v: 'all', t: '全部' }, { v: 'up', t: '高开' }, { v: 'down', t: '低开' }, { v: 'strongup', t: '大幅高开≥5%' }
+  ]},
+  { key: 'ratio', label: '买卖比', opts: [
+    { v: 'all', t: '全部' }, { v: 'ge1', t: '≥1 买盘占优' }, { v: 'lt1', t: '<1 卖压占优' }
+  ]},
+  { key: 'amt', label: '竞价金额', opts: [
+    { v: 'all', t: '全部' }, { v: 'ge300', t: '≥300万' }, { v: 'ge1000', t: '≥1000万' }
+  ]}
+];
+var LA_TIER_DEF = { key: 'tier', label: '趋势', opts: [
+  { v: 'all', t: '全部' }, { v: 't0', t: '↑上升' }, { v: 't1', t: '↗待升' }
+]};
+var LA_CONF_DEF = { key: 'conf', label: '盘中确认', opts: [
+  { v: 'all', t: '全部' }, { v: 'ok', t: '✅强势' }, { v: 'rep', t: '⚠️修复' }, { v: 'bad', t: '❌破位' }
+]};
+
+function aucRatioOf(it) {
+  return it.askVol > 0 ? it.bidVol / it.askVol : (it.bidVol > 0 ? 99 : 0);
+}
+
+// 竞价监测筛选判定
+function aucItemPass(it) {
+  var f = aucFilters;
+  if (f.gap === 'up' && !(it.gap > 0)) return false;
+  if (f.gap === 'down' && !(it.gap < 0)) return false;
+  if (f.gap === 'strongup' && !(it.gap >= 5)) return false;
+  var r = aucRatioOf(it);
+  if (f.ratio === 'ge1' && !(r >= 1)) return false;
+  if (f.ratio === 'lt1' && !(r > 0 && r < 1)) return false;
+  if (f.amt === 'ge300' && !((it.amtWan || 0) >= 300)) return false;
+  if (f.amt === 'ge1000' && !((it.amtWan || 0) >= 1000)) return false;
+  return true;
+}
+
+// 低位竞价筛选判定（含趋势 + 盘中确认）
+function laItemPass(it, phase) {
+  var f = laFilters;
+  if (f.gap === 'up' && !(it.gap > 0)) return false;
+  if (f.gap === 'down' && !(it.gap < 0)) return false;
+  if (f.gap === 'strongup' && !(it.gap >= 5)) return false;
+  var r = aucRatioOf(it);
+  if (f.ratio === 'ge1' && !(r >= 1)) return false;
+  if (f.ratio === 'lt1' && !(r > 0 && r < 1)) return false;
+  if (f.amt === 'ge300' && !((it.amtWan || 0) >= 300)) return false;
+  if (f.amt === 'ge1000' && !((it.amtWan || 0) >= 1000)) return false;
+  if (f.tier === 't0' && it.tier !== 0) return false;
+  if (f.tier === 't1' && it.tier !== 1) return false;
+  if (f.conf !== 'all' && laConfirmStatus(it.code, phase) !== f.conf) return false;
+  return true;
+}
+
+// 盘中确认状态：'ok'强势 / 'rep'修复观察 / 'bad'破位 / null无数据
+function laConfirmStatus(code, phase) {
+  if (phase !== 'open' && phase !== 'closed') return null;
+  var cf = (lowAucState.confirm && lowAucState.confirm.data) ? lowAucState.confirm.data[code] : null;
+  if (!cf || !cf.vwap) return null;
+  if (cf.price > cf.vwap && cf.price > cf.yclose) return 'ok';
+  if (cf.price > cf.vwap) return 'rep';
+  return 'bad';
+}
+
+// 通用筛选条渲染：defs=筛选组, state=当前筛选状态对象, setterFn=全局回调函数名
+function aucBuildFilterBar(barId, defs, state, setterFn, clearFn, shown, total) {
+  var el = document.getElementById(barId);
+  if (!el) return;
+  var hasActive = defs.some(function(d) { return state[d.key] && state[d.key] !== 'all'; });
+  var html = '';
+  defs.forEach(function(d) {
+    html += '<span class="auc-fgroup"><span class="auc-fgroup-label">' + d.label + '</span>';
+    d.opts.forEach(function(o) {
+      html += '<button class="auc-fpill' + (state[d.key] === o.v ? ' on' : '') + '"'
+        + ' onclick="' + setterFn + '(\'' + d.key + '\',\'' + o.v + '\')">' + o.t + '</button>';
+    });
+    html += '</span>';
+  });
+  if (hasActive) html += '<button class="auc-fpill auc-fclear" onclick="' + clearFn + '()">✕ 清除</button>';
+  if (total > 0) html += '<span class="auc-fcount">显示 ' + shown + ' / ' + total + ' 只</span>';
+  el.innerHTML = html;
+}
+
+function setAucFilter(key, v) {
+  aucFilters[key] = v;
+  if (aucState.lastRender) renderAuction(aucState.lastRender.items, aucState.lastRender.snap);
+}
+function clearAucFilters() {
+  aucFilters = { gap: 'all', ratio: 'all', amt: 'all' };
+  if (aucState.lastRender) renderAuction(aucState.lastRender.items, aucState.lastRender.snap);
+}
+function setLaFilter(key, v) {
+  laFilters[key] = v;
+  renderLowAuc(lowAucState.lastSnap || false);
+}
+function clearLaFilters() {
+  laFilters = { gap: 'all', ratio: 'all', amt: 'all', tier: 'all', conf: 'all' };
+  renderLowAuc(lowAucState.lastSnap || false);
+}
+
 function renderAuction(items, isSnapshot) {
   var body = document.getElementById('aucBody');
   var summary = document.getElementById('aucSummary');
   var priceTh = document.getElementById('aucPriceTh');
   if (!body) return;
+  // 记录本次渲染参数，供筛选条件变化时免重拉数据重渲染
+  aucState.lastRender = { items: items, snap: !!isSnapshot };
   var phase = getAuctionPhase(new Date());
 
   // 表头语义：竞价中显示"竞价价"，其余显示"开盘价(竞价结果)"
@@ -4199,9 +4327,14 @@ function renderAuction(items, isSnapshot) {
   });
   var maxAmt = 0;
   sorted.forEach(function(it) { if (it.amtWan > maxAmt) maxAmt = it.amtWan; });
+  // 筛选
+  var shown = sorted.filter(aucItemPass);
 
   var html = '';
-  sorted.forEach(function(it) {
+  if (!shown.length && sorted.length) {
+    html = '<tr><td colspan="13" style="color:var(--text-muted);padding:20px;">无符合条件的股票 · 点「✕ 清除」恢复显示</td></tr>';
+  }
+  shown.forEach(function(it) {
     var gapCls = it.gap > 0 ? 'auc-pos' : (it.gap < 0 ? 'auc-neg' : '');
     var ratio = it.askVol > 0 ? it.bidVol / it.askVol : (it.bidVol > 0 ? 99 : 0);
     var ratioCls = ratio >= 1 ? 'auc-pos' : 'auc-neg';
@@ -4225,7 +4358,10 @@ function renderAuction(items, isSnapshot) {
   });
   body.innerHTML = html;
 
-  // 汇总卡片
+  // 筛选条
+  aucBuildFilterBar('aucFilterBar', AUC_FILTER_DEFS, aucFilters, 'setAucFilter', 'clearAucFilters', shown.length, sorted.length);
+
+  // 汇总卡片（始终按全量统计，不受筛选影响）
   var up = 0, down = 0, flat = 0, totalAmt = 0, totalVol = 0, sumGap = 0, bestUp = null, bigAmt = null;
   items.forEach(function(it) {
     if (it.gap > 0.05) up++; else if (it.gap < -0.05) down++; else flat++;
@@ -4730,8 +4866,15 @@ function renderLowAuc(isSnapshot) {
   var maxAmt = 0;
   rows.forEach(function(it) { if ((it.amtWan || 0) > maxAmt) maxAmt = it.amtWan; });
 
+  // 筛选（记录快照态，供筛选变化时免重拉重渲染）
+  lowAucState.lastSnap = !!isSnapshot;
+  var shownRows = rows.filter(function(it) { return laItemPass(it, phase); });
+
   var html = '';
-  rows.forEach(function(it) {
+  if (!shownRows.length && rows.length) {
+    html = '<tr><td colspan="14" style="color:var(--text-muted);padding:20px;">无符合条件的股票 · 点「✕ 清除」恢复显示</td></tr>';
+  }
+  shownRows.forEach(function(it) {
     var trendHtml = it.tier === 0
       ? '<span style="color:#5DCAA5;font-weight:600;">↑上升</span>'
       : '<span style="color:#FAC775;font-weight:600;">↗待升</span>';
@@ -4760,7 +4903,13 @@ function renderLowAuc(isSnapshot) {
   });
   body.innerHTML = html;
 
-  // 汇总卡片
+  // 筛选条：公共三组 + 趋势组 + 盘中确认组（有确认数据才显示）
+  var laDefs = AUC_FILTER_DEFS.concat([LA_TIER_DEF]);
+  var confData = (lowAucState.confirm && lowAucState.confirm.data) ? lowAucState.confirm.data : null;
+  if (confData && Object.keys(confData).length > 0) laDefs = laDefs.concat([LA_CONF_DEF]);
+  aucBuildFilterBar('laFilterBar', laDefs, laFilters, 'setLaFilter', 'clearLaFilters', shownRows.length, rows.length);
+
+  // 汇总卡片（始终按全量统计，不受筛选影响）
   if (summary) {
     var t0n = 0, t1n = 0;
     w.items.forEach(function(it) { if (it.tier === 0) t0n++; else t1n++; });
