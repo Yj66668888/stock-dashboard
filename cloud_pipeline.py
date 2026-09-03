@@ -281,8 +281,9 @@ def full_scan(with_prelaunch=False):
 
     # Step 8b: 低位启动扫描（只扫仪表盘30只选票，有信号则微信推送 channel=9）
     #          仅 midday 模式执行——8:30盘前30分K线是隔夜数据，会误报
+    #          2026-09-03: 180→300秒（新增VWAP分时拉取多一次网络请求/票）
     if with_prelaunch:
-        run_script("[8b/9] 低位启动扫描(仪表盘选票,微信推送)", 'scan_pre_launch.py', timeout=180)
+        run_script("[8b/9] 低位启动扫描(仪表盘选票,微信推送)", 'scan_pre_launch.py', timeout=300)
 
     # Step 9: 复制 deploy -> docs + root + 预计算注入
     print(f"\n{'=' * 60}")
