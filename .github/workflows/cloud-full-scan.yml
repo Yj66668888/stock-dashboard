@@ -16,7 +16,7 @@ concurrency:
 jobs:
   full-scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60  # 2026-09-03: 30分钟连续3天强杀流水线([7c]全市场竞价扫描跑不完)，数据断更根因
 
     steps:
       - name: Checkout
