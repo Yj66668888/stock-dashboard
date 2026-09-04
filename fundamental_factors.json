@@ -1,27 +1,63 @@
 {
-  "scan_date": "2026-09-04 05:10",
-  "total": 36,
+  "scan_date": "2026-09-04 09:32",
+  "total": 82,
   "stocks": {
-    "603137": {
-      "code": "603137",
-      "name": "恒尚节能",
-      "pe": 62.61,
-      "pb": 3.13,
-      "roe": 0.0254,
+    "000009": {
+      "code": "000009",
+      "name": "中国宝安",
+      "pe": -306.65,
+      "pb": 1.88,
+      "roe": -0.003,
       "turnover": 0,
-      "circ_mv": 3731840013.6,
-      "fund_bonus": 0,
+      "circ_mv": 18212464687.55,
+      "fund_bonus": 1,
       "factors": {
         "pe": {
-          "value": 62.61,
+          "value": -306.65,
           "strength": 0
         },
         "roe": {
-          "value": 0.0254,
+          "value": -0.003,
           "strength": 0
         },
         "pb": {
-          "value": 3.13,
+          "value": 1.88,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600418": {
+      "code": "600418",
+      "name": "江淮汽车",
+      "pe": -31.03,
+      "pb": 3.74,
+      "roe": -0.0644,
+      "turnover": 0,
+      "circ_mv": 46481154380.9,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": -31.03,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0644,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.74,
           "strength": 0
         },
         "turnover": {
@@ -38,27 +74,27 @@
         }
       }
     },
-    "601615": {
-      "code": "601615",
-      "name": "明阳智能",
-      "pe": 96.71,
-      "pb": 0.82,
-      "roe": 0.0042,
+    "600513": {
+      "code": "600513",
+      "name": "联环药业",
+      "pe": 211.21,
+      "pb": 3.52,
+      "roe": 0.008199999999999999,
       "turnover": 0,
-      "circ_mv": 21506833674.06,
-      "fund_bonus": 3,
+      "circ_mv": 4444554123.9,
+      "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 96.71,
+          "value": 211.21,
           "strength": 0
         },
         "roe": {
-          "value": 0.0042,
+          "value": 0.008199999999999999,
           "strength": 0
         },
         "pb": {
-          "value": 0.82,
-          "strength": 3
+          "value": 3.52,
+          "strength": 0
         },
         "turnover": {
           "value": 0,
@@ -74,26 +110,62 @@
         }
       }
     },
-    "600396": {
-      "code": "600396",
-      "name": "华电辽能",
-      "pe": 98.03,
-      "pb": 13.78,
-      "roe": 0.07400000000000001,
+    "001270": {
+      "code": "001270",
+      "name": "铖昌科技",
+      "pe": 129.82,
+      "pb": 12.52,
+      "roe": 0.049100000000000005,
       "turnover": 0,
-      "circ_mv": 20603168369.83,
+      "circ_mv": 19683640934.16,
       "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 98.03,
+          "value": 129.82,
           "strength": 0
         },
         "roe": {
-          "value": 0.07400000000000001,
+          "value": 0.049100000000000005,
           "strength": 0
         },
         "pb": {
-          "value": 13.78,
+          "value": 12.52,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002709": {
+      "code": "002709",
+      "name": "天赐材料",
+      "pe": 12.05,
+      "pb": 3.43,
+      "roe": 0.15,
+      "turnover": 0,
+      "circ_mv": 51049842772.77,
+      "fund_bonus": 5,
+      "factors": {
+        "pe": {
+          "value": 12.05,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.15,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.43,
           "strength": 0
         },
         "turnover": {
@@ -113,15 +185,15 @@
     "002645": {
       "code": "002645",
       "name": "华宏科技",
-      "pe": 19.67,
-      "pb": 3.11,
+      "pe": 19.2,
+      "pb": 3.03,
       "roe": 0.0812,
       "turnover": 0,
-      "circ_mv": 12175821417.3,
+      "circ_mv": 11883329617.89,
       "fund_bonus": 3,
       "factors": {
         "pe": {
-          "value": 19.67,
+          "value": 19.2,
           "strength": 3
         },
         "roe": {
@@ -129,7 +201,7 @@
           "strength": 0
         },
         "pb": {
-          "value": 3.11,
+          "value": 3.03,
           "strength": 0
         },
         "turnover": {
@@ -146,27 +218,279 @@
         }
       }
     },
-    "600363": {
-      "code": "600363",
-      "name": "联创光电",
-      "pe": 22.52,
-      "pb": 1.62,
-      "roe": 0.036699999999999997,
+    "002149": {
+      "code": "002149",
+      "name": "西部材料",
+      "pe": 185.3,
+      "pb": 2.51,
+      "roe": 0.009000000000000001,
       "turnover": 0,
-      "circ_mv": 7507292692.499999,
-      "fund_bonus": 4,
+      "circ_mv": 16596730216.0,
+      "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 22.52,
-          "strength": 3
+          "value": 185.3,
+          "strength": 0
         },
         "roe": {
-          "value": 0.036699999999999997,
+          "value": 0.009000000000000001,
           "strength": 0
         },
         "pb": {
-          "value": 1.62,
+          "value": 2.51,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000021": {
+      "code": "000021",
+      "name": "深科技",
+      "pe": 50.33,
+      "pb": 4.11,
+      "roe": 0.0407,
+      "turnover": 0,
+      "circ_mv": 54699935024.240005,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 50.33,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0407,
+          "strength": 0
+        },
+        "pb": {
+          "value": 4.11,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "001896": {
+      "code": "001896",
+      "name": "豫能控股",
+      "pe": 134.48,
+      "pb": 4.87,
+      "roe": 0.0184,
+      "turnover": 0,
+      "circ_mv": 17607516548.199997,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 134.48,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0184,
+          "strength": 0
+        },
+        "pb": {
+          "value": 4.87,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600089": {
+      "code": "600089",
+      "name": "特变电工",
+      "pe": 18.69,
+      "pb": 1.35,
+      "roe": 0.0358,
+      "turnover": 0,
+      "circ_mv": 95396723740.48,
+      "fund_bonus": 5,
+      "factors": {
+        "pe": {
+          "value": 18.69,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0358,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.35,
+          "strength": 2
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002409": {
+      "code": "002409",
+      "name": "雅克科技",
+      "pe": 53.72,
+      "pb": 7.53,
+      "roe": 0.0707,
+      "turnover": 0,
+      "circ_mv": 40331350225.14,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 53.72,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0707,
+          "strength": 0
+        },
+        "pb": {
+          "value": 7.53,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002056": {
+      "code": "002056",
+      "name": "横店东磁",
+      "pe": 16.91,
+      "pb": 3.02,
+      "roe": 0.08800000000000001,
+      "turnover": 0,
+      "circ_mv": 32045373279.879997,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 16.91,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.08800000000000001,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.02,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603013": {
+      "code": "603013",
+      "name": "亚普股份",
+      "pe": 12.86,
+      "pb": 1.64,
+      "roe": 0.0639,
+      "turnover": 0,
+      "circ_mv": 7526731742.84,
+      "fund_bonus": 6,
+      "factors": {
+        "pe": {
+          "value": 12.86,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.0639,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.64,
           "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601615": {
+      "code": "601615",
+      "name": "明阳智能",
+      "pe": 94.68,
+      "pb": 0.81,
+      "roe": 0.0042,
+      "turnover": 0,
+      "circ_mv": 21054534332.86,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 94.68,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0042,
+          "strength": 0
+        },
+        "pb": {
+          "value": 0.81,
+          "strength": 3
         },
         "turnover": {
           "value": 0,
@@ -185,15 +509,15 @@
     "603211": {
       "code": "603211",
       "name": "晋拓股份",
-      "pe": 156.85,
-      "pb": 4.56,
+      "pe": 154.33,
+      "pb": 4.49,
       "roe": 0.0146,
       "turnover": 0,
-      "circ_mv": 5740584960.0,
+      "circ_mv": 5648170240.0,
       "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 156.85,
+          "value": 154.33,
           "strength": 0
         },
         "roe": {
@@ -201,7 +525,7 @@
           "strength": 0
         },
         "pb": {
-          "value": 4.56,
+          "value": 4.49,
           "strength": 0
         },
         "turnover": {
@@ -218,26 +542,26 @@
         }
       }
     },
-    "603699": {
-      "code": "603699",
-      "name": "纽威股份",
-      "pe": 24.37,
-      "pb": 7.75,
-      "roe": 0.1586,
+    "002371": {
+      "code": "002371",
+      "name": "北方华创",
+      "pe": 68.71,
+      "pb": 11.42,
+      "roe": 0.0858,
       "turnover": 0,
-      "circ_mv": 34957961188.08,
-      "fund_bonus": 3,
+      "circ_mv": 462727930320.11,
+      "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 24.37,
-          "strength": 3
+          "value": 68.71,
+          "strength": 0
         },
         "roe": {
-          "value": 0.1586,
+          "value": 0.0858,
           "strength": 0
         },
         "pb": {
-          "value": 7.75,
+          "value": 11.42,
           "strength": 0
         },
         "turnover": {
@@ -254,26 +578,98 @@
         }
       }
     },
-    "600129": {
-      "code": "600129",
-      "name": "太极集团",
-      "pe": 43.68,
-      "pb": 2.14,
-      "roe": 0.0248,
+    "002792": {
+      "code": "002792",
+      "name": "通宇通讯",
+      "pe": -357.02,
+      "pb": 5.69,
+      "roe": -0.0079,
       "turnover": 0,
-      "circ_mv": 7675741135.2,
-      "fund_bonus": 1,
+      "circ_mv": 10283908318.76,
+      "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 43.68,
+          "value": -357.02,
           "strength": 0
         },
         "roe": {
-          "value": 0.0248,
+          "value": -0.0079,
           "strength": 0
         },
         "pb": {
-          "value": 2.14,
+          "value": 5.69,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600895": {
+      "code": "600895",
+      "name": "张江高科",
+      "pe": 70.1,
+      "pb": 3.42,
+      "roe": 0.0231,
+      "turnover": 0,
+      "circ_mv": 46181922381.0,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 70.1,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0231,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.42,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000729": {
+      "code": "000729",
+      "name": "燕京啤酒",
+      "pe": 11.35,
+      "pb": 1.88,
+      "roe": 0.08650000000000001,
+      "turnover": 0,
+      "circ_mv": 28283267137.09,
+      "fund_bonus": 6,
+      "factors": {
+        "pe": {
+          "value": 11.35,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.08650000000000001,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.88,
           "strength": 1
         },
         "turnover": {
@@ -290,94 +686,418 @@
         }
       }
     },
-    "002384": {
-      "code": "002384",
-      "name": "东山精密",
-      "pe": 55.95,
-      "pb": 13.58,
-      "roe": 0.1288,
+    "000899": {
+      "code": "000899",
+      "name": "赣能股份",
+      "pe": 18.26,
+      "pb": 1.51,
+      "roe": 0.0383,
       "turnover": 0,
-      "circ_mv": 250425156042.71997,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": 55.95,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.1288,
-          "strength": 0
-        },
-        "pb": {
-          "value": 13.58,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "600196": {
-      "code": "600196",
-      "name": "复星医药",
-      "pe": 17.38,
-      "pb": 1.23,
-      "roe": 0.0353,
-      "turnover": 0,
-      "circ_mv": 47475334568.25,
-      "fund_bonus": 5,
-      "factors": {
-        "pe": {
-          "value": 17.38,
-          "strength": 3
-        },
-        "roe": {
-          "value": 0.0353,
-          "strength": 0
-        },
-        "pb": {
-          "value": 1.23,
-          "strength": 2
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002773": {
-      "code": "002773",
-      "name": "康弘药业",
-      "pe": 16.65,
-      "pb": 2.04,
-      "roe": 0.0596,
-      "turnover": 0,
-      "circ_mv": 14018392745.89,
+      "circ_mv": 9161614166.4,
       "fund_bonus": 4,
       "factors": {
         "pe": {
-          "value": 16.65,
+          "value": 18.26,
           "strength": 3
         },
         "roe": {
-          "value": 0.0596,
+          "value": 0.0383,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.51,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603496": {
+      "code": "603496",
+      "name": "恒为科技",
+      "pe": 162.21,
+      "pb": 5.1,
+      "roe": 0.0158,
+      "turnover": 0,
+      "circ_mv": 7159878673.48,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 162.21,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0158,
+          "strength": 0
+        },
+        "pb": {
+          "value": 5.1,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603986": {
+      "code": "603986",
+      "name": "兆易创新",
+      "pe": 19.09,
+      "pb": 6.99,
+      "roe": 0.23129999999999998,
+      "turnover": 0,
+      "circ_mv": 249426731444.76,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 19.09,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.23129999999999998,
+          "strength": 0
+        },
+        "pb": {
+          "value": 6.99,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002156": {
+      "code": "002156",
+      "name": "通富微电",
+      "pe": 25.13,
+      "pb": 5.12,
+      "roe": 0.1054,
+      "turnover": 0,
+      "circ_mv": 86297507865.14,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 25.13,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.1054,
+          "strength": 0
+        },
+        "pb": {
+          "value": 5.12,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600058": {
+      "code": "600058",
+      "name": "五矿发展",
+      "pe": 896.66,
+      "pb": 2.18,
+      "roe": -0.0052,
+      "turnover": 0,
+      "circ_mv": 10483286753.58,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 896.66,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0052,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.18,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601858": {
+      "code": "601858",
+      "name": "中国科传",
+      "pe": 47.82,
+      "pb": 2.91,
+      "roe": 0.030899999999999997,
+      "turnover": 0,
+      "circ_mv": 16995750000.0,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 47.82,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.030899999999999997,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.91,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002606": {
+      "code": "002606",
+      "name": "大连电瓷",
+      "pe": 18.64,
+      "pb": 2.82,
+      "roe": 0.078,
+      "turnover": 0,
+      "circ_mv": 5536434287.34,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 18.64,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.078,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.82,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600132": {
+      "code": "600132",
+      "name": "重庆啤酒",
+      "pe": 12.16,
+      "pb": 12.22,
+      "roe": 0.4754,
+      "turnover": 0,
+      "circ_mv": 19349168496.039997,
+      "fund_bonus": 5,
+      "factors": {
+        "pe": {
+          "value": 12.16,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.4754,
+          "strength": 0
+        },
+        "pb": {
+          "value": 12.22,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002348": {
+      "code": "002348",
+      "name": "高乐股份",
+      "pe": -185.38,
+      "pb": 17.75,
+      "roe": -0.0731,
+      "turnover": 0,
+      "circ_mv": 9794297709.16,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": -185.38,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0731,
+          "strength": 0
+        },
+        "pb": {
+          "value": 17.75,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002865": {
+      "code": "002865",
+      "name": "钧达股份",
+      "pe": -23.51,
+      "pb": 3.15,
+      "roe": -0.06709999999999999,
+      "turnover": 0,
+      "circ_mv": 8747844109.96,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": -23.51,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.06709999999999999,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.15,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002185": {
+      "code": "002185",
+      "name": "华天科技",
+      "pe": 31.84,
+      "pb": 2.72,
+      "roe": 0.0444,
+      "turnover": 0,
+      "circ_mv": 51786233103.24,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 31.84,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.0444,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.72,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "001358": {
+      "code": "001358",
+      "name": "兴欣新材",
+      "pe": 38.93,
+      "pb": 2.04,
+      "roe": 0.0262,
+      "turnover": 0,
+      "circ_mv": 1217823998.1200001,
+      "fund_bonus": 2,
+      "factors": {
+        "pe": {
+          "value": 38.93,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.0262,
           "strength": 0
         },
         "pb": {
@@ -398,26 +1118,26 @@
         }
       }
     },
-    "600578": {
-      "code": "600578",
-      "name": "京能电力",
-      "pe": 9.19,
-      "pb": 1.47,
-      "roe": 0.07769999999999999,
+    "600196": {
+      "code": "600196",
+      "name": "复星医药",
+      "pe": 17.33,
+      "pb": 1.22,
+      "roe": 0.0353,
       "turnover": 0,
-      "circ_mv": 36552630741.9,
-      "fund_bonus": 7,
+      "circ_mv": 47327040350.5,
+      "fund_bonus": 5,
       "factors": {
         "pe": {
-          "value": 9.19,
-          "strength": 5
+          "value": 17.33,
+          "strength": 3
         },
         "roe": {
-          "value": 0.07769999999999999,
+          "value": 0.0353,
           "strength": 0
         },
         "pb": {
-          "value": 1.47,
+          "value": 1.22,
           "strength": 2
         },
         "turnover": {
@@ -434,26 +1154,26 @@
         }
       }
     },
-    "605056": {
-      "code": "605056",
-      "name": "咸亨国际",
-      "pe": 44.85,
-      "pb": 3.24,
-      "roe": 0.0348,
+    "600301": {
+      "code": "600301",
+      "name": "华锡有色",
+      "pe": 26.64,
+      "pb": 5.59,
+      "roe": 0.10529999999999999,
       "turnover": 0,
-      "circ_mv": 5599097616.0,
-      "fund_bonus": 0,
+      "circ_mv": 12381845574.57,
+      "fund_bonus": 1,
       "factors": {
         "pe": {
-          "value": 44.85,
-          "strength": 0
+          "value": 26.64,
+          "strength": 1
         },
         "roe": {
-          "value": 0.0348,
+          "value": 0.10529999999999999,
           "strength": 0
         },
         "pb": {
-          "value": 3.24,
+          "value": 5.59,
           "strength": 0
         },
         "turnover": {
@@ -470,26 +1190,170 @@
         }
       }
     },
-    "603170": {
-      "code": "603170",
-      "name": "宝立食品",
-      "pe": 19.97,
-      "pb": 3.44,
-      "roe": 0.0842,
+    "002384": {
+      "code": "002384",
+      "name": "东山精密",
+      "pe": 55.34,
+      "pb": 13.43,
+      "roe": 0.1288,
       "turnover": 0,
-      "circ_mv": 5132128300.0,
+      "circ_mv": 247694102248.40997,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 55.34,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.1288,
+          "strength": 0
+        },
+        "pb": {
+          "value": 13.43,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002643": {
+      "code": "002643",
+      "name": "万润股份",
+      "pe": 32.52,
+      "pb": 1.63,
+      "roe": 0.0248,
+      "turnover": 0,
+      "circ_mv": 11367908622.0,
+      "fund_bonus": 2,
+      "factors": {
+        "pe": {
+          "value": 32.52,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.0248,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.63,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600396": {
+      "code": "600396",
+      "name": "华电辽能",
+      "pe": 95.58,
+      "pb": 13.44,
+      "roe": 0.07400000000000001,
+      "turnover": 0,
+      "circ_mv": 20087720983.88,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 95.58,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.07400000000000001,
+          "strength": 0
+        },
+        "pb": {
+          "value": 13.44,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603800": {
+      "code": "603800",
+      "name": "洪田股份",
+      "pe": -123.6,
+      "pb": 15.22,
+      "roe": -0.0594,
+      "turnover": 0,
+      "circ_mv": 11679200000.0,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": -123.6,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0594,
+          "strength": 0
+        },
+        "pb": {
+          "value": 15.22,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603606": {
+      "code": "603606",
+      "name": "东方电缆",
+      "pe": 24.88,
+      "pb": 3.32,
+      "roe": 0.0665,
+      "turnover": 0,
+      "circ_mv": 28101225186.16,
       "fund_bonus": 3,
       "factors": {
         "pe": {
-          "value": 19.97,
+          "value": 24.88,
           "strength": 3
         },
         "roe": {
-          "value": 0.0842,
+          "value": 0.0665,
           "strength": 0
         },
         "pb": {
-          "value": 3.44,
+          "value": 3.32,
           "strength": 0
         },
         "turnover": {
@@ -506,170 +1370,26 @@
         }
       }
     },
-    "600376": {
-      "code": "600376",
-      "name": "首开股份",
-      "pe": -2.36,
-      "pb": 6.93,
-      "roe": -0.8636,
+    "601089": {
+      "code": "601089",
+      "name": "福元医药",
+      "pe": 20.98,
+      "pb": 2.09,
+      "roe": 0.048600000000000004,
       "turnover": 0,
-      "circ_mv": 8667339213.119999,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": -2.36,
-          "strength": 0
-        },
-        "roe": {
-          "value": -0.8636,
-          "strength": 0
-        },
-        "pb": {
-          "value": 6.93,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "601179": {
-      "code": "601179",
-      "name": "中国西电",
-      "pe": 47.38,
-      "pb": 2.78,
-      "roe": 0.0297,
-      "turnover": 0,
-      "circ_mv": 65201223517.44,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": 47.38,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.0297,
-          "strength": 0
-        },
-        "pb": {
-          "value": 2.78,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002317": {
-      "code": "002317",
-      "name": "众生药业",
-      "pe": 95.01,
-      "pb": 5.29,
-      "roe": 0.0273,
-      "turnover": 0,
-      "circ_mv": 19131436265.21,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": 95.01,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.0273,
-          "strength": 0
-        },
-        "pb": {
-          "value": 5.29,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "603660": {
-      "code": "603660",
-      "name": "苏州科达",
-      "pe": -10.36,
-      "pb": 10.11,
-      "roe": -0.3923,
-      "turnover": 0,
-      "circ_mv": 5966383746.24,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": -10.36,
-          "strength": 0
-        },
-        "roe": {
-          "value": -0.3923,
-          "strength": 0
-        },
-        "pb": {
-          "value": 10.11,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "600366": {
-      "code": "600366",
-      "name": "宁波韵升",
-      "pe": 22.96,
-      "pb": 1.96,
-      "roe": 0.0429,
-      "turnover": 0,
-      "circ_mv": 12584020033.949999,
+      "circ_mv": 7814400000.000001,
       "fund_bonus": 4,
       "factors": {
         "pe": {
-          "value": 22.96,
+          "value": 20.98,
           "strength": 3
         },
         "roe": {
-          "value": 0.0429,
+          "value": 0.048600000000000004,
           "strength": 0
         },
         "pb": {
-          "value": 1.96,
+          "value": 2.09,
           "strength": 1
         },
         "turnover": {
@@ -686,26 +1406,62 @@
         }
       }
     },
-    "603501": {
-      "code": "603501",
-      "name": "豪威集团",
-      "pe": 42.12,
-      "pb": 3.16,
-      "roe": 0.0373,
+    "002202": {
+      "code": "002202",
+      "name": "金风科技",
+      "pe": 19.92,
+      "pb": 1.88,
+      "roe": 0.0451,
       "turnover": 0,
-      "circ_mv": 98604491639.84999,
+      "circ_mv": 58827703866.689995,
+      "fund_bonus": 4,
+      "factors": {
+        "pe": {
+          "value": 19.92,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0451,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.88,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603005": {
+      "code": "603005",
+      "name": "晶方科技",
+      "pe": 71.01,
+      "pb": 4.07,
+      "roe": 0.0288,
+      "turnover": 0,
+      "circ_mv": 18847762303.399998,
       "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 42.12,
+          "value": 71.01,
           "strength": 0
         },
         "roe": {
-          "value": 0.0373,
+          "value": 0.0288,
           "strength": 0
         },
         "pb": {
-          "value": 3.16,
+          "value": 4.07,
           "strength": 0
         },
         "turnover": {
@@ -722,26 +1478,26 @@
         }
       }
     },
-    "000009": {
-      "code": "000009",
-      "name": "中国宝安",
-      "pe": -310.99,
-      "pb": 1.91,
-      "roe": -0.003,
+    "600143": {
+      "code": "600143",
+      "name": "金发科技",
+      "pe": 26.72,
+      "pb": 1.86,
+      "roe": 0.0347,
       "turnover": 0,
-      "circ_mv": 18470066734.05,
-      "fund_bonus": 1,
+      "circ_mv": 36070768323.32,
+      "fund_bonus": 2,
       "factors": {
         "pe": {
-          "value": -310.99,
-          "strength": 0
+          "value": 26.72,
+          "strength": 1
         },
         "roe": {
-          "value": -0.003,
+          "value": 0.0347,
           "strength": 0
         },
         "pb": {
-          "value": 1.91,
+          "value": 1.86,
           "strength": 1
         },
         "turnover": {
@@ -758,58 +1514,22 @@
         }
       }
     },
-    "605011": {
-      "code": "605011",
-      "name": "杭州热电",
-      "pe": 36.39,
-      "pb": 2.8,
-      "roe": 0.0387,
-      "turnover": 0,
-      "circ_mv": 6961739999.999999,
-      "fund_bonus": 1,
-      "factors": {
-        "pe": {
-          "value": 36.39,
-          "strength": 1
-        },
-        "roe": {
-          "value": 0.0387,
-          "strength": 0
-        },
-        "pb": {
-          "value": 2.8,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "000899": {
-      "code": "000899",
-      "name": "赣能股份",
-      "pe": 18.5,
+    "600267": {
+      "code": "600267",
+      "name": "海正药业",
+      "pe": 10.79,
       "pb": 1.53,
-      "roe": 0.0383,
+      "roe": 0.07200000000000001,
       "turnover": 0,
-      "circ_mv": 9278695497.6,
-      "fund_bonus": 4,
+      "circ_mv": 13738367197.44,
+      "fund_bonus": 6,
       "factors": {
         "pe": {
-          "value": 18.5,
-          "strength": 3
+          "value": 10.79,
+          "strength": 5
         },
         "roe": {
-          "value": 0.0383,
+          "value": 0.07200000000000001,
           "strength": 0
         },
         "pb": {
@@ -830,27 +1550,27 @@
         }
       }
     },
-    "603690": {
-      "code": "603690",
-      "name": "至纯科技",
-      "pe": -15.89,
-      "pb": 2.83,
-      "roe": -0.08539999999999999,
+    "002867": {
+      "code": "002867",
+      "name": "周大生",
+      "pe": 13.13,
+      "pb": 1.9,
+      "roe": 0.06709999999999999,
       "turnover": 0,
-      "circ_mv": 9114549150.0,
-      "fund_bonus": 0,
+      "circ_mv": 11741062827.52,
+      "fund_bonus": 6,
       "factors": {
         "pe": {
-          "value": -15.89,
-          "strength": 0
+          "value": 13.13,
+          "strength": 5
         },
         "roe": {
-          "value": -0.08539999999999999,
+          "value": 0.06709999999999999,
           "strength": 0
         },
         "pb": {
-          "value": 2.83,
-          "strength": 0
+          "value": 1.9,
+          "strength": 1
         },
         "turnover": {
           "value": 0,
@@ -866,27 +1586,27 @@
         }
       }
     },
-    "603800": {
-      "code": "603800",
-      "name": "洪田股份",
-      "pe": -126.58,
-      "pb": 15.59,
-      "roe": -0.0594,
+    "002773": {
+      "code": "002773",
+      "name": "康弘药业",
+      "pe": 16.56,
+      "pb": 2.03,
+      "roe": 0.0596,
       "turnover": 0,
-      "circ_mv": 11960000000.0,
-      "fund_bonus": 0,
+      "circ_mv": 13942840408.7,
+      "fund_bonus": 4,
       "factors": {
         "pe": {
-          "value": -126.58,
-          "strength": 0
+          "value": 16.56,
+          "strength": 3
         },
         "roe": {
-          "value": -0.0594,
+          "value": 0.0596,
           "strength": 0
         },
         "pb": {
-          "value": 15.59,
-          "strength": 0
+          "value": 2.03,
+          "strength": 1
         },
         "turnover": {
           "value": 0,
@@ -905,91 +1625,19 @@
     "002083": {
       "code": "002083",
       "name": "孚日股份",
-      "pe": 11.87,
-      "pb": 1.98,
+      "pe": 11.63,
+      "pb": 1.94,
       "roe": 0.08220000000000001,
       "turnover": 0,
-      "circ_mv": 9567177034.32,
+      "circ_mv": 9368452288.800001,
       "fund_bonus": 6,
       "factors": {
         "pe": {
-          "value": 11.87,
+          "value": 11.63,
           "strength": 5
         },
         "roe": {
           "value": 0.08220000000000001,
-          "strength": 0
-        },
-        "pb": {
-          "value": 1.98,
-          "strength": 1
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002585": {
-      "code": "002585",
-      "name": "双星新材",
-      "pe": 113.2,
-      "pb": 1.24,
-      "roe": 0.0055000000000000005,
-      "turnover": 0,
-      "circ_mv": 8050253435.04,
-      "fund_bonus": 2,
-      "factors": {
-        "pe": {
-          "value": 113.2,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.0055000000000000005,
-          "strength": 0
-        },
-        "pb": {
-          "value": 1.24,
-          "strength": 2
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "600703": {
-      "code": "600703",
-      "name": "三安光电",
-      "pe": -343.97,
-      "pb": 1.94,
-      "roe": -0.0028000000000000004,
-      "turnover": 0,
-      "circ_mv": 67351752814.5,
-      "fund_bonus": 1,
-      "factors": {
-        "pe": {
-          "value": -343.97,
-          "strength": 0
-        },
-        "roe": {
-          "value": -0.0028000000000000004,
           "strength": 0
         },
         "pb": {
@@ -1010,26 +1658,26 @@
         }
       }
     },
-    "603057": {
-      "code": "603057",
-      "name": "紫燕食品",
-      "pe": 64.04,
-      "pb": 4.06,
-      "roe": 0.0327,
+    "603501": {
+      "code": "603501",
+      "name": "豪威集团",
+      "pe": 41.38,
+      "pb": 3.11,
+      "roe": 0.0373,
       "turnover": 0,
-      "circ_mv": 8516040000.000001,
+      "circ_mv": 96866329466.25,
       "fund_bonus": 0,
       "factors": {
         "pe": {
-          "value": 64.04,
+          "value": 41.38,
           "strength": 0
         },
         "roe": {
-          "value": 0.0327,
+          "value": 0.0373,
           "strength": 0
         },
         "pb": {
-          "value": 4.06,
+          "value": 3.11,
           "strength": 0
         },
         "turnover": {
@@ -1046,166 +1694,418 @@
         }
       }
     },
-    "002970": {
-      "code": "002970",
-      "name": "锐明技术",
-      "pe": 41.24,
-      "pb": 4.15,
-      "roe": 0.0525,
+    "000970": {
+      "code": "000970",
+      "name": "中科三环",
+      "pe": 145.01,
+      "pb": 2.18,
+      "roe": 0.0076,
       "turnover": 0,
-      "circ_mv": 6527275751.58,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": 41.24,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.0525,
-          "strength": 0
-        },
-        "pb": {
-          "value": 4.15,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002009": {
-      "code": "002009",
-      "name": "天奇股份",
-      "pe": 74.11,
-      "pb": 3.24,
-      "roe": 0.022000000000000002,
-      "turnover": 0,
-      "circ_mv": 5880239895.400001,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": 74.11,
-          "strength": 0
-        },
-        "roe": {
-          "value": 0.022000000000000002,
-          "strength": 0
-        },
-        "pb": {
-          "value": 3.24,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "001331": {
-      "code": "001331",
-      "name": "胜通能源",
-      "pe": -930.55,
-      "pb": 12.12,
-      "roe": -0.0064,
-      "turnover": 0,
-      "circ_mv": 12250851669.0,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": -930.55,
-          "strength": 0
-        },
-        "roe": {
-          "value": -0.0064,
-          "strength": 0
-        },
-        "pb": {
-          "value": 12.12,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002792": {
-      "code": "002792",
-      "name": "通宇通讯",
-      "pe": -357.73,
-      "pb": 5.7,
-      "roe": -0.0079,
-      "turnover": 0,
-      "circ_mv": 10304178834.5,
-      "fund_bonus": 0,
-      "factors": {
-        "pe": {
-          "value": -357.73,
-          "strength": 0
-        },
-        "roe": {
-          "value": -0.0079,
-          "strength": 0
-        },
-        "pb": {
-          "value": 5.7,
-          "strength": 0
-        },
-        "turnover": {
-          "value": 0,
-          "strength": 0
-        },
-        "forecast": {
-          "value": "需公告API",
-          "strength": 0
-        },
-        "concept": {
-          "value": "需概念映射",
-          "strength": 0
-        }
-      }
-    },
-    "002472": {
-      "code": "002472",
-      "name": "双环传动",
-      "pe": 28.22,
-      "pb": 3.19,
-      "roe": 0.0567,
-      "turnover": 0,
-      "circ_mv": 29491467903.52,
+      "circ_mv": 14272620575.02,
       "fund_bonus": 1,
       "factors": {
         "pe": {
-          "value": 28.22,
+          "value": 145.01,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0076,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.18,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002568": {
+      "code": "002568",
+      "name": "百润股份",
+      "pe": 19.67,
+      "pb": 3.77,
+      "roe": 0.09300000000000001,
+      "turnover": 0,
+      "circ_mv": 13786543325.789999,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 19.67,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.09300000000000001,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.77,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601179": {
+      "code": "601179",
+      "name": "中国西电",
+      "pe": 46.93,
+      "pb": 2.76,
+      "roe": 0.0297,
+      "turnover": 0,
+      "circ_mv": 64586117635.2,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 46.93,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0297,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.76,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000960": {
+      "code": "000960",
+      "name": "锡业股份",
+      "pe": 18.29,
+      "pb": 2.56,
+      "roe": 0.0732,
+      "turnover": 0,
+      "circ_mv": 54990335835.840004,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 18.29,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0732,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.56,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603669": {
+      "code": "603669",
+      "name": "灵康药业",
+      "pe": 88.06,
+      "pb": 6.4,
+      "roe": 0.0335,
+      "turnover": 0,
+      "circ_mv": 3718368681.2999997,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 88.06,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0335,
+          "strength": 0
+        },
+        "pb": {
+          "value": 6.4,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002705": {
+      "code": "002705",
+      "name": "新宝股份",
+      "pe": 33.17,
+      "pb": 1.08,
+      "roe": 0.0158,
+      "turnover": 0,
+      "circ_mv": 9010352910.0,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 33.17,
           "strength": 1
         },
         "roe": {
-          "value": 0.0567,
+          "value": 0.0158,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.08,
+          "strength": 2
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600129": {
+      "code": "600129",
+      "name": "太极集团",
+      "pe": 43.31,
+      "pb": 2.12,
+      "roe": 0.0248,
+      "turnover": 0,
+      "circ_mv": 7609570953.0,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 43.31,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0248,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.12,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "605090": {
+      "code": "605090",
+      "name": "九丰能源",
+      "pe": 12.46,
+      "pb": 1.93,
+      "roe": 0.0803,
+      "turnover": 0,
+      "circ_mv": 23646702553.0,
+      "fund_bonus": 6,
+      "factors": {
+        "pe": {
+          "value": 12.46,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.0803,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.93,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002747": {
+      "code": "002747",
+      "name": "埃斯顿",
+      "pe": 89.71,
+      "pb": 8.83,
+      "roe": 0.0616,
+      "turnover": 0,
+      "circ_mv": 23436257075.64,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 89.71,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0616,
+          "strength": 0
+        },
+        "pb": {
+          "value": 8.83,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000423": {
+      "code": "000423",
+      "name": "东阿阿胶",
+      "pe": 18.05,
+      "pb": 3.34,
+      "roe": 0.0812,
+      "turnover": 0,
+      "circ_mv": 31008899225.149998,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 18.05,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0812,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.34,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603399": {
+      "code": "603399",
+      "name": "永杉锂业",
+      "pe": 17.94,
+      "pb": 4.18,
+      "roe": 0.1249,
+      "turnover": 0,
+      "circ_mv": 7095225488.65,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 17.94,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.1249,
+          "strength": 0
+        },
+        "pb": {
+          "value": 4.18,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002956": {
+      "code": "002956",
+      "name": "西麦食品",
+      "pe": 17.68,
+      "pb": 3.19,
+      "roe": 0.08800000000000001,
+      "turnover": 0,
+      "circ_mv": 5240805545.82,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 17.68,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.08800000000000001,
           "strength": 0
         },
         "pb": {
@@ -1226,26 +2126,242 @@
         }
       }
     },
-    "603799": {
-      "code": "603799",
-      "name": "华友钴业",
-      "pe": 10.44,
-      "pb": 1.44,
-      "roe": 0.0705,
+    "000338": {
+      "code": "000338",
+      "name": "潍柴动力",
+      "pe": 15.06,
+      "pb": 2.41,
+      "roe": 0.08,
       "turnover": 0,
-      "circ_mv": 73012646379.96,
-      "fund_bonus": 7,
+      "circ_mv": 133079139779.55,
+      "fund_bonus": 4,
       "factors": {
         "pe": {
-          "value": 10.44,
-          "strength": 5
+          "value": 15.06,
+          "strength": 3
         },
         "roe": {
-          "value": 0.0705,
+          "value": 0.08,
           "strength": 0
         },
         "pb": {
-          "value": 1.44,
+          "value": 2.41,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000767": {
+      "code": "000767",
+      "name": "晋控电力",
+      "pe": 43.45,
+      "pb": 1.72,
+      "roe": 0.0017000000000000001,
+      "turnover": 0,
+      "circ_mv": 9843392953.68,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 43.45,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0017000000000000001,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.72,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000657": {
+      "code": "000657",
+      "name": "中钨高新",
+      "pe": 31.63,
+      "pb": 11.64,
+      "roe": 0.1929,
+      "turnover": 0,
+      "circ_mv": 83776973683.48,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 31.63,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.1929,
+          "strength": 0
+        },
+        "pb": {
+          "value": 11.64,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600259": {
+      "code": "600259",
+      "name": "中稀有色",
+      "pe": 32.1,
+      "pb": 6.73,
+      "roe": 0.1092,
+      "turnover": 0,
+      "circ_mv": 25902200710.899998,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 32.1,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.1092,
+          "strength": 0
+        },
+        "pb": {
+          "value": 6.73,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603713": {
+      "code": "603713",
+      "name": "密尔克卫",
+      "pe": 14.45,
+      "pb": 1.93,
+      "roe": 0.07919999999999999,
+      "turnover": 0,
+      "circ_mv": 11015532223.18,
+      "fund_bonus": 6,
+      "factors": {
+        "pe": {
+          "value": 14.45,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.07919999999999999,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.93,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002595": {
+      "code": "002595",
+      "name": "豪迈科技",
+      "pe": 21.69,
+      "pb": 3.98,
+      "roe": 0.092,
+      "turnover": 0,
+      "circ_mv": 48849816895.2,
+      "fund_bonus": 3,
+      "factors": {
+        "pe": {
+          "value": 21.69,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.092,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.98,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000539": {
+      "code": "000539",
+      "name": "粤电力Ａ",
+      "pe": -24.67,
+      "pb": 1.18,
+      "roe": -0.0236,
+      "turnover": 0,
+      "circ_mv": 13109134791.869999,
+      "fund_bonus": 2,
+      "factors": {
+        "pe": {
+          "value": -24.67,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0236,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.18,
           "strength": 2
         },
         "turnover": {
@@ -1262,26 +2378,566 @@
         }
       }
     },
-    "603026": {
-      "code": "603026",
-      "name": "石大胜华",
-      "pe": 15.95,
-      "pb": 2.65,
-      "roe": 0.0874,
+    "002208": {
+      "code": "002208",
+      "name": "合肥城建",
+      "pe": -21.17,
+      "pb": 1.42,
+      "roe": -0.0329,
       "turnover": 0,
-      "circ_mv": 14346017513.1,
-      "fund_bonus": 3,
+      "circ_mv": 8158873252.96,
+      "fund_bonus": 2,
       "factors": {
         "pe": {
-          "value": 15.95,
-          "strength": 3
+          "value": -21.17,
+          "strength": 0
         },
         "roe": {
-          "value": 0.0874,
+          "value": -0.0329,
           "strength": 0
         },
         "pb": {
-          "value": 2.65,
+          "value": 1.42,
+          "strength": 2
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002294": {
+      "code": "002294",
+      "name": "信立泰",
+      "pe": 45.24,
+      "pb": 4.09,
+      "roe": 0.043,
+      "turnover": 0,
+      "circ_mv": 35019655425.12,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 45.24,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.043,
+          "strength": 0
+        },
+        "pb": {
+          "value": 4.09,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "000568": {
+      "code": "000568",
+      "name": "泸州老窖",
+      "pe": 13.55,
+      "pb": 3.0,
+      "roe": 0.0862,
+      "turnover": 0,
+      "circ_mv": 117567126149.04001,
+      "fund_bonus": 5,
+      "factors": {
+        "pe": {
+          "value": 13.55,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.0862,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.0,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "603507": {
+      "code": "603507",
+      "name": "振江股份",
+      "pe": 17.87,
+      "pb": 2.05,
+      "roe": 0.0581,
+      "turnover": 0,
+      "circ_mv": 5295568919.94,
+      "fund_bonus": 4,
+      "factors": {
+        "pe": {
+          "value": 17.87,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0581,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.05,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002585": {
+      "code": "002585",
+      "name": "双星新材",
+      "pe": 110.58,
+      "pb": 1.21,
+      "roe": 0.0055000000000000005,
+      "turnover": 0,
+      "circ_mv": 7864069159.559999,
+      "fund_bonus": 2,
+      "factors": {
+        "pe": {
+          "value": 110.58,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0055000000000000005,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.21,
+          "strength": 2
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002245": {
+      "code": "002245",
+      "name": "蔚蓝锂芯",
+      "pe": 28.21,
+      "pb": 3.62,
+      "roe": 0.06509999999999999,
+      "turnover": 0,
+      "circ_mv": 27129404722.68,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 28.21,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.06509999999999999,
+          "strength": 0
+        },
+        "pb": {
+          "value": 3.62,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002487": {
+      "code": "002487",
+      "name": "大金重工",
+      "pe": 20.47,
+      "pb": 1.7,
+      "roe": 0.0702,
+      "turnover": 0,
+      "circ_mv": 20959171236.52,
+      "fund_bonus": 4,
+      "factors": {
+        "pe": {
+          "value": 20.47,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.0702,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.7,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600875": {
+      "code": "600875",
+      "name": "东方电气",
+      "pe": 15.98,
+      "pb": 1.88,
+      "roe": 0.058600000000000006,
+      "turnover": 0,
+      "circ_mv": 56742600536.65,
+      "fund_bonus": 4,
+      "factors": {
+        "pe": {
+          "value": 15.98,
+          "strength": 3
+        },
+        "roe": {
+          "value": 0.058600000000000006,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.88,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "600438": {
+      "code": "600438",
+      "name": "通威股份",
+      "pe": -5.01,
+      "pb": 1.59,
+      "roe": -0.141,
+      "turnover": 0,
+      "circ_mv": 51277676806.600006,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": -5.01,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.141,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.59,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601991": {
+      "code": "601991",
+      "name": "大唐发电",
+      "pe": 9.37,
+      "pb": 2.74,
+      "roe": 0.1382,
+      "turnover": 0,
+      "circ_mv": 69170177211.48,
+      "fund_bonus": 5,
+      "factors": {
+        "pe": {
+          "value": 9.37,
+          "strength": 5
+        },
+        "roe": {
+          "value": 0.1382,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.74,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002931": {
+      "code": "002931",
+      "name": "锋龙股份",
+      "pe": -2368.21,
+      "pb": 9.35,
+      "roe": -0.0021,
+      "turnover": 0,
+      "circ_mv": 8848513477.44,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": -2368.21,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0021,
+          "strength": 0
+        },
+        "pb": {
+          "value": 9.35,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002929": {
+      "code": "002929",
+      "name": "润建股份",
+      "pe": 270.74,
+      "pb": 2.22,
+      "roe": 0.0042,
+      "turnover": 0,
+      "circ_mv": 10969258293.35,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 270.74,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0042,
+          "strength": 0
+        },
+        "pb": {
+          "value": 2.22,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002693": {
+      "code": "002693",
+      "name": "双成药业",
+      "pe": 133.13,
+      "pb": 8.52,
+      "roe": 0.0325,
+      "turnover": 0,
+      "circ_mv": 3596088965.0,
+      "fund_bonus": 0,
+      "factors": {
+        "pe": {
+          "value": 133.13,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0325,
+          "strength": 0
+        },
+        "pb": {
+          "value": 8.52,
+          "strength": 0
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601865": {
+      "code": "601865",
+      "name": "福莱特",
+      "pe": -31.95,
+      "pb": 1.1,
+      "roe": -0.0163,
+      "turnover": 0,
+      "circ_mv": 18820157637.600002,
+      "fund_bonus": 2,
+      "factors": {
+        "pe": {
+          "value": -31.95,
+          "strength": 0
+        },
+        "roe": {
+          "value": -0.0163,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.1,
+          "strength": 2
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "002866": {
+      "code": "002866",
+      "name": "传艺科技",
+      "pe": 96.5,
+      "pb": 1.98,
+      "roe": 0.0103,
+      "turnover": 0,
+      "circ_mv": 2640759006.7799997,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 96.5,
+          "strength": 0
+        },
+        "roe": {
+          "value": 0.0103,
+          "strength": 0
+        },
+        "pb": {
+          "value": 1.98,
+          "strength": 1
+        },
+        "turnover": {
+          "value": 0,
+          "strength": 0
+        },
+        "forecast": {
+          "value": "需公告API",
+          "strength": 0
+        },
+        "concept": {
+          "value": "需概念映射",
+          "strength": 0
+        }
+      }
+    },
+    "601126": {
+      "code": "601126",
+      "name": "四方股份",
+      "pe": 33.17,
+      "pb": 7.07,
+      "roe": 0.1017,
+      "turnover": 0,
+      "circ_mv": 33787247130.000004,
+      "fund_bonus": 1,
+      "factors": {
+        "pe": {
+          "value": 33.17,
+          "strength": 1
+        },
+        "roe": {
+          "value": 0.1017,
+          "strength": 0
+        },
+        "pb": {
+          "value": 7.07,
           "strength": 0
         },
         "turnover": {
