@@ -9,6 +9,9 @@
 2. 拐头：K > 前一根K 或 J > 前一根J（开始回升）
 3. 当日涨幅 < 4%（排除已大涨的）
 4. 该票当日未推送过（去重）
+5. KD复查（2026-09-07新增）：推送前重算30分K，K≥60剔除——
+   回测显示推送时点30分K≥60的票次日均-0.43%~-0.54%（K60-70段最差-1.28%~-1.40%），
+   "5分钟超卖但30分钟高位"是盘中冲高回落中继，不是低吸窗口
 
 频控（Server酱额度保护）：
 - 每只票每天最多推1次
@@ -32,6 +35,12 @@ MAX_DAILY_PUSH = 3        # 每天最多推送条数（Server酱额度保护）
 K5_LOW = 25.0             # 5分钟K超卖阈值
 CHG_MAX = 4.0             # 当日涨幅上限（已涨起来的不要）
 CONCURRENCY = 3           # 腾讯并发≤3，防风控
+
+# ---- KD复查（2026-09-07回测落地）----
+# 回测：当前池35只 × 46交易日，推送时点30分K≥60的票（盘中已涨上来）次日均-0.43%~-0.54%，
+# 其中K60-70段最差（-1.28%~-1.40%，胜率34-40%）。5分钟超卖但30分钟K≥60 = "盘中冲高回落中继"，
+# 不是低吸窗口，不推。30分K拉取失败时不拦截（数据故障不应阻断推送，但推送里标注K30未知）。
+K30_MAX = 60.0            # 30分K推送复查上限
 
 sys.path.insert(0, BASE)
 _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
@@ -116,6 +125,36 @@ def fetch_m5_kdj(code):
     return {'k': round(k, 1), 'd': round(d_, 1), 'j': round(j, 1),
             'k_prev': round(series[-2][0], 1), 'j_prev': round(j_prev, 1),
             'price': float(bars[-1][2])}
+
+
+def fetch_m30_k(code):
+    """腾讯30分K线 → 最新K值（KD复查用，只取K，轻量）"""
+    raw = curl_get(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={code},m30,,60',
+                   referer='https://gu.qq.com/')
+    if not raw:
+        return None
+    try:
+        d = json.loads(raw.decode('utf-8', errors='ignore'))
+        bars = d['data'][code]['m30']
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return None
+    try:
+        if bars and datetime.strptime(bars[-1][0][:12], '%Y%m%d%H%M') > datetime.now():
+            bars = bars[:-1]
+    except (ValueError, TypeError, IndexError):
+        pass
+    if not bars or len(bars) < 20:
+        return None
+    hlc = [(float(b[3]), float(b[4]), float(b[2])) for b in bars]
+    k, d_ = 50.0, 50.0
+    for i in range(len(hlc)):
+        hi = max(x[0] for x in hlc[max(0, i - 8):i + 1])
+        lo = min(x[1] for x in hlc[max(0, i - 8):i + 1])
+        c = hlc[i][2]
+        rsv = 50.0 if hi == lo else (c - lo) / (hi - lo) * 100
+        k = (2 / 3) * k + (1 / 3) * rsv
+        d_ = (2 / 3) * d_ + (1 / 3) * k
+    return {'k': round(k, 1), 'd': round(d_, 1)}
 
 
 def fetch_realtime_chg(codes):
@@ -228,7 +267,24 @@ def main():
         print(f'[intraday] 无触发信号')
         return
 
-    # 4. 合并推送（FORCE_PUSH=1 绕过时间闸门，频控由本脚本负责）
+    # ---- 4. KD复查（2026-09-07）：推送前重算30分K，K≥60剔除 ----
+    # 触发集合很小(≤3只)，逐只拉30分K成本可忽略。
+    # 5分钟超卖但30分K≥60 = 盘中冲高后的回落中继，不是低吸窗口。
+    checked = []
+    for t in triggered:
+        m30 = fetch_m30_k(t['code'])
+        if m30 and m30['k'] >= K30_MAX:
+            print(f'[intraday] ⛔ KD复查拦截 {t["name"]}: 30分K={m30["k"]}≥{K30_MAX:.0f}'
+                  f'（盘中冲高回落中继，非低吸窗口，不推）')
+            continue
+        t['k30'] = m30['k'] if m30 else None
+        checked.append(t)
+    triggered = checked
+    if not triggered:
+        print('[intraday] 触发信号全被KD复查拦截，本次不推送')
+        return
+
+    # 5. 合并推送（FORCE_PUSH=1 绕过时间闸门，频控由本脚本负责）
     try:
         from wechat_notify import send_wechat
         os.environ['FORCE_PUSH'] = '1'
@@ -241,6 +297,8 @@ def main():
             lines.append(f"### {i}. {t['name']} {t['code']}")
             lines.append(f"- 现价: {t['price']:.2f} | 今日: **{t['chg']:+.2f}%**")
             lines.append(f"- 5分KDJ: K={t['k']:.1f} D={t['d']:.1f} J={t['j']:.1f}（前K={t['k_prev']:.1f}）")
+            k30_txt = f"{t.get('k30'):.1f}(<{K30_MAX:.0f}已复查)" if t.get('k30') is not None else '未知(拉取失败)'
+            lines.append(f"- 30分K: {k30_txt}")
             lines.append(f"- 状态: {'K上拐' if t['k'] > t['k_prev'] else ''}"
                          f"{' J回升' if t['j'] > t['j_prev'] else ''} 超卖低吸区，勿追高\n")
         ok = send_wechat(title, '\n'.join(lines), push_type='intraday')

@@ -8,10 +8,12 @@
   3. 硬过滤：2.0% ≤ 换手率 ≤ 7.0%
   4. 日K朝上过滤（2026-09-03新增）：收盘<MA5(阴跌)硬踢；收盘≥MA5且MA5上行(↑)优先，
      仅站上MA5(→)在排序靠后补足——"回调到位且日线开始朝上"
-  5. 腾讯实时30分KDJ过滤：K<70（追高硬踢），今日涨幅<4%（已涨起来的踢）
+  5. 腾讯实时30分KDJ过滤：K≥70（追高硬踢）+ K60-70补足层停用（2026-09-07 KD复查：
+     回测46交易日显示K60-70次日均-1.28%~-1.40%、胜率34-40%，全池最差段），今日涨幅<4%
   6. 腾讯实时5分KDJ过滤：K<70（5分钟也已追高的踢），低位上拐加分（2026-08-27新增：
      解决"推送时5分钟已在高点"——选票要求30分钟+5分钟双重低位）
   7. 按评分+K30位置加分+5分加分排序，取前30只 + 4固定票（2026-09-03: 26→30）
+     K60-70不再补足——名额不满宁缺毋滥，ALLOW_T6=1可临时放开
   7. 写 dynamic_stocks.json + 注入 deploy/index.html（固定票原样保留）
 
 数据源（全部 subprocess curl --noproxy '*' 绕过本地代理）：
@@ -33,6 +35,12 @@ _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
 TURNOVER_MIN, TURNOVER_MAX = 2.0, 7.0   # 换手率区间（用户规则）
 K30_HARD_KICK = 70.0                     # 30分K追高硬踢
 K5_HARD_KICK = 70.0                      # 5分K追高硬踢（2026-08-27新增：双重低位确认）
+# ---- KD复查（2026-09-07回测落地）----
+# 回测样本：当前池35只票 × 2026-07-01~09-04共46交易日（腾讯m30，同口径KDJ(9,3,3)）。
+# T6层(K60-70补足)次日均-1.28%~-1.40%、胜率34-40%，是全池最差位置段（比K≥70还差）；
+# 推送时点过滤K≥60后：15:00口径次日均从-0.20%改善到+0.01%。
+# 结论：停用T6补足——名额不满就少选，宁缺毋滥。极端行情需要时 ALLOW_T6=1 临时放开。
+T6_ALLOW_BACKFILL = os.environ.get('ALLOW_T6', '') == '1'
 TODAY_CHG_MAX = 4.0                      # 今日已涨幅超此值视为涨起来了
 RSI_MAX, DROP20D_MAX, SCORE_MIN = 65.0, -3.0, 35.0
 SELECT_N = 30   # 2026-09-03: 26→30（用户要求加量），+4固定票 = 池子34只
@@ -343,6 +351,7 @@ def main():
                 kdj5s[c] = r
 
     final = []
+    t6_dropped = 0
     for s in step1:
         r = kdjs.get(s['code'])
         if not r:
@@ -353,6 +362,9 @@ def main():
         tier = classify_tier(r['k'], trend)
         if tier is None:
             continue
+        if tier == 6 and not T6_ALLOW_BACKFILL:
+            t6_dropped += 1
+            continue  # KD复查(2026-09-07): K60-70补足层停用，次日均-1.28%~-1.40%最差段
         r5 = kdj5s.get(s['code'])
         if not r5:
             continue
@@ -379,6 +391,9 @@ def main():
     print(f"30分K<{K30_HARD_KICK} + 5分K<{K5_HARD_KICK}: {len(final)}只，分层分布:")
     for t in sorted(tier_stat):
         print(f"  T{t} {TIER_NAMES[t]}: {tier_stat[t]}只")
+    if t6_dropped:
+        print(f"  ⛔ T6 {TIER_NAMES[6]}: {t6_dropped}只被KD复查剔除(2026-09-07: 次日均-1.28%~-1.40%最差段, "
+              f"{'ALLOW_T6=1可放开' if not T6_ALLOW_BACKFILL else '本次已放开'})")
 
     selected = final[:SELECT_N]
     used_tiers = sorted({s['kdj30Tier'] for s in selected})
@@ -395,7 +410,7 @@ def main():
     dyn = {'scan_date': datetime.now().strftime('%Y-%m-%d'), 'total': len(selected),
            'filter': f'RSI<{RSI_MAX}/跌20d>3%/评分>35/换手{TURNOVER_MIN}-{TURNOVER_MAX}%/今涨<{TODAY_CHG_MAX}%/'
                      f'日K站上MA5(收盘<MA5阴跌硬踢,MA5上行↑优先,2026-09-03新增)/'
-                     f'K30≤45+上升优先,不足放宽至45-60、60-70,K30≥70硬踢/'
+                     f'K30≤45+上升优先,不足放宽至45-60,K30≥60补足停用+K30≥70硬踢(2026-09-07 KD复查回测:K60-70次日均-1.28%~-1.40%最差段)/'
                      f'K5≥70硬踢,低位上拐加分(双重低位确认)',
            'stocks': selected}
     json.dump(dyn, open(DYN_FILE, 'w'), ensure_ascii=False, indent=2)
