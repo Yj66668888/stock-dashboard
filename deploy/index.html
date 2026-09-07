@@ -446,6 +446,18 @@
   .phase-shock { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
   .phase-up { background: rgba(248,81,73,0.2); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
   .phase-down { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .dip-badge {
+    display: inline-block;
+    background: rgba(63,185,80,0.18);
+    color: var(--green);
+    border: 1px solid rgba(63,185,80,0.35);
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
 
   /* 启动段三阶段分区标题行 */
   .phase-section-header td {
@@ -2380,6 +2392,16 @@ function renderStockRow(stock, index) {
     _rowCls = 'kd-high-row';
   }
 
+  // 跌透判断（2026-09-08 回测: 中期趋势%-10~0 + 当日跌≥1% + 30分K<30 三条全中，次日胜率70%）
+  var _dipTrend = stock.trendPct;
+  var _dipK = stock.kdj30 !== undefined && stock.kdj30 !== null ? stock.kdj30 : stock.kd30_k;
+  var _dipTrendOk = _dipTrend !== undefined && _dipTrend !== null && _dipTrend > -10 && _dipTrend <= 0;
+  var _dipChgOk = changePct !== undefined && changePct !== null && changePct <= -1;
+  var _dipKOk = _dipK !== undefined && _dipK !== null && _dipK < 30;
+  var dipBadgeHtml = (_dipTrendOk && _dipChgOk && _dipKOk)
+    ? `<span class="dip-badge" title="跌透三条件（9月回测n=50，次日胜率70%）: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓">✓跌透</span>`
+    : '';
+
   // 行
   return `
     <tr id="row-${stock.code}" class="${_rowCls}">
@@ -2389,7 +2411,7 @@ function renderStockRow(stock, index) {
       <td class="left-align">${nameHtml}${pinTag}${newTag}</td>
       <td class="left-align">${sectorHtml}</td>
       <td class="left-align"><span class="dir-text">${escapeHtml(stock.direction || '--')}</span></td>
-      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
+      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
       <td><span class="price-text ${priceCls}">${price !== undefined && price !== null ? price.toFixed(2) : '--'}</span></td>
       <td><span class="chg-pct ${priceCls}">${chgStr}</span></td>
       <td>${turnoverHtml}</td>
