@@ -1,6 +1,37 @@
 {
-  "scan_time": "2026-09-04 09:59:24",
-  "total_scanned": 33,
-  "total_qualified": 0,
-  "top30": []
+  "scan_time": "2026-09-07 10:34:49",
+  "total_scanned": 34,
+  "total_qualified": 1,
+  "top30": [
+    {
+      "code": "sh600588",
+      "name": "用友网络",
+      "chg_pct": -1.67,
+      "price": 10.02,
+      "kd30_k": 25.12,
+      "kd30_d": 22.34,
+      "kd30_j": 30.68,
+      "kd30_prev_k": 21.02,
+      "trend30": "up",
+      "kd5_k": 52.26,
+      "kd5_d": 61.38,
+      "kd5_j": 34.01,
+      "vwap": 10.012,
+      "above_vwap_pct": 0.08,
+      "k_rising": true,
+      "just_golden": false,
+      "approaching_cross": false,
+      "bottom_divergence": true,
+      "vol_shrink": true,
+      "signals": [
+        "底背离(类背离: 价持平, K回升8.0->15.8)",
+        "30分KDJ低位回升(K=25.1,前值=21.0)",
+        "缩量止跌(近5根量<前5根70%)",
+        "5分中位(K5=52.3)",
+        "贴分时均价线(+0.1%)"
+      ],
+      "pre_launch_score": 61.0,
+      "daily_score": 50.3
+    }
+  ]
 }
