@@ -421,7 +421,14 @@ def main():
     if not m:
         print('❌ 未找到 STOCKS 数组'); sys.exit(1)
     old_arr = json.loads(m.group(2))
-    pinned_entries = [s for s in old_arr if s['code'] in PINNED]
+    # 固定票去重抽取（2026-09-09修复: 历史重复条目被原样滚雪球, 四方股份最多4条同屏）。
+    # 数组前部=最近一次selected新注入(最新数据), 故每code只保留第一条。
+    seen_pinned = set()
+    pinned_entries = []
+    for s in old_arr:
+        if s['code'] in PINNED and s['code'] not in seen_pinned:
+            seen_pinned.add(s['code'])
+            pinned_entries.append(s)
     if len(pinned_entries) != len(PINNED):
         print(f'⚠️ 固定票只找到{len(pinned_entries)}/{len(PINNED)}，缺失的不动其他票')
 
@@ -453,12 +460,21 @@ def main():
         e['flow_5d'] = 0
         e['flow_10d'] = 0
         new_entries.append(e)
-    # 固定票跟在后面（保留原有全部字段）
-    new_entries.extend(pinned_entries)
+    # 固定票跟在后面（保留原有全部字段）；合并后全局按code去重兜底：
+    # 若当天selected恰好选中某固定票(低位符合条件), 以selected(数组前部)为准, 避免同票双行
+    merged = new_entries + pinned_entries
+    seen_codes = set()
+    new_entries = []
+    for s in merged:
+        if s['code'] in seen_codes:
+            continue
+        seen_codes.add(s['code'])
+        new_entries.append(s)
+    dup_removed = len(merged) - len(new_entries)
     new_json = json.dumps(new_entries, ensure_ascii=False, indent=2)
     html = html[:m.start(2)] + new_json + html[m.end(2):]
     open(HTML, 'w').write(html)
-    print(f"\n✅ 已注入 {len(new_entries)} 只（{len(selected)}新选 + {len(pinned_entries)}固定）→ {HTML}")
+    print(f"\n✅ 已注入 {len(new_entries)} 只（去重剔除{dup_removed}条重复, {len(pinned_entries)}固定）→ {HTML}")
     print("下一步: enrich_missing_fields.py → precompute_daily_indicators.py → 排序推送")
 
 
