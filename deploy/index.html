@@ -998,6 +998,29 @@
     border-radius: 3px;
     font-weight: 600;
   }
+  /* 大盘30K三态指示灯 Banner (2026-09-13 新增) */
+  .index-banner { padding: 10px 16px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; font-size: 13px; border: 1px solid transparent; transition: background 0.3s; }
+  .index-banner.idle { background: rgba(110,118,130,0.10); border-color: rgba(110,118,130,0.30); color: #8b949e; }
+  .index-banner.bull { background: rgba(248,81,73,0.12); border-color: rgba(248,81,73,0.30); color: #ffa198; }
+  .index-banner.health { background: rgba(210,153,34,0.12); border-color: rgba(210,153,34,0.30); color: #e3b341; }
+  .index-banner.bear { background: rgba(63,185,80,0.15); border-color: rgba(63,185,80,0.30); color: #56d364; }
+  .index-banner .ib-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; animation: pulse 2s infinite; }
+  .index-banner.bull .ib-dot { background: var(--red); }
+  .index-banner.health .ib-dot { background: var(--yellow); }
+  .index-banner.bear .ib-dot { background: var(--green); }
+  .index-banner.idle .ib-dot { background: #6e7681; animation: none; }
+  .index-banner .ib-label { font-weight: 700; font-size: 14px; }
+  .index-banner .ib-divider { color: rgba(110,118,130,0.50); }
+  .index-banner .ib-meta { font-size: 12px; opacity: 0.85; }
+
+  /* 今日建议动作徽章 (2026-09-13 新增) */
+  .action-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; line-height: 1.4; }
+  .action-tag.chase { background: rgba(248,81,73,0.20); color: #ffa198; border: 1px solid rgba(248,81,73,0.4); }
+  .action-tag.cut { background: rgba(210,153,34,0.20); color: #e3b341; border: 1px solid rgba(210,153,34,0.4); }
+  .action-tag.ban { background: rgba(248,81,73,0.10); color: rgba(139,148,156,0.8); border: 1px solid rgba(139,148,156,0.3); text-decoration: line-through; }
+  .action-tag.snap { background: rgba(63,185,80,0.20); color: #56d364; border: 1px solid rgba(63,185,80,0.4); }
+  .action-tag.hold { background: rgba(110,118,130,0.15); color: #8b949e; border: 1px solid rgba(110,118,130,0.3); }
+
   .mc-section-header.on-deck { color: var(--red, #f85149); }
   .mc-section-header.on-deck .mc-count { background: rgba(248,81,73,0.2); }
   .mc-section-header.approaching { color: var(--yellow, #d29922); }
@@ -1050,6 +1073,14 @@
 
   <!-- Page: Stocks -->
   <div class="page active" id="page-stocks">
+  <!-- 大盘30K三态指示灯 (2026-09-13 新增：基于40天·320根30分K回测，绿/黄/红三态决定仓位与个股动作) -->
+  <div class="index-banner idle" id="indexBanner">
+    <span class="ib-dot"></span>
+    <span class="ib-label">大盘30K三态</span>
+    <span class="ib-divider">|</span>
+    <span class="ib-meta" id="indexBannerMeta">加载中…（拉取上证指数30分K进行KDJ重放）</span>
+  </div>
+
   <!-- Stats Cards (10 mini cards) -->
   <div class="stats-row" id="statsRow"></div>
 
@@ -2402,6 +2433,15 @@ function renderStockRow(stock, index) {
     ? `<span class="dip-badge" title="跌透三条件（9月回测n=50，次日胜率70%）: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓">✓跌透</span>`
     : '';
 
+  // 大盘30K综合建议动作（2026-09-13新增：基于 INDEX_KDJ30 三态 + 个股自身多维度）
+  var _suggestionHtml = '';
+  try {
+    var _sg = (typeof applySuggestionRule === 'function' && INDEX_KDJ30)
+      ? applySuggestionRule(stock, INDEX_KDJ30)
+      : { label: '观望', cls: 'hold', reason: 'KDJ未就绪' };
+    _suggestionHtml = '<span class="action-tag ' + _sg.cls + '" title="' + escapeHtml(_sg.reason || '') + '">' + escapeHtml(_sg.label) + '</span>';
+  } catch(_e) { _suggestionHtml = ''; }
+
   // 行
   return `
     <tr id="row-${stock.code}" class="${_rowCls}">
@@ -2411,7 +2451,7 @@ function renderStockRow(stock, index) {
       <td class="left-align">${nameHtml}${pinTag}${newTag}</td>
       <td class="left-align">${sectorHtml}</td>
       <td class="left-align"><span class="dir-text">${escapeHtml(stock.direction || '--')}</span></td>
-      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
+      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${_suggestionHtml}${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
       <td><span class="price-text ${priceCls}">${price !== undefined && price !== null ? price.toFixed(2) : '--'}</span></td>
       <td><span class="chg-pct ${priceCls}">${chgStr}</span></td>
       <td>${turnoverHtml}</td>
@@ -4989,6 +5029,165 @@ function renderLowAuc(isSnapshot) {
   }
 }
 
+// ============================================
+// 大盘30K三态（2026-09-13 新增）
+// 数据源：腾讯ifzq.gtimg.cn m30，复用 fetchKlineTencent（@3159）
+// 逻辑：320根（约10个交易日）数据 → KDJ(9,3,3) 重放 → 三态分流
+//   K≥70 上升期(5-7成仓) / 40≤K<70 健康期(3-5成) / K<40 超卖期(1-2成)
+//   阈值依据：40天·320根实测，顶K 80-90 多发于涨势末端、底K 40-50 多发于反弹前夜
+// ============================================
+var INDEX_KDJ30 = null;  // 全局缓存：{k, d, j, lastTime, lastClsPct, lastCls, dir}
+
+function fetchIndexKDJ30() {
+  // 上证指数 sh000001，30分K，320根
+  return fetchKlineTencent('sh000001', 'm30', 320).then(function(d) {
+    if (!d || !d.data || !d.data.klines || d.data.klines.length < 20) {
+      console.warn('[IndexKDJ30] 数据不足');
+      INDEX_KDJ30 = { k: null, d: null, j: null, lastTime: '--', lastCls: null, lastClsPct: null, dir: '--', stage: 'idle' };
+      return INDEX_KDJ30;
+    }
+    // 腾讯源本身就是 [time, open, close, high, low, volume]（已转好）
+    var klines = d.data.klines.map(function(s) {
+      var p = s.split(',');
+      return { time: p[0], open: parseFloat(p[1]), close: parseFloat(p[2]), high: parseFloat(p[3]), low: parseFloat(p[4]) };
+    });
+    // KDJ(9,3,3) 重放（连续重放整段bar，K/D 初值 50）
+    var Ks = [50], Ds = [50], Js = [50];
+    for (var i = 0; i < klines.length; i++) {
+      var start = Math.max(0, i - 8);
+      var ll = klines[start].low, hh = klines[start].high;
+      for (var j = start + 1; j <= i; j++) {
+        if (klines[j].low < ll) ll = klines[j].low;
+        if (klines[j].high > hh) hh = klines[j].high;
+      }
+      var rsv = (hh - ll) > 0 ? (klines[i].close - ll) / (hh - ll) * 100 : 50;
+      var curK = (Ks[i] * 2 + rsv) / 3;
+      var curD = (Ds[i] * 2 + curK) / 3;
+      Ks.push(curK);
+      Ds.push(curD);
+      Js.push(3 * curK - 2 * curD);
+    }
+    var lastIdx = Ks.length - 1;
+    var prevIdx = lastIdx - 1;
+    var lastK = Ks[lastIdx], lastD = Ds[lastIdx], lastJ = Js[lastIdx];
+    var prevK = Ks[prevIdx];
+
+    var lastBar = klines[klines.length - 1];
+    var prevBar = klines[klines.length - 2];
+    var lastCls = lastBar.close;
+    var lastClsPct = prevBar.close > 0 ? ((lastCls - prevBar.close) / prevBar.close * 100) : 0;
+    // 方向：K>D=上升(↑) / K<D=下跌(↓) / K≤D但K上拐=待升(↗)
+    var dir = lastK > lastD ? '↑' : (lastK < prevK - 0.5 ? '↓' : '↗');
+    // 三态分流
+    var stage = (lastK >= 70) ? 'bull' : (lastK >= 40 ? 'health' : 'bear');
+    INDEX_KDJ30 = {
+      k: lastK, d: lastD, j: lastJ, prevK: prevK,
+      lastTime: lastBar.time, lastCls: lastCls, lastClsPct: lastClsPct,
+      dir: dir, stage: stage,
+      bars: klines.length
+    };
+    console.log('[IndexKDJ30] 计算完成 K=' + lastK.toFixed(1) + ' D=' + lastD.toFixed(1) + ' J=' + lastJ.toFixed(1) + ' 阶段=' + stage);
+    return INDEX_KDJ30;
+  }).catch(function(e) {
+    console.error('[IndexKDJ30] 失败:', e);
+    INDEX_KDJ30 = { k: null, stage: 'idle', lastTime: '--', dir: '--' };
+    return INDEX_KDJ30;
+  });
+}
+
+function renderIndexBanner() {
+  var banner = document.getElementById('indexBanner');
+  var meta = document.getElementById('indexBannerMeta');
+  if (!banner || !meta) return;
+  // 去掉旧class
+  banner.classList.remove('bull', 'health', 'bear', 'idle');
+  if (!INDEX_KDJ30 || INDEX_KDJ30.k === null) {
+    banner.classList.add('idle');
+    meta.textContent = '大盘30K数据加载失败（稍后重试）';
+    return;
+  }
+  var ik = INDEX_KDJ30;
+  var stageNames = {
+    bull: '🟥 上升期（K≥70）',
+    health: '🟨 健康期（40≤K<70）',
+    bear: '🟩 超卖期（K<40）'
+  };
+  var posAdvices = {
+    bull: '建议仓位 5-7成 · 持仓为主 · 顶K>80开始减仓',
+    health: '建议仓位 3-5成 · 低吸高抛 · 突破跟进突破',
+    bear: '建议仓位 1-2成 · 抢反弹为主 · 不杀跌、不追高'
+  };
+  banner.classList.add(ik.stage);
+  var timeStr = ik.lastTime || '--';
+  // 腾讯源time为unix秒
+  var dateLabel = '--';
+  if (/^\d{10}$/.test(String(timeStr))) {
+    var dt = new Date(parseInt(timeStr) * 1000);
+    dateLabel = dt.getMonth() + 1 + '月' + dt.getDate() + '日 ' +
+      (dt.getHours() < 10 ? '0' : '') + dt.getHours() + ':' +
+      (dt.getMinutes() < 10 ? '0' : '') + dt.getMinutes();
+  } else {
+    dateLabel = String(timeStr);
+  }
+  meta.innerHTML =
+    '<b>' + stageNames[ik.stage] + '</b>' +
+    ' <span class="ib-divider">|</span> ' +
+    'K=' + ik.k.toFixed(1) + ' D=' + ik.d.toFixed(1) + ' J=' + ik.j.toFixed(1) +
+    ' <span class="ib-divider">|</span> ' +
+    '最新 ' + dateLabel + ' ' + (ik.lastClsPct >= 0 ? '+' : '') + ik.lastClsPct.toFixed(2) + '% ' + ik.dir +
+    ' <span class="ib-divider">|</span> ' +
+    posAdvices[ik.stage] +
+    ' <span class="ib-divider">|</span> ' +
+    '数据 ' + ik.bars + '根 · 7×8=8个交易日回测样本';
+  banner.title = '回测样本：40天·24段上升段·13段下跌段（数据时段：' + dateLabel + '）';
+}
+
+// 个股建议动作（基于个股KD+大盘三态综合）
+// 入参：stock对象 + INDEX_KDJ30 全局对象 + 当前价changePct
+// 出参：{ label: '追涨'|'减仓'|'禁碰'|'抢反弹'|'观望', cls: 'chase|cut|ban|snap|hold', reason: 简短理由 }
+function applySuggestionRule(stock, idxKDJ) {
+  if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
+    return { label: '观望', cls: 'hold', reason: '大盘数据未就绪' };
+  }
+  var indexK = idxKDJ.k;
+  var indexStage = idxKDJ.stage;
+  var kd30k = (stock.kd30_k !== undefined && stock.kd30_k !== null) ? stock.kd30_k : (stock.kdj30 || null);
+  var kd5k = (stock.kd5_k !== undefined && stock.kd5_k !== null) ? stock.kd5_k : null;
+  var tier = stock.tier || 'C';
+  var trend = stock.trend || '';
+  var dailyTrend = stock.dailyTrend || '';
+  var score = stock.healthScore || 0;
+  var chgPct = stock.changePct;
+
+  // ===== 大盘三态分流 =====
+  if (indexStage === 'bull') {
+    // 🟥 上升期：K≥70 警惕随时见顶
+    if (kd30k !== null && kd30k >= 80) return { label: '减仓', cls: 'cut', reason: '大盘K' + indexK.toFixed(0) + '+个股30K' + Math.round(kd30k) + '≥80双重高位' };
+    if (kd30k !== null && kd30k >= 70) return { label: '观望', cls: 'hold', reason: '大盘K' + indexK.toFixed(0) + '上升期+个股30K接近70' };
+    // 持仓评分高+日线朝上
+    if (score >= 60 && dailyTrend === '↑') return { label: '追涨', cls: 'chase', reason: '大盘上升期+A/B+日线↑+评' + score };
+    return { label: '观望', cls: 'hold', reason: '大盘上升期但个股动能不足' };
+  }
+  if (indexStage === 'health') {
+    // 🟨 健康期：40≤K<70 主操作区
+    if (kd30k !== null && kd30k < 25) return { label: '抢反弹', cls: 'snap', reason: '健康期+个股30K' + Math.round(kd30k) + '<25超卖' };
+    if (kd30k !== null && kd30k >= 75) return { label: '减仓', cls: 'cut', reason: '健康期+个股30K' + Math.round(kd30k) + '≥75偏高' };
+    if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '追涨', cls: 'chase', reason: '健康期+个股30K低位'+Math.round(kd30k)+'+日线↑' };
+    if (score >= 70 && tier === 'A') return { label: '追涨', cls: 'chase', reason: '健康期+A级+评' + score };
+    return { label: '观望', cls: 'hold', reason: '健康期暂无明确信号' };
+  }
+  if (indexStage === 'bear') {
+    // 🟩 超卖期：K<40 主防御
+    if (kd30k !== null && kd30k >= 70) return { label: '禁碰', cls: 'ban', reason: '大盘超卖+个股高位'+Math.round(kd30k)+'逆势强拉' };
+    if (kd30k !== null && kd30k < 20) return { label: '抢反弹', cls: 'snap', reason: '大盘K'+indexK.toFixed(0)+'<40+个股<20双超卖' };
+    if (kd30k !== null && kd30k < 30 && kd5k !== null && kd5k < 25) return { label: '抢反弹', cls: 'snap', reason: '大盘超卖+个股30K'+Math.round(kd30k)+'+5分K'+Math.round(kd5k)+'双低' };
+    if (dailyTrend === '↑' && score >= 65) return { label: '抢反弹', cls: 'snap', reason: '超卖+日线逆势↑+评'+score+'（精选试仓）' };
+    return { label: '观望', cls: 'hold', reason: '大盘超卖期默认观望' };
+  }
+  // 兜底
+  return { label: '观望', cls: 'hold', reason: '未匹配' };
+}
+
 function renderDataVersion() {
   // ★ 数据版本戳：从内嵌数据提取生成时间，用于辨别是否缓存旧版
   var flowDate = '', cfDate = '', kdj5 = '';
@@ -5047,6 +5246,19 @@ function renderDataVersion() {
     // 板块风口数据（供股票表格板块共振使用）
     setTimeout(function() { fetchHotSectors(); }, 500);
     startExtraRefresh();
+    // ★ 大盘30K三态（2026-09-13 新增）：拉到KDJ后渲染顶部指示灯 + 给每只票贴"今日建议动作"
+    fetchIndexKDJ30().then(function() {
+      renderIndexBanner();
+      if (typeof renderStocks === 'function') renderStocks();
+      if (typeof renderAll === 'function') renderAll();
+      // 每5分钟刷新一次大盘KDJ（盘中变化慢）
+      window._indexKdj30Timer = setInterval(function() {
+        fetchIndexKDJ30().then(function() {
+          renderIndexBanner();
+          if (typeof renderStocks === 'function') renderStocks();
+        });
+      }, 5 * 60 * 1000);
+    });
   } catch(e) {
     console.error('[Init] FATAL ERROR:', e);
     console.error('[Init] Stack:', e.stack);
