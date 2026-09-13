@@ -1108,6 +1108,7 @@
             <th class="left-align" data-filter="sector" onclick="toggleFilter(event,'sector')">赛道<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="direction" onclick="toggleFilter(event,'direction')">驱动方向<span class="th-filter-icon">▼</span></th>
             <th data-filter="phase" onclick="toggleFilter(event,'phase')">阶段<span class="th-filter-icon">▼</span></th>
+            <th data-filter="action" onclick="toggleFilter(event,'action')">今日动作<span class="th-filter-icon">▼</span></th>
             <th data-filter="price" onclick="toggleFilter(event,'price')">现价<span class="th-filter-icon">▼</span></th>
             <th data-filter="changePct" onclick="toggleFilter(event,'changePct')">涨跌幅<span class="th-filter-icon">▼</span></th>
             <th data-filter="turnover" onclick="toggleFilter(event,'turnover')">换手率<span class="th-filter-icon">▼</span></th>
@@ -1589,6 +1590,11 @@ function getFilterValue(stock, field) {
     case 'phase': {
       const pr = stock.preLaunchPhase || stock.phase || '';
       return phaseMap[pr] || pr || '--';
+    }
+    case 'action': {
+      // 今日建议动作（大盘30K三态规则），支持一键筛选"追涨/减仓/禁碰/抢反弹"
+      if (typeof getStockSuggestion !== 'function') return '--';
+      return getStockSuggestion(stock).label || '观望';
     }
     case 'price': {
       const p = q.price !== undefined ? q.price : stock.price;
@@ -2433,14 +2439,9 @@ function renderStockRow(stock, index) {
     ? `<span class="dip-badge" title="跌透三条件（9月回测n=50，次日胜率70%）: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓">✓跌透</span>`
     : '';
 
-  // 大盘30K综合建议动作（2026-09-13新增：基于 INDEX_KDJ30 三态 + 个股自身多维度）
-  var _suggestionHtml = '';
-  try {
-    var _sg = (typeof applySuggestionRule === 'function' && INDEX_KDJ30)
-      ? applySuggestionRule(stock, INDEX_KDJ30)
-      : { label: '观望', cls: 'hold', reason: 'KDJ未就绪' };
-    _suggestionHtml = '<span class="action-tag ' + _sg.cls + '" title="' + escapeHtml(_sg.reason || '') + '">' + escapeHtml(_sg.label) + '</span>';
-  } catch(_e) { _suggestionHtml = ''; }
+  // 大盘30K综合建议动作（2026-09-14改为独立列，基于 INDEX_KDJ30 三态 + 个股自身多维度）
+  var _sg = getStockSuggestion(stock);
+  var _suggestionHtml = '<span class="action-tag ' + _sg.cls + '" title="' + escapeHtml(_sg.reason || '') + '">' + escapeHtml(_sg.label) + '</span>';
 
   // 行
   return `
@@ -2451,7 +2452,8 @@ function renderStockRow(stock, index) {
       <td class="left-align">${nameHtml}${pinTag}${newTag}</td>
       <td class="left-align">${sectorHtml}</td>
       <td class="left-align"><span class="dir-text">${escapeHtml(stock.direction || '--')}</span></td>
-      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${_suggestionHtml}${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
+      <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
+      <td>${_suggestionHtml}</td>
       <td><span class="price-text ${priceCls}">${price !== undefined && price !== null ? price.toFixed(2) : '--'}</span></td>
       <td><span class="chg-pct ${priceCls}">${chgStr}</span></td>
       <td>${turnoverHtml}</td>
@@ -2547,11 +2549,15 @@ function renderMobileCard(stock) {
     else if (kd30Cross === '死叉') kd30Cls = 'down';
   }
 
+  // 大盘30K综合建议动作（2026-09-14：移动端同步展示）
+  const _sg = getStockSuggestion(stock);
+
   return `<div class="mobile-card">
     <div class="mc-top">
       <span class="mc-name">${escapeHtml(name)}</span>
       <span class="mc-code">${num}</span>
       <span class="mc-phase ${pCls}">${escapeHtml(phaseDisplay || '--')}</span>
+      <span class="action-tag ${_sg.cls}" title="${escapeHtml(_sg.reason || '')}">${escapeHtml(_sg.label)}</span>
       <span class="mc-chg ${chgCls}">${chgStr}</span>
     </div>
     <div class="mc-info">
@@ -5186,6 +5192,16 @@ function applySuggestionRule(stock, idxKDJ) {
   }
   // 兜底
   return { label: '观望', cls: 'hold', reason: '未匹配' };
+}
+
+// 统一入口（2026-09-14）：桌面表格 / 移动卡片 / 表头筛选器 共用
+function getStockSuggestion(stock) {
+  try {
+    if (typeof applySuggestionRule === 'function' && INDEX_KDJ30) {
+      return applySuggestionRule(stock, INDEX_KDJ30);
+    }
+  } catch (_e) { }
+  return { label: '观望', cls: 'hold', reason: '大盘30K数据未就绪' };
 }
 
 function renderDataVersion() {
