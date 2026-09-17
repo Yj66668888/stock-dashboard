@@ -62,6 +62,17 @@ jobs:
             echo 'No changes to commit'
           else
             git commit -m "Cloud full-scan $(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M')"
-            git push || { echo 'Push rejected - syncing remote changes...'; git pull --rebase origin main && git push; }
+            # 2026-09-17修复: 原写法 git pull --rebase && git push 冲突时会静默失败(rebase中止但步骤仍报success),
+            # 导致当日扫描数据丢失(9/17事故). 现改为: 冲突时 -X theirs 保留本次新数据, 任何失败都 exit 1 暴露出来.
+            if ! git push; then
+              echo 'Push rejected - syncing remote changes...'
+              git fetch origin main
+              if ! git rebase -X theirs origin/main; then
+                echo 'FATAL: rebase conflict - could not keep fresh cloud data'
+                git rebase --abort || true
+                exit 1
+              fi
+              git push || { echo 'FATAL: push failed after rebase'; exit 1; }
+            fi
             echo 'Pushed to GitHub - Pages will auto-rebuild'
           fi

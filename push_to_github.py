@@ -34,10 +34,82 @@ def api(url, method="GET", data=None, timeout=120):
         body = r.read()
         return json.loads(body.decode()) if body else {}
 
+def get_flow_date(html):
+    """提取 STOCKS 中最新的 flowDate，用于数据新旧比较"""
+    import re as _re_fd
+    m = _re_fd.search(r'const\s+STOCKS\s*=\s*(\[.*?\]);', html, _re_fd.DOTALL)
+    if not m:
+        return None
+    try:
+        stocks = json.loads(m.group(1))
+        dates = [s.get("flowDate") for s in stocks if s.get("flowDate")]
+        return max(dates) if dates else None
+    except Exception:
+        return None
+
 def main():
     if not os.path.exists(LOCAL_FILE):
         print(f"ERROR: {LOCAL_FILE} 不存在")
         return False
+
+    # ===== 数据新旧护栏（2026-09-06）：本地数据比远端旧时拒绝推送 =====
+    # 背景：9/5 00:59 本地定时任务补跑，用 9/3 旧数据覆盖了云端 9/4 新数据，导致线上断更
+    force = "--force" in sys.argv
+    deploy_check = os.path.join(BASE, "deploy", "index.html")
+    local_date = None
+    for f in [deploy_check, LOCAL_FILE]:
+        if os.path.exists(f):
+            try:
+                with open(f, "r", encoding="utf-8", errors="ignore") as fh:
+                    local_date = get_flow_date(fh.read())
+                if local_date:
+                    break
+            except Exception:
+                pass
+    if local_date and not force:
+        # 2026-09-17修复：原来只用 raw.githubusercontent.com 取远端版本，
+        # 该域名有 CDN 缓存层，缓存旧版本时会误判"本地不旧"从而放行旧数据覆盖云端
+        # （9/17 事故：本地 9/11 数据覆盖了云端 9/16）。现改为：
+        #   ① 优先走 api.github.com（带 token，实时反映仓库真实内容）
+        #   ② API 失败再退回 raw
+        #   ③ 两者都拿不到 → 拒绝推送（fail-closed），需 --force 才放行
+        remote_date = None
+        try:
+            req = urllib.request.Request(
+                f"https://api.github.com/repos/{OWNER}/{REPO}/contents/docs/index.html",
+                headers={"Authorization": f"token {TOKEN}",
+                         "Accept": "application/vnd.github.raw",
+                         "User-Agent": "stock-dashboard-updater",
+                         "Cache-Control": "no-cache"}
+            )
+            with urllib.request.urlopen(req, timeout=30) as r:
+                remote_date = get_flow_date(r.read().decode("utf-8", errors="ignore"))
+            if remote_date:
+                print(f"   远端版本(API): {remote_date}")
+        except Exception as e:
+            print(f"   ⚠️ API 取远端版本失败（{e}），退回 raw 通道")
+            try:
+                req = urllib.request.Request(
+                    f"https://raw.githubusercontent.com/{OWNER}/{REPO}/main/docs/index.html",
+                    headers={"User-Agent": "stock-dashboard-updater"}
+                )
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    remote_date = get_flow_date(r.read().decode("utf-8", errors="ignore"))
+                if remote_date:
+                    print(f"   远端版本(raw): {remote_date}")
+            except Exception as e2:
+                print(f"   ⚠️ raw 通道也失败（{e2}）")
+
+        if remote_date is None:
+            print("⛔ 推送被拦截：无法确认远端数据版本，拒绝用本地数据覆盖（fail-closed）。")
+            print("⛔ 如确认要强制推送，请加 --force 参数。")
+            return False
+        if remote_date > local_date:
+            print(f"⛔ 推送被拦截：远端数据 flowDate={remote_date} 比本地 {local_date} 新！")
+            print(f"⛔ 本地推送会用旧数据覆盖云端新数据（9/5、9/17断更事故根因），已中止。")
+            print(f"⛔ 如确认要强制推送，请加 --force 参数。")
+            return False
+        print(f"✅ 数据护栏通过：本地 {local_date} >= 远端 {remote_date}")
 
     # 先同步 deploy → docs（确保最新）
     deploy_file = os.path.join(BASE, "deploy", "index.html")
