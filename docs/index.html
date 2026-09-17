@@ -4198,14 +4198,14 @@ function fetchAuctionData(manual) {
       if (_meta) {
         try {
           var _t = new Date(snap.time);
-          _meta.textContent = (snap.phase === 'mfb' ? '竞价快照·分时回补 ' : '竞价快照 ') + aucPad(_t.getHours()) + ':' + aucPad(_t.getMinutes()) + ' · ' + snap.data.length + '只';
+          _meta.textContent = (snap.phase === 'mfb' ? '竞价快照·实时回补 ' : '竞价快照 ') + aucPad(_t.getHours()) + ':' + aucPad(_t.getMinutes()) + ' · ' + snap.data.length + '只';
         } catch (e) {}
       }
       aucState.nextFetchAt = Date.now() + 60000;
       return;
     }
-    // 盘中无快照（页面没在9:25-9:30开着）：从当日分时09:30柱回补竞价量
-    if (phase === 'open') { aucMinuteBackfill(); return; }
+    // 盘中/盘后无快照（页面没在9:25-9:30开着）：从腾讯实时行情回补今开价/量/额/五档
+    if (phase === 'open' || phase === 'closed') { aucMinuteBackfill(); return; }
   }
   var codes = STOCKS.map(function(s) { return s.code; }).filter(Boolean);
   if (!codes.length) return;
@@ -4470,7 +4470,7 @@ function renderAuction(items, isSnapshot) {
     note.innerHTML = extra
       + '信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>'
       + '表格按竞价金额由高到低排序（同金额按高开幅度）。委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。<br>'
-      + '<b>竞价量(手) = 9:25 集合竞价定格撮合量</b>（含9:15-9:25全部竞价成交）：9:15-9:25 进行中免费行情源不下发虚拟成交量（只能看五档委托量），9:25 撮合完成后自动定格显示；开盘后保持定格不随全天量漂移，页面错过9:25时段则从当日分时09:30柱自动回补。';
+      + '<b>竞价量(手) = 9:25 集合竞价定格撮合量</b>（含9:15-9:25全部竞价成交）：9:15-9:25 进行中免费行情源不下发虚拟成交量（只能看五档委托量），9:25 撮合完成后自动定格显示；开盘后保持定格不随全天量漂移，页面错过9:25时段则从腾讯实时行情（qt.gtimg.cn）按今开价/成交量/五档委托回填（盘后五档已撤单会显示 0，语义正确）。';
   }
 }
 
@@ -4674,12 +4674,12 @@ function startLowAucLoop() {
     updateLowAucStatus();
     if (!lowAucState.auto || document.hidden) return;
     if (!lowAucState.fetching && Date.now() >= lowAucState.nextFetchAt) fetchLowAucData();
-    // 盘中确认（三线确认法）：9:35 起每 60 秒拉一次现价/均价线/量比
+    // 盘中确认（三线确认法）：9:35 起每 60 秒拉一次现价/均价线/量比；盘后也拉一次用于复盘当日最终确认状态
     if (!lowAucState.confirmFetching) {
       var cph = getAuctionPhase(new Date());
-      if (cph === 'open') {
+      if (cph === 'open' || cph === 'closed') {
         var cnw = new Date();
-        if ((cnw.getHours() > 9 || (cnw.getHours() === 9 && cnw.getMinutes() >= 35)) && Date.now() >= lowAucState.nextConfirmAt) {
+        if ((cph === 'closed' || cnw.getHours() > 9 || (cnw.getHours() === 9 && cnw.getMinutes() >= 35)) && Date.now() >= lowAucState.nextConfirmAt) {
           fetchLowAucConfirm();
         }
       }
@@ -4710,60 +4710,56 @@ function laFetchChunk(chunk, cb) {
   document.head.appendChild(s);
 }
 
-// ===== 竞价量兜底：开盘后无快照时，逐票拉当日分时，09:30柱 = 集合竞价定格量 =====
-// 腾讯分时 minute/query（JSONP）：data.data[0] = "0930 开盘价 量(手) 额(元)"，第一根即9:25撮合结果
-// 已实测：东晶9/3竞价定格124手/153140元 = 分时0930柱 "0930 12.35 124 153140.00" 完全一致
+// ===== 竞价量兜底：开盘后无快照时，分批拉腾讯实时行情，凑齐字段 =====
+// 历史依赖 web.ifzq.gtimg.cn/appstock/app/minute/query（09:30柱=9:25撮合），但该域名2026-09-17起对
+// 分钟接口持续返回 HTTP 501（fqkline 接口 OK），导致整页盘后首次进入空白、五档=0。
+// 改用 qt.gtimg.cn/q= 批量拉取：f[3]=现价 f[4]=昨收 f[5]=今开(竞价结果) f[6]=量 f[37]=额(万元)
+// f[10/12/14/16/18]=买五档量(手) f[20/22/24/26/28]=卖五档量(手) f[49]=量比 f[30]=报价时间。
+// 注意：盘后五档委托已撤单=0（语义正确，非 bug）；竞价阶段本身走 laFetchChunk 不受影响。
 function aucMinuteBackfillCore(codes, onDone) {
-  var res = {}, pending = codes.length, idx = 0;
-  if (!pending) { onDone(res); return; }
-  var CONC = 4; // 并发4，避免触发腾讯风控
-  function fetchOne() {
-    if (idx >= codes.length) return;
-    var i = idx++, code = codes[i];
-    var vn = 'aucMfb' + i + '_' + Math.floor(Math.random() * 1e6);
-    var s = document.createElement('script');
-    s.src = 'https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=' + code + '&_var=' + vn;
-    var done = false;
-    function fin() {
-      if (done) return;
-      done = true;
-      s.onload = null; s.onerror = null;
-      if (s.parentNode) s.parentNode.removeChild(s);
-      try {
-        var j = window[vn];
-        try { delete window[vn]; } catch (e2) { window[vn] = undefined; }
-        var d = (j && j.data) ? j.data[code] : null;
-        var qt = (d && d.qt) ? d.qt[code] : null;
-        var mins = (d && d.data && d.data.data) ? d.data.data : null;
-        if (qt && mins && mins.length) {
-          var parts = String(mins[0]).split(' ');
-          if (parts[0] === '0930') {
-            var price = parseFloat(parts[1]), vol = parseInt(parts[2]) || 0, amtYuan = parseFloat(parts[3]) || 0;
-            var yclose = parseFloat(qt[4]);
-            if (!isNaN(price) && !isNaN(yclose) && yclose > 0) {
-              res[code] = {
-                code: code, name: qt[1], yclose: yclose,
-                aucPrice: price, open: price, nowPrice: price,
-                gap: yclose ? Math.round((price - yclose) / yclose * 10000) / 100 : null,
-                vol: vol, amtWan: amtYuan / 10000,
-                bidVol: 0, askVol: 0, turnover: null, volRatio: null,
-                quoteTime: String(qt[30] || ''), mfb: true
-              };
-            }
-          }
-        }
-      } catch (e) {}
-      pending--;
-      if (pending <= 0) { onDone(res); return; }
-      setTimeout(fetchOne, 60);
+    var res = {}, pending = codes.length;
+    if (!pending) { onDone(res); return; }
+    var CHUNK = 50; // 腾讯单次 q= 支持 ≥50 字符，安全按 50
+    var chunks = [];
+    for (var i = 0; i < codes.length; i += CHUNK) chunks.push(codes.slice(i, i + CHUNK));
+    var doneChunks = 0;
+    function parseChunk(chunk) {
+      chunk.forEach(function(code) {
+        var raw = window['v_' + code];
+        if (!raw || typeof raw !== 'string') return;
+        var f = raw.split('~');
+        if (f.length < 51) return;
+        var price = parseFloat(f[3]), yclose = parseFloat(f[4]), open = parseFloat(f[5]);
+        if (isNaN(yclose) || !yclose) return;
+        // 用今开价作"竞价结果"（=9:25撮合），今开为空时回落到现价
+        var aucPrice = isNaN(open) ? price : open;
+        var gap = !isNaN(aucPrice) && yclose ? Math.round((aucPrice - yclose) / yclose * 10000) / 100 : null;
+        var bidVol = 0, askVol = 0;
+        [10, 12, 14, 16, 18].forEach(function(j) { var v = parseFloat(f[j]); if (!isNaN(v)) bidVol += v; });
+        [20, 22, 24, 26, 28].forEach(function(j) { var v = parseFloat(f[j]); if (!isNaN(v)) askVol += v; });
+        res[code] = {
+          code: code, name: f[1], yclose: yclose,
+          aucPrice: isNaN(aucPrice) ? null : aucPrice,
+          open: isNaN(open) ? null : open, nowPrice: price,
+          gap: gap,
+          vol: parseInt(f[6]) || 0, amtWan: parseFloat(f[37]) || 0,
+          bidVol: bidVol, askVol: askVol,
+          turnover: parseFloat(f[38]) || null, volRatio: parseFloat(f[49]) || null,
+          quoteTime: String(f[30] || ''), mfb: true
+        };
+      });
     }
-    s.onload = fin;
-    s.onerror = fin;
-    setTimeout(fin, 6000);
-    document.head.appendChild(s);
+    function fetchChunk(idx) {
+      if (idx >= chunks.length) { onDone(res); return; }
+      laFetchChunk(chunks[idx], function() {
+        parseChunk(chunks[idx]);
+        doneChunks++;
+        if (doneChunks >= chunks.length) { onDone(res); return; }
+        setTimeout(function() { fetchChunk(idx + 1); }, 80);
+      });
+    }
+    fetchChunk(0);
   }
-  for (var c = 0; c < CONC; c++) fetchOne();
-}
 
 // 竞价监测页兜底（仪表盘34只池）
 function aucMinuteBackfill() {
@@ -4772,7 +4768,7 @@ function aucMinuteBackfill() {
   if (!codes.length) return;
   aucState.mfbRunning = true;
   var meta = document.getElementById('aucMeta');
-  if (meta) meta.textContent = '⏳ 正在回补竞价量（分时09:30柱 · ' + codes.length + '只）…';
+  if (meta) meta.textContent = '⏳ 正在回补竞价量（腾讯实时行情 · ' + codes.length + '只）…';
   aucMinuteBackfillCore(codes, function(res) {
     aucState.mfbRunning = false;
     var items = [];
@@ -4783,7 +4779,7 @@ function aucMinuteBackfill() {
       aucState.data = items;
       renderAuction(items, true);
       var m2 = document.getElementById('aucMeta');
-      if (m2) m2.textContent = '竞价快照·分时回补 · ' + items.length + '只';
+      if (m2) m2.textContent = '竞价快照·实时回补 · ' + items.length + '只';
     } else {
       var m3 = document.getElementById('aucMeta');
       if (m3) m3.textContent = '❌ 竞价量回补失败，稍后自动重试';
@@ -4800,7 +4796,7 @@ function laMinuteBackfill() {
   var codes = w.items.map(function(it) { return it.code; });
   lowAucState.mfbRunning = true;
   var meta = document.getElementById('laMeta');
-  if (meta) meta.textContent = '⏳ 正在回补竞价量（分时09:30柱 · ' + codes.length + '只，约20秒）…';
+  if (meta) meta.textContent = '⏳ 正在回补竞价量（腾讯实时行情 · ' + codes.length + '只，约20秒）…';
   aucMinuteBackfillCore(codes, function(res) {
     lowAucState.mfbRunning = false;
     var items = [];
@@ -4810,7 +4806,7 @@ function laMinuteBackfill() {
       try { localStorage.setItem(laSnapshotKey(), JSON.stringify({ time: new Date().toISOString(), data: items })); } catch (e) {}
       renderLowAuc(true);
       var m4 = document.getElementById('laMeta');
-      if (m4) m4.textContent = '竞价快照·分时回补 · ' + items.length + '只';
+      if (m4) m4.textContent = '竞价快照·实时回补 · ' + items.length + '只';
     } else {
       renderLowAuc(false);
     }
@@ -4830,8 +4826,7 @@ function fetchLowAucData(force) {
       lowAucState.nextFetchAt = Date.now() + 60000;
       return;
     }
-    // 无快照：盘中/盘后都从分时09:30柱回补竞价量（之前只open阶段补，closed阶段直接清空，
-    // 导致盘后首次进入页面看不到300只候选池数据）
+    // 无快照：盘中/盘后都从腾讯实时行情按今开/量/额/五档回补（盘后五档已撤单=0）
     if (phase === 'open' || phase === 'closed') { laMinuteBackfill(); return; }
     // wait(9:15前)：候选池预览，等待竞价开始
     lowAucState.quotes = [];
@@ -5040,7 +5035,7 @@ function renderLowAuc(isSnapshot) {
     note.innerHTML = extra
       + '候选池口径：全市场 60/00 主板（排除ST）· 30分钟KDJ K≤35 且 趋势上升(K&gt;D)或待升(乖离收敛/K上拐) · 每日8:30云端扫描生成<br>'
       + '表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。<br>'
-      + '<b>竞价量(手) = 9:25 集合竞价定格撮合量</b>（含9:15-9:25全部竞价成交）：竞价进行中免费源不下发虚拟量（看五档委托即可），9:25 撮合完成后自动定格；开盘后保持定格不漂移，页面错过9:25时段则从当日分时09:30柱自动回补（此时委买/委卖无竞价定格值）。<br>'
+      + '<b>竞价量(手) = 9:25 集合竞价定格撮合量</b>（含9:15-9:25全部竞价成交）：竞价进行中免费源不下发虚拟量（看五档委托即可），9:25 撮合完成后自动定格；开盘后保持定格不漂移，页面错过9:25时段则从腾讯实时行情按今开价/成交量/五档委托回填（盘后五档已撤单会显示 0，语义正确）。<br>'
       + '盘中确认（三线确认法）：✅强势=现价&gt;分时均价线&gt;昨收 · ⚠️修复观察=现价在均价线上但未收复昨收（次日高开站稳才确认） · ❌破位=现价跌破均价线。量比1.0~2.5温和放大，&gt;3警惕爆量、&lt;0.8无承接。9:35起实时更新，10:00后判定最可靠。';
   }
 }
