@@ -61,6 +61,12 @@ jobs:
                   print(f'SKIP: {f} not found')
           "
 
+      # 2026-09-18加: 数据新鲜度护栏 —— 作业用过期 checkout 跑完会覆盖远端新数据，
+      # 实测 9-18 的 24 只新票被 9-17 的 34 只旧票覆盖(rebase -X theirs 反而保留了旧数据)。
+      # 本次生成的数据比远端旧时直接拒绝推送，宁可少更一轮也不让线上回退。
+      - name: Data freshness guard
+        run: python3 ci_freshness_guard.py
+
       - name: Commit and push
         run: |
           git config user.name 'Stock Bot'
