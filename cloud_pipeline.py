@@ -199,6 +199,41 @@ def validate_js_syntax(html_path):
             os.remove(tmp_path)
 
 
+def verify_daily_coverage(html_path, threshold=0.9):
+    """检查日线指标字段覆盖率 — 2026-09-18加
+
+    precompute_daily_indicators.py 拉取K线失败时会静默跳过(返回码仍为0)，
+    曾导致推送上线的仪表盘「阶段/MACD/均线/趋势/30日高开率/支撑价」整列空白。
+    这里对 /24 的字段做覆盖率校验，不足则返回 False 让管道中止推送。
+    """
+    try:
+        with open(html_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+        m = re.search(r'const STOCKS\s*=\s*(\[.*?\]);', html, re.DOTALL)
+        if not m:
+            print(f"  [WARN] 未找到 STOCKS 数组: {os.path.basename(html_path)}")
+            return True
+        stocks = json.loads(m.group(1))
+        if not stocks:
+            return True
+        fields = ['macd', 'ma', 'trend', 'openRate30d', 'supportPrice', 'phase']
+        worst, worst_field = 1.0, ''
+        for k in fields:
+            c = sum(1 for x in stocks if x.get(k) not in (None, '', '--'))
+            r = c / len(stocks)
+            if r < worst:
+                worst, worst_field = r, k
+        if worst >= threshold:
+            print(f"  [OK] 日线指标覆盖率 {worst * 100:.0f}%: {os.path.basename(html_path)}")
+            return True
+        print(f"  [ERROR] 日线指标覆盖率不足 {worst * 100:.0f}%"
+              f"（最低字段: {worst_field}）: {os.path.basename(html_path)}")
+        return False
+    except Exception as e:
+        print(f"  [WARN] 日线指标覆盖率检查异常: {e}")
+        return True
+
+
 def restore_deploy_placeholders():
     """恢复 deploy/index.html 中的占位符"""
     if not os.path.exists(DEPLOY_HTML):
@@ -299,20 +334,32 @@ def full_scan(with_prelaunch=False):
     inject_precomputation(ROOT_HTML)
 
     # 日线指标预计算（MACD/均线/趋势/支撑价/高开率/板块共振/阶段）
+    # 2026-09-18: 增加覆盖率校验 —— precompute 拉K线失败时返回码仍为0(静默跳过)，
+    # 曾导致「阶段/MACD/均线/趋势/30日高开率/支撑价」整列空白照常上线。
+    # 覆盖率不足则重跑一次，仍不足直接 exit(1) 中止推送。
     di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
     if os.path.exists(di_script):
         for html_file in [DOCS_HTML, ROOT_HTML]:
-            try:
-                result = subprocess.run(
-                    [sys.executable, di_script, html_file],
-                    capture_output=True, text=True, timeout=300, cwd=BASE
-                )
-                if result.returncode == 0:
-                    print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
-                else:
-                    print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
-            except Exception as e:
-                print(f"  [WARN] 日线指标预计算异常: {e}")
+            for attempt in range(2):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, di_script, html_file],
+                        capture_output=True, text=True, timeout=300, cwd=BASE
+                    )
+                    if result.returncode == 0:
+                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                    else:
+                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+                except Exception as e:
+                    print(f"  [WARN] 日线指标预计算异常: {e}")
+                if verify_daily_coverage(html_file):
+                    break
+                if attempt == 0:
+                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...")
+                    time.sleep(2)
+            else:
+                print("\n  [FATAL] 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
+                sys.exit(1)
 
     # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏
     print(f"\n{'=' * 60}")
@@ -359,20 +406,32 @@ def update_only():
     inject_precomputation(ROOT_HTML)
 
     # 日线指标预计算（MACD/均线/趋势/支撑价/高开率/板块共振/阶段）
+    # 2026-09-18: 增加覆盖率校验 —— precompute 拉K线失败时返回码仍为0(静默跳过)，
+    # 曾导致「阶段/MACD/均线/趋势/30日高开率/支撑价」整列空白照常上线。
+    # 覆盖率不足则重跑一次，仍不足直接 exit(1) 中止推送。
     di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
     if os.path.exists(di_script):
         for html_file in [DOCS_HTML, ROOT_HTML]:
-            try:
-                result = subprocess.run(
-                    [sys.executable, di_script, html_file],
-                    capture_output=True, text=True, timeout=300, cwd=BASE
-                )
-                if result.returncode == 0:
-                    print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
-                else:
-                    print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
-            except Exception as e:
-                print(f"  [WARN] 日线指标预计算异常: {e}")
+            for attempt in range(2):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, di_script, html_file],
+                        capture_output=True, text=True, timeout=300, cwd=BASE
+                    )
+                    if result.returncode == 0:
+                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                    else:
+                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+                except Exception as e:
+                    print(f"  [WARN] 日线指标预计算异常: {e}")
+                if verify_daily_coverage(html_file):
+                    break
+                if attempt == 0:
+                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...")
+                    time.sleep(2)
+            else:
+                print("\n  [FATAL] 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
+                sys.exit(1)
 
     # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏
     print(f"\n{'=' * 60}")

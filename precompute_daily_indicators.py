@@ -32,8 +32,20 @@ _CTX.check_hostname = False
 _CTX.verify_mode = ssl.CERT_NONE
 
 # 新浪财经日线K线API（主数据源，稳定可用）
-def get_daily_klines(code, lmt=200):
-    """获取日线K线数据，返回解析后的K线dict列表"""
+def get_daily_klines(code, lmt=200, retries=2):
+    """带重试的日线K线获取 — 2026-09-18加: 单次失败会导致 MACD/均线/趋势/支撑价/高开率/阶段 全空，
+    曾造成 pipeline 推送上线的仪表盘整列空白。失败重试 2 次(退避 0.8s/1.6s)。"""
+    for attempt in range(retries + 1):
+        k = _get_daily_klines_once(code, lmt)
+        if k:
+            return k
+        if attempt < retries:
+            time.sleep(0.8 * (attempt + 1))
+    return []
+
+
+def _get_daily_klines_once(code, lmt=200):
+    """获取日线K线数据，返回解析后的K线dict列表（新浪优先，东方财富兜底）"""
     # 新浪API用 scale=240 表示日线
     url = (f"https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/"
            f"CN_MarketData.getKLineData?symbol={code}&scale=240&datalen={lmt}")
@@ -563,6 +575,8 @@ def inject_into_html(html_path):
     # 为每只股票计算指标
     all_stocks = stocks + launch
     seen_codes = set()
+    ok_cnt = 0
+    fail_codes = []
     for i, stock in enumerate(all_stocks):
         code = stock.get('code', '')
         if code in seen_codes:
@@ -575,11 +589,27 @@ def inject_into_html(html_path):
             # 检查结果
             filled = sum(1 for k in ['macd', 'ma', 'trend', 'supportPrice', 'openRate30d', 'sectorResonance', 'preLaunchPhase'] if stock.get(k))
             phase_label = stock.get('preLaunchPhase', '?')
-            print(f"✅ {filled}/7 字段已填充 | 阶段={phase_label}")
+            if stock.get('macd'):
+                ok_cnt += 1
+            else:
+                fail_codes.append(code)
+            print(f"✅ {filled}/7 字段已填充 | 阶段={phase_label}", flush=True)
         except Exception as e:
-            print(f"❌ {e}")
+            fail_codes.append(code)
+            print(f"❌ {e}", flush=True)
 
         time.sleep(0.15)  # 限速
+
+    # 2026-09-18加: 覆盖率汇总 — 覆盖率过低时明确告警(便于 pipeline 自检接管)
+    total = len(seen_codes)
+    if total:
+        print(f"\n[汇总] 日线指标填充成功 {ok_cnt}/{total} 只 ({ok_cnt / total * 100:.0f}%)")
+    else:
+        print("\n[汇总] 无股票")
+    if fail_codes:
+        print(f"[汇总] ⚠️ 未填充: {', '.join(fail_codes)}")
+    if total and ok_cnt / total < 0.9:
+        print("[汇总] ⚠️ 覆盖率低于90%，K线数据源可能异常，请检查网络/接口！")
 
     # 重新序列化并替换
     stocks_json = json.dumps(stocks, ensure_ascii=False, indent=2)

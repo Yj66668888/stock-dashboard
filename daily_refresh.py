@@ -76,18 +76,51 @@ def main():
     print(f"\n[OK] deploy -> docs ({os.path.getsize(DOCS_HTML)} bytes)")
 
     # 数据完整性自检
+    # 2026-09-18 强化: 之前只检查 healthScore, 导致 precompute_daily_indicators 的 K线拉取失败
+    # (阶段/MACD/均线/趋势/30日高开率/支撑价 全空) 时 pipeline 照样推送 → 上线空白列。
+    # 现在把日线指标字段一并纳入自检, 覆盖不足则自动重跑补全。
     import re
     import json
-    html = open(DOCS_HTML, encoding='utf-8').read()
-    m = re.search(r'const STOCKS\s*=\s*(\[.*?\]);', html, re.DOTALL)
-    stocks = json.loads(m.group(1)) if m else []
+
+    def _load_stocks():
+        html = open(DOCS_HTML, encoding='utf-8').read()
+        mm = re.search(r'const STOCKS\s*=\s*(\[.*?\]);', html, re.DOTALL)
+        return json.loads(mm.group(1)) if mm else []
+
+    DAILY_FIELDS = ['macd', 'ma', 'trend', 'openRate30d', 'supportPrice', 'phase']
+    stocks = _load_stocks()
     hs = sum(1 for x in stocks if x.get('healthScore') not in (None, '', '--'))
     print(f"[自检] STOCKS {len(stocks)} 只, healthScore {hs} 只"
-          f"{' ✅' if hs == len(stocks) and len(stocks) >= 30 else ' ⚠️ 字段缺失!'}")
+          f"{' ✅' if hs == len(stocks) else ' ⚠️ 缺 healthScore!'}")
     if hs < len(stocks):
         print("[自检] 有票缺 healthScore, 重跑补数...")
         run("[补数] enrich_missing_fields.py", 'enrich_missing_fields.py')
-        shutil.copy2(DEPLOY_HTML, DOCS_HTML)
+
+    # 日线指标覆盖检查 (>=90% 视为通过)
+    def _coverage(list_):
+        if not list_:
+            return 0.0
+        worst = 1.0
+        for k in DAILY_FIELDS:
+            c = sum(1 for x in list_ if x.get(k) not in (None, '', '--'))
+            worst = min(worst, c / len(list_))
+        return worst
+
+    cov = _coverage(stocks)
+    print(f"[自检] 日线指标({','.join(DAILY_FIELDS)}) 最低覆盖率 {cov * 100:.0f}%"
+          f"{' ✅' if cov >= 0.9 else ' ⚠️ 覆盖不足!'}")
+    if cov < 0.9:
+        print("[自检] 日线指标缺失, 重跑 precompute_daily_indicators.py ...")
+        run("[补全] precompute_daily_indicators.py", 'precompute_daily_indicators.py', timeout=900)
+        stocks = _load_stocks()
+        cov2 = _coverage(stocks)
+        print(f"[自检] 重跑后覆盖率 {cov2 * 100:.0f}%"
+              f"{' ✅' if cov2 >= 0.9 else ' ⚠️ 仍不足, 请人工检查K线数据源'}")
+        if cov2 < 0.9:
+            print("[自检] 覆盖率仍不足 → 中止推送, 避免上线空白列!")
+            sys.exit(1)
+
+    shutil.copy2(DEPLOY_HTML, DOCS_HTML)
 
     # 推送
     if os.environ.get('SKIP_PUSH') != '1':
