@@ -1,10 +1,10 @@
 {
-  "scan_date": "2026-09-18 09:48:23",
+  "scan_date": "2026-09-22 05:38:50",
   "funnel_layer": "第二层·TOP200+STOCKS合并扫描",
   "total_top200": 200,
-  "total_tracked": 24,
-  "total_scanned": 222,
-  "total_success": 222,
+  "total_tracked": 34,
+  "total_scanned": 227,
+  "total_success": 227,
   "total_errors": 0,
   "config": {
     "k_max": 40,
@@ -15,81 +15,53 @@
     "period": 9
   },
   "stocks": {
-    "603988": {
-      "name": "中电电机",
+    "603137": {
+      "name": "恒尚节能",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 14.31,
+        "d_now": 21.22,
+        "j_now": 0.48,
+        "k_prev": 12.49,
+        "d_prev": 24.68,
+        "j_prev": -11.89,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.2,
+        "d_now": 52.21,
+        "j_now": 61.2,
+        "k_prev": 58.39,
+        "d_prev": 50.71,
+        "j_prev": 73.75,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "002240": {
       "name": "盛新锂能",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 43.34,
+        "d_now": 42.71,
+        "j_now": 44.6,
+        "k_prev": 37.51,
+        "d_prev": 42.4,
+        "j_prev": 27.75,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603211": {
-      "name": "晋拓股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603137": {
-      "name": "恒尚节能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000695": {
-      "name": "滨海能源",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603876": {
-      "name": "XD鼎胜新",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 45.44,
+        "d_now": 50.6,
+        "j_now": 35.12,
+        "k_prev": 46.73,
+        "d_prev": 53.19,
+        "j_prev": 33.83,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -97,12 +69,74 @@
       "name": "锦和商管",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 13.49,
+        "d_now": 11.16,
+        "j_now": 18.14,
+        "k_prev": 6.6,
+        "d_prev": 10.0,
+        "j_prev": -0.22,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 64.86,
+        "d_now": 75.49,
+        "j_now": 43.58,
+        "k_prev": 73.0,
+        "d_prev": 80.81,
+        "j_prev": 57.37,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603660": {
+      "name": "苏州科达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 28.53,
+        "d_now": 30.13,
+        "j_now": 25.34,
+        "k_prev": 19.72,
+        "d_prev": 30.93,
+        "j_prev": -2.69,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 63.63,
+        "d_now": 66.35,
+        "j_now": 58.2,
+        "k_prev": 66.18,
+        "d_prev": 67.71,
+        "j_prev": 63.13,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603211": {
+      "name": "晋拓股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 21.93,
+        "d_now": 26.06,
+        "j_now": 13.65,
+        "k_prev": 22.89,
+        "d_prev": 28.13,
+        "j_prev": 12.4,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 24.6,
+        "d_now": 35.32,
+        "j_now": 3.16,
+        "k_prev": 32.96,
+        "d_prev": 40.69,
+        "j_prev": 17.49,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -111,37 +145,98 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 45.39,
+        "d_now": 51.84,
+        "j_now": 32.48,
+        "k_prev": 48.57,
+        "d_prev": 55.07,
+        "j_prev": 35.58,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 77.22,
+        "d_now": 61.96,
+        "j_now": 107.72,
+        "k_prev": 74.29,
+        "d_prev": 54.34,
+        "j_prev": 114.21,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "000695": {
+      "name": "滨海能源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 25.78,
+        "d_now": 25.4,
+        "j_now": 26.55,
+        "k_prev": 15.95,
+        "d_prev": 25.21,
+        "j_prev": -2.58,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 54.66,
+        "d_now": 59.44,
+        "j_now": 45.1,
+        "k_prev": 59.07,
+        "d_prev": 61.83,
+        "j_prev": 53.57,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "600055": {
       "name": "万东医疗",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 20.8,
+        "d_now": 20.51,
+        "j_now": 21.36,
+        "k_prev": 16.49,
+        "d_prev": 20.37,
+        "j_prev": 8.72,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.36,
+        "d_now": 42.46,
+        "j_now": -5.85,
+        "k_prev": 32.39,
+        "d_prev": 50.52,
+        "j_prev": -3.85,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603660": {
-      "name": "苏州科达",
+    "603876": {
+      "name": "XD鼎胜新",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.36,
+        "d_now": 33.82,
+        "j_now": 8.44,
+        "k_prev": 31.38,
+        "d_prev": 38.05,
+        "j_prev": 18.03,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.08,
+        "d_now": 23.2,
+        "j_now": 7.84,
+        "k_prev": 24.49,
+        "d_prev": 25.76,
+        "j_prev": 21.94,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -149,116 +244,324 @@
       "name": "恒立液压",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.27,
+        "d_now": 23.03,
+        "j_now": 2.75,
+        "k_prev": 14.94,
+        "d_prev": 26.41,
+        "j_prev": -7.98,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 10.62,
+        "d_now": 20.28,
+        "j_now": -8.71,
+        "k_prev": 13.36,
+        "d_prev": 25.11,
+        "j_prev": -10.16,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002901": {
-      "name": "大博医疗",
+    "603988": {
+      "name": "中电电机",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 8.44,
+        "d_now": 9.69,
+        "j_now": 5.93,
+        "k_prev": 7.1,
+        "d_prev": 10.32,
+        "j_prev": 0.67,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.41,
+        "d_now": 40.14,
+        "j_now": 4.96,
+        "k_prev": 39.28,
+        "d_prev": 46.0,
+        "j_prev": 25.85,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "001333": {
-      "name": "光华股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "603381": {
       "name": "永臻股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.79,
+        "d_now": 20.22,
+        "j_now": 15.94,
+        "k_prev": 18.19,
+        "d_prev": 20.93,
+        "j_prev": 12.7,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 70.71,
+        "d_now": 75.46,
+        "j_now": 61.2,
+        "k_prev": 76.89,
+        "d_prev": 77.84,
+        "j_prev": 75.0,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600732": {
       "name": "爱旭股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 24.75,
+        "d_now": 24.3,
+        "j_now": 25.66,
+        "k_prev": 22.13,
+        "d_prev": 24.07,
+        "j_prev": 18.24,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.56,
+        "d_now": 43.74,
+        "j_now": -4.82,
+        "k_prev": 35.28,
+        "d_prev": 51.84,
+        "j_prev": 2.15,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "603758": {
+      "name": "秦安股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 22.19,
+        "d_now": 32.47,
+        "j_now": 1.64,
+        "k_prev": 20.79,
+        "d_prev": 37.61,
+        "j_prev": -12.85,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 49.07,
+        "d_now": 53.25,
+        "j_now": 40.71,
+        "k_prev": 49.7,
+        "d_prev": 55.34,
+        "j_prev": 38.41,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002756": {
+      "name": "永兴材料",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 16.91,
+        "d_now": 15.56,
+        "j_now": 19.6,
+        "k_prev": 14.65,
+        "d_prev": 14.89,
+        "j_prev": 14.17,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 32.61,
+        "d_now": 46.66,
+        "j_now": 4.53,
+        "k_prev": 43.15,
+        "d_prev": 53.68,
+        "j_prev": 22.1,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002399": {
+      "name": "海普瑞",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 20.98,
+        "d_now": 17.53,
+        "j_now": 27.88,
+        "k_prev": 14.8,
+        "d_prev": 15.8,
+        "j_prev": 12.8,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 69.32,
+        "d_now": 77.56,
+        "j_now": 52.82,
+        "k_prev": 75.71,
+        "d_prev": 81.69,
+        "j_prev": 63.76,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002901": {
+      "name": "大博医疗",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 33.0,
+        "d_now": 35.12,
+        "j_now": 28.75,
+        "k_prev": 28.44,
+        "d_prev": 36.19,
+        "j_prev": 12.96,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 69.99,
+        "d_now": 75.37,
+        "j_now": 59.23,
+        "k_prev": 74.63,
+        "d_prev": 78.06,
+        "j_prev": 67.77,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "002192": {
       "name": "融捷股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.11,
+        "d_now": 29.7,
+        "j_now": 36.95,
+        "k_prev": 26.08,
+        "d_prev": 28.49,
+        "j_prev": 21.26,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 70.14,
+        "d_now": 69.5,
+        "j_now": 71.42,
+        "k_prev": 71.09,
+        "d_prev": 69.18,
+        "j_prev": 74.92,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002399": {
-      "name": "海普瑞",
+    "002828": {
+      "name": "贝肯能源",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 10.12,
+        "d_now": 11.6,
+        "j_now": 7.17,
+        "k_prev": 8.37,
+        "d_prev": 12.34,
+        "j_prev": 0.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.3,
+        "d_now": 42.74,
+        "j_now": -0.58,
+        "k_prev": 35.59,
+        "d_prev": 49.96,
+        "j_prev": 6.85,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002756": {
-      "name": "永兴材料",
+    "603081": {
+      "name": "大丰实业",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.64,
+        "d_now": 15.99,
+        "j_now": 17.94,
+        "k_prev": 6.22,
+        "d_prev": 15.67,
+        "j_prev": -12.69,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 58.4,
+        "d_now": 65.2,
+        "j_now": 44.79,
+        "k_prev": 64.27,
+        "d_prev": 68.61,
+        "j_prev": 55.59,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603758": {
-      "name": "秦安股份",
+    "603567": {
+      "name": "珍宝岛",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.15,
+        "d_now": 15.48,
+        "j_now": 17.5,
+        "k_prev": 9.94,
+        "d_prev": 15.14,
+        "j_prev": -0.46,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 57.03,
+        "d_now": 68.97,
+        "j_now": 33.13,
+        "k_prev": 66.79,
+        "d_prev": 74.95,
+        "j_prev": 50.47,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603040": {
+      "name": "XD新坐标",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 21.96,
+        "d_now": 28.66,
+        "j_now": 8.57,
+        "k_prev": 22.07,
+        "d_prev": 32.0,
+        "j_prev": 2.2,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 14.99,
+        "d_now": 23.55,
+        "j_now": -2.13,
+        "k_prev": 19.34,
+        "d_prev": 27.82,
+        "j_prev": 2.37,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -267,24 +570,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 76.66,
+        "d_now": 69.38,
+        "j_now": 91.21,
+        "k_prev": 74.45,
+        "d_prev": 65.74,
+        "j_prev": 91.86,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000913": {
-      "name": "钱江摩托",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 85.78,
+        "d_now": 76.55,
+        "j_now": 104.24,
+        "k_prev": 83.1,
+        "d_prev": 71.94,
+        "j_prev": 105.43,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -293,63 +595,48 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.4,
+        "d_now": 23.3,
+        "j_now": 8.61,
+        "k_prev": 20.46,
+        "d_prev": 25.75,
+        "j_prev": 9.89,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 43.79,
+        "d_now": 50.99,
+        "j_now": 29.38,
+        "k_prev": 47.82,
+        "d_prev": 54.59,
+        "j_prev": 34.29,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "603040": {
-      "name": "XD新坐标",
+    "000913": {
+      "name": "钱江摩托",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.73,
+        "d_now": 55.21,
+        "j_now": 56.77,
+        "k_prev": 53.59,
+        "d_prev": 54.94,
+        "j_prev": 50.88,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002180": {
-      "name": "奔图科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002828": {
-      "name": "贝肯能源",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002019": {
-      "name": "亿帆医药",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 74.34,
+        "d_now": 74.28,
+        "j_now": 74.47,
+        "k_prev": 72.63,
+        "d_prev": 74.25,
+        "j_prev": 69.38,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -358,50 +645,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 48.42,
+        "d_now": 31.71,
+        "j_now": 81.86,
+        "k_prev": 22.64,
+        "d_prev": 23.35,
+        "j_prev": 21.21,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603567": {
-      "name": "珍宝岛",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605018": {
-      "name": "长华集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603089": {
-      "name": "正裕工业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.28,
+        "d_now": 67.81,
+        "j_now": 42.23,
+        "k_prev": 65.59,
+        "d_prev": 72.08,
+        "j_prev": 52.63,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -409,51 +669,149 @@
       "name": "卧龙电驱",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.77,
+        "d_now": 17.41,
+        "j_now": 21.48,
+        "k_prev": 11.48,
+        "d_prev": 16.73,
+        "j_prev": 0.99,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 22.44,
+        "d_now": 31.89,
+        "j_now": 3.55,
+        "k_prev": 26.93,
+        "d_prev": 36.61,
+        "j_prev": 7.58,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603382": {
-      "name": "海阳科技",
+    "605018": {
+      "name": "长华集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 22.13,
+        "d_now": 22.79,
+        "j_now": 20.82,
+        "k_prev": 16.53,
+        "d_prev": 23.12,
+        "j_prev": 3.36,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 62.33,
+        "d_now": 58.54,
+        "j_now": 69.91,
+        "k_prev": 58.59,
+        "d_prev": 56.64,
+        "j_prev": 62.48,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603089": {
+      "name": "正裕工业",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.45,
+        "d_now": 30.9,
+        "j_now": 35.53,
+        "k_prev": 32.0,
+        "d_prev": 30.13,
+        "j_prev": 35.75,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 35.19,
+        "d_now": 44.48,
+        "j_now": 16.6,
+        "k_prev": 39.63,
+        "d_prev": 49.13,
+        "j_prev": 20.62,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "003020": {
-      "name": "立方制药",
+    "002019": {
+      "name": "亿帆医药",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.96,
+        "d_now": 22.45,
+        "j_now": 11.99,
+        "k_prev": 14.16,
+        "d_prev": 24.19,
+        "j_prev": -5.91,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.75,
+        "d_now": 63.17,
+        "j_now": 25.92,
+        "k_prev": 59.46,
+        "d_prev": 69.37,
+        "j_prev": 39.63,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "001333": {
+      "name": "光华股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 48.55,
+        "d_now": 31.14,
+        "j_now": 83.38,
+        "k_prev": 25.77,
+        "d_prev": 22.43,
+        "j_prev": 32.44,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 81.65,
+        "d_now": 83.42,
+        "j_now": 78.11,
+        "k_prev": 79.62,
+        "d_prev": 84.31,
+        "j_prev": 70.25,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "601898": {
-      "name": "中煤能源",
+    "002180": {
+      "name": "奔图科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.65,
+        "d_now": 17.81,
+        "j_now": -0.66,
+        "k_prev": 13.78,
+        "d_prev": 20.89,
+        "j_prev": -0.45,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 35.92,
+        "d_now": 53.02,
+        "j_now": 1.71,
+        "k_prev": 48.24,
+        "d_prev": 61.58,
+        "j_prev": 21.58,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -461,12 +819,74 @@
       "name": "华友钴业",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 22.98,
+        "d_now": 24.46,
+        "j_now": 20.02,
+        "k_prev": 19.25,
+        "d_prev": 25.2,
+        "j_prev": 7.35,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 65.58,
+        "d_now": 69.04,
+        "j_now": 58.67,
+        "k_prev": 68.92,
+        "d_prev": 70.76,
+        "j_prev": 65.24,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603382": {
+      "name": "海阳科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 10.03,
+        "d_now": 14.21,
+        "j_now": 1.68,
+        "k_prev": 7.9,
+        "d_prev": 16.3,
+        "j_prev": -8.88,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 24.89,
+        "d_now": 41.1,
+        "j_now": -7.52,
+        "k_prev": 33.17,
+        "d_prev": 49.2,
+        "j_prev": 1.11,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "601898": {
+      "name": "中煤能源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 18.54,
+        "d_now": 32.12,
+        "j_now": -8.62,
+        "k_prev": 27.81,
+        "d_prev": 38.91,
+        "j_prev": 5.62,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 60.41,
+        "d_now": 64.52,
+        "j_now": 52.18,
+        "k_prev": 62.49,
+        "d_prev": 66.58,
+        "j_prev": 54.3,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -475,24 +895,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.99,
+        "d_now": 39.44,
+        "j_now": 74.1,
+        "k_prev": 44.67,
+        "d_prev": 33.67,
+        "j_prev": 66.68,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603081": {
-      "name": "大丰实业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 67.4,
+        "d_now": 72.11,
+        "j_now": 58.0,
+        "k_prev": 70.6,
+        "d_prev": 74.46,
+        "j_prev": 62.88,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -501,11 +920,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 41.83,
+        "d_now": 48.26,
+        "j_now": 28.96,
+        "k_prev": 46.74,
+        "d_prev": 51.47,
+        "j_prev": 37.27,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 64.6,
+        "d_now": 68.88,
+        "j_now": 56.04,
+        "k_prev": 66.91,
+        "d_prev": 71.02,
+        "j_prev": 58.67,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -513,25 +944,49 @@
       "name": "博实股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 29.82,
+        "d_now": 34.39,
+        "j_now": 20.67,
+        "k_prev": 28.06,
+        "d_prev": 36.67,
+        "j_prev": 10.83,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 67.78,
+        "d_now": 67.63,
+        "j_now": 68.06,
+        "k_prev": 70.41,
+        "d_prev": 67.56,
+        "j_prev": 76.12,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600513": {
       "name": "联环药业",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.49,
+        "d_now": 18.8,
+        "j_now": 47.87,
+        "k_prev": 11.97,
+        "d_prev": 13.96,
+        "j_prev": 7.98,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 65.21,
+        "d_now": 72.2,
+        "j_now": 51.24,
+        "k_prev": 69.77,
+        "d_prev": 75.69,
+        "j_prev": 57.92,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -540,24 +995,48 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 38.1,
+        "d_now": 44.03,
+        "j_now": 26.22,
+        "k_prev": 42.56,
+        "d_prev": 47.0,
+        "j_prev": 33.68,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 51.93,
+        "d_now": 65.06,
+        "j_now": 25.67,
+        "k_prev": 63.03,
+        "d_prev": 71.63,
+        "j_prev": 45.84,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "600602": {
-      "name": "云赛智联",
+    "003020": {
+      "name": "立方制药",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 30.34,
+        "d_now": 21.81,
+        "j_now": 47.4,
+        "k_prev": 16.35,
+        "d_prev": 17.55,
+        "j_prev": 13.94,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 46.85,
+        "d_now": 54.61,
+        "j_now": 31.34,
+        "k_prev": 50.54,
+        "d_prev": 58.49,
+        "j_prev": 34.65,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -566,76 +1045,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 22.66,
+        "d_now": 27.03,
+        "j_now": 13.92,
+        "k_prev": 33.99,
+        "d_prev": 29.22,
+        "j_prev": 43.55,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "003043": {
-      "name": "华亚智能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000792": {
-      "name": "盐湖股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605116": {
-      "name": "奥锐特",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605499": {
-      "name": "东鹏饮料",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603102": {
-      "name": "百合股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.37,
+        "d_now": 50.63,
+        "j_now": 31.86,
+        "k_prev": 51.56,
+        "d_prev": 53.76,
+        "j_prev": 47.17,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -644,37 +1070,348 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.13,
+        "d_now": 19.45,
+        "j_now": -5.5,
+        "k_prev": 16.7,
+        "d_prev": 23.61,
+        "j_prev": 2.88,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.63,
+        "d_now": 66.33,
+        "j_now": 46.22,
+        "k_prev": 69.23,
+        "d_prev": 69.68,
+        "j_prev": 68.32,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "000792": {
+      "name": "盐湖股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 27.83,
+        "d_now": 25.89,
+        "j_now": 31.7,
+        "k_prev": 26.74,
+        "d_prev": 24.92,
+        "j_prev": 30.38,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 58.12,
+        "d_now": 65.51,
+        "j_now": 43.34,
+        "k_prev": 63.97,
+        "d_prev": 69.21,
+        "j_prev": 53.5,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "605116": {
+      "name": "奥锐特",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 28.72,
+        "d_now": 21.03,
+        "j_now": 44.09,
+        "k_prev": 16.15,
+        "d_prev": 17.18,
+        "j_prev": 14.09,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 52.62,
+        "d_now": 63.56,
+        "j_now": 30.74,
+        "k_prev": 57.96,
+        "d_prev": 69.03,
+        "j_prev": 35.82,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603102": {
+      "name": "百合股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 19.53,
+        "d_now": 20.7,
+        "j_now": 17.18,
+        "k_prev": 13.07,
+        "d_prev": 21.28,
+        "j_prev": -3.35,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 69.07,
+        "d_now": 75.09,
+        "j_now": 57.03,
+        "k_prev": 72.88,
+        "d_prev": 78.1,
+        "j_prev": 62.43,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "003043": {
+      "name": "华亚智能",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 26.81,
+        "d_now": 27.88,
+        "j_now": 24.68,
+        "k_prev": 19.67,
+        "d_prev": 28.41,
+        "j_prev": 2.19,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 16.0,
+        "d_now": 20.61,
+        "j_now": 6.77,
+        "k_prev": 17.27,
+        "d_prev": 22.92,
+        "j_prev": 5.98,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600160": {
+      "name": "巨化股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 62.28,
+        "d_now": 48.76,
+        "j_now": 89.32,
+        "k_prev": 53.42,
+        "d_prev": 41.99,
+        "j_prev": 76.26,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 24.39,
+        "d_now": 25.5,
+        "j_now": 22.17,
+        "k_prev": 20.46,
+        "d_prev": 26.06,
+        "j_prev": 9.25,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "605499": {
+      "name": "东鹏饮料",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 82.96,
+        "d_now": 78.93,
+        "j_now": 91.03,
+        "k_prev": 78.83,
+        "d_prev": 76.91,
+        "j_prev": 82.67,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 91.62,
+        "d_now": 86.55,
+        "j_now": 101.77,
+        "k_prev": 89.11,
+        "d_prev": 84.02,
+        "j_prev": 99.31,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "605086": {
+      "name": "XD龙高股",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 13.49,
+        "d_now": 16.06,
+        "j_now": 8.35,
+        "k_prev": 11.54,
+        "d_prev": 17.35,
+        "j_prev": -0.08,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 29.22,
+        "d_now": 40.37,
+        "j_now": 6.9,
+        "k_prev": 38.82,
+        "d_prev": 45.95,
+        "j_prev": 24.57,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600602": {
+      "name": "云赛智联",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 20.33,
+        "d_now": 20.57,
+        "j_now": 19.87,
+        "k_prev": 13.84,
+        "d_prev": 20.68,
+        "j_prev": 0.15,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 46.66,
+        "d_now": 57.71,
+        "j_now": 24.56,
+        "k_prev": 53.77,
+        "d_prev": 63.23,
+        "j_prev": 34.84,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "605339": {
       "name": "南侨食品",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.99,
+        "d_now": 16.83,
+        "j_now": 17.31,
+        "k_prev": 10.48,
+        "d_prev": 16.75,
+        "j_prev": -2.05,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 78.33,
+        "d_now": 80.65,
+        "j_now": 73.69,
+        "k_prev": 80.32,
+        "d_prev": 81.81,
+        "j_prev": 77.34,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600114": {
       "name": "东睦股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 15.25,
+        "d_now": 18.9,
+        "j_now": 7.95,
+        "k_prev": 15.06,
+        "d_prev": 20.72,
+        "j_prev": 3.74,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 34.43,
+        "d_now": 41.1,
+        "j_now": 21.1,
+        "k_prev": 43.05,
+        "d_prev": 44.43,
+        "j_prev": 40.3,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603173": {
+      "name": "福斯达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.95,
+        "d_now": 15.45,
+        "j_now": 22.97,
+        "k_prev": 13.04,
+        "d_prev": 14.19,
+        "j_prev": 10.74,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 29.94,
+        "d_now": 45.43,
+        "j_now": -1.03,
+        "k_prev": 38.46,
+        "d_prev": 53.17,
+        "j_prev": 9.04,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002315": {
+      "name": "焦点科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 18.61,
+        "d_now": 14.84,
+        "j_now": 26.15,
+        "k_prev": 11.25,
+        "d_prev": 12.96,
+        "j_prev": 7.83,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 63.99,
+        "d_now": 68.65,
+        "j_now": 54.69,
+        "k_prev": 67.48,
+        "d_prev": 70.97,
+        "j_prev": 60.49,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603327": {
+      "name": "福蓉科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 43.07,
+        "d_now": 44.0,
+        "j_now": 41.23,
+        "k_prev": 42.39,
+        "d_prev": 44.46,
+        "j_prev": 38.25,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 51.76,
+        "d_now": 60.03,
+        "j_now": 35.24,
+        "k_prev": 56.81,
+        "d_prev": 64.16,
+        "j_prev": 42.12,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -683,37 +1420,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 40.49,
+        "d_now": 46.7,
+        "j_now": 28.06,
+        "k_prev": 42.87,
+        "d_prev": 49.81,
+        "j_prev": 29.01,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600160": {
-      "name": "巨化股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605086": {
-      "name": "XD龙高股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 42.52,
+        "d_now": 54.9,
+        "j_now": 17.76,
+        "k_prev": 52.91,
+        "d_prev": 61.09,
+        "j_prev": 36.55,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -721,25 +1444,49 @@
       "name": "国电南瑞",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.48,
+        "d_now": 18.58,
+        "j_now": 15.28,
+        "k_prev": 9.55,
+        "d_prev": 19.13,
+        "j_prev": -9.6,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 72.78,
+        "d_now": 71.38,
+        "j_now": 75.59,
+        "k_prev": 74.32,
+        "d_prev": 70.68,
+        "j_prev": 81.61,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603173": {
-      "name": "福斯达",
+    "603225": {
+      "name": "新凤鸣",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 51.66,
+        "d_now": 56.88,
+        "j_now": 41.22,
+        "k_prev": 56.44,
+        "d_prev": 59.49,
+        "j_prev": 50.33,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 70.94,
+        "d_now": 74.62,
+        "j_now": 63.58,
+        "k_prev": 74.15,
+        "d_prev": 76.45,
+        "j_prev": 69.54,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -748,24 +1495,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 57.82,
+        "d_now": 48.96,
+        "j_now": 75.55,
+        "k_prev": 54.91,
+        "d_prev": 44.53,
+        "j_prev": 75.68,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603327": {
-      "name": "福蓉科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 31.37,
+        "d_now": 37.56,
+        "j_now": 18.99,
+        "k_prev": 32.93,
+        "d_prev": 40.66,
+        "j_prev": 17.46,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -774,63 +1520,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 33.53,
+        "d_now": 27.11,
+        "j_now": 46.37,
+        "k_prev": 24.37,
+        "d_prev": 23.9,
+        "j_prev": 25.31,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002315": {
-      "name": "焦点科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603225": {
-      "name": "新凤鸣",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600326": {
-      "name": "西藏天路",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603863": {
-      "name": "松炀资源",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.64,
+        "d_now": 50.22,
+        "j_now": 33.48,
+        "k_prev": 46.12,
+        "d_prev": 53.01,
+        "j_prev": 32.36,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -838,64 +1544,124 @@
       "name": "华培动力",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.17,
+        "d_now": 18.15,
+        "j_now": 18.2,
+        "k_prev": 14.75,
+        "d_prev": 18.15,
+        "j_prev": 7.97,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 10.19,
+        "d_now": 18.98,
+        "j_now": -7.39,
+        "k_prev": 13.34,
+        "d_prev": 23.37,
+        "j_prev": -6.74,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "603057": {
-      "name": "紫燕食品",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "001323": {
       "name": "慕思股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 24.26,
+        "d_now": 25.64,
+        "j_now": 21.5,
+        "k_prev": 23.06,
+        "d_prev": 26.34,
+        "j_prev": 16.51,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 63.03,
+        "d_now": 69.14,
+        "j_now": 50.83,
+        "k_prev": 65.8,
+        "d_prev": 72.19,
+        "j_prev": 53.03,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002460": {
-      "name": "赣锋锂业",
+    "603057": {
+      "name": "紫燕食品",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 12.84,
+        "d_now": 10.51,
+        "j_now": 17.48,
+        "k_prev": 5.92,
+        "d_prev": 9.35,
+        "j_prev": -0.94,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.26,
+        "d_now": 64.41,
+        "j_now": 48.95,
+        "k_prev": 68.65,
+        "d_prev": 66.99,
+        "j_prev": 71.98,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "002674": {
       "name": "兴业科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 22.56,
+        "d_now": 22.47,
+        "j_now": 22.72,
+        "k_prev": 13.84,
+        "d_prev": 22.43,
+        "j_prev": -3.36,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.8,
+        "d_now": 60.87,
+        "j_now": 45.67,
+        "k_prev": 60.2,
+        "d_prev": 63.41,
+        "j_prev": 53.78,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603863": {
+      "name": "松炀资源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 62.35,
+        "d_now": 54.75,
+        "j_now": 77.55,
+        "k_prev": 56.03,
+        "d_prev": 50.95,
+        "j_prev": 66.18,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 81.47,
+        "d_now": 76.85,
+        "j_now": 90.7,
+        "k_prev": 77.08,
+        "d_prev": 74.54,
+        "j_prev": 82.16,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -903,12 +1669,49 @@
       "name": "恒生电子",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 26.04,
+        "d_now": 24.99,
+        "j_now": 28.14,
+        "k_prev": 18.47,
+        "d_prev": 24.46,
+        "j_prev": 6.48,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 62.65,
+        "d_now": 70.91,
+        "j_now": 46.11,
+        "k_prev": 68.36,
+        "d_prev": 75.05,
+        "j_prev": 54.98,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002460": {
+      "name": "赣锋锂业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 23.91,
+        "d_now": 19.16,
+        "j_now": 33.43,
+        "k_prev": 15.18,
+        "d_prev": 16.78,
+        "j_prev": 11.98,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 52.27,
+        "d_now": 61.02,
+        "j_now": 34.77,
+        "k_prev": 57.85,
+        "d_prev": 65.39,
+        "j_prev": 42.78,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -916,38 +1719,74 @@
       "name": "黑牡丹",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 13.03,
+        "d_now": 12.21,
+        "j_now": 14.68,
+        "k_prev": 10.46,
+        "d_prev": 11.79,
+        "j_prev": 7.79,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 56.28,
+        "d_now": 69.82,
+        "j_now": 29.21,
+        "k_prev": 68.43,
+        "d_prev": 76.59,
+        "j_prev": 52.1,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "601666": {
-      "name": "平煤股份",
+    "600326": {
+      "name": "西藏天路",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 19.24,
+        "d_now": 16.7,
+        "j_now": 24.34,
+        "k_prev": 12.2,
+        "d_prev": 15.42,
+        "j_prev": 5.75,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.41,
+        "d_now": 67.79,
+        "j_now": 42.65,
+        "k_prev": 64.11,
+        "d_prev": 71.98,
+        "j_prev": 48.38,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "000338": {
       "name": "潍柴动力",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 23.34,
+        "d_now": 32.8,
+        "j_now": 4.42,
+        "k_prev": 27.11,
+        "d_prev": 37.53,
+        "j_prev": 6.28,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 34.53,
+        "d_now": 39.14,
+        "j_now": 25.29,
+        "k_prev": 39.54,
+        "d_prev": 41.45,
+        "j_prev": 35.73,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -956,24 +1795,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 34.72,
+        "d_now": 43.5,
+        "j_now": 17.16,
+        "k_prev": 39.58,
+        "d_prev": 47.89,
+        "j_prev": 22.96,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "001259": {
-      "name": "利仁科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 76.29,
+        "d_now": 71.04,
+        "j_now": 86.79,
+        "k_prev": 75.54,
+        "d_prev": 68.41,
+        "j_prev": 89.81,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -982,11 +1820,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 6.99,
+        "d_now": 12.24,
+        "j_now": -3.53,
+        "k_prev": 8.84,
+        "d_prev": 14.87,
+        "j_prev": -3.22,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.86,
+        "d_now": 53.9,
+        "j_now": 59.79,
+        "k_prev": 59.71,
+        "d_prev": 52.92,
+        "j_prev": 73.28,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -994,51 +1844,99 @@
       "name": "安妮股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 19.56,
+        "d_now": 17.43,
+        "j_now": 23.81,
+        "k_prev": 18.22,
+        "d_prev": 16.37,
+        "j_prev": 21.93,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.88,
+        "d_now": 39.26,
+        "j_now": 2.12,
+        "k_prev": 35.32,
+        "d_prev": 45.45,
+        "j_prev": 15.07,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "600588": {
-      "name": "用友网络",
+    "001259": {
+      "name": "利仁科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 8.52,
+        "d_now": 8.99,
+        "j_now": 7.57,
+        "k_prev": 4.01,
+        "d_prev": 9.23,
+        "j_prev": -6.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.03,
+        "d_now": 65.83,
+        "j_now": 45.41,
+        "k_prev": 64.34,
+        "d_prev": 69.23,
+        "j_prev": 54.55,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "002900": {
-      "name": "哈三联",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "001317": {
       "name": "三羊马",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.0,
+        "d_now": 50.0,
+        "j_now": 50.0,
+        "k_prev": 50.0,
+        "d_prev": 50.0,
+        "j_prev": 50.0,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 99.42,
+        "d_now": 97.3,
+        "j_now": 103.66,
+        "k_prev": 99.13,
+        "d_prev": 96.24,
+        "j_prev": 104.91,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "601666": {
+      "name": "平煤股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 55.7,
+        "d_now": 62.8,
+        "j_now": 41.48,
+        "k_prev": 66.88,
+        "d_prev": 66.36,
+        "j_prev": 67.92,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 80.52,
+        "d_now": 76.11,
+        "j_now": 89.33,
+        "k_prev": 81.12,
+        "d_prev": 73.91,
+        "j_prev": 95.55,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1047,50 +1945,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.75,
+        "d_now": 26.87,
+        "j_now": 59.52,
+        "k_prev": 19.13,
+        "d_prev": 21.43,
+        "j_prev": 14.53,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002664": {
-      "name": "信质集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600143": {
-      "name": "金发科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600750": {
-      "name": "华润江中",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.63,
+        "d_now": 57.43,
+        "j_now": 37.03,
+        "k_prev": 52.87,
+        "d_prev": 60.84,
+        "j_prev": 36.95,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1099,11 +1970,48 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.04,
+        "d_now": 19.45,
+        "j_now": 42.24,
+        "k_prev": 14.25,
+        "d_prev": 15.65,
+        "j_prev": 11.45,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 29.43,
+        "d_now": 40.39,
+        "j_now": 7.52,
+        "k_prev": 34.89,
+        "d_prev": 45.87,
+        "j_prev": 12.94,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "600750": {
+      "name": "华润江中",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 66.92,
+        "d_now": 47.11,
+        "j_now": 106.55,
+        "k_prev": 56.63,
+        "d_prev": 37.2,
+        "j_prev": 95.5,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 47.7,
+        "d_now": 45.6,
+        "j_now": 51.89,
+        "k_prev": 43.55,
+        "d_prev": 44.55,
+        "j_prev": 41.53,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1112,24 +2020,98 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 23.35,
+        "d_now": 28.7,
+        "j_now": 12.65,
+        "k_prev": 23.49,
+        "d_prev": 31.37,
+        "j_prev": 7.71,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 22.92,
+        "d_now": 31.09,
+        "j_now": 6.58,
+        "k_prev": 27.86,
+        "d_prev": 35.17,
+        "j_prev": 13.23,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "002664": {
+      "name": "信质集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 14.6,
+        "d_now": 22.58,
+        "j_now": -1.36,
+        "k_prev": 13.57,
+        "d_prev": 26.57,
+        "j_prev": -12.44,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 26.91,
+        "d_now": 34.45,
+        "j_now": 11.81,
+        "k_prev": 32.03,
+        "d_prev": 38.22,
+        "j_prev": 19.63,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "002943": {
       "name": "宇晶股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 65.87,
+        "d_now": 73.67,
+        "j_now": 50.27,
+        "k_prev": 67.85,
+        "d_prev": 77.57,
+        "j_prev": 48.41,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 69.61,
+        "d_now": 66.88,
+        "j_now": 75.08,
+        "k_prev": 67.05,
+        "d_prev": 65.51,
+        "j_prev": 70.14,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "002900": {
+      "name": "哈三联",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 18.85,
+        "d_now": 11.87,
+        "j_now": 32.81,
+        "k_prev": 8.83,
+        "d_prev": 8.38,
+        "j_prev": 9.73,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 52.37,
+        "d_now": 66.55,
+        "j_now": 24.02,
+        "k_prev": 59.46,
+        "d_prev": 73.63,
+        "j_prev": 31.12,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1138,11 +2120,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 20.25,
+        "d_now": 22.56,
+        "j_now": 15.65,
+        "k_prev": 21.29,
+        "d_prev": 23.71,
+        "j_prev": 16.45,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.87,
+        "d_now": 42.69,
+        "j_now": 28.25,
+        "k_prev": 49.91,
+        "d_prev": 45.09,
+        "j_prev": 59.56,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1151,50 +2145,123 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 57.78,
+        "d_now": 69.81,
+        "j_now": 33.72,
+        "k_prev": 66.8,
+        "d_prev": 75.83,
+        "j_prev": 48.75,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 57.25,
+        "d_now": 61.24,
+        "j_now": 49.27,
+        "k_prev": 59.85,
+        "d_prev": 63.23,
+        "j_prev": 53.1,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002742": {
-      "name": "冀衡医药",
+    "600143": {
+      "name": "金发科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 42.76,
+        "d_now": 38.52,
+        "j_now": 51.25,
+        "k_prev": 32.9,
+        "d_prev": 36.4,
+        "j_prev": 25.88,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 39.59,
+        "d_now": 54.42,
+        "j_now": 9.92,
+        "k_prev": 47.62,
+        "d_prev": 61.84,
+        "j_prev": 19.18,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "600588": {
+      "name": "用友网络",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 16.21,
+        "d_now": 22.23,
+        "j_now": 4.16,
+        "k_prev": 15.22,
+        "d_prev": 25.24,
+        "j_prev": -4.82,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 64.77,
+        "d_now": 68.28,
+        "j_now": 57.76,
+        "k_prev": 67.92,
+        "d_prev": 70.03,
+        "j_prev": 63.68,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002466": {
+      "name": "天齐锂业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 21.88,
+        "d_now": 20.64,
+        "j_now": 24.36,
+        "k_prev": 15.42,
+        "d_prev": 20.02,
+        "j_prev": 6.24,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 60.91,
+        "d_now": 69.03,
+        "j_now": 44.67,
+        "k_prev": 66.73,
+        "d_prev": 73.09,
+        "j_prev": 54.02,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "002737": {
       "name": "葵花药业",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.82,
+        "d_now": 22.05,
+        "j_now": 36.34,
+        "k_prev": 15.22,
+        "d_prev": 19.67,
+        "j_prev": 6.33,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002466": {
-      "name": "天齐锂业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.84,
+        "d_now": 66.85,
+        "j_now": 33.83,
+        "k_prev": 60.23,
+        "d_prev": 72.35,
+        "j_prev": 36.0,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1203,24 +2270,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 75.85,
+        "d_now": 64.44,
+        "j_now": 98.67,
+        "k_prev": 63.77,
+        "d_prev": 58.73,
+        "j_prev": 73.85,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000630": {
-      "name": "铜陵有色",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 76.87,
+        "d_now": 62.96,
+        "j_now": 104.68,
+        "k_prev": 65.3,
+        "d_prev": 56.01,
+        "j_prev": 83.88,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1228,38 +2294,74 @@
       "name": "罗欣药业",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 20.25,
+        "d_now": 17.23,
+        "j_now": 26.28,
+        "k_prev": 10.37,
+        "d_prev": 15.72,
+        "j_prev": -0.33,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 52.82,
+        "d_now": 67.36,
+        "j_now": 23.75,
+        "k_prev": 63.84,
+        "d_prev": 74.62,
+        "j_prev": 42.29,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600426": {
       "name": "华鲁恒升",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.22,
+        "d_now": 35.42,
+        "j_now": 40.83,
+        "k_prev": 25.83,
+        "d_prev": 34.52,
+        "j_prev": 8.46,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.19,
+        "d_now": 65.64,
+        "j_now": 46.29,
+        "k_prev": 60.48,
+        "d_prev": 68.86,
+        "j_prev": 43.72,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "600619": {
-      "name": "海立股份",
+    "002742": {
+      "name": "冀衡医药",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.29,
+        "d_now": 20.7,
+        "j_now": 34.47,
+        "k_prev": 16.51,
+        "d_prev": 18.41,
+        "j_prev": 12.71,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 63.37,
+        "d_now": 67.86,
+        "j_now": 54.39,
+        "k_prev": 66.93,
+        "d_prev": 70.11,
+        "j_prev": 60.59,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1267,38 +2369,49 @@
       "name": "迎丰股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.05,
+        "d_now": 18.43,
+        "j_now": 17.28,
+        "k_prev": 14.57,
+        "d_prev": 18.62,
+        "j_prev": 6.47,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 61.18,
+        "d_now": 59.5,
+        "j_now": 64.55,
+        "k_prev": 62.04,
+        "d_prev": 58.66,
+        "j_prev": 68.81,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603737": {
-      "name": "三棵树",
+    "600619": {
+      "name": "海立股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 70.76,
+        "d_now": 73.9,
+        "j_now": 64.46,
+        "k_prev": 75.65,
+        "d_prev": 75.48,
+        "j_prev": 75.98,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002773": {
-      "name": "康弘药业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 77.07,
+        "d_now": 65.39,
+        "j_now": 100.42,
+        "k_prev": 75.73,
+        "d_prev": 59.55,
+        "j_prev": 108.08,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1306,51 +2419,149 @@
       "name": "开开实业",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 21.33,
+        "d_now": 17.83,
+        "j_now": 28.34,
+        "k_prev": 14.35,
+        "d_prev": 16.07,
+        "j_prev": 10.91,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 61.54,
+        "d_now": 68.45,
+        "j_now": 47.72,
+        "k_prev": 65.26,
+        "d_prev": 71.9,
+        "j_prev": 51.96,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "600129": {
-      "name": "太极集团",
+    "603737": {
+      "name": "三棵树",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 18.94,
+        "d_now": 23.07,
+        "j_now": 10.66,
+        "k_prev": 18.68,
+        "d_prev": 25.14,
+        "j_prev": 5.76,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 60.44,
+        "d_now": 68.51,
+        "j_now": 44.3,
+        "k_prev": 68.34,
+        "d_prev": 72.54,
+        "j_prev": 59.93,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "603352": {
       "name": "至信股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 45.08,
+        "d_now": 25.8,
+        "j_now": 83.63,
+        "k_prev": 17.62,
+        "d_prev": 16.16,
+        "j_prev": 20.52,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.6,
+        "d_now": 44.09,
+        "j_now": 45.62,
+        "k_prev": 37.74,
+        "d_prev": 43.84,
+        "j_prev": 25.53,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002865": {
-      "name": "钧达股份",
+    "002773": {
+      "name": "康弘药业",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 19.37,
+        "d_now": 18.02,
+        "j_now": 22.07,
+        "k_prev": 15.9,
+        "d_prev": 17.34,
+        "j_prev": 13.0,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.37,
+        "d_now": 68.78,
+        "j_now": 28.55,
+        "k_prev": 69.1,
+        "d_prev": 75.49,
+        "j_prev": 56.34,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600129": {
+      "name": "太极集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 18.16,
+        "d_now": 20.37,
+        "j_now": 13.73,
+        "k_prev": 15.7,
+        "d_prev": 21.47,
+        "j_prev": 4.14,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 48.17,
+        "d_now": 64.05,
+        "j_now": 16.43,
+        "k_prev": 60.36,
+        "d_prev": 71.98,
+        "j_prev": 37.11,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "000630": {
+      "name": "铜陵有色",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 18.23,
+        "d_now": 26.99,
+        "j_now": 0.7,
+        "k_prev": 20.2,
+        "d_prev": 31.38,
+        "j_prev": -2.15,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 69.52,
+        "d_now": 66.82,
+        "j_now": 74.92,
+        "k_prev": 71.92,
+        "d_prev": 65.47,
+        "j_prev": 84.83,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1358,142 +2569,324 @@
       "name": "神州信息",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 21.61,
+        "d_now": 22.14,
+        "j_now": 20.55,
+        "k_prev": 15.75,
+        "d_prev": 22.4,
+        "j_prev": 2.44,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.51,
+        "d_now": 53.38,
+        "j_now": 5.78,
+        "k_prev": 48.57,
+        "d_prev": 61.31,
+        "j_prev": 23.1,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "603013": {
-      "name": "亚普股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600846": {
       "name": "同济科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.95,
+        "d_now": 16.46,
+        "j_now": 20.94,
+        "k_prev": 11.93,
+        "d_prev": 15.71,
+        "j_prev": 4.36,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 30.54,
+        "d_now": 43.56,
+        "j_now": 4.5,
+        "k_prev": 37.47,
+        "d_prev": 50.06,
+        "j_prev": 12.29,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "603365": {
-      "name": "水星家纺",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600721": {
       "name": "百花医药",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 26.54,
+        "d_now": 33.34,
+        "j_now": 12.93,
+        "k_prev": 24.43,
+        "d_prev": 36.74,
+        "j_prev": -0.21,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 84.35,
+        "d_now": 87.15,
+        "j_now": 78.74,
+        "k_prev": 87.13,
+        "d_prev": 88.56,
+        "j_prev": 84.27,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002329": {
-      "name": "皇氏集团",
+    "603365": {
+      "name": "水星家纺",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 5.84,
+        "d_now": 7.64,
+        "j_now": 2.25,
+        "k_prev": 4.22,
+        "d_prev": 8.54,
+        "j_prev": -4.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.55,
+        "d_now": 64.94,
+        "j_now": 21.77,
+        "k_prev": 62.5,
+        "d_prev": 72.14,
+        "j_prev": 43.21,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "002865": {
+      "name": "钧达股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 21.36,
+        "d_now": 19.61,
+        "j_now": 24.86,
+        "k_prev": 14.65,
+        "d_prev": 18.74,
+        "j_prev": 6.48,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 32.98,
+        "d_now": 44.76,
+        "j_now": 9.42,
+        "k_prev": 40.43,
+        "d_prev": 50.65,
+        "j_prev": 20.0,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603013": {
+      "name": "亚普股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 21.76,
+        "d_now": 21.56,
+        "j_now": 22.15,
+        "k_prev": 18.35,
+        "d_prev": 21.46,
+        "j_prev": 12.13,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 63.69,
+        "d_now": 71.05,
+        "j_now": 48.96,
+        "k_prev": 72.0,
+        "d_prev": 74.74,
+        "j_prev": 66.54,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "002685": {
       "name": "华东重机",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.4,
+        "d_now": 11.32,
+        "j_now": 29.55,
+        "k_prev": 4.67,
+        "d_prev": 8.28,
+        "j_prev": -2.56,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.02,
+        "d_now": 45.93,
+        "j_now": -7.81,
+        "k_prev": 35.36,
+        "d_prev": 54.89,
+        "j_prev": -3.7,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "002329": {
+      "name": "皇氏集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 27.45,
+        "d_now": 32.37,
+        "j_now": 17.61,
+        "k_prev": 19.74,
+        "d_prev": 34.83,
+        "j_prev": -10.42,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 74.42,
+        "d_now": 70.67,
+        "j_now": 81.92,
+        "k_prev": 73.39,
+        "d_prev": 68.8,
+        "j_prev": 82.59,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603767": {
+      "name": "中马传动",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 18.52,
+        "d_now": 18.28,
+        "j_now": 18.98,
+        "k_prev": 12.77,
+        "d_prev": 18.16,
+        "j_prev": 1.99,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 19.54,
+        "d_now": 32.83,
+        "j_now": -7.04,
+        "k_prev": 23.76,
+        "d_prev": 39.47,
+        "j_prev": -7.68,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "000426": {
       "name": "兴业银锡",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 13.67,
+        "d_now": 21.31,
+        "j_now": -1.61,
+        "k_prev": 16.51,
+        "d_prev": 25.13,
+        "j_prev": -0.75,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.75,
+        "d_now": 25.49,
+        "j_now": 5.26,
+        "k_prev": 25.62,
+        "d_prev": 28.86,
+        "j_prev": 19.13,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "603767": {
-      "name": "中马传动",
+    "001230": {
+      "name": "劲旅环境",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.43,
+        "d_now": 14.17,
+        "j_now": 23.94,
+        "k_prev": 10.07,
+        "d_prev": 12.54,
+        "j_prev": 5.12,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 46.82,
+        "d_now": 57.26,
+        "j_now": 25.95,
+        "k_prev": 51.72,
+        "d_prev": 62.48,
+        "j_prev": 30.19,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600728": {
       "name": "佳都科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.89,
+        "d_now": 21.3,
+        "j_now": 8.06,
+        "k_prev": 12.83,
+        "d_prev": 23.5,
+        "j_prev": -8.52,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 54.49,
+        "d_now": 63.42,
+        "j_now": 36.62,
+        "k_prev": 63.55,
+        "d_prev": 67.89,
+        "j_prev": 54.88,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603383": {
-      "name": "顶点软件",
+    "000970": {
+      "name": "中科三环",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 36.25,
+        "d_now": 28.33,
+        "j_now": 52.08,
+        "k_prev": 21.03,
+        "d_prev": 24.37,
+        "j_prev": 14.37,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 49.59,
+        "d_now": 59.21,
+        "j_now": 30.36,
+        "k_prev": 53.24,
+        "d_prev": 64.02,
+        "j_prev": 31.67,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1502,62 +2895,98 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 46.91,
+        "d_now": 48.24,
+        "j_now": 44.23,
+        "k_prev": 44.17,
+        "d_prev": 48.91,
+        "j_prev": 34.69,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 31.52,
+        "d_now": 36.5,
+        "j_now": 21.57,
+        "k_prev": 34.32,
+        "d_prev": 38.99,
+        "j_prev": 24.98,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "000970": {
-      "name": "中科三环",
+    "600884": {
+      "name": "杉杉股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 22.84,
+        "d_now": 22.69,
+        "j_now": 23.14,
+        "k_prev": 21.76,
+        "d_prev": 22.61,
+        "j_prev": 20.06,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.89,
+        "d_now": 49.18,
+        "j_now": 36.32,
+        "k_prev": 49.16,
+        "d_prev": 51.32,
+        "j_prev": 44.83,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "600661": {
-      "name": "昂立教育",
+    "603383": {
+      "name": "顶点软件",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.47,
+        "d_now": 16.23,
+        "j_now": 16.95,
+        "k_prev": 9.9,
+        "d_prev": 16.11,
+        "j_prev": -2.54,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 16.35,
-        "d_now": 25.72,
-        "j_now": -2.4,
-        "k_prev": 18.11,
-        "d_prev": 30.41,
-        "j_prev": -6.49,
-        "time": "2026-09-18 15:00"
+        "k_now": 62.24,
+        "d_now": 71.8,
+        "j_now": 43.13,
+        "k_prev": 68.36,
+        "d_prev": 76.58,
+        "j_prev": 51.93,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "605056": {
-      "name": "咸亨国际",
+    "000157": {
+      "name": "中联重科",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.82,
+        "d_now": 27.57,
+        "j_now": 1.32,
+        "k_prev": 28.24,
+        "d_prev": 31.95,
+        "j_prev": 20.81,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 47.97,
-        "d_now": 54.53,
-        "j_now": 34.85,
-        "k_prev": 51.95,
-        "d_prev": 57.81,
-        "j_prev": 40.24,
-        "time": "2026-09-18 15:00"
+        "k_now": 41.95,
+        "d_now": 58.07,
+        "j_now": 9.72,
+        "k_prev": 54.6,
+        "d_prev": 66.13,
+        "j_prev": 31.54,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1565,56 +2994,49 @@
       "name": "上海雅仕",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.02,
+        "d_now": 16.69,
+        "j_now": 14.69,
+        "k_prev": 11.54,
+        "d_prev": 17.02,
+        "j_prev": 0.56,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 34.12,
-        "d_now": 48.74,
-        "j_now": 4.88,
-        "k_prev": 43.68,
-        "d_prev": 56.05,
-        "j_prev": 18.95,
-        "time": "2026-09-18 15:00"
+        "k_now": 41.09,
+        "d_now": 50.91,
+        "j_now": 21.44,
+        "k_prev": 46.64,
+        "d_prev": 55.83,
+        "j_prev": 28.26,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "001230": {
-      "name": "劲旅环境",
+    "600661": {
+      "name": "昂立教育",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 38.02,
+        "d_now": 26.45,
+        "j_now": 61.15,
+        "k_prev": 21.31,
+        "d_prev": 20.67,
+        "j_prev": 22.6,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 41.0,
-        "d_now": 42.33,
-        "j_now": 38.35,
-        "k_prev": 38.78,
-        "d_prev": 42.99,
-        "j_prev": 30.35,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "603070": {
-      "name": "万控智造",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 63.65,
-        "d_now": 65.94,
-        "j_now": 59.05,
-        "k_prev": 60.69,
-        "d_prev": 67.09,
-        "j_prev": 47.88,
-        "time": "2026-09-18 15:00"
+        "k_now": 77.25,
+        "d_now": 80.36,
+        "j_now": 71.02,
+        "k_prev": 78.66,
+        "d_prev": 81.92,
+        "j_prev": 72.16,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1623,23 +3045,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 74.93,
-        "d_now": 67.26,
-        "j_now": 90.26,
-        "k_prev": 74.9,
-        "d_prev": 63.43,
-        "j_prev": 97.83,
-        "time": "2026-09-18 15:00"
+        "k_now": 19.56,
+        "d_now": 27.41,
+        "j_now": 3.85,
+        "k_prev": 19.96,
+        "d_prev": 31.34,
+        "j_prev": -2.8,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 82.28,
-        "d_now": 70.47,
-        "j_now": 105.89,
-        "k_prev": 77.47,
-        "d_prev": 64.57,
-        "j_prev": 103.27,
-        "time": "2026-09-18 15:00"
+        "k_now": 48.58,
+        "d_now": 51.23,
+        "j_now": 43.28,
+        "k_prev": 57.87,
+        "d_prev": 52.55,
+        "j_prev": 68.5,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1648,167 +3070,98 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 14.37,
-        "d_now": 26.46,
-        "j_now": -9.83,
-        "k_prev": 21.55,
-        "d_prev": 32.51,
-        "j_prev": -0.38,
-        "time": "2026-09-18 15:00"
+        "k_now": 35.06,
+        "d_now": 32.44,
+        "j_now": 40.31,
+        "k_prev": 27.6,
+        "d_prev": 31.13,
+        "j_prev": 20.53,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
-        "meets": false,
-        "k_now": 71.31,
-        "d_now": 66.88,
-        "j_now": 80.17,
-        "k_prev": 75.39,
-        "d_prev": 64.67,
-        "j_prev": 96.83,
-        "time": "2026-09-18 15:00"
+        "meets": true,
+        "k_now": 26.19,
+        "d_now": 34.54,
+        "j_now": 9.48,
+        "k_prev": 25.65,
+        "d_prev": 38.72,
+        "j_prev": -0.5,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "001367": {
-      "name": "海森药业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 39.51,
-        "d_now": 34.36,
-        "j_now": 49.79,
-        "k_prev": 35.57,
-        "d_prev": 31.79,
-        "j_prev": 43.14,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 58.14,
-        "d_now": 67.82,
-        "j_now": 38.78,
-        "k_prev": 63.92,
-        "d_prev": 72.66,
-        "j_prev": 46.45,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "600884": {
-      "name": "杉杉股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 78.99,
-        "d_now": 70.04,
-        "j_now": 96.9,
-        "k_prev": 68.49,
-        "d_prev": 65.56,
-        "j_prev": 74.34,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 80.77,
-        "d_now": 67.78,
-        "j_now": 106.75,
-        "k_prev": 73.94,
-        "d_prev": 61.29,
-        "j_prev": 99.22,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "000157": {
-      "name": "中联重科",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 64.39,
-        "d_now": 81.55,
-        "j_now": 30.06,
-        "k_prev": 96.59,
-        "d_prev": 90.14,
-        "j_prev": 109.48,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 81.03,
-        "d_now": 75.04,
-        "j_now": 93.01,
-        "k_prev": 78.69,
-        "d_prev": 72.05,
-        "j_prev": 91.98,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "603950": {
       "name": "长源东谷",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "k_now": 86.25,
-        "d_now": 77.56,
-        "j_now": 103.61,
-        "k_prev": 82.76,
-        "d_prev": 73.22,
-        "j_prev": 101.85,
-        "time": "2026-09-18 15:00"
+        "meets": true,
+        "k_now": 25.47,
+        "d_now": 30.45,
+        "j_now": 15.51,
+        "k_prev": 21.79,
+        "d_prev": 32.95,
+        "j_prev": -0.52,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 82.47,
-        "d_now": 72.9,
-        "j_now": 101.6,
-        "k_prev": 75.4,
-        "d_prev": 68.12,
-        "j_prev": 89.96,
-        "time": "2026-09-18 15:00"
+        "k_now": 38.37,
+        "d_now": 40.83,
+        "j_now": 33.44,
+        "k_prev": 39.91,
+        "d_prev": 42.06,
+        "j_prev": 35.6,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "003023": {
-      "name": "彩虹集团",
+    "603070": {
+      "name": "万控智造",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 16.05,
+        "d_now": 15.1,
+        "j_now": 17.95,
+        "k_prev": 10.44,
+        "d_prev": 14.63,
+        "j_prev": 2.07,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 34.59,
+        "d_now": 49.4,
+        "j_now": 4.96,
+        "k_prev": 42.51,
+        "d_prev": 56.81,
+        "j_prev": 13.91,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "605056": {
+      "name": "咸亨国际",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 74.78,
-        "d_now": 64.58,
-        "j_now": 95.18,
-        "k_prev": 67.73,
-        "d_prev": 59.48,
-        "j_prev": 84.22,
-        "time": "2026-09-18 15:00"
+        "k_now": 70.9,
+        "d_now": 53.18,
+        "j_now": 106.32,
+        "k_prev": 59.47,
+        "d_prev": 44.33,
+        "j_prev": 89.76,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 60.84,
-        "d_now": 56.35,
-        "j_now": 69.82,
-        "k_prev": 45.91,
-        "d_prev": 54.1,
-        "j_prev": 29.52,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "002376": {
-      "name": "新北洋",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 61.66,
-        "d_now": 64.7,
-        "j_now": 55.59,
-        "k_prev": 59.16,
-        "d_prev": 66.22,
-        "j_prev": 45.04,
-        "time": "2026-09-18 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 58.05,
+        "d_now": 66.7,
+        "j_now": 40.74,
+        "k_prev": 61.58,
+        "d_prev": 71.02,
+        "j_prev": 42.69,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1816,69 +3169,99 @@
       "name": "联创光电",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "k_now": 90.12,
-        "d_now": 82.64,
-        "j_now": 105.08,
-        "k_prev": 85.18,
-        "d_prev": 78.9,
-        "j_prev": 97.74,
-        "time": "2026-09-18 15:00"
+        "meets": true,
+        "k_now": 16.88,
+        "d_now": 20.53,
+        "j_now": 9.58,
+        "k_prev": 13.95,
+        "d_prev": 22.35,
+        "j_prev": -2.84,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 31.24,
+        "d_now": 46.88,
+        "j_now": -0.03,
+        "k_prev": 39.36,
+        "d_prev": 54.69,
+        "j_prev": 8.7,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002437": {
-      "name": "誉衡药业",
+    "001367": {
+      "name": "海森药业",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 75.67,
-        "d_now": 78.95,
-        "j_now": 69.11,
-        "k_prev": 88.5,
-        "d_prev": 80.59,
-        "j_prev": 104.33,
-        "time": "2026-09-18 15:00"
+        "k_now": 45.89,
+        "d_now": 53.24,
+        "j_now": 31.19,
+        "k_prev": 48.0,
+        "d_prev": 56.91,
+        "j_prev": 30.17,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 81.38,
+        "d_now": 80.91,
+        "j_now": 82.32,
+        "k_prev": 82.6,
+        "d_prev": 80.68,
+        "j_prev": 86.45,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002545": {
-      "name": "东方铁塔",
+    "003023": {
+      "name": "彩虹集团",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "k_now": 64.17,
-        "d_now": 49.89,
-        "j_now": 92.72,
-        "k_prev": 52.5,
-        "d_prev": 42.76,
-        "j_prev": 72.0,
-        "time": "2026-09-18 15:00"
+        "meets": true,
+        "k_now": 21.93,
+        "d_now": 21.45,
+        "j_now": 22.89,
+        "k_prev": 15.51,
+        "d_prev": 21.21,
+        "j_prev": 4.09,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 71.28,
+        "d_now": 68.74,
+        "j_now": 76.35,
+        "k_prev": 72.86,
+        "d_prev": 67.47,
+        "j_prev": 83.64,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "603356": {
       "name": "华菱精工",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 24.44,
+        "d_now": 21.57,
+        "j_now": 30.17,
+        "k_prev": 21.66,
+        "d_prev": 20.14,
+        "j_prev": 24.69,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 20.14,
+        "d_now": 28.38,
+        "j_now": 3.68,
+        "k_prev": 23.22,
+        "d_prev": 32.49,
+        "j_prev": 4.66,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1886,12 +3269,74 @@
       "name": "信立泰",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 11.89,
+        "d_now": 10.92,
+        "j_now": 13.85,
+        "k_prev": 6.48,
+        "d_prev": 10.43,
+        "j_prev": -1.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 43.69,
+        "d_now": 57.41,
+        "j_now": 16.24,
+        "k_prev": 53.03,
+        "d_prev": 64.27,
+        "j_prev": 30.55,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002545": {
+      "name": "东方铁塔",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 33.74,
+        "d_now": 28.15,
+        "j_now": 44.93,
+        "k_prev": 28.39,
+        "d_prev": 25.35,
+        "j_prev": 34.47,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 15.97,
+        "d_now": 23.01,
+        "j_now": 1.89,
+        "k_prev": 15.96,
+        "d_prev": 26.53,
+        "j_prev": -5.18,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002376": {
+      "name": "新北洋",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 45.54,
+        "d_now": 39.05,
+        "j_now": 58.53,
+        "k_prev": 34.98,
+        "d_prev": 35.81,
+        "j_prev": 33.34,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 68.27,
+        "d_now": 72.1,
+        "j_now": 60.6,
+        "k_prev": 70.05,
+        "d_prev": 74.02,
+        "j_prev": 62.11,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1900,63 +3345,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 12.26,
+        "d_now": 19.68,
+        "j_now": -2.58,
+        "k_prev": 16.3,
+        "d_prev": 23.39,
+        "j_prev": 2.14,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002657": {
-      "name": "中科金财",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002164": {
-      "name": "宁波东力",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600739": {
-      "name": "辽宁成大",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002488": {
-      "name": "金固股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 68.8,
+        "d_now": 72.48,
+        "j_now": 61.42,
+        "k_prev": 75.74,
+        "d_prev": 74.33,
+        "j_prev": 78.57,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1964,12 +3369,49 @@
       "name": "东北制药",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 24.23,
+        "d_now": 25.17,
+        "j_now": 22.34,
+        "k_prev": 23.84,
+        "d_prev": 25.64,
+        "j_prev": 20.24,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.35,
+        "d_now": 63.52,
+        "j_now": 39.03,
+        "k_prev": 61.6,
+        "d_prev": 67.6,
+        "j_prev": 49.61,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002437": {
+      "name": "誉衡药业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 30.44,
+        "d_now": 19.86,
+        "j_now": 51.59,
+        "k_prev": 12.33,
+        "d_prev": 14.57,
+        "j_prev": 7.83,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 62.87,
+        "d_now": 69.34,
+        "j_now": 49.93,
+        "k_prev": 66.53,
+        "d_prev": 72.58,
+        "j_prev": 54.43,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -1978,24 +3420,48 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 66.02,
+        "d_now": 49.11,
+        "j_now": 99.86,
+        "k_prev": 62.93,
+        "d_prev": 40.65,
+        "j_prev": 107.48,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 55.82,
+        "d_now": 60.28,
+        "j_now": 46.9,
+        "k_prev": 55.47,
+        "d_prev": 62.51,
+        "j_prev": 41.39,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002333": {
-      "name": "罗普斯金",
+    "002488": {
+      "name": "金固股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.75,
+        "d_now": 19.73,
+        "j_now": 37.78,
+        "k_prev": 13.62,
+        "d_prev": 16.72,
+        "j_prev": 7.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 22.75,
+        "d_now": 35.16,
+        "j_now": -2.08,
+        "k_prev": 25.79,
+        "d_prev": 41.37,
+        "j_prev": -5.38,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2003,12 +3469,74 @@
       "name": "迪生力",
       "source": "top200",
       "kdj_5m": {
+        "meets": true,
+        "k_now": 22.01,
+        "d_now": 20.22,
+        "j_now": 25.58,
+        "k_prev": 16.35,
+        "d_prev": 19.33,
+        "j_prev": 10.38,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 17.44,
+        "d_now": 23.3,
+        "j_now": 5.74,
+        "k_prev": 17.34,
+        "d_prev": 26.23,
+        "j_prev": -0.42,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 10
+    },
+    "002164": {
+      "name": "宁波东力",
+      "source": "top200",
+      "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 47.08,
+        "d_now": 70.07,
+        "j_now": 1.09,
+        "k_prev": 70.62,
+        "d_prev": 81.57,
+        "j_prev": 48.71,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 93.21,
+        "d_now": 92.6,
+        "j_now": 94.43,
+        "k_prev": 97.2,
+        "d_prev": 92.3,
+        "j_prev": 106.99,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "600739": {
+      "name": "辽宁成大",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 28.72,
+        "d_now": 29.67,
+        "j_now": 26.83,
+        "k_prev": 30.58,
+        "d_prev": 30.14,
+        "j_prev": 31.47,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 66.32,
+        "d_now": 74.91,
+        "j_now": 49.15,
+        "k_prev": 74.48,
+        "d_prev": 79.2,
+        "j_prev": 65.05,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2016,38 +3544,174 @@
       "name": "联创电子",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 26.34,
+        "d_now": 26.41,
+        "j_now": 26.21,
+        "k_prev": 19.51,
+        "d_prev": 26.44,
+        "j_prev": 5.66,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.9,
+        "d_now": 41.3,
+        "j_now": 31.11,
+        "k_prev": 41.06,
+        "d_prev": 42.99,
+        "j_prev": 37.2,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002333": {
+      "name": "罗普斯金",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 22.08,
+        "d_now": 24.91,
+        "j_now": 16.43,
+        "k_prev": 16.46,
+        "d_prev": 26.32,
+        "j_prev": -3.27,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 77.99,
+        "d_now": 79.96,
+        "j_now": 74.06,
+        "k_prev": 79.15,
+        "d_prev": 80.94,
+        "j_prev": 75.56,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603580": {
+      "name": "艾艾精工",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 50.0,
+        "d_now": 50.0,
+        "j_now": 50.0,
+        "k_prev": 50.0,
+        "d_prev": 50.0,
+        "j_prev": 50.0,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 99.42,
+        "d_now": 97.3,
+        "j_now": 103.66,
+        "k_prev": 99.13,
+        "d_prev": 96.24,
+        "j_prev": 104.91,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "002657": {
+      "name": "中科金财",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 21.24,
+        "d_now": 19.32,
+        "j_now": 25.06,
+        "k_prev": 13.1,
+        "d_prev": 18.36,
+        "j_prev": 2.58,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 62.17,
+        "d_now": 70.61,
+        "j_now": 45.31,
+        "k_prev": 67.07,
+        "d_prev": 74.82,
+        "j_prev": 51.57,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "603076": {
       "name": "乐惠国际",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 26.89,
+        "d_now": 27.71,
+        "j_now": 25.27,
+        "k_prev": 24.55,
+        "d_prev": 28.12,
+        "j_prev": 17.42,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 78.5,
+        "d_now": 82.18,
+        "j_now": 71.15,
+        "k_prev": 82.46,
+        "d_prev": 84.02,
+        "j_prev": 79.35,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603185": {
-      "name": "弘元绿能",
+    "600076": {
+      "name": "康欣新材",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 24.72,
+        "d_now": 15.17,
+        "j_now": 43.8,
+        "k_prev": 3.74,
+        "d_prev": 10.4,
+        "j_prev": -9.59,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 20.1,
+        "d_now": 26.5,
+        "j_now": 7.29,
+        "k_prev": 17.64,
+        "d_prev": 29.7,
+        "j_prev": -6.46,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002615": {
+      "name": "哈尔斯",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 68.85,
+        "d_now": 58.22,
+        "j_now": 90.09,
+        "k_prev": 69.93,
+        "d_prev": 52.91,
+        "j_prev": 103.97,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 77.95,
+        "d_now": 76.06,
+        "j_now": 81.72,
+        "k_prev": 78.68,
+        "d_prev": 75.12,
+        "j_prev": 85.82,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2055,90 +3719,49 @@
       "name": "威高血净",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 13.39,
+        "d_now": 16.53,
+        "j_now": 7.12,
+        "k_prev": 12.4,
+        "d_prev": 18.09,
+        "j_prev": 1.0,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.61,
+        "d_now": 48.8,
+        "j_now": 54.22,
+        "k_prev": 49.91,
+        "d_prev": 47.9,
+        "j_prev": 53.93,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "603580": {
-      "name": "艾艾精工",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002706": {
-      "name": "良信股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600076": {
-      "name": "康欣新材",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "002586": {
       "name": "围海股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 29.44,
+        "d_now": 25.33,
+        "j_now": 37.67,
+        "k_prev": 27.49,
+        "d_prev": 23.27,
+        "j_prev": 35.94,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002615": {
-      "name": "哈尔斯",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603727": {
-      "name": "博迈科",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 36.09,
+        "d_now": 46.7,
+        "j_now": 14.87,
+        "k_prev": 44.13,
+        "d_prev": 52.0,
+        "j_prev": 28.39,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2146,103 +3769,174 @@
       "name": "三变科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.81,
+        "d_now": 16.46,
+        "j_now": 17.5,
+        "k_prev": 8.54,
+        "d_prev": 16.28,
+        "j_prev": -6.94,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 29.26,
+        "d_now": 40.29,
+        "j_now": 7.19,
+        "k_prev": 34.27,
+        "d_prev": 45.8,
+        "j_prev": 11.19,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002937": {
-      "name": "兴瑞科技",
+    "002706": {
+      "name": "良信股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 21.51,
+        "d_now": 20.05,
+        "j_now": 24.43,
+        "k_prev": 15.6,
+        "d_prev": 19.33,
+        "j_prev": 8.15,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.68,
+        "d_now": 31.86,
+        "j_now": -7.68,
+        "k_prev": 22.47,
+        "d_prev": 38.45,
+        "j_prev": -9.5,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "603727": {
+      "name": "博迈科",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 16.21,
+        "d_now": 19.65,
+        "j_now": 9.33,
+        "k_prev": 15.61,
+        "d_prev": 21.37,
+        "j_prev": 4.11,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 57.56,
+        "d_now": 60.93,
+        "j_now": 50.83,
+        "k_prev": 60.96,
+        "d_prev": 62.61,
+        "j_prev": 57.65,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "000014": {
       "name": "沙河股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 23.76,
+        "d_now": 26.02,
+        "j_now": 19.24,
+        "k_prev": 20.64,
+        "d_prev": 27.15,
+        "j_prev": 7.62,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 52.73,
+        "d_now": 63.61,
+        "j_now": 30.98,
+        "k_prev": 59.58,
+        "d_prev": 69.04,
+        "j_prev": 40.67,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002072": {
-      "name": "凯瑞德",
+    "002606": {
+      "name": "大连电瓷",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.07,
+        "d_now": 14.49,
+        "j_now": 22.24,
+        "k_prev": 11.32,
+        "d_prev": 13.19,
+        "j_prev": 7.57,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.23,
+        "d_now": 41.26,
+        "j_now": -0.81,
+        "k_prev": 34.6,
+        "d_prev": 48.27,
+        "j_prev": 7.27,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "603185": {
+      "name": "弘元绿能",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 14.39,
+        "d_now": 14.14,
+        "j_now": 14.89,
+        "k_prev": 10.47,
+        "d_prev": 14.01,
+        "j_prev": 3.4,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 28.35,
+        "d_now": 40.92,
+        "j_now": 3.22,
+        "k_prev": 34.72,
+        "d_prev": 47.2,
+        "j_prev": 9.75,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "601858": {
       "name": "中国科传",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 34.97,
+        "d_now": 32.19,
+        "j_now": 40.52,
+        "k_prev": 27.45,
+        "d_prev": 30.8,
+        "j_prev": 20.74,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600984": {
-      "name": "建设机械",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603655": {
-      "name": "朗博科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002606": {
-      "name": "大连电瓷",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 65.04,
+        "d_now": 70.91,
+        "j_now": 53.3,
+        "k_prev": 68.46,
+        "d_prev": 73.85,
+        "j_prev": 57.7,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2251,63 +3945,248 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 47.31,
+        "d_now": 51.77,
+        "j_now": 38.4,
+        "k_prev": 45.96,
+        "d_prev": 54.0,
+        "j_prev": 29.9,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 60.75,
+        "d_now": 69.02,
+        "j_now": 44.21,
+        "k_prev": 64.73,
+        "d_prev": 73.15,
+        "j_prev": 47.9,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "002072": {
+      "name": "凯瑞德",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 18.27,
+        "d_now": 17.5,
+        "j_now": 19.83,
+        "k_prev": 14.91,
+        "d_prev": 17.11,
+        "j_prev": 10.51,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 67.24,
+        "d_now": 72.62,
+        "j_now": 56.48,
+        "k_prev": 73.78,
+        "d_prev": 75.31,
+        "j_prev": 70.71,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603655": {
+      "name": "朗博科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 94.17,
+        "d_now": 89.42,
+        "j_now": 103.68,
+        "k_prev": 91.25,
+        "d_prev": 87.04,
+        "j_prev": 99.68,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 89.42,
+        "d_now": 81.51,
+        "j_now": 105.25,
+        "k_prev": 84.14,
+        "d_prev": 77.56,
+        "j_prev": 97.3,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "600984": {
+      "name": "建设机械",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 25.82,
+        "d_now": 28.28,
+        "j_now": 20.88,
+        "k_prev": 22.06,
+        "d_prev": 29.52,
+        "j_prev": 7.14,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 38.31,
+        "d_now": 39.85,
+        "j_now": 35.24,
+        "k_prev": 38.72,
+        "d_prev": 40.62,
+        "j_prev": 34.92,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "601702": {
       "name": "华峰铝业",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.21,
+        "d_now": 36.62,
+        "j_now": 5.37,
+        "k_prev": 27.54,
+        "d_prev": 41.83,
+        "j_prev": -1.04,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 81.14,
+        "d_now": 80.29,
+        "j_now": 82.84,
+        "k_prev": 83.98,
+        "d_prev": 79.87,
+        "j_prev": 92.2,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "002937": {
+      "name": "兴瑞科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 85.89,
+        "d_now": 76.33,
+        "j_now": 105.02,
+        "k_prev": 82.0,
+        "d_prev": 71.55,
+        "j_prev": 102.89,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 39.8,
+        "d_now": 28.24,
+        "j_now": 62.91,
+        "k_prev": 26.36,
+        "d_prev": 22.46,
+        "j_prev": 34.17,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "002229": {
+      "name": "鸿博股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 29.12,
+        "d_now": 30.61,
+        "j_now": 26.13,
+        "k_prev": 25.49,
+        "d_prev": 31.36,
+        "j_prev": 13.77,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 31.86,
+        "d_now": 46.25,
+        "j_now": 3.08,
+        "k_prev": 39.1,
+        "d_prev": 53.45,
+        "j_prev": 10.4,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603219": {
+      "name": "富佳股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 13.04,
+        "d_now": 13.21,
+        "j_now": 12.7,
+        "k_prev": 10.18,
+        "d_prev": 13.3,
+        "j_prev": 3.96,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 54.52,
+        "d_now": 54.65,
+        "j_now": 54.25,
+        "k_prev": 58.61,
+        "d_prev": 54.72,
+        "j_prev": 66.38,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603590": {
+      "name": "康辰药业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 14.26,
+        "d_now": 11.21,
+        "j_now": 20.36,
+        "k_prev": 6.0,
+        "d_prev": 9.68,
+        "j_prev": -1.35,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 51.91,
+        "d_now": 65.34,
+        "j_now": 25.05,
+        "k_prev": 59.88,
+        "d_prev": 72.05,
+        "j_prev": 35.55,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "000895": {
       "name": "双汇发展",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.64,
+        "d_now": 28.24,
+        "j_now": 41.45,
+        "k_prev": 36.47,
+        "d_prev": 26.04,
+        "j_prev": 57.33,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603219": {
-      "name": "富佳股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000036": {
-      "name": "华联控股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 69.34,
+        "d_now": 73.87,
+        "j_now": 60.28,
+        "k_prev": 76.23,
+        "d_prev": 76.14,
+        "j_prev": 76.42,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2316,141 +4195,273 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 64.07,
+        "d_now": 69.41,
+        "j_now": 53.39,
+        "k_prev": 66.94,
+        "d_prev": 72.08,
+        "j_prev": 56.66,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 60.14,
+        "d_now": 52.63,
+        "j_now": 75.14,
+        "k_prev": 54.09,
+        "d_prev": 48.88,
+        "j_prev": 64.52,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "605060": {
-      "name": "联德股份",
+    "000036": {
+      "name": "华联控股",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 16.82,
+        "d_now": 14.19,
+        "j_now": 22.09,
+        "k_prev": 15.23,
+        "d_prev": 12.87,
+        "j_prev": 19.95,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.97,
+        "d_now": 43.76,
+        "j_now": -3.6,
+        "k_prev": 35.3,
+        "d_prev": 51.66,
+        "j_prev": 2.57,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "002229": {
-      "name": "鸿博股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603590": {
-      "name": "康辰药业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603725": {
-      "name": "天安新材",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "600446": {
       "name": "金证股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 21.53,
+        "d_now": 25.07,
+        "j_now": 14.45,
+        "k_prev": 17.3,
+        "d_prev": 26.84,
+        "j_prev": -1.78,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 53.52,
+        "d_now": 59.52,
+        "j_now": 41.53,
+        "k_prev": 57.48,
+        "d_prev": 62.52,
+        "j_prev": 47.4,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603861": {
-      "name": "白云电器",
+    "603725": {
+      "name": "天安新材",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 12.65,
+        "d_now": 15.95,
+        "j_now": 6.03,
+        "k_prev": 10.14,
+        "d_prev": 17.6,
+        "j_prev": -4.77,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 8.35,
+        "d_now": 14.49,
+        "j_now": -3.93,
+        "k_prev": 10.25,
+        "d_prev": 17.57,
+        "j_prev": -4.37,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "603039": {
-      "name": "泛微网络",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600718": {
-      "name": "东软集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "002029": {
       "name": "七 匹 狼",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 11.37,
+        "d_now": 12.01,
+        "j_now": 10.07,
+        "k_prev": 9.36,
+        "d_prev": 12.34,
+        "j_prev": 3.39,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 41.96,
+        "d_now": 53.2,
+        "j_now": 19.49,
+        "k_prev": 50.45,
+        "d_prev": 58.82,
+        "j_prev": 33.7,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "603039": {
+      "name": "泛微网络",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 24.93,
+        "d_now": 29.56,
+        "j_now": 15.66,
+        "k_prev": 24.8,
+        "d_prev": 31.87,
+        "j_prev": 10.64,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 79.49,
+        "d_now": 77.72,
+        "j_now": 83.03,
+        "k_prev": 82.99,
+        "d_prev": 76.83,
+        "j_prev": 95.31,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603861": {
+      "name": "白云电器",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 21.04,
+        "d_now": 20.74,
+        "j_now": 21.64,
+        "k_prev": 16.56,
+        "d_prev": 20.59,
+        "j_prev": 8.5,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 18.1,
+        "d_now": 29.92,
+        "j_now": -5.55,
+        "k_prev": 22.98,
+        "d_prev": 35.84,
+        "j_prev": -2.73,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600718": {
+      "name": "东软集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.58,
+        "d_now": 19.84,
+        "j_now": 13.07,
+        "k_prev": 12.09,
+        "d_prev": 20.97,
+        "j_prev": -5.66,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 70.94,
+        "d_now": 78.75,
+        "j_now": 55.31,
+        "k_prev": 76.41,
+        "d_prev": 82.66,
+        "j_prev": 63.9,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603706": {
+      "name": "东方环宇",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 13.6,
+        "d_now": 17.85,
+        "j_now": 5.09,
+        "k_prev": 11.31,
+        "d_prev": 19.98,
+        "j_prev": -6.04,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 64.86,
+        "d_now": 72.5,
+        "j_now": 49.6,
+        "k_prev": 73.77,
+        "d_prev": 76.31,
+        "j_prev": 68.67,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "605060": {
+      "name": "联德股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 15.16,
+        "d_now": 16.01,
+        "j_now": 13.45,
+        "k_prev": 10.44,
+        "d_prev": 16.44,
+        "j_prev": -1.55,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 14.84,
+        "d_now": 28.84,
+        "j_now": -13.15,
+        "k_prev": 18.09,
+        "d_prev": 35.84,
+        "j_prev": -17.39,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "603801": {
       "name": "志邦家居",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 35.03,
+        "d_now": 33.38,
+        "j_now": 38.34,
+        "k_prev": 27.55,
+        "d_prev": 32.55,
+        "j_prev": 17.55,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 78.68,
+        "d_now": 80.16,
+        "j_now": 75.73,
+        "k_prev": 78.89,
+        "d_prev": 80.9,
+        "j_prev": 74.88,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2458,25 +4469,49 @@
       "name": "锋龙股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 33.09,
+        "d_now": 37.49,
+        "j_now": 24.29,
+        "k_prev": 28.58,
+        "d_prev": 39.69,
+        "j_prev": 6.37,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 36.77,
+        "d_now": 42.83,
+        "j_now": 24.63,
+        "k_prev": 41.46,
+        "d_prev": 45.87,
+        "j_prev": 32.63,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603706": {
-      "name": "东方环宇",
+    "002208": {
+      "name": "合肥城建",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.15,
+        "d_now": 22.13,
+        "j_now": 52.2,
+        "k_prev": 14.9,
+        "d_prev": 17.12,
+        "j_prev": 10.45,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 39.64,
+        "d_now": 55.76,
+        "j_now": 7.4,
+        "k_prev": 47.69,
+        "d_prev": 63.82,
+        "j_prev": 15.44,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2485,63 +4520,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 61.93,
+        "d_now": 49.57,
+        "j_now": 86.67,
+        "k_prev": 59.57,
+        "d_prev": 43.38,
+        "j_prev": 91.95,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000060": {
-      "name": "中金岭南",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002208": {
-      "name": "合肥城建",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600056": {
-      "name": "中国医药",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600645": {
-      "name": "中源协和",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 75.11,
+        "d_now": 67.98,
+        "j_now": 89.35,
+        "k_prev": 74.42,
+        "d_prev": 64.42,
+        "j_prev": 94.43,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2550,11 +4545,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 15.51,
+        "d_now": 18.46,
+        "j_now": 9.62,
+        "k_prev": 16.13,
+        "d_prev": 19.93,
+        "j_prev": 8.51,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.45,
+        "d_now": 35.51,
+        "j_now": 5.33,
+        "k_prev": 30.17,
+        "d_prev": 40.53,
+        "j_prev": 9.44,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2563,63 +4570,73 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 36.7,
+        "d_now": 23.55,
+        "j_now": 63.01,
+        "k_prev": 15.06,
+        "d_prev": 16.98,
+        "j_prev": 11.21,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 58.89,
+        "d_now": 68.19,
+        "j_now": 40.29,
+        "k_prev": 63.34,
+        "d_prev": 72.84,
+        "j_prev": 44.32,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002412": {
-      "name": "汉森制药",
+    "600056": {
+      "name": "中国医药",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 22.23,
+        "d_now": 23.67,
+        "j_now": 19.35,
+        "k_prev": 20.85,
+        "d_prev": 24.39,
+        "j_prev": 13.76,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 40.5,
+        "d_now": 53.05,
+        "j_now": 15.4,
+        "k_prev": 45.75,
+        "d_prev": 59.33,
+        "j_prev": 18.6,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "000710": {
-      "name": "贝瑞基因",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "603933": {
       "name": "睿能科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 63.79,
+        "d_now": 62.9,
+        "j_now": 65.56,
+        "k_prev": 62.63,
+        "d_prev": 62.46,
+        "j_prev": 62.97,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600346": {
-      "name": "恒力石化",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 53.03,
+        "d_now": 44.35,
+        "j_now": 70.41,
+        "k_prev": 45.94,
+        "d_prev": 40.0,
+        "j_prev": 57.83,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2628,11 +4645,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 30.36,
+        "d_now": 29.54,
+        "j_now": 32.01,
+        "k_prev": 26.79,
+        "d_prev": 29.12,
+        "j_prev": 22.14,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 67.55,
+        "d_now": 72.33,
+        "j_now": 57.99,
+        "k_prev": 71.7,
+        "d_prev": 74.72,
+        "j_prev": 65.65,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2640,103 +4669,274 @@
       "name": "飞亚达",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 14.99,
+        "d_now": 13.31,
+        "j_now": 18.35,
+        "k_prev": 7.97,
+        "d_prev": 12.47,
+        "j_prev": -1.04,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 59.94,
+        "d_now": 59.76,
+        "j_now": 60.3,
+        "k_prev": 62.94,
+        "d_prev": 59.67,
+        "j_prev": 69.49,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "000060": {
+      "name": "中金岭南",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 26.28,
+        "d_now": 33.18,
+        "j_now": 12.48,
+        "k_prev": 29.42,
+        "d_prev": 36.63,
+        "j_prev": 15.01,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 59.86,
+        "d_now": 58.52,
+        "j_now": 62.53,
+        "k_prev": 62.86,
+        "d_prev": 57.85,
+        "j_prev": 72.89,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
+    },
+    "600645": {
+      "name": "中源协和",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 20.68,
+        "d_now": 19.56,
+        "j_now": 22.92,
+        "k_prev": 9.97,
+        "d_prev": 19.0,
+        "j_prev": -8.09,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 75.61,
+        "d_now": 79.04,
+        "j_now": 68.73,
+        "k_prev": 78.59,
+        "d_prev": 80.76,
+        "j_prev": 74.24,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603982": {
+      "name": "泉峰汽车",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 22.4,
+        "d_now": 18.74,
+        "j_now": 29.73,
+        "k_prev": 13.6,
+        "d_prev": 16.91,
+        "j_prev": 6.99,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 48.46,
+        "d_now": 53.82,
+        "j_now": 37.72,
+        "k_prev": 53.45,
+        "d_prev": 56.51,
+        "j_prev": 47.34,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002459": {
+      "name": "晶澳科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 10.75,
+        "d_now": 9.74,
+        "j_now": 12.75,
+        "k_prev": 7.78,
+        "d_prev": 9.24,
+        "j_prev": 4.88,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 39.46,
+        "d_now": 53.39,
+        "j_now": 11.62,
+        "k_prev": 46.7,
+        "d_prev": 60.35,
+        "j_prev": 19.39,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002412": {
+      "name": "汉森制药",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.55,
+        "d_now": 14.61,
+        "j_now": 23.41,
+        "k_prev": 12.04,
+        "d_prev": 13.15,
+        "j_prev": 9.81,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 67.52,
+        "d_now": 72.41,
+        "j_now": 57.74,
+        "k_prev": 71.28,
+        "d_prev": 74.85,
+        "j_prev": 64.13,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "605287": {
       "name": "德才股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 14.49,
+        "d_now": 15.15,
+        "j_now": 13.17,
+        "k_prev": 8.18,
+        "d_prev": 15.48,
+        "j_prev": -6.44,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 58.72,
+        "d_now": 63.87,
+        "j_now": 48.42,
+        "k_prev": 65.33,
+        "d_prev": 66.45,
+        "j_prev": 63.09,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "605218": {
       "name": "伟时电子",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 50.0,
+        "d_now": 50.0,
+        "j_now": 50.0,
+        "k_prev": 50.0,
+        "d_prev": 50.0,
+        "j_prev": 50.0,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 97.43,
+        "d_now": 91.76,
+        "j_now": 108.77,
+        "k_prev": 96.14,
+        "d_prev": 88.92,
+        "j_prev": 110.59,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "603982": {
-      "name": "泉峰汽车",
+    "000710": {
+      "name": "贝瑞基因",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 19.54,
+        "d_now": 16.59,
+        "j_now": 25.44,
+        "k_prev": 10.08,
+        "d_prev": 15.12,
+        "j_prev": 0.01,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 69.47,
+        "d_now": 68.88,
+        "j_now": 70.64,
+        "k_prev": 70.45,
+        "d_prev": 68.59,
+        "j_prev": 74.17,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
-    },
-    "002705": {
-      "name": "新宝股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002459": {
-      "name": "晶澳科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600058": {
-      "name": "五矿发展",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
     "002248": {
       "name": "华东数控",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 13.81,
+        "d_now": 15.65,
+        "j_now": 10.13,
+        "k_prev": 8.21,
+        "d_prev": 16.57,
+        "j_prev": -8.49,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 17.94,
+        "d_now": 31.94,
+        "j_now": -10.05,
+        "k_prev": 21.36,
+        "d_prev": 38.94,
+        "j_prev": -13.81,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600346": {
+      "name": "恒力石化",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 44.28,
+        "d_now": 48.61,
+        "j_now": 35.62,
+        "k_prev": 49.75,
+        "d_prev": 50.77,
+        "j_prev": 47.71,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 51.01,
+        "d_now": 55.88,
+        "j_now": 41.26,
+        "k_prev": 53.54,
+        "d_prev": 58.32,
+        "j_prev": 43.98,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2745,37 +4945,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.17,
+        "d_now": 21.61,
+        "j_now": 32.3,
+        "k_prev": 19.01,
+        "d_prev": 19.83,
+        "j_prev": 17.37,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002083": {
-      "name": "孚日股份",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603669": {
-      "name": "灵康药业",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 22.91,
+        "d_now": 39.03,
+        "j_now": -9.34,
+        "k_prev": 27.55,
+        "d_prev": 47.09,
+        "j_prev": -11.55,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2783,129 +4969,49 @@
       "name": "五洲新春",
       "source": "tracked",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 27.01,
+        "d_now": 27.83,
+        "j_now": 25.36,
+        "k_prev": 18.92,
+        "d_prev": 28.25,
+        "j_prev": 0.27,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 6.57,
+        "d_now": 9.58,
+        "j_now": 0.55,
+        "k_prev": 4.72,
+        "d_prev": 11.08,
+        "j_prev": -8.01,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 10
     },
-    "002283": {
-      "name": "天润工业",
-      "source": "tracked",
+    "600058": {
+      "name": "五矿发展",
+      "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 31.55,
+        "d_now": 30.46,
+        "j_now": 33.73,
+        "k_prev": 34.82,
+        "d_prev": 29.91,
+        "j_prev": 44.65,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002174": {
-      "name": "游族网络",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000676": {
-      "name": "智度股份",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603222": {
-      "name": "济民健康",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002472": {
-      "name": "双环传动",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002268": {
-      "name": "电科网安",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603093": {
-      "name": "南华期货",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002922": {
-      "name": "伊戈尔",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605305": {
-      "name": "中际联合",
-      "source": "tracked",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 23.31,
+        "d_now": 31.31,
+        "j_now": 7.31,
+        "k_prev": 26.63,
+        "d_prev": 35.31,
+        "j_prev": 9.28,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2913,51 +5019,199 @@
       "name": "九洲药业",
       "source": "tracked",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 14.92,
+        "d_now": 16.31,
+        "j_now": 12.14,
+        "k_prev": 11.86,
+        "d_prev": 17.01,
+        "j_prev": 1.56,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 51.47,
+        "d_now": 61.31,
+        "j_now": 31.8,
+        "k_prev": 58.94,
+        "d_prev": 66.23,
+        "j_prev": 44.36,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "603558": {
-      "name": "健盛集团",
+    "002515": {
+      "name": "金字火腿",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 35.72,
+        "d_now": 28.36,
+        "j_now": 50.44,
+        "k_prev": 16.08,
+        "d_prev": 24.68,
+        "j_prev": -1.12,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 30.6,
+        "d_now": 42.62,
+        "j_now": 6.57,
+        "k_prev": 33.05,
+        "d_prev": 48.63,
+        "j_prev": 1.88,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002199": {
-      "name": "东晶电子",
+    "000678": {
+      "name": "襄阳轴承",
       "source": "tracked",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 13.02,
+        "d_now": 13.55,
+        "j_now": 11.97,
+        "k_prev": 9.54,
+        "d_prev": 13.82,
+        "j_prev": 0.97,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 15.17,
+        "d_now": 22.25,
+        "j_now": 1.02,
+        "k_prev": 17.76,
+        "d_prev": 25.79,
+        "j_prev": 1.7,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002861": {
+      "name": "瀛通通讯",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 35.95,
+        "d_now": 39.26,
+        "j_now": 29.32,
+        "k_prev": 34.47,
+        "d_prev": 40.91,
+        "j_prev": 21.6,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 52.51,
+        "d_now": 59.62,
+        "j_now": 38.28,
+        "k_prev": 55.47,
+        "d_prev": 63.18,
+        "j_prev": 40.06,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603887": {
+      "name": "城地香江",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.89,
+        "d_now": 19.89,
+        "j_now": 13.88,
+        "k_prev": 13.5,
+        "d_prev": 20.89,
+        "j_prev": -1.28,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 52.42,
+        "d_now": 62.9,
+        "j_now": 31.45,
+        "k_prev": 60.11,
+        "d_prev": 68.14,
+        "j_prev": 44.04,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603669": {
+      "name": "灵康药业",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.09,
+        "d_now": 14.79,
+        "j_now": 21.69,
+        "k_prev": 10.63,
+        "d_prev": 13.64,
+        "j_prev": 4.62,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 72.65,
+        "d_now": 74.4,
+        "j_now": 69.14,
+        "k_prev": 75.63,
+        "d_prev": 75.27,
+        "j_prev": 76.36,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002196": {
+      "name": "方正电机",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 29.43,
+        "d_now": 25.39,
+        "j_now": 37.51,
+        "k_prev": 19.15,
+        "d_prev": 23.38,
+        "j_prev": 10.7,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 14.13,
+        "d_now": 21.86,
+        "j_now": -1.32,
+        "k_prev": 14.3,
+        "d_prev": 25.72,
+        "j_prev": -8.54,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "603119": {
-      "name": "浙江荣泰",
-      "source": "tracked",
+    "002705": {
+      "name": "新宝股份",
+      "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 19.41,
+        "d_now": 21.73,
+        "j_now": 14.78,
+        "k_prev": 21.97,
+        "d_prev": 22.89,
+        "j_prev": 20.15,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 56.75,
+        "d_now": 53.9,
+        "j_now": 62.46,
+        "k_prev": 59.52,
+        "d_prev": 52.47,
+        "j_prev": 73.61,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -2966,50 +5220,298 @@
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.17,
+        "d_now": 22.33,
+        "j_now": 36.84,
+        "k_prev": 15.75,
+        "d_prev": 19.91,
+        "j_prev": 7.43,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 16.33,
+        "d_now": 26.93,
+        "j_now": -4.87,
+        "k_prev": 16.6,
+        "d_prev": 32.23,
+        "j_prev": -14.67,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "002693": {
-      "name": "双成药业",
+    "002921": {
+      "name": "联诚精密",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 52.44,
+        "d_now": 41.26,
+        "j_now": 74.81,
+        "k_prev": 34.66,
+        "d_prev": 35.67,
+        "j_prev": 32.65,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 62.4,
+        "d_now": 58.01,
+        "j_now": 71.17,
+        "k_prev": 52.97,
+        "d_prev": 55.81,
+        "j_prev": 47.28,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "601126": {
-      "name": "四方股份",
+    "600418": {
+      "name": "江淮汽车",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 76.14,
+        "d_now": 73.28,
+        "j_now": 81.85,
+        "k_prev": 80.22,
+        "d_prev": 71.85,
+        "j_prev": 96.95,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 79.88,
+        "d_now": 74.96,
+        "j_now": 89.73,
+        "k_prev": 81.56,
+        "d_prev": 72.5,
+        "j_prev": 99.67,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
-    "605189": {
-      "name": "富春染织",
+    "002284": {
+      "name": "亚太股份",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 48.75,
+        "d_now": 34.87,
+        "j_now": 76.51,
+        "k_prev": 30.27,
+        "d_prev": 27.93,
+        "j_prev": 34.95,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 30.75,
+        "d_now": 39.76,
+        "j_now": 12.73,
+        "k_prev": 30.34,
+        "d_prev": 44.26,
+        "j_prev": 2.48,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002972": {
+      "name": "科安达",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 44.73,
+        "d_now": 41.95,
+        "j_now": 50.28,
+        "k_prev": 28.2,
+        "d_prev": 40.56,
+        "j_prev": 3.48,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 60.71,
+        "d_now": 60.4,
+        "j_now": 61.31,
+        "k_prev": 56.85,
+        "d_prev": 60.25,
+        "j_prev": 50.04,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603823": {
+      "name": "百合花",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 28.82,
+        "d_now": 23.42,
+        "j_now": 39.6,
+        "k_prev": 12.49,
+        "d_prev": 20.73,
+        "j_prev": -3.98,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 23.92,
+        "d_now": 27.96,
+        "j_now": 15.82,
+        "k_prev": 26.49,
+        "d_prev": 29.99,
+        "j_prev": 19.5,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "600259": {
+      "name": "中稀有色",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 18.47,
+        "d_now": 18.81,
+        "j_now": 17.79,
+        "k_prev": 12.52,
+        "d_prev": 18.98,
+        "j_prev": -0.41,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 53.7,
+        "d_now": 59.0,
+        "j_now": 43.1,
+        "k_prev": 58.77,
+        "d_prev": 61.65,
+        "j_prev": 53.01,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002494": {
+      "name": "华斯股份",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 44.26,
+        "d_now": 32.63,
+        "j_now": 67.52,
+        "k_prev": 26.39,
+        "d_prev": 26.82,
+        "j_prev": 25.54,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 70.71,
+        "d_now": 71.73,
+        "j_now": 68.67,
+        "k_prev": 69.4,
+        "d_prev": 72.24,
+        "j_prev": 63.72,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603065": {
+      "name": "宿迁联盛",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 13.52,
+        "d_now": 18.76,
+        "j_now": 3.06,
+        "k_prev": 13.34,
+        "d_prev": 21.37,
+        "j_prev": -2.73,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 50.86,
+        "d_now": 50.38,
+        "j_now": 51.81,
+        "k_prev": 53.47,
+        "d_prev": 50.14,
+        "j_prev": 60.12,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603890": {
+      "name": "春秋电子",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 25.72,
+        "d_now": 24.74,
+        "j_now": 27.69,
+        "k_prev": 19.83,
+        "d_prev": 24.24,
+        "j_prev": 11.0,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 31.86,
+        "d_now": 39.82,
+        "j_now": 15.93,
+        "k_prev": 37.79,
+        "d_prev": 43.8,
+        "j_prev": 25.76,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002922": {
+      "name": "伊戈尔",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 20.98,
+        "d_now": 21.95,
+        "j_now": 19.04,
+        "k_prev": 15.34,
+        "d_prev": 22.44,
+        "j_prev": 1.15,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 50.9,
+        "d_now": 52.93,
+        "j_now": 46.84,
+        "k_prev": 53.87,
+        "d_prev": 53.94,
+        "j_prev": 53.72,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600699": {
+      "name": "均胜电子",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 32.22,
+        "d_now": 27.17,
+        "j_now": 42.32,
+        "k_prev": 21.86,
+        "d_prev": 24.64,
+        "j_prev": 16.28,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 16.08,
+        "d_now": 26.51,
+        "j_now": -4.77,
+        "k_prev": 18.57,
+        "d_prev": 31.72,
+        "j_prev": -7.74,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     },
@@ -3017,25 +5519,174 @@
       "name": "振华股份",
       "source": "tracked",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 27.82,
+        "d_now": 31.61,
+        "j_now": 20.24,
+        "k_prev": 22.98,
+        "d_prev": 33.51,
+        "j_prev": 1.93,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.68,
+        "d_now": 40.98,
+        "j_now": -1.93,
+        "k_prev": 32.26,
+        "d_prev": 48.13,
+        "j_prev": 0.51,
+        "time": "2026-09-22 14:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
+    },
+    "601126": {
+      "name": "四方股份",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 14.46,
+        "d_now": 16.0,
+        "j_now": 11.37,
+        "k_prev": 10.36,
+        "d_prev": 16.77,
+        "j_prev": -2.45,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 29.76,
+        "d_now": 37.43,
+        "j_now": 14.43,
+        "k_prev": 36.25,
+        "d_prev": 41.26,
+        "j_prev": 26.25,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "001400": {
+      "name": "江顺科技",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 9.13,
+        "d_now": 9.41,
+        "j_now": 8.56,
+        "k_prev": 5.67,
+        "d_prev": 9.55,
+        "j_prev": -2.1,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 51.16,
+        "d_now": 62.42,
+        "j_now": 28.65,
+        "k_prev": 60.04,
+        "d_prev": 68.04,
+        "j_prev": 44.03,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
     },
     "600105": {
       "name": "永鼎股份",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 38.64,
+        "d_now": 32.91,
+        "j_now": 50.09,
+        "k_prev": 22.34,
+        "d_prev": 30.05,
+        "j_prev": 6.92,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": true,
+        "k_now": 16.38,
+        "d_now": 18.92,
+        "j_now": 11.31,
+        "k_prev": 11.31,
+        "d_prev": 20.19,
+        "j_prev": -6.44,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002693": {
+      "name": "双成药业",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 27.09,
+        "d_now": 19.33,
+        "j_now": 42.6,
+        "k_prev": 12.85,
+        "d_prev": 15.45,
+        "j_prev": 7.66,
+        "time": "2026-09-22 13:40"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.05,
+        "d_now": 54.88,
+        "j_now": 22.39,
+        "k_prev": 49.41,
+        "d_prev": 60.3,
+        "j_prev": 27.63,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603222": {
+      "name": "济民健康",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 39.76,
+        "d_now": 31.23,
+        "j_now": 56.83,
+        "k_prev": 26.31,
+        "d_prev": 26.97,
+        "j_prev": 25.0,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 68.16,
+        "d_now": 70.98,
+        "j_now": 62.51,
+        "k_prev": 69.63,
+        "d_prev": 72.4,
+        "j_prev": 64.1,
+        "time": "2026-09-22 14:00"
+      },
+      "kdj_bonus": 0
+    },
+    "002031": {
+      "name": "巨轮智能",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 39.94,
+        "d_now": 40.3,
+        "j_now": 39.22,
+        "k_prev": 39.07,
+        "d_prev": 40.48,
+        "j_prev": 36.26,
+        "time": "2026-09-22 13:40"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 32.85,
+        "d_now": 32.91,
+        "j_now": 32.74,
+        "k_prev": 32.61,
+        "d_prev": 32.94,
+        "j_prev": 31.96,
+        "time": "2026-09-22 14:00"
       },
       "kdj_bonus": 0
     }

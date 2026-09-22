@@ -1,5 +1,5 @@
 {
-  "update_time": "2026-09-18 09:50:35",
+  "update_time": "2026-09-22 05:39:53",
   "data_source_time": "2026-08-29 02:24:06",
   "filter_config": {
     "min_avg_gain": 1.5,
@@ -11,8 +11,8 @@
     "sectors_mapped": 22,
     "sectors_qualified": 2,
     "total_qualified_stocks": 35,
-    "persistent_sectors": 2,
-    "one_day_sectors": 0
+    "persistent_sectors": 0,
+    "one_day_sectors": 2
   },
   "all_sectors": [
     {
@@ -226,7 +226,7 @@
       ],
       "avg_ratio_5d": -173.03,
       "strong_count": 1,
-      "status": "T1严格入选",
+      "status": "T1严格入选(一日游)",
       "stocks": [
         {
           "code": "000878",
@@ -394,8 +394,8 @@
           "composite_score": -8067.7
         }
       ],
-      "persistent": true,
-      "persistent_days": 2
+      "persistent": false,
+      "persistent_days": 1
     },
     "医药医疗": {
       "total": 36,
@@ -408,7 +408,7 @@
       ],
       "avg_ratio_5d": -66.85,
       "strong_count": 3,
-      "status": "T1严格入选",
+      "status": "T1严格入选(一日游)",
       "stocks": [
         {
           "code": "603363",
@@ -631,8 +631,8 @@
           "composite_score": -5.8
         }
       ],
-      "persistent": true,
-      "persistent_days": 2
+      "persistent": false,
+      "persistent_days": 1
     }
   },
   "qualified_codes": [
