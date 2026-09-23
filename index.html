@@ -7433,7 +7433,15 @@ function _snapRedFlagBlock(stock, idxKDJ) {
     return { block: true, reason: '大盘30K' + idxKDJ.k.toFixed(0) + '≥65(' + _stageTag + ')' };
   }
   // 2) 5分K未金叉
-  if (stock.kd5_cross !== undefined && stock.kd5_cross !== '金叉') {
+  //    【2026-09-23修正】kd5_cross 在数据链路上存在两套值域："金叉/死叉" 与 "上升/下降"。
+  //    原判断只认 "金叉"，而注入数据里 32/34 只的值为 "上升" → 全被误判为未金叉，
+  //    叠加 bear 阶段规则后导致全池动作降级为观望（实测 33 观望 / 0 抢反弹）。
+  //    现改为：优先用 K/D 数值判定（K>D 即多头），字符串回退时同时接受 "金叉" 和 "上升"。
+  var _k5v = parseFloat(stock.kd5_k), _d5v = parseFloat(stock.kd5_d);
+  var _hasKD5 = !isNaN(_k5v) && !isNaN(_d5v);
+  var _kd5Gold = _hasKD5 ? (_k5v > _d5v)
+    : (String(stock.kd5_cross || '') === '金叉' || String(stock.kd5_cross || '') === '上升');
+  if ((_hasKD5 || stock.kd5_cross !== undefined) && !_kd5Gold) {
     return { block: true, reason: '5分K未金叉(' + (stock.kd5_cross || '无') + ')' };
   }
   // 3) 量比<2（仅在量比字段有数的情况下拦，缺数据时不拦）
