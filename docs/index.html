@@ -7419,14 +7419,16 @@ function _snapRedFlagBlock(stock, idxKDJ) {
   if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
     return { block: false }; // 无大盘数据时不拦
   }
-  // ★【2026-09-23 需求变更】总闸开关：四条红旗**仅在大盘30分K处于【下降】状态时**启用。
+  // ★【2026-09-23 需求变更】总闸：四条红旗**仅在大盘30分K处于【下降】状态时**启用。
   //   「大盘在跌」判定 = 当前K < 上一根已完成bar的K（idxKDJ.prevK，由 fetchIndexKDJ30 计算）。
-  //   大盘走平或上升 → 四条红旗全部失效，抢反弹按原规则正常输出（不再降级观望）。
-  var FLAG1_ALWAYS_ON = false; // ← 置 true 则红旗①(大盘K≥65)豁免总闸，大盘上升时也拦
+  //   大盘走平或上升 → 四条红旗全部失效，抢反弹按原规则正常输出（= 未加红旗前的行为）。
+  //   无开关：上行时不拦截是硬性需求。
   var _mk = parseFloat(idxKDJ.k), _mpk = parseFloat(idxKDJ.prevK);
   var _mktFalling = !isNaN(_mk) && !isNaN(_mpk) && _mk < _mpk;
-  if (!_mktFalling && !(FLAG1_ALWAYS_ON && _mk >= 65)) {
-    return { block: false, gateOff: true }; // 大盘未下跌 → 红旗未启用
+  if (!_mktFalling) {
+    // 大盘未下跌（走平 / 上升）→ 四道红旗全部失效，抢反弹按原规则输出，等同"未加红旗"时的行为。
+    // 注：此处为硬逻辑，不设开关——按需求，大盘上行时不应有任何拦截。
+    return { block: false, gateOff: true };
   }
   // 1) 大盘 K ≥ 65
   if (idxKDJ.k >= 65) {
