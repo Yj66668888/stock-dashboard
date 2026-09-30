@@ -5119,30 +5119,30 @@ function _mktActionAdvice(ik) {
   var rising = (ik.prevK === null || ik.prevK === undefined) ? true : (k >= ik.prevK);
   var above = !!(ik.ma20 && ik.ma20.above === true);
   var below = !!(ik.ma20 && ik.ma20.above === false);
-  var maTxt = above ? '日线MA20上方' : (below ? '⚠日线破MA20' : 'MA20未知');
+  var maTxt = above ? '大盘日线：健康' : (below ? '⚠大盘日线：走坏了' : '大盘日线：未知');
   var r;
   if (k >= 80) {
     r = rising
-      ? { a: '清仓禁追 · 超买区上升' + (below ? '（破位期全年最差格：-1.08%/胜率23%）' : ''), p: '0成' }
-      : { a: '减仓 · 超买回落（MA20上方可留3成博惯性）', p: above ? '0-3成' : '0成' };
+      ? { a: '❌什么都别买，手里的票卖光（大盘涨过头了，这时候追最容易亏）', p: '空仓' }
+      : { a: '⚠卖掉大部分，最多留3成（涨多了正在回落）', p: above ? '最多3成' : '空仓' };
   } else if (k >= 65) {
     r = rising
-      ? { a: '末段减仓 · 强势区追高性价比低', p: '3成' }
+      ? { a: '⚠别追了，有票的减一点（这波涨得差不多了）', p: '3成' }
       : (above
-          ? { a: '★回调买点 · 满仓档（回测次日+0.89%/胜率79%）', p: '10成' }
-          : { a: '回调观望 · 破位期降为轻仓博反弹', p: '4成' });
+          ? { a: '✅可以买！大盘回调到位，是好的上车点', p: '10成' }
+          : { a: '👀只看不买（大盘在回调，但日线走坏了，最多拿4成试水）', p: '4成' });
   } else if (k >= 40) {
-    r = { a: '持有 · 弱票换★强票（多头排列+站MA5+K20-65）', p: above ? '7成' : '4成' };
+    r = { a: above ? '😐拿着别动，别加仓（手里弱的票换成强的）' : '😐拿着别动，别加仓（大盘还没走稳）', p: above ? '7成' : '4成' };
   } else if (k >= 20) {
     r = rising
       ? (above
-          ? { a: '★最佳做多区 · 买入/加仓（回测3日+1.63%/胜率78%）', p: '10成' }
-          : { a: '最佳做多区但日线破位 · 只可轻仓试探', p: '6成' })
-      : { a: '持有不动 · 不加不减', p: above ? '5成' : '3成' };
+          ? { a: '✅可以买！刚启动，最好的买入时机', p: '10成' }
+          : { a: '👀小仓位试试（形态好，但大盘日线没走稳）', p: '6成' })
+      : { a: '😐不买也不卖，等着', p: above ? '5成' : '3成' };
   } else {
     r = rising
-      ? { a: '观望 · 初反弹陷阱（回测次日-0.20%/胜率42%）', p: '0成' }
-      : { a: '抢反弹 · 轻仓' + (k < 10 ? '（K<10可加码）' : '') + (below ? '（破位期仓位再打4折）' : ''), p: above ? (k < 10 ? '8成' : '5成') : (k < 10 ? '3成' : '2成') };
+      ? { a: '❌别买！刚反弹第一天，很容易再跌回去', p: '空仓' }
+      : { a: '💰小仓位抄底买反弹（跌得够深了，跌得越深越可以多买点' + (k < 10 ? '，现在就很深' : '') + '）' + (below ? '。不过大盘日线走坏了，要少买点' : ''), p: above ? (k < 10 ? '8成' : '5成') : (k < 10 ? '3成' : '2成') };
   }
   r.dir = rising ? '升' : '降';
   r.ma = maTxt;
@@ -5162,9 +5162,9 @@ function renderIndexBanner() {
   }
   var ik = INDEX_KDJ30;
   var stageNames = {
-    bull: '🟥 超买强势区（K≥70）',
-    health: '🟨 中位区（40≤K<70）',
-    bear: '🟩 超卖区（K<40）'
+    bull: '🟥 大盘偏热',
+    health: '🟨 大盘正常',
+    bear: '🟩 大盘偏冷'
   };
   var adv = _mktActionAdvice(ik);
   banner.classList.add(ik.stage);
@@ -5182,17 +5182,15 @@ function renderIndexBanner() {
   meta.innerHTML =
     '<b>' + stageNames[ik.stage] + '</b>' +
     ' <span class="ib-divider">|</span> ' +
-    'K=' + ik.k.toFixed(1) + '（' + adv.dir + '） D=' + ik.d.toFixed(1) +
+    '大盘动能K=' + ik.k.toFixed(1) + '，趋势' + adv.dir +
     ' <span class="ib-divider">|</span> ' +
     adv.ma +
     ' <span class="ib-divider">|</span> ' +
     '<b style="color:inherit;">【今日动作】' + adv.a + '</b>' +
     ' <span class="ib-divider">|</span> ' +
-    '建议仓位 ' + adv.p +
+    '仓位：' + adv.p +
     ' <span class="ib-divider">|</span> ' +
-    '最新 ' + dateLabel + ' ' + (ik.lastClsPct >= 0 ? '+' : '') + ik.lastClsPct.toFixed(2) + '% ' + ik.dir +
-    ' <span class="ib-divider">|</span> ' +
-    '数据 ' + ik.bars + '根';
+    '更新 ' + dateLabel + '（每5分钟自动刷新）';
   banner.title = '操作矩阵回测：242个交易日（2025-09~2026-09）区间×方向，方向口径=K vs 前一根bar（与红旗总闸一致）；全年择时+33%/最大回撤-9.7% vs 全仓持有+34.5%/-25.3%';
 }
 
