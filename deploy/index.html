@@ -5218,8 +5218,7 @@ function _snapRedFlagBlock(stock, idxKDJ) {
   }
   // 1) 大盘 K ≥ 65
   if (idxKDJ.k >= 65) {
-    var _stageTag = idxKDJ.k >= 70 ? '鱼尾' : '高位转弱过渡期';
-    return { block: true, reason: '大盘30K' + idxKDJ.k.toFixed(0) + '≥65(' + _stageTag + ')' };
+    return { block: true, reason: '大盘还在高位下跌（风险大）' };
   }
   // 2) 5分K未金叉
   //    【2026-09-23修正】kd5_cross 在数据链路上存在两套值域："金叉/死叉" 与 "上升/下降"。
@@ -5231,15 +5230,15 @@ function _snapRedFlagBlock(stock, idxKDJ) {
   var _kd5Gold = _hasKD5 ? (_k5v > _d5v)
     : (String(stock.kd5_cross || '') === '金叉' || String(stock.kd5_cross || '') === '上升');
   if ((_hasKD5 || stock.kd5_cross !== undefined) && !_kd5Gold) {
-    return { block: true, reason: '5分K未金叉(' + (stock.kd5_cross || '无') + ')' };
+    return { block: true, reason: '这只票短线还没真正拐头向上' };
   }
   // 3) 量比<2（仅在量比字段有数的情况下拦，缺数据时不拦）
   if (stock.volRatio !== undefined && stock.volRatio !== null && !isNaN(stock.volRatio) && stock.volRatio < 2) {
-    return { block: true, reason: '量比' + stock.volRatio.toFixed(2) + '<2(资金未跟进)' };
+    return { block: true, reason: '资金没进来（无量反弹不可信）' };
   }
   // 4) 个股日线空头排列
   if (stock.ma === '空头排列') {
-    return { block: true, reason: '日线空头排列(未站上5日均线)' };
+    return { block: true, reason: '日线还在下跌趋势里（没站上5日均线）' };
   }
   return { block: false };
 }
@@ -5249,7 +5248,7 @@ function _snapRedFlagBlock(stock, idxKDJ) {
 // 出参：{ label: '追涨'|'减仓'|'禁碰'|'抢反弹'|'观望', cls: 'chase|cut|ban|snap|hold', reason: 简短理由 }
 function applySuggestionRule(stock, idxKDJ) {
   if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
-    return { label: '观望', cls: 'hold', reason: '大盘数据未就绪' };
+    return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
   }
   var indexK = idxKDJ.k;
   var indexStage = idxKDJ.stage;
@@ -5264,46 +5263,46 @@ function applySuggestionRule(stock, idxKDJ) {
   // ===== 大盘三态分流 =====
   if (indexStage === 'bull') {
     // 🟥 上升期：K≥70 警惕随时见顶
-    if (kd30k !== null && kd30k >= 80) return { label: '减仓', cls: 'cut', reason: '大盘K' + indexK.toFixed(0) + '+个股30K' + Math.round(kd30k) + '≥80双重高位' };
-    if (kd30k !== null && kd30k >= 70) return { label: '观望', cls: 'hold', reason: '大盘K' + indexK.toFixed(0) + '上升期+个股30K接近70' };
+    if (kd30k !== null && kd30k >= 80) return { label: '⚠该卖了', cls: 'cut', reason: '大盘和这只票都涨到高位了，先卖一些锁定利润' };
+    if (kd30k !== null && kd30k >= 70) return { label: '😐等等看', cls: 'hold', reason: '大盘涨得偏热，这只票也快到高位了，先别买' };
     // 持仓评分高+日线朝上
-    if (score >= 60 && dailyTrend === '↑') return { label: '追涨', cls: 'chase', reason: '大盘上升期+A/B+日线↑+评' + score };
-    return { label: '观望', cls: 'hold', reason: '大盘上升期但个股动能不足' };
+    if (score >= 60 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘在涨，这只票质地好（评分' + score + '）且日线朝上，可以买' };
+    return { label: '😐等等看', cls: 'hold', reason: '大盘在涨，但这只票自身动能不够，再等等' };
   }
   if (indexStage === 'health') {
     // 🟨 健康期：40≤K<70 主操作区
     if (kd30k !== null && kd30k < 25) {
       var _rf1 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf1.block) return { label: '观望', cls: 'hold', reason: '个股K' + Math.round(kd30k) + '<25但' + _rf1.reason + '·禁抢反弹' };
-      return { label: '抢反弹', cls: 'snap', reason: '健康期+个股30K' + Math.round(kd30k) + '<25超卖' };
+      if (_rf1.block) return { label: '😐等等看', cls: 'hold', reason: '这只票跌得深，但' + _rf1.reason + '，先别抄底' };
+      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘正常，这只票短线跌多了，可以小仓位抄底' };
     }
-    if (kd30k !== null && kd30k >= 75) return { label: '减仓', cls: 'cut', reason: '健康期+个股30K' + Math.round(kd30k) + '≥75偏高' };
-    if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '追涨', cls: 'chase', reason: '健康期+个股30K低位'+Math.round(kd30k)+'+日线↑' };
-    if (score >= 70 && tier === 'A') return { label: '追涨', cls: 'chase', reason: '健康期+A级+评' + score };
-    return { label: '观望', cls: 'hold', reason: '健康期暂无明确信号' };
+    if (kd30k !== null && kd30k >= 75) return { label: '⚠该卖了', cls: 'cut', reason: '这只票短线涨多了（偏高），先卖一些' };
+    if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这只票位置低而且日线朝上，可以买' };
+    if (score >= 70 && tier === 'A') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这是A级好票（评分' + score + '），可以买' };
+    return { label: '😐等等看', cls: 'hold', reason: '大盘正常，但这只票还没到买点，等等' };
   }
   if (indexStage === 'bear') {
     // 🟩 超卖期：K<40 主防御
-    if (kd30k !== null && kd30k >= 70) return { label: '禁碰', cls: 'ban', reason: '大盘超卖+个股高位'+Math.round(kd30k)+'逆势强拉' };
+    if (kd30k !== null && kd30k >= 70) return { label: '❌别碰', cls: 'ban', reason: '大盘在跌，这只票却在高位逆势拉，容易补跌，别碰' };
     if (kd30k !== null && kd30k < 20) {
       var _rf2 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf2.block) return { label: '观望', cls: 'hold', reason: '大盘<40+个股<20双超卖但' + _rf2.reason + '·禁抢反弹' };
-      return { label: '抢反弹', cls: 'snap', reason: '大盘K'+indexK.toFixed(0)+'<40+个股<20双超卖' };
+      if (_rf2.block) return { label: '😐等等看', cls: 'hold', reason: '大盘和这只票都跌得深，但' + _rf2.reason + '，先别抄底' };
+      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘和这只票都跌得很深了，可以小仓位抄底反弹' };
     }
     if (kd30k !== null && kd30k < 30 && kd5k !== null && kd5k < 25) {
       var _rf3 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf3.block) return { label: '观望', cls: 'hold', reason: '大盘超卖+个股30K'+Math.round(kd30k)+'+5分K'+Math.round(kd5k)+'双低但'+_rf3.reason+'·禁抢反弹' };
-      return { label: '抢反弹', cls: 'snap', reason: '大盘超卖+个股30K'+Math.round(kd30k)+'+5分K'+Math.round(kd5k)+'双低' };
+      if (_rf3.block) return { label: '😐等等看', cls: 'hold', reason: '这只票短线超跌，但' + _rf3.reason + '，先别抄底' };
+      return { label: '💰小仓抄底', cls: 'snap', reason: '这只票短线两个周期都跌多了，可以小仓位抄底' };
     }
     if (dailyTrend === '↑' && score >= 65) {
       var _rf4 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf4.block) return { label: '观望', cls: 'hold', reason: '超卖+日线逆势↑但' + _rf4.reason + '·禁抢反弹' };
-      return { label: '抢反弹', cls: 'snap', reason: '超卖+日线逆势↑+评'+score+'（精选试仓）' };
+      if (_rf4.block) return { label: '😐等等看', cls: 'hold', reason: '大盘跌但这只票日线还朝上，不过' + _rf4.reason + '，先别抄底' };
+      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘跌但这只票逆势走强（评分' + score + '），可以小仓位试试' };
     }
-    return { label: '观望', cls: 'hold', reason: '大盘超卖期默认观望' };
+    return { label: '😐等等看', cls: 'hold', reason: '大盘在跌，先别动，管住手' };
   }
   // 兜底
-  return { label: '观望', cls: 'hold', reason: '未匹配' };
+  return { label: '😐等等看', cls: 'hold', reason: '没有明确信号，先等等' };
 }
 
 // 统一入口（2026-09-14）：桌面表格 / 移动卡片 / 表头筛选器 共用
@@ -5313,7 +5312,7 @@ function getStockSuggestion(stock) {
       return applySuggestionRule(stock, INDEX_KDJ30);
     }
   } catch (_e) { }
-  return { label: '观望', cls: 'hold', reason: '大盘30K数据未就绪' };
+  return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
 }
 
 function renderDataVersion() {
