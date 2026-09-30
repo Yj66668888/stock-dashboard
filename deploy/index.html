@@ -5031,14 +5031,29 @@ function renderLowAuc(isSnapshot) {
 //   K≥70 上升期(5-7成仓) / 40≤K<70 健康期(3-5成) / K<40 超卖期(1-2成)
 //   阈值依据：40天·320根实测，顶K 80-90 多发于涨势末端、底K 40-50 多发于反弹前夜
 // ============================================
-var INDEX_KDJ30 = null;  // 全局缓存：{k, d, j, lastTime, lastClsPct, lastCls, dir}
+var INDEX_KDJ30 = null;  // 全局缓存：{k, d, j, lastTime, lastClsPct, lastCls, dir, ma20}
+
+// 2026-09-30 新增：上证日线 MA20 状态（区间×方向操作矩阵的总闸）
+// 回测依据：242个交易日，日线破MA20后所有区间收益大幅恶化（80+↑破位=-1.08%/胜率23%全年最差）
+function fetchIndexDailyMA20() {
+  var url = 'https://ifzq.gtimg.cn/appstock/app/kline/kline?param=sh000001,day,,,25';
+  return fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+    var node = ((d || {}).data || {})['sh000001'] || {};
+    var arr = node.day || [];
+    if (!arr.length || arr.length < 20) return null;
+    var closes = arr.slice(-20).map(function(b) { return parseFloat(b[2]); });
+    var ma20 = closes.reduce(function(a, b) { return a + b; }, 0) / 20;
+    var lastClose = parseFloat(arr[arr.length - 1][2]);
+    return { close: lastClose, ma20: ma20, above: lastClose > ma20 };
+  }).catch(function() { return null; });
+}
 
 function fetchIndexKDJ30() {
   // 上证指数 sh000001，30分K，320根
   return fetchKlineTencent('sh000001', 'm30', 320).then(function(d) {
     if (!d || !d.data || !d.data.klines || d.data.klines.length < 20) {
       console.warn('[IndexKDJ30] 数据不足');
-      INDEX_KDJ30 = { k: null, d: null, j: null, lastTime: '--', lastCls: null, lastClsPct: null, dir: '--', stage: 'idle' };
+      INDEX_KDJ30 = { k: null, d: null, j: null, lastTime: '--', lastCls: null, lastClsPct: null, dir: '--', stage: 'idle' , ma20: null };
       return INDEX_KDJ30;
     }
     // 腾讯源本身就是 [time, open, close, high, low, volume]（已转好）
@@ -5082,12 +5097,56 @@ function fetchIndexKDJ30() {
       bars: klines.length
     };
     console.log('[IndexKDJ30] 计算完成 K=' + lastK.toFixed(1) + ' D=' + lastD.toFixed(1) + ' J=' + lastJ.toFixed(1) + ' 阶段=' + stage);
-    return INDEX_KDJ30;
+    // 并行补日线MA20状态（失败不阻塞，ma20=null时矩阵按"未知"降级）
+    return fetchIndexDailyMA20().then(function(ma20info) {
+      INDEX_KDJ30.ma20 = ma20info;
+      return INDEX_KDJ30;
+    });
   }).catch(function(e) {
     console.error('[IndexKDJ30] 失败:', e);
-    INDEX_KDJ30 = { k: null, stage: 'idle', lastTime: '--', dir: '--' };
+    INDEX_KDJ30 = { k: null, stage: 'idle', lastTime: '--', dir: '--' , ma20: null };
     return INDEX_KDJ30;
   });
+}
+
+// ★2026-09-30 回测矩阵（242个交易日，2025-09~2026-09，上证30分K收盘状态→次日池票均值）
+// 核心规律：低位(K<40)看方向、高位(K>65)不看方向看日线MA20
+// 全年最佳两格：20-40↑(3日+1.63%/78%)、65-80↓+MA20上方(次日+0.89%/79%)
+// 全年最差两格：0-20↑(初反弹陷阱,胜率42%)、80+↑+破MA20(-1.08%/23%)
+function _mktActionAdvice(ik) {
+  var k = ik.k;
+  // 方向口径与红旗总闸一致：K vs 上一根已完成bar的K（prevK缺失时保守视为升=不拦）
+  var rising = (ik.prevK === null || ik.prevK === undefined) ? true : (k >= ik.prevK);
+  var above = !!(ik.ma20 && ik.ma20.above === true);
+  var below = !!(ik.ma20 && ik.ma20.above === false);
+  var maTxt = above ? '日线MA20上方' : (below ? '⚠日线破MA20' : 'MA20未知');
+  var r;
+  if (k >= 80) {
+    r = rising
+      ? { a: '清仓禁追 · 超买区上升' + (below ? '（破位期全年最差格：-1.08%/胜率23%）' : ''), p: '0成' }
+      : { a: '减仓 · 超买回落（MA20上方可留3成博惯性）', p: above ? '0-3成' : '0成' };
+  } else if (k >= 65) {
+    r = rising
+      ? { a: '末段减仓 · 强势区追高性价比低', p: '3成' }
+      : (above
+          ? { a: '★回调买点 · 满仓档（回测次日+0.89%/胜率79%）', p: '10成' }
+          : { a: '回调观望 · 破位期降为轻仓博反弹', p: '4成' });
+  } else if (k >= 40) {
+    r = { a: '持有 · 弱票换★强票（多头排列+站MA5+K20-65）', p: above ? '7成' : '4成' };
+  } else if (k >= 20) {
+    r = rising
+      ? (above
+          ? { a: '★最佳做多区 · 买入/加仓（回测3日+1.63%/胜率78%）', p: '10成' }
+          : { a: '最佳做多区但日线破位 · 只可轻仓试探', p: '6成' })
+      : { a: '持有不动 · 不加不减', p: above ? '5成' : '3成' };
+  } else {
+    r = rising
+      ? { a: '观望 · 初反弹陷阱（回测次日-0.20%/胜率42%）', p: '0成' }
+      : { a: '抢反弹 · 轻仓' + (k < 10 ? '（K<10可加码）' : '') + (below ? '（破位期仓位再打4折）' : ''), p: above ? (k < 10 ? '8成' : '5成') : (k < 10 ? '3成' : '2成') };
+  }
+  r.dir = rising ? '升' : '降';
+  r.ma = maTxt;
+  return r;
 }
 
 function renderIndexBanner() {
@@ -5103,15 +5162,11 @@ function renderIndexBanner() {
   }
   var ik = INDEX_KDJ30;
   var stageNames = {
-    bull: '🟥 上升期（K≥70）',
-    health: '🟨 健康期（40≤K<70）',
-    bear: '🟩 超卖期（K<40）'
+    bull: '🟥 超买强势区（K≥70）',
+    health: '🟨 中位区（40≤K<70）',
+    bear: '🟩 超卖区（K<40）'
   };
-  var posAdvices = {
-    bull: '建议仓位 5-7成 · 持仓为主 · 顶K>80开始减仓',
-    health: '建议仓位 3-5成 · 低吸高抛 · 突破跟进突破',
-    bear: '建议仓位 1-2成 · 抢反弹为主 · 不杀跌、不追高'
-  };
+  var adv = _mktActionAdvice(ik);
   banner.classList.add(ik.stage);
   var timeStr = ik.lastTime || '--';
   // 腾讯源time为unix秒
@@ -5127,14 +5182,18 @@ function renderIndexBanner() {
   meta.innerHTML =
     '<b>' + stageNames[ik.stage] + '</b>' +
     ' <span class="ib-divider">|</span> ' +
-    'K=' + ik.k.toFixed(1) + ' D=' + ik.d.toFixed(1) + ' J=' + ik.j.toFixed(1) +
+    'K=' + ik.k.toFixed(1) + '（' + adv.dir + '） D=' + ik.d.toFixed(1) +
+    ' <span class="ib-divider">|</span> ' +
+    adv.ma +
+    ' <span class="ib-divider">|</span> ' +
+    '<b style="color:inherit;">【今日动作】' + adv.a + '</b>' +
+    ' <span class="ib-divider">|</span> ' +
+    '建议仓位 ' + adv.p +
     ' <span class="ib-divider">|</span> ' +
     '最新 ' + dateLabel + ' ' + (ik.lastClsPct >= 0 ? '+' : '') + ik.lastClsPct.toFixed(2) + '% ' + ik.dir +
     ' <span class="ib-divider">|</span> ' +
-    posAdvices[ik.stage] +
-    ' <span class="ib-divider">|</span> ' +
-    '数据 ' + ik.bars + '根 · 7×8=8个交易日回测样本';
-  banner.title = '回测样本：40天·24段上升段·13段下跌段（数据时段：' + dateLabel + '）';
+    '数据 ' + ik.bars + '根';
+  banner.title = '操作矩阵回测：242个交易日（2025-09~2026-09）区间×方向，方向口径=K vs 前一根bar（与红旗总闸一致）；全年择时+33%/最大回撤-9.7% vs 全仓持有+34.5%/-25.3%';
 }
 
 // 抢反弹红旗拦截器（2026-09-22）：防止弱势抢反弹陷阱
