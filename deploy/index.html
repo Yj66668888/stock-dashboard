@@ -5032,6 +5032,9 @@ function renderLowAuc(isSnapshot) {
 //   阈值依据：40天·320根实测，顶K 80-90 多发于涨势末端、底K 40-50 多发于反弹前夜
 // ============================================
 var INDEX_KDJ30 = null;  // 全局缓存：{k, d, j, lastTime, lastClsPct, lastCls, dir, ma20}
+var INDEX_KDJ60 = null;  // ★2026-09-30 大盘60分K（用于横幅提示，不参与决策）
+                          //   160天回测：30K超卖+60K≥50时反弹"快而短"——10h反弹均值反而高于放行组(+1.15% vs +0.82%)
+                          //   因此仅作信息提示（仓位/节奏建议），不拦截任何信号
 
 // 2026-09-30 新增：上证日线 MA20 状态（区间×方向操作矩阵的总闸）
 // 回测依据：242个交易日，日线破MA20后所有区间收益大幅恶化（80+↑破位=-1.08%/胜率23%全年最差）
@@ -5106,6 +5109,47 @@ function fetchIndexKDJ30() {
     console.error('[IndexKDJ30] 失败:', e);
     INDEX_KDJ30 = { k: null, stage: 'idle', lastTime: '--', dir: '--', ma20: null };
     return INDEX_KDJ30;
+  });
+}
+
+// ★2026-09-30 大盘60分KDJ（仅作信息提示，不参与决策）
+//   拉160根60分K线≈80个交易日，覆盖过去4个月足够横盘/单边行情判断
+//   横幅规则：60K≥50 显示"反弹快进快出别拿两天"；60K<50 显示"节奏正常可按30K信号执行"
+//   任何k为null时静默（不显示60K信息）
+function fetchIndexKDJ60() {
+  return fetchKlineTencent('sh000001', 'm60', 160).then(function(d) {
+    if (!d || !d.data || !d.data.klines || d.data.klines.length < 20) {
+      console.warn('[IndexKDJ60] 数据不足');
+      INDEX_KDJ60 = { k: null, d: null, dir: '--' };
+      return INDEX_KDJ60;
+    }
+    var klines = d.data.klines.map(function(s) {
+      var p = s.split(',');
+      return { time: p[0], close: parseFloat(p[2]), high: parseFloat(p[3]), low: parseFloat(p[4]) };
+    });
+    var Ks = [50], Ds = [50];
+    for (var i = 0; i < klines.length; i++) {
+      var start = Math.max(0, i - 8);
+      var ll = klines[start].low, hh = klines[start].high;
+      for (var j = start + 1; j <= i; j++) {
+        if (klines[j].low < ll) ll = klines[j].low;
+        if (klines[j].high > hh) hh = klines[j].high;
+      }
+      var rsv = (hh - ll) > 0 ? (klines[i].close - ll) / (hh - ll) * 100 : 50;
+      var curK = (Ks[i] * 2 + rsv) / 3;
+      var curD = (Ds[i] * 2 + curK) / 3;
+      Ks.push(curK); Ds.push(curD);
+    }
+    var lastIdx = Ks.length - 1;
+    var prevK = Ks[lastIdx - 1];
+    var lastK = Ks[lastIdx], lastD = Ds[lastIdx];
+    INDEX_KDJ60 = { k: lastK, d: lastD, prevK: prevK, dir: lastK >= prevK ? '↑' : '↓', lastTime: klines[klines.length - 1].time };
+    console.log('[IndexKDJ60] K=' + lastK.toFixed(1) + ' 方向=' + INDEX_KDJ60.dir);
+    return INDEX_KDJ60;
+  }).catch(function(e) {
+    console.warn('[IndexKDJ60] 失败:', e);
+    INDEX_KDJ60 = { k: null, dir: '--' };
+    return INDEX_KDJ60;
   });
 }
 
@@ -5189,6 +5233,23 @@ function renderIndexBanner() {
     '<b style="color:inherit;">【今日动作】' + adv.a + '</b>' +
     ' <span class="ib-divider">|</span> ' +
     '仓位：' + adv.p +
+    (function() {
+      // ★2026-09-30 大盘60分K 信息提示（不参与决策）
+      if (!INDEX_KDJ60 || INDEX_KDJ60.k === null) return '';
+      var k60 = INDEX_KDJ60.k;
+      var dir60 = INDEX_KDJ60.dir || '--';
+      var tip;
+      if (k60 >= 70) {
+        tip = '<span style="color:#E24B4A;font-weight:500;">⚠60K=' + k60.toFixed(1) + '高位，反弹要快进快出，别拿两天</span>';
+      } else if (k60 >= 50) {
+        tip = '<span style="color:#BA7517;">60K=' + k60.toFixed(1) + '偏高，快进快出别拿两天</span>';
+      } else if (k60 >= 25) {
+        tip = '<span style="color:inherit;">60K=' + k60.toFixed(1) + '，节奏正常</span>';
+      } else {
+        tip = '<span style="color:#639922;">60K=' + k60.toFixed(1) + '，大周期低位，可持股待反弹</span>';
+      }
+      return ' <span class="ib-divider">|</span> ' + tip;
+    })() +
     ' <span class="ib-divider">|</span> ' +
     '更新 ' + dateLabel + '（每5分钟自动刷新）';
   banner.title = '操作矩阵回测：242个交易日（2025-09~2026-09）区间×方向，方向口径=K vs 前一根bar（与红旗总闸一致）；全年择时+33%/最大回撤-9.7% vs 全仓持有+34.5%/-25.3%';
@@ -5374,17 +5435,21 @@ function renderDataVersion() {
     setTimeout(function() { fetchHotSectors(); }, 500);
     startExtraRefresh();
     // ★ 大盘30K三态（2026-09-13 新增）：拉到KDJ后渲染顶部指示灯 + 给每只票贴"今日建议动作"
+    // ★ 2026-09-30 并行拉大盘60K（信息提示用，不影响决策）
     fetchIndexKDJ30().then(function() {
-      renderIndexBanner();
-      if (typeof renderStocks === 'function') renderStocks();
-      if (typeof renderAll === 'function') renderAll();
-      // 每5分钟刷新一次大盘KDJ（盘中变化慢）
-      window._indexKdj30Timer = setInterval(function() {
-        fetchIndexKDJ30().then(function() {
-          renderIndexBanner();
-          if (typeof renderStocks === 'function') renderStocks();
-        });
-      }, 5 * 60 * 1000);
+      // 60K失败不影响30K渲染
+      fetchIndexKDJ60().then(function() {
+        renderIndexBanner();
+        if (typeof renderStocks === 'function') renderStocks();
+        if (typeof renderAll === 'function') renderAll();
+        // 每5分钟刷新一次大盘KDJ（盘中变化慢）
+        window._indexKdj30Timer = setInterval(function() {
+          Promise.all([fetchIndexKDJ30(), fetchIndexKDJ60()]).then(function() {
+            renderIndexBanner();
+            if (typeof renderStocks === 'function') renderStocks();
+          });
+        }, 5 * 60 * 1000);
+      });
     });
   } catch(e) {
     console.error('[Init] FATAL ERROR:', e);
