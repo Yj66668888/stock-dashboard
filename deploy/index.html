@@ -5311,10 +5311,60 @@ function _snapRedFlagBlock(stock, idxKDJ) {
   return { block: false };
 }
 
+// ===== 次日胜率叠加层（2026-10-08，9月558样本回测） =====
+// 毒药4条：任一命中 → 次日胜率 23.9%~36.4%（基准37.6%），买入类信号一票否决
+// 优选6因子：无毒药+≥2个 → 次日胜率 55.3%（H006/H007 影子验证中）
+function _poisonCheck(stock) {
+  var hits = [];
+  var f5 = stock.flow5d;
+  if (typeof f5 === 'number' && f5 < -10000) hits.push('5日主力净流出超1亿（次日胜率24%）');
+  var k30 = (stock.kd30_k !== undefined && stock.kd30_k !== null) ? stock.kd30_k : stock.kdj30;
+  if (typeof k30 === 'number' && k30 >= 40 && k30 < 60) hits.push('30分K卡在半山腰40-60（次日胜率32%）');
+  var vr = stock.volRatio;
+  if (typeof vr === 'number' && vr > 0 && vr < 0.7) hits.push('量能萎缩无人承接（量比' + vr.toFixed(2) + '）');
+  var dc = stock.dayChg;
+  if (typeof dc === 'number' && dc >= -5 && dc < -2) hits.push('当日中阴线' + dc.toFixed(1) + '%');
+  return hits;
+}
+function _posFactors(stock) {
+  var tags = [];
+  var df = stock.dailyFlow;
+  if (typeof df === 'number' && df > 500 && df <= 5000) tags.push('资金小进');
+  var k30 = (stock.kd30_k !== undefined && stock.kd30_k !== null) ? stock.kd30_k : stock.kdj30;
+  if (typeof k30 === 'number' && k30 >= 60) tags.push('已启动');
+  var vr = stock.volRatio;
+  if (typeof vr === 'number' && vr >= 1.5 && vr < 2.5) tags.push('温和放量');
+  var sigs = stock.preBreakoutSignals || [];
+  for (var i = 0; i < sigs.length; i++) {
+    var sn = sigs[i] && sigs[i].signal ? sigs[i].signal : '';
+    if (sn === '资金反转' || sn === '缩量止跌' || sn === '金叉收敛') tags.push(sn);
+  }
+  return tags;
+}
+function applySuggestionRule(stock, idxKDJ) {
+  var core = _applySuggestionCore(stock, idxKDJ);
+  var BUY_CLS = { chase: 1, snap: 1 };
+  var poisons = _poisonCheck(stock);
+  // 毒药一票否决：只否决买入类（减仓/禁碰/观望原样放行）
+  if (poisons.length && BUY_CLS[core.cls]) {
+    return { label: '🚫观望', cls: 'hold', reason: '毒药红旗：' + poisons.join('；') + '。回测显示这类票次日大概率跑输，先别买' };
+  }
+  // 优选标注：无毒药 + 正向因子≥2（回测胜率55.3% vs 基准37.6%）
+  if (!poisons.length) {
+    var tags = _posFactors(stock);
+    if (tags.length >= 2) {
+      var r2 = { label: core.label, cls: core.cls, reason: core.reason + '【优选★' + tags.slice(0, 3).join('+') + '，回测次日胜率55%】' };
+      if (BUY_CLS[core.cls]) r2.label = core.label + '★';
+      return r2;
+    }
+  }
+  return core;
+}
+
 // 个股建议动作（基于个股KD+大盘三态综合）
 // 入参：stock对象 + INDEX_KDJ30 全局对象 + 当前价changePct
 // 出参：{ label: '追涨'|'减仓'|'禁碰'|'抢反弹'|'观望', cls: 'chase|cut|ban|snap|hold', reason: 简短理由 }
-function applySuggestionRule(stock, idxKDJ) {
+function _applySuggestionCore(stock, idxKDJ) {
   if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
     return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
   }

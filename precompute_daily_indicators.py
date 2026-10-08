@@ -32,6 +32,37 @@ _CTX.check_hostname = False
 _CTX.verify_mode = ssl.CERT_NONE
 
 # 新浪财经日线K线API（主数据源，稳定可用）
+def fetch_live_quotes(codes):
+    """qt.gtimg.cn 批量拉实时行情（2026-10-08 加，dayChg/volRatio 盘中兜底专用）
+
+    新浪日线盘中不含当日 bar，云端 15:00 后跑无碍，但盘中注入时需要用 qt 实时价/量
+    拼一根当日 bar。qt 返回 GBK，必须二进制拉取 + errors='ignore' 解码（rescan 踩过坑）。
+    返回 {code: {'close': 现价, 'volume': 股数}}，volume 已从手×100 转股（与新浪单位一致）。
+    """
+    out = {}
+    if not codes:
+        return out
+    try:
+        req = urllib.request.Request(
+            'https://qt.gtimg.cn/q=' + ','.join(codes),
+            headers={'User-Agent': 'Mozilla/5.0'})
+        resp = urllib.request.urlopen(req, context=_CTX, timeout=10)
+        raw = resp.read().decode('utf-8', errors='ignore')
+        for line in raw.split(';'):
+            m = re.match(r'v_(\w+)="([^"]*)"', line.strip())
+            if not m:
+                continue
+            p = m.group(2).split('~')
+            if len(p) > 6 and p[3] and p[6]:
+                try:
+                    out[m.group(1)] = {'close': float(p[3]), 'volume': float(p[6]) * 100}
+                except ValueError:
+                    pass
+    except Exception as e:
+        print(f"  [WARN] qt 实时行情拉取失败（dayChg/volRatio 将用上一交易日值）: {e}")
+    return out
+
+
 def get_daily_klines(code, lmt=200, retries=2):
     """带重试的日线K线获取 — 2026-09-18加: 单次失败会导致 MACD/均线/趋势/支撑价/高开率/阶段 全空，
     曾造成 pipeline 推送上线的仪表盘整列空白。失败重试 2 次(退避 0.8s/1.6s)。"""
@@ -490,7 +521,7 @@ def map_phase(stock, klines=None):
     }
 
 
-def enrich_stock(stock, sector_counts=None):
+def enrich_stock(stock, sector_counts=None, live_quotes=None):
     """为单只股票计算所有日线指标"""
     code = stock.get('code', '')
     if not code:
@@ -543,6 +574,24 @@ def enrich_stock(stock, sector_counts=None):
         stock['preLaunchScore'] = phase_data['preLaunchScore']
         stock['phase'] = phase_data['phase']
 
+    # 量比 + 当日涨幅（2026-10-08 次日胜率因子挖掘：红旗③④数据源）
+    # 盘中新浪缺当日bar时，用 qt 实时价/量拼一根今日bar（只服务这两个字段，不污染其他指标）
+    kl = klines
+    if live_quotes and klines and code in live_quotes:
+        today = time.strftime('%Y-%m-%d')
+        if klines[-1]['date'] != today:
+            q = live_quotes[code]
+            if q.get('close') and q.get('volume'):
+                kl = klines + [{'date': today, 'open': q['close'], 'close': q['close'],
+                                'high': q['close'], 'low': q['close'], 'volume': q['volume']}]
+    if len(kl) >= 2:
+        c_today, c_prev = kl[-1]['close'], kl[-2]['close']
+        v_today, v_prev = kl[-1].get('volume', 0), kl[-2].get('volume', 0)
+        if c_prev:
+            stock['dayChg'] = round((c_today - c_prev) / c_prev * 100, 2)
+        if v_prev:
+            stock['volRatio'] = round(v_today / v_prev, 2)
+
     return stock
 
 
@@ -574,6 +623,9 @@ def inject_into_html(html_path):
 
     # 为每只股票计算指标
     all_stocks = stocks + launch
+    # 盘中兜底：批量拉 qt 实时行情（今日 bar 缺失时拼当日 bar 算 dayChg/volRatio）
+    live_quotes = fetch_live_quotes([s.get('code') for s in all_stocks if s.get('code')])
+    print(f"qt 实时行情: {len(live_quotes)}/{len(all_stocks)} 只")
     seen_codes = set()
     ok_cnt = 0
     fail_codes = []
@@ -585,7 +637,7 @@ def inject_into_html(html_path):
 
         print(f"  [{i+1}/{len(all_stocks)}] {stock.get('name', '?')} ({code})...", end=' ')
         try:
-            enrich_stock(stock, sector_counts)
+            enrich_stock(stock, sector_counts, live_quotes)
             # 检查结果
             filled = sum(1 for k in ['macd', 'ma', 'trend', 'supportPrice', 'openRate30d', 'sectorResonance', 'preLaunchPhase'] if stock.get(k))
             phase_label = stock.get('preLaunchPhase', '?')
