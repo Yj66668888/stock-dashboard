@@ -1101,14 +1101,14 @@
       <table class="stock-table" id="stockTable">
         <thead>
           <tr>
-            <th data-filter="score" onclick="toggleFilter(event,'score')">评分<span class="th-filter-icon">▼</span></th>
+            <th data-filter="score" onclick="toggleFilter(event,'score')" title="健康度=基本面/资金/股性综合质量，衡量票本身好不好，不预测次日涨跌（9月回测558样本：评分≥50次日超额-0.5pp，分高≠明天涨）">健康度<span class="th-filter-icon">▼</span></th>
             <th data-filter="tier" onclick="toggleFilter(event,'tier')">梯队<span class="th-filter-icon">▼</span></th>
             <th data-filter="code" onclick="toggleFilter(event,'code')">代码<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="name" onclick="toggleFilter(event,'name')">名称<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="sector" onclick="toggleFilter(event,'sector')">赛道<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="direction" onclick="toggleFilter(event,'direction')">驱动方向<span class="th-filter-icon">▼</span></th>
             <th data-filter="phase" onclick="toggleFilter(event,'phase')">阶段<span class="th-filter-icon">▼</span></th>
-            <th data-filter="action" onclick="toggleFilter(event,'action')">今日动作<span class="th-filter-icon">▼</span></th>
+            <th data-filter="action" onclick="toggleFilter(event,'action')" title="短线建议（持有周期1-3天）。回测纪律：买入后次日高点80%在上午，冲高即走不拖尾盘">今日动作<span class="th-filter-icon">▼</span></th>
             <th data-filter="price" onclick="toggleFilter(event,'price')">现价<span class="th-filter-icon">▼</span></th>
             <th data-filter="changePct" onclick="toggleFilter(event,'changePct')">涨跌幅<span class="th-filter-icon">▼</span></th>
             <th data-filter="turnover" onclick="toggleFilter(event,'turnover')">换手率<span class="th-filter-icon">▼</span></th>
@@ -2159,6 +2159,9 @@ function renderStockRow(stock, index) {
     : (stock.healthScore || 0);
   const sCls = scoreClass(score);
 
+  // ★ close=0 护栏（2026-10-08）：当日收盘价未入库=数据源故障，指标失真（9/30永鼎/振华/国城实例，次日全进跌幅榜前5）
+  const noPriceData = stock.close !== undefined && stock.close !== null && stock.close <= 0;
+
   // 梯队
   const tier = stock.tier || 'C';
 
@@ -2438,7 +2441,9 @@ function renderStockRow(stock, index) {
   // 行
   return `
     <tr id="row-${stock.code}" class="${_rowCls}">
-      <td class="col-score"><span class="score-val ${sCls}">${score}</span></td>
+      <td class="col-score">` + (noPriceData
+        ? '<span class="score-val" style="color:#e67e22;font-weight:700;" title="当日收盘价未入库（数据源故障），健康度与各指标可能失真，勿据此操作">缺数</span>'
+        : `<span class="score-val ${sCls}">${score}</span>`) + `</td>
       <td><span class="tier-badge tier-${tier}">${tier}</span></td>
       <td><span class="code-text">${num}</span></td>
       <td class="left-align">${nameHtml}${pinTag}${newTag}</td>
@@ -2446,7 +2451,9 @@ function renderStockRow(stock, index) {
       <td class="left-align"><span class="dir-text">${escapeHtml(stock.direction || '--')}</span></td>
       <td><span class="phase-tag ${pCls}">${escapeHtml(phaseShort)}</span>${dipBadgeHtml}${stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : ''}</td>
       <td>${_suggestionHtml}</td>
-      <td><span class="price-text ${priceCls}">${price !== undefined && price !== null ? price.toFixed(2) : '--'}</span></td>
+      <td>` + (noPriceData && (price === undefined || price === null || price <= 0)
+        ? '<span class="price-text">数据缺失</span>'
+        : `<span class="price-text ${priceCls}">${price !== undefined && price !== null ? price.toFixed(2) : '--'}</span>`) + `</td>
       <td><span class="chg-pct ${priceCls}">${chgStr}</span></td>
       <td>${turnoverHtml}</td>
       <td>${pePbHtml}</td>
@@ -5311,6 +5318,10 @@ function applySuggestionRule(stock, idxKDJ) {
   if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
     return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
   }
+  // ★ close=0 护栏（2026-10-08）：当日收盘价未入库=数据源故障，指标失真，禁止给出任何买入类信号
+  if (stock.close !== undefined && stock.close !== null && stock.close <= 0) {
+    return { label: '⛔数据缺失', cls: 'ban', reason: '这只票当日收盘价未入库（数据源故障），健康度与各项指标可能失真，勿据此操作' };
+  }
   var indexK = idxKDJ.k;
   var indexStage = idxKDJ.stage;
   var kd30k = (stock.kd30_k !== undefined && stock.kd30_k !== null) ? stock.kd30_k : (stock.kdj30 || null);
@@ -5327,7 +5338,7 @@ function applySuggestionRule(stock, idxKDJ) {
     if (kd30k !== null && kd30k >= 80) return { label: '⚠该卖了', cls: 'cut', reason: '大盘和这只票都涨到高位了，先卖一些锁定利润' };
     if (kd30k !== null && kd30k >= 70) return { label: '😐等等看', cls: 'hold', reason: '大盘涨得偏热，这只票也快到高位了，先别买' };
     // 持仓评分高+日线朝上
-    if (score >= 60 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘在涨，这只票质地好（评分' + score + '）且日线朝上，可以买' };
+    if (score >= 60 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘在涨，这只票质地好（健康度' + score + '）且日线朝上，可以买（短线1-3天，次日冲高即走）' };
     return { label: '😐等等看', cls: 'hold', reason: '大盘在涨，但这只票自身动能不够，再等等' };
   }
   if (indexStage === 'health') {
@@ -5339,7 +5350,7 @@ function applySuggestionRule(stock, idxKDJ) {
     }
     if (kd30k !== null && kd30k >= 75) return { label: '⚠该卖了', cls: 'cut', reason: '这只票短线涨多了（偏高），先卖一些' };
     if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这只票位置低而且日线朝上，可以买' };
-    if (score >= 70 && tier === 'A') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这是A级好票（评分' + score + '），可以买' };
+    if (score >= 70 && tier === 'A') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这是A级好票（健康度' + score + '），可以买（短线1-3天，次日冲高即走）' };
     return { label: '😐等等看', cls: 'hold', reason: '大盘正常，但这只票还没到买点，等等' };
   }
   if (indexStage === 'bear') {
@@ -5358,7 +5369,7 @@ function applySuggestionRule(stock, idxKDJ) {
     if (dailyTrend === '↑' && score >= 65) {
       var _rf4 = _snapRedFlagBlock(stock, idxKDJ);
       if (_rf4.block) return { label: '😐等等看', cls: 'hold', reason: '大盘跌但这只票日线还朝上，不过' + _rf4.reason + '，先别抄底' };
-      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘跌但这只票逆势走强（评分' + score + '），可以小仓位试试' };
+      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘跌但这只票逆势走强（健康度' + score + '），可以小仓位试试' };
     }
     return { label: '😐等等看', cls: 'hold', reason: '大盘在跌，先别动，管住手' };
   }

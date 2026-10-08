@@ -101,6 +101,35 @@ def fetch_quotes_batch(codes):
     return out
 
 
+def fetch_close_qt(codes):
+    """qt.gtimg.cn 拉现价（最稳域名，2026-10-08 close=0 护栏专用）
+
+    ⚠️ qt 返回 GBK，curl_get 的 text=True 严格 UTF-8 解码会抛 UnicodeDecodeError
+    误吞进 except 返回 None —— 必须二进制拉取后 errors='ignore' 解码（中文乱码无妨，
+    只解析 ASCII 数字字段）。
+    """
+    out = {}
+    cmd = ['curl', '-s', '--noproxy', '*', '--connect-timeout', '10',
+           '-H', 'User-Agent: Mozilla/5.0',
+           'https://qt.gtimg.cn/q=' + ','.join(codes)]
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=15, env=_CLEAN_ENV)
+        raw = r.stdout.decode('utf-8', errors='ignore')
+    except Exception:
+        return out
+    for line in raw.split(';'):
+        m2 = re.match(r'v_(\w+)="([^"]*)"', line.strip())
+        if not m2:
+            continue
+        parts = m2.group(2).split('~')
+        if len(parts) > 4 and parts[3]:
+            try:
+                out[m2.group(1)] = float(parts[3])
+            except ValueError:
+                pass
+    return out
+
+
 def fetch_yest_volume(code):
     """腾讯日线 → 昨日成交量（手）+ 已走完的收盘序列（2026-09-03改：兼供日线趋势判断）"""
     d = curl_json(f'https://ifzq.gtimg.cn/appstock/app/fqkline/get?param={code},day,,,12,qfq',
@@ -471,6 +500,29 @@ def main():
         seen_codes.add(s['code'])
         new_entries.append(s)
     dup_removed = len(merged) - len(new_entries)
+
+    # ★ close=0 护栏（2026-10-08）：固定票"原样保留"曾把 close=0 坏条目无限滚雪球
+    # （9/30 永鼎/振华/国城 close=0 进池，10/8 三只全进跌幅榜前5）。
+    # 修复：close<=0 的票用 qt.gtimg 实时价回填；仍拿不到则剔除并告警
+    # （宁缺勿假，前端另有"⛔数据缺失"标签兜底）。
+    bad_close = [s for s in new_entries
+                 if s.get('close') is None or (isinstance(s.get('close'), (int, float)) and s['close'] <= 0)]
+    if bad_close:
+        qt_px = fetch_close_qt([s['code'] for s in bad_close])
+        still_bad = []
+        for s in bad_close:
+            px = qt_px.get(s['code'])
+            if px and px > 0:
+                s['close'] = px
+                print(f"  [FIX] close=0 回填 {s['code']} {s.get('name', '')} → {px}")
+            else:
+                still_bad.append(s)
+        if still_bad:
+            bad_codes = {s['code'] for s in still_bad}
+            new_entries = [s for s in new_entries if s['code'] not in bad_codes]
+            print(f"  [WARN] close=0 且实时价不可得，剔除: "
+                  f"{[(s['code'], s.get('name', '')) for s in still_bad]}")
+
     new_json = json.dumps(new_entries, ensure_ascii=False, indent=2)
     html = html[:m.start(2)] + new_json + html[m.end(2):]
     open(HTML, 'w').write(html)
