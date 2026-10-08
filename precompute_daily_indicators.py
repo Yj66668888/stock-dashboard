@@ -521,6 +521,25 @@ def map_phase(stock, klines=None):
     }
 
 
+def _trading_elapsed_frac():
+    """当前时刻占全天交易时长(240分)的比例，用于盘中量比外推。
+
+    盘中 qt 实时量只走了部分，volRatio=当前量/昨日全天量 会低估，
+    量比毒药(<0.7)会误伤。外推=当前量/进度。盘前/盘后返回 1.0（不外推）。
+    """
+    now = time.localtime()
+    hm = now.tm_hour * 60 + now.tm_min
+    if hm <= 570:  # 9:30 前
+        return 1.0
+    if hm <= 690:  # 上午盘中
+        return max((hm - 570) / 240.0, 0.2)
+    if hm <= 780:  # 午休（按上午结束计）
+        return 0.5
+    if hm <= 900:  # 下午盘中
+        return max((hm - 660) / 240.0, 0.2)
+    return 1.0
+
+
 def enrich_stock(stock, sector_counts=None, live_quotes=None):
     """为单只股票计算所有日线指标"""
     code = stock.get('code', '')
@@ -582,8 +601,11 @@ def enrich_stock(stock, sector_counts=None, live_quotes=None):
         if klines[-1]['date'] != today:
             q = live_quotes[code]
             if q.get('close') and q.get('volume'):
+                # 盘中量按时间进度外推成全天量，避免量比低估误伤
+                frac = _trading_elapsed_frac()
+                v_ext = q['volume'] / frac if 0 < frac < 1 else q['volume']
                 kl = klines + [{'date': today, 'open': q['close'], 'close': q['close'],
-                                'high': q['close'], 'low': q['close'], 'volume': q['volume']}]
+                                'high': q['close'], 'low': q['close'], 'volume': v_ext}]
     if len(kl) >= 2:
         c_today, c_prev = kl[-1]['close'], kl[-2]['close']
         v_today, v_prev = kl[-1].get('volume', 0), kl[-2].get('volume', 0)
