@@ -1,10 +1,10 @@
 {
-  "scan_date": "2026-10-09 12:03:25",
+  "scan_date": "2026-10-12 13:12:23",
   "funnel_layer": "第二层·TOP200+STOCKS合并扫描",
   "total_top200": 200,
   "total_tracked": 34,
-  "total_scanned": 222,
-  "total_success": 222,
+  "total_scanned": 230,
+  "total_success": 230,
   "total_errors": 0,
   "config": {
     "k_max": 40,
@@ -15,335 +15,78 @@
     "period": 9
   },
   "stocks": {
-    "002165": {
-      "name": "红 宝 丽",
+    "605389": {
+      "name": "长龄液压",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 65.98,
-        "d_now": 74.18,
-        "j_now": 49.59,
-        "k_prev": 73.98,
-        "d_prev": 78.28,
-        "j_prev": 65.37,
-        "time": "2026-10-09 15:00"
+        "k_now": 44.92,
+        "d_now": 40.69,
+        "j_now": 53.37,
+        "k_prev": 24.04,
+        "d_prev": 38.58,
+        "j_prev": -5.04,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 76.48,
-        "d_now": 61.62,
-        "j_now": 106.21,
-        "k_prev": 68.17,
-        "d_prev": 54.19,
-        "j_prev": 96.14,
-        "time": "2026-10-09 15:00"
+        "k_now": 19.35,
+        "d_now": 25.66,
+        "j_now": 6.74,
+        "k_prev": 20.98,
+        "d_prev": 28.81,
+        "j_prev": 5.31,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600936": {
-      "name": "北投科技",
+    "002716": {
+      "name": "湖南白银",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "k_now": 86.86,
-        "d_now": 88.63,
-        "j_now": 83.33,
-        "k_prev": 90.29,
-        "d_prev": 89.51,
-        "j_prev": 91.86,
-        "time": "2026-10-09 15:00"
+        "meets": true,
+        "k_now": 22.06,
+        "d_now": 19.98,
+        "j_now": 26.23,
+        "k_prev": 20.59,
+        "d_prev": 18.94,
+        "j_prev": 23.91,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 78.98,
-        "d_now": 59.59,
-        "j_now": 117.76,
-        "k_prev": 70.64,
-        "d_prev": 49.89,
-        "j_prev": 112.14,
-        "time": "2026-10-09 15:00"
+        "k_now": 8.39,
+        "d_now": 18.21,
+        "j_now": -11.25,
+        "k_prev": 11.8,
+        "d_prev": 23.12,
+        "j_prev": -10.83,
+        "time": "2026-10-12 15:00"
       },
-      "kdj_bonus": 0
+      "kdj_bonus": 5
     },
-    "002017": {
-      "name": "东信和平",
+    "002272": {
+      "name": "川润股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 81.27,
-        "d_now": 84.41,
-        "j_now": 74.97,
-        "k_prev": 84.4,
-        "d_prev": 85.99,
-        "j_prev": 81.22,
-        "time": "2026-10-09 15:00"
+        "k_now": 11.6,
+        "d_now": 15.17,
+        "j_now": 4.45,
+        "k_prev": 13.23,
+        "d_prev": 16.96,
+        "j_prev": 5.76,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "k_now": 80.29,
-        "d_now": 60.47,
-        "j_now": 119.93,
-        "k_prev": 71.66,
-        "d_prev": 50.56,
-        "j_prev": 113.85,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "603988": {
-      "name": "中电电机",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 72.53,
-        "d_now": 79.49,
-        "j_now": 58.63,
-        "k_prev": 74.18,
-        "d_prev": 82.96,
-        "j_prev": 56.63,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 70.72,
-        "d_now": 50.48,
-        "j_now": 111.18,
-        "k_prev": 58.12,
-        "d_prev": 40.37,
-        "j_prev": 93.61,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "603969": {
-      "name": "银龙股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 28.59,
-        "d_now": 42.87,
-        "j_now": 0.04,
-        "k_prev": 37.89,
-        "d_prev": 50.01,
-        "j_prev": 13.64,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 68.58,
-        "d_now": 61.61,
-        "j_now": 82.51,
-        "k_prev": 68.94,
-        "d_prev": 58.13,
-        "j_prev": 90.56,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "002772": {
-      "name": "众兴菌业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 90.6,
-        "d_now": 86.25,
-        "j_now": 99.32,
-        "k_prev": 85.91,
-        "d_prev": 84.07,
-        "j_prev": 89.58,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 80.26,
-        "d_now": 62.84,
-        "j_now": 115.1,
-        "k_prev": 70.39,
-        "d_prev": 54.13,
-        "j_prev": 102.91,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "603169": {
-      "name": "兰石重装",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 85.23,
-        "d_now": 86.78,
-        "j_now": 82.13,
-        "k_prev": 90.35,
-        "d_prev": 87.56,
-        "j_prev": 95.92,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 58.62,
-        "d_now": 44.91,
-        "j_now": 86.05,
-        "k_prev": 44.6,
-        "d_prev": 38.05,
-        "j_prev": 57.7,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "002192": {
-      "name": "融捷股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 36.28,
-        "d_now": 53.34,
-        "j_now": 2.17,
-        "k_prev": 46.32,
-        "d_prev": 61.87,
-        "j_prev": 15.22,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 50.22,
-        "d_now": 45.09,
-        "j_now": 60.47,
-        "k_prev": 46.71,
-        "d_prev": 42.53,
-        "j_prev": 55.07,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "600844": {
-      "name": "金煤科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 67.33,
-        "d_now": 74.56,
-        "j_now": 52.86,
-        "k_prev": 67.66,
-        "d_prev": 78.18,
-        "j_prev": 46.61,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 77.22,
-        "d_now": 60.46,
-        "j_now": 110.74,
-        "k_prev": 69.16,
-        "d_prev": 52.08,
-        "j_prev": 103.32,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "603191": {
-      "name": "望变电气",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 85.59,
-        "d_now": 86.93,
-        "j_now": 82.9,
-        "k_prev": 86.71,
-        "d_prev": 87.6,
-        "j_prev": 84.94,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 70.55,
-        "d_now": 49.78,
-        "j_now": 112.08,
-        "k_prev": 57.78,
-        "d_prev": 39.39,
-        "j_prev": 94.55,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "000688": {
-      "name": "国城矿业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 58.44,
-        "d_now": 68.6,
-        "j_now": 38.14,
-        "k_prev": 65.79,
-        "d_prev": 73.67,
-        "j_prev": 50.03,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "k_now": 61.25,
-        "d_now": 53.13,
-        "j_now": 77.49,
-        "k_prev": 54.94,
-        "d_prev": 49.07,
-        "j_prev": 66.69,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_bonus": 0
-    },
-    "600078": {
-      "name": "澄星股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 62.18,
-        "d_now": 70.72,
-        "j_now": 45.08,
-        "k_prev": 68.26,
-        "d_prev": 75.0,
-        "j_prev": 54.8,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002229": {
-      "name": "鸿博股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 81.0,
-        "d_now": 85.31,
-        "j_now": 72.38,
-        "k_prev": 88.17,
-        "d_prev": 87.47,
-        "j_prev": 89.58,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600711": {
-      "name": "盛屯矿业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "k_now": 36.77,
-        "d_now": 53.63,
-        "j_now": 3.03,
-        "k_prev": 55.15,
-        "d_prev": 62.07,
-        "j_prev": 41.31,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 21.6,
+        "d_now": 36.96,
+        "j_now": -9.1,
+        "k_prev": 31.53,
+        "d_prev": 44.63,
+        "j_prev": 5.32,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
@@ -352,1564 +95,23 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "k_now": 71.34,
-        "d_now": 80.98,
-        "j_now": 52.08,
-        "k_prev": 82.02,
-        "d_prev": 85.8,
-        "j_prev": 74.46,
-        "time": "2026-10-09 15:00"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603012": {
-      "name": "创力集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603687": {
-      "name": "大胜达",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002104": {
-      "name": "恒宝股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002825": {
-      "name": "纳尔股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600749": {
-      "name": "西藏旅游",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000695": {
-      "name": "滨海能源",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603611": {
-      "name": "诺力股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000890": {
-      "name": "法尔胜",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000533": {
-      "name": "顺钠股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000505": {
-      "name": "京粮控股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603559": {
-      "name": "中通国脉",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002497": {
-      "name": "雅化集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000426": {
-      "name": "兴业银锡",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600273": {
-      "name": "嘉化能源",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000630": {
-      "name": "铜陵有色",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601788": {
-      "name": "光大证券",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605298": {
-      "name": "必得科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002112": {
-      "name": "三变科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000833": {
-      "name": "粤桂股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002256": {
-      "name": "兆新股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002235": {
-      "name": "安妮股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603887": {
-      "name": "城地香江",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600470": {
-      "name": "六国化工",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002418": {
-      "name": "康盛股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002716": {
-      "name": "湖南白银",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002586": {
-      "name": "围海股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002152": {
-      "name": "广电运通",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600846": {
-      "name": "同济科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603063": {
-      "name": "禾望电气",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603161": {
-      "name": "科华控股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002488": {
-      "name": "金固股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603379": {
-      "name": "三美股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002276": {
-      "name": "万马股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600486": {
-      "name": "扬农化工",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "001280": {
-      "name": "中国铀业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603929": {
-      "name": "亚翔集成",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603331": {
-      "name": "百达精工",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600590": {
-      "name": "泰豪科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002052": {
-      "name": "同洲电子",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000801": {
-      "name": "四川九洲",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002455": {
-      "name": "百川股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002470": {
-      "name": "金正大",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603660": {
-      "name": "苏州科达",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002969": {
-      "name": "嘉美包装",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603225": {
-      "name": "新凤鸣",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600113": {
-      "name": "浙江东日",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002253": {
-      "name": "川大智胜",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603393": {
-      "name": "新天然气",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601212": {
-      "name": "白银有色",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600141": {
-      "name": "兴发集团",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002272": {
-      "name": "川润股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601069": {
-      "name": "西部黄金",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "003018": {
-      "name": "金富科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "001267": {
-      "name": "汇绿生态",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002922": {
-      "name": "伊戈尔",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002536": {
-      "name": "飞龙股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603876": {
-      "name": "鼎胜新材",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600089": {
-      "name": "特变电工",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603871": {
-      "name": "嘉友国际",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603327": {
-      "name": "福蓉科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "003040": {
-      "name": "楚天龙",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002371": {
-      "name": "北方华创",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000777": {
-      "name": "中核科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601126": {
-      "name": "四方股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002163": {
-      "name": "海南发展",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002033": {
-      "name": "丽江股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600396": {
-      "name": "华电辽能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601163": {
-      "name": "三角轮胎",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002987": {
-      "name": "京北方",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603098": {
-      "name": "森特股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603619": {
-      "name": "中曼石油",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002997": {
-      "name": "瑞鹄模具",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000912": {
-      "name": "泸天化",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000617": {
-      "name": "中油资本",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600388": {
-      "name": "紫金龙净",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603993": {
-      "name": "洛阳钼业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002986": {
-      "name": "宇新股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002651": {
-      "name": "利君股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002765": {
-      "name": "蓝黛科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600691": {
-      "name": "潞化科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600875": {
-      "name": "东方电气",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002582": {
-      "name": "好想你",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002097": {
-      "name": "山河智能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000099": {
-      "name": "中信海直",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603333": {
-      "name": "福华尚纬",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002385": {
-      "name": "大北农",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002132": {
-      "name": "恒星科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002284": {
-      "name": "亚太股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601061": {
-      "name": "中信金属",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002366": {
-      "name": "融发核电",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603026": {
-      "name": "石大胜华",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000060": {
-      "name": "中金岭南",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002466": {
-      "name": "天齐锂业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600362": {
-      "name": "江西铜业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002843": {
-      "name": "泰嘉股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000524": {
-      "name": "岭南控股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002240": {
-      "name": "盛新锂能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600776": {
-      "name": "东方通信",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601116": {
-      "name": "三江购物",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605117": {
-      "name": "德业股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000888": {
-      "name": "峨眉山Ａ",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000968": {
-      "name": "蓝焰控股",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600191": {
-      "name": "华资实业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603211": {
-      "name": "晋拓股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600531": {
-      "name": "豫光金铅",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002392": {
-      "name": "北京利尔",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600562": {
-      "name": "国睿科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603293": {
-      "name": "埃泰克",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603444": {
-      "name": "吉比特",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002121": {
-      "name": "科陆电子",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600497": {
-      "name": "驰宏锌锗",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600916": {
-      "name": "中国黄金",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002008": {
-      "name": "大族激光",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600212": {
-      "name": "绿能慧充",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603223": {
-      "name": "恒通股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000915": {
-      "name": "华特达因",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002571": {
-      "name": "德力股份",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002490": {
-      "name": "山东墨龙",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000422": {
-      "name": "湖北宜化",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 8.6,
+        "d_now": 13.0,
+        "j_now": -0.19,
+        "k_prev": 12.9,
+        "d_prev": 15.19,
+        "j_prev": 8.32,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 24.97,
+        "d_now": 38.36,
+        "j_now": -1.8,
+        "k_prev": 37.46,
+        "d_prev": 45.05,
+        "j_prev": 22.27,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
@@ -1918,310 +120,523 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.85,
+        "d_now": 17.6,
+        "j_now": 0.34,
+        "k_prev": 17.77,
+        "d_prev": 20.47,
+        "j_prev": 12.36,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 8.99,
+        "d_now": 20.13,
+        "j_now": -13.29,
+        "k_prev": 13.49,
+        "d_prev": 25.71,
+        "j_prev": -10.95,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600458": {
-      "name": "时代新材",
+    "600531": {
+      "name": "豫光金铅",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 39.9,
+        "d_now": 34.5,
+        "j_now": 50.7,
+        "k_prev": 45.56,
+        "d_prev": 31.8,
+        "j_prev": 73.08,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 10.06,
+        "d_now": 22.52,
+        "j_now": -14.85,
+        "k_prev": 13.31,
+        "d_prev": 28.74,
+        "j_prev": -17.57,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002190": {
-      "name": "成飞集成",
+    "600456": {
+      "name": "宝钛股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 53.48,
+        "d_now": 51.98,
+        "j_now": 56.49,
+        "k_prev": 55.23,
+        "d_prev": 51.23,
+        "j_prev": 63.22,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 45.54,
+        "d_now": 56.35,
+        "j_now": 23.91,
+        "k_prev": 50.81,
+        "d_prev": 61.76,
+        "j_prev": 28.91,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "603861": {
-      "name": "白云电器",
+    "603161": {
+      "name": "科华控股",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 40.85,
+        "d_now": 30.63,
+        "j_now": 61.29,
+        "k_prev": 25.56,
+        "d_prev": 25.52,
+        "j_prev": 25.64,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 26.66,
+        "d_now": 37.95,
+        "j_now": 4.09,
+        "k_prev": 32.3,
+        "d_prev": 43.59,
+        "j_prev": 9.73,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000428": {
-      "name": "华天酒店",
+    "603687": {
+      "name": "大胜达",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 12.08,
+        "d_now": 17.84,
+        "j_now": 0.58,
+        "k_prev": 11.88,
+        "d_prev": 20.71,
+        "j_prev": -5.79,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 19.56,
+        "d_now": 31.84,
+        "j_now": -5.0,
+        "k_prev": 27.91,
+        "d_prev": 37.98,
+        "j_prev": 7.77,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603660": {
+      "name": "苏州科达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 27.46,
+        "d_now": 20.67,
+        "j_now": 41.04,
+        "k_prev": 16.19,
+        "d_prev": 17.27,
+        "j_prev": 14.01,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 26.32,
+        "d_now": 41.62,
+        "j_now": -4.29,
+        "k_prev": 36.7,
+        "d_prev": 49.27,
+        "j_prev": 11.55,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000158": {
-      "name": "常山北明",
+    "603618": {
+      "name": "杭电股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 7.69,
+        "d_now": 12.62,
+        "j_now": -2.18,
+        "k_prev": 8.59,
+        "d_prev": 15.09,
+        "j_prev": -4.4,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.48,
+        "d_now": 22.18,
+        "j_now": -9.92,
+        "k_prev": 16.58,
+        "d_prev": 27.53,
+        "j_prev": -5.34,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002274": {
-      "name": "华昌化工",
+    "605006": {
+      "name": "山东玻纤",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 15.55,
+        "d_now": 15.32,
+        "j_now": 16.01,
+        "k_prev": 16.18,
+        "d_prev": 15.2,
+        "j_prev": 18.14,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.47,
+        "d_now": 32.58,
+        "j_now": -9.74,
+        "k_prev": 26.3,
+        "d_prev": 39.63,
+        "j_prev": -0.36,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000977": {
-      "name": "浪潮信息",
+    "000533": {
+      "name": "顺钠股份",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 17.91,
+        "d_now": 18.83,
+        "j_now": 16.06,
+        "k_prev": 10.2,
+        "d_prev": 19.29,
+        "j_prev": -7.99,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.5,
+        "d_now": 47.17,
+        "j_now": 3.15,
+        "k_prev": 44.7,
+        "d_prev": 54.51,
+        "j_prev": 25.06,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002837": {
+      "name": "英维克",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 31.47,
+        "d_now": 31.92,
+        "j_now": 30.57,
+        "k_prev": 32.92,
+        "d_prev": 32.15,
+        "j_prev": 34.47,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 18.25,
+        "d_now": 33.26,
+        "j_now": -11.78,
+        "k_prev": 25.29,
+        "d_prev": 40.76,
+        "j_prev": -5.64,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002993": {
-      "name": "奥海科技",
+    "000801": {
+      "name": "四川九洲",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 38.05,
+        "d_now": 32.97,
+        "j_now": 48.22,
+        "k_prev": 27.08,
+        "d_prev": 30.43,
+        "j_prev": 20.39,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 21.91,
+        "d_now": 34.03,
+        "j_now": -2.33,
+        "k_prev": 26.2,
+        "d_prev": 40.09,
+        "j_prev": -1.59,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600499": {
-      "name": "科达制造",
+    "002655": {
+      "name": "共达电声",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 15.55,
+        "d_now": 13.82,
+        "j_now": 19.0,
+        "k_prev": 9.26,
+        "d_prev": 12.96,
+        "j_prev": 1.87,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 56.73,
+        "d_now": 64.21,
+        "j_now": 41.77,
+        "k_prev": 63.65,
+        "d_prev": 67.96,
+        "j_prev": 55.03,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "000534": {
+      "name": "万泽股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 23.02,
+        "d_now": 20.21,
+        "j_now": 28.65,
+        "k_prev": 22.77,
+        "d_prev": 18.81,
+        "j_prev": 30.7,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 10.61,
+        "d_now": 20.43,
+        "j_now": -9.03,
+        "k_prev": 14.47,
+        "d_prev": 25.35,
+        "j_prev": -7.28,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "001225": {
+      "name": "和泰机电",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 81.53,
+        "d_now": 78.48,
+        "j_now": 87.65,
+        "k_prev": 78.27,
+        "d_prev": 76.95,
+        "j_prev": 80.93,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 84.74,
+        "d_now": 71.86,
+        "j_now": 110.48,
+        "k_prev": 79.11,
+        "d_prev": 65.43,
+        "j_prev": 106.46,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002627": {
-      "name": "三峡旅游",
+    "000426": {
+      "name": "兴业银锡",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 21.03,
+        "d_now": 17.77,
+        "j_now": 27.53,
+        "k_prev": 17.54,
+        "d_prev": 16.15,
+        "j_prev": 20.33,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.24,
+        "d_now": 23.67,
+        "j_now": -13.62,
+        "k_prev": 15.05,
+        "d_prev": 29.89,
+        "j_prev": -14.63,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002536": {
+      "name": "飞龙股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 28.11,
+        "d_now": 33.76,
+        "j_now": 16.79,
+        "k_prev": 30.55,
+        "d_prev": 36.59,
+        "j_prev": 18.48,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 37.41,
+        "d_now": 50.04,
+        "j_now": 12.13,
+        "k_prev": 46.16,
+        "d_prev": 56.36,
+        "j_prev": 25.76,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000657": {
-      "name": "中钨高新",
+    "600776": {
+      "name": "东方通信",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 18.49,
+        "d_now": 24.12,
+        "j_now": 7.24,
+        "k_prev": 27.74,
+        "d_prev": 26.93,
+        "j_prev": 29.35,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 24.41,
+        "d_now": 42.9,
+        "j_now": -12.58,
+        "k_prev": 34.89,
+        "d_prev": 52.15,
+        "j_prev": 0.38,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "601702": {
-      "name": "华峰铝业",
+    "603738": {
+      "name": "泰晶科技",
       "source": "top200",
       "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "meets": true,
+        "k_now": 22.37,
+        "d_now": 20.96,
+        "j_now": 25.19,
+        "k_prev": 18.34,
+        "d_prev": 20.25,
+        "j_prev": 14.51,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.69,
+        "d_now": 39.54,
+        "j_now": 6.99,
+        "k_prev": 35.37,
+        "d_prev": 44.97,
+        "j_prev": 16.18,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603556": {
+      "name": "海兴电力",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 77.26,
+        "d_now": 73.57,
+        "j_now": 84.64,
+        "k_prev": 77.66,
+        "d_prev": 71.73,
+        "j_prev": 89.53,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 69.21,
+        "d_now": 69.01,
+        "j_now": 69.6,
+        "k_prev": 67.23,
+        "d_prev": 68.91,
+        "j_prev": 63.85,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002059": {
-      "name": "云南旅游",
+    "002922": {
+      "name": "伊戈尔",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 25.24,
+        "d_now": 21.83,
+        "j_now": 32.05,
+        "k_prev": 22.47,
+        "d_prev": 20.12,
+        "j_prev": 27.16,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 29.05,
+        "d_now": 45.54,
+        "j_now": -3.93,
+        "k_prev": 40.68,
+        "d_prev": 53.78,
+        "j_prev": 14.46,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600227": {
-      "name": "赤天化",
+    "002112": {
+      "name": "三变科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.66,
+        "d_now": 34.96,
+        "j_now": 43.05,
+        "k_prev": 31.49,
+        "d_prev": 33.62,
+        "j_prev": 27.24,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600570": {
-      "name": "恒生电子",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601899": {
-      "name": "紫金矿业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "601231": {
-      "name": "环旭电子",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600382": {
-      "name": "广东明珠",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600459": {
-      "name": "贵研铂业",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600761": {
-      "name": "安徽合力",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000525": {
-      "name": "红太阳",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000988": {
-      "name": "华工科技",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603279": {
-      "name": "景津装备",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
+        "k_now": 45.23,
+        "d_now": 56.15,
+        "j_now": 23.38,
+        "k_prev": 52.76,
+        "d_prev": 61.61,
+        "j_prev": 35.06,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
@@ -2230,224 +645,653 @@
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.71,
+        "d_now": 13.84,
+        "j_now": 7.45,
+        "k_prev": 17.57,
+        "d_prev": 14.91,
+        "j_prev": 22.88,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.38,
+        "d_now": 20.03,
+        "j_now": -5.91,
+        "k_prev": 17.07,
+        "d_prev": 24.35,
+        "j_prev": 2.51,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600346": {
-      "name": "恒力石化",
+    "603559": {
+      "name": "中通国脉",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 52.75,
+        "d_now": 53.43,
+        "j_now": 51.39,
+        "k_prev": 54.13,
+        "d_prev": 53.77,
+        "j_prev": 54.84,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 49.47,
+        "d_now": 57.53,
+        "j_now": 33.34,
+        "k_prev": 55.68,
+        "d_prev": 61.56,
+        "j_prev": 43.92,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600989": {
-      "name": "宝丰能源",
+    "002130": {
+      "name": "沃尔核材",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 69.34,
+        "d_now": 47.9,
+        "j_now": 112.22,
+        "k_prev": 54.01,
+        "d_prev": 37.18,
+        "j_prev": 87.67,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 31.78,
+        "d_now": 44.73,
+        "j_now": 5.89,
+        "k_prev": 34.44,
+        "d_prev": 51.21,
+        "j_prev": 0.91,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000830": {
-      "name": "鲁西化工",
+    "002851": {
+      "name": "麦格米特",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 16.54,
+        "d_now": 16.96,
+        "j_now": 15.69,
+        "k_prev": 14.71,
+        "d_prev": 17.17,
+        "j_prev": 9.77,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 43.9,
+        "d_now": 53.89,
+        "j_now": 23.91,
+        "k_prev": 52.36,
+        "d_prev": 58.89,
+        "j_prev": 39.3,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600855": {
+      "name": "航天长峰",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 32.33,
+        "d_now": 31.81,
+        "j_now": 33.36,
+        "k_prev": 31.83,
+        "d_prev": 31.56,
+        "j_prev": 32.37,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 33.24,
+        "d_now": 45.93,
+        "j_now": 7.86,
+        "k_prev": 40.4,
+        "d_prev": 52.28,
+        "j_prev": 16.65,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600236": {
-      "name": "桂冠电力",
+    "002409": {
+      "name": "雅克科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.21,
+        "d_now": 28.54,
+        "j_now": 27.53,
+        "k_prev": 29.38,
+        "d_prev": 28.71,
+        "j_prev": 30.71,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 33.55,
+        "d_now": 42.32,
+        "j_now": 16.01,
+        "k_prev": 38.93,
+        "d_prev": 46.7,
+        "j_prev": 23.4,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002637": {
-      "name": "赞宇科技",
+    "603379": {
+      "name": "三美股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 38.14,
+        "d_now": 41.94,
+        "j_now": 30.52,
+        "k_prev": 45.91,
+        "d_prev": 43.84,
+        "j_prev": 50.05,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 7.23,
+        "d_now": 15.33,
+        "j_now": -8.96,
+        "k_prev": 9.53,
+        "d_prev": 19.37,
+        "j_prev": -10.15,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000554": {
-      "name": "泰山石油",
+    "603929": {
+      "name": "亚翔集成",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 37.39,
+        "d_now": 37.27,
+        "j_now": 37.61,
+        "k_prev": 38.46,
+        "d_prev": 37.21,
+        "j_prev": 40.96,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 67.56,
+        "d_now": 70.87,
+        "j_now": 60.93,
+        "k_prev": 70.04,
+        "d_prev": 72.52,
+        "j_prev": 65.06,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600143": {
-      "name": "金发科技",
+    "003018": {
+      "name": "金富科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 15.34,
+        "d_now": 16.67,
+        "j_now": 12.69,
+        "k_prev": 13.92,
+        "d_prev": 17.33,
+        "j_prev": 7.1,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 24.81,
+        "d_now": 39.51,
+        "j_now": -4.59,
+        "k_prev": 34.22,
+        "d_prev": 46.86,
+        "j_prev": 8.95,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "600862": {
+      "name": "中航高科",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 63.01,
+        "d_now": 57.98,
+        "j_now": 73.08,
+        "k_prev": 64.52,
+        "d_prev": 55.46,
+        "j_prev": 82.63,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 19.83,
+        "d_now": 29.09,
+        "j_now": 1.31,
+        "k_prev": 20.53,
+        "d_prev": 33.71,
+        "j_prev": -5.84,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600114": {
-      "name": "东睦股份",
+    "601231": {
+      "name": "环旭电子",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 13.58,
+        "d_now": 16.26,
+        "j_now": 8.23,
+        "k_prev": 15.61,
+        "d_prev": 17.6,
+        "j_prev": 11.64,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.55,
+        "d_now": 45.03,
+        "j_now": -7.42,
+        "k_prev": 40.34,
+        "d_prev": 53.78,
+        "j_prev": 13.47,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002545": {
-      "name": "东方铁塔",
+    "600396": {
+      "name": "华电辽能",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.3,
+        "d_now": 17.84,
+        "j_now": -1.77,
+        "k_prev": 13.39,
+        "d_prev": 21.11,
+        "j_prev": -2.06,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 11.33,
+        "d_now": 21.57,
+        "j_now": -9.15,
+        "k_prev": 16.22,
+        "d_prev": 26.69,
+        "j_prev": -4.71,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000534": {
-      "name": "万泽股份",
+    "002969": {
+      "name": "嘉美包装",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 17.34,
+        "d_now": 23.34,
+        "j_now": 5.33,
+        "k_prev": 16.01,
+        "d_prev": 26.35,
+        "j_prev": -4.67,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 20.79,
+        "d_now": 36.94,
+        "j_now": -11.51,
+        "k_prev": 28.91,
+        "d_prev": 45.01,
+        "j_prev": -3.3,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "603298": {
+      "name": "杭叉集团",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 64.9,
+        "d_now": 56.87,
+        "j_now": 80.96,
+        "k_prev": 65.2,
+        "d_prev": 52.85,
+        "j_prev": 89.91,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 72.38,
+        "d_now": 74.27,
+        "j_now": 68.59,
+        "k_prev": 72.38,
+        "d_prev": 75.22,
+        "j_prev": 66.7,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000711": {
-      "name": "京蓝科技",
+    "002229": {
+      "name": "鸿博股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 17.92,
+        "d_now": 24.37,
+        "j_now": 5.02,
+        "k_prev": 19.74,
+        "d_prev": 27.59,
+        "j_prev": 4.03,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 40.12,
+        "d_now": 53.23,
+        "j_now": 13.9,
+        "k_prev": 49.07,
+        "d_prev": 59.78,
+        "j_prev": 27.64,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600879": {
-      "name": "航天电子",
+    "002571": {
+      "name": "德力股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 28.4,
+        "d_now": 28.13,
+        "j_now": 28.95,
+        "k_prev": 25.94,
+        "d_prev": 27.99,
+        "j_prev": 21.83,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 18.71,
+        "d_now": 30.49,
+        "j_now": -4.85,
+        "k_prev": 23.78,
+        "d_prev": 36.38,
+        "j_prev": -1.43,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "002997": {
+      "name": "瑞鹄模具",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 44.49,
+        "d_now": 34.54,
+        "j_now": 64.38,
+        "k_prev": 38.16,
+        "d_prev": 29.57,
+        "j_prev": 55.35,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 17.6,
+        "d_now": 28.54,
+        "j_now": -4.29,
+        "k_prev": 20.42,
+        "d_prev": 34.01,
+        "j_prev": -6.75,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000506": {
-      "name": "招金黄金",
+    "603950": {
+      "name": "长源东谷",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 4.16,
+        "d_now": 10.68,
+        "j_now": -8.86,
+        "k_prev": 5.52,
+        "d_prev": 13.93,
+        "j_prev": -11.3,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 6.98,
+        "d_now": 13.23,
+        "j_now": -5.51,
+        "k_prev": 10.38,
+        "d_prev": 16.36,
+        "j_prev": -1.57,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "002588": {
-      "name": "史丹利",
+    "002993": {
+      "name": "奥海科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 28.28,
+        "d_now": 26.7,
+        "j_now": 31.43,
+        "k_prev": 29.08,
+        "d_prev": 25.91,
+        "j_prev": 35.41,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 15.72,
+        "d_now": 27.13,
+        "j_now": -7.09,
+        "k_prev": 21.5,
+        "d_prev": 32.83,
+        "j_prev": -1.15,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "001325": {
-      "name": "元创股份",
+    "600183": {
+      "name": "生益科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": true,
+        "k_now": 24.65,
+        "d_now": 23.7,
+        "j_now": 26.54,
+        "k_prev": 20.59,
+        "d_prev": 23.22,
+        "j_prev": 15.33,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 15.84,
+        "d_now": 26.96,
+        "j_now": -6.4,
+        "k_prev": 20.9,
+        "d_prev": 32.52,
+        "j_prev": -2.33,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 5
+    },
+    "000519": {
+      "name": "中兵红箭",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 27.29,
+        "d_now": 23.42,
+        "j_now": 35.03,
+        "k_prev": 24.26,
+        "d_prev": 21.48,
+        "j_prev": 29.82,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 17.21,
+        "d_now": 31.75,
+        "j_now": -11.88,
+        "k_prev": 23.37,
+        "d_prev": 39.02,
+        "j_prev": -7.93,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "600547": {
-      "name": "山东黄金",
+    "603608": {
+      "name": "天创时尚",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 60.12,
+        "d_now": 49.64,
+        "j_now": 81.07,
+        "k_prev": 48.51,
+        "d_prev": 44.4,
+        "j_prev": 56.72,
+        "time": "2026-10-12 15:00"
       },
       "kdj_30m": {
         "meets": false,
-        "error": "K线获取失败"
+        "k_now": 49.22,
+        "d_now": 54.91,
+        "j_now": 37.85,
+        "k_prev": 51.22,
+        "d_prev": 57.75,
+        "j_prev": 38.15,
+        "time": "2026-10-12 15:00"
       },
       "kdj_bonus": 0
     },
-    "000998": {
-      "name": "隆平高科",
+    "600590": {
+      "name": "泰豪科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 35.14,
+        "d_now": 31.38,
+        "j_now": 42.64,
+        "k_prev": 27.71,
+        "d_prev": 29.51,
+        "j_prev": 24.11,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 12.63,
+        "d_now": 23.39,
+        "j_now": -8.89,
+        "k_prev": 15.49,
+        "d_prev": 28.77,
+        "j_prev": -11.06,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603211": {
+      "name": "晋拓股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 11.42,
+        "d_now": 14.49,
+        "j_now": 5.27,
+        "k_prev": 12.58,
+        "d_prev": 16.02,
+        "j_prev": 5.69,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 25.92,
+        "d_now": 43.92,
+        "j_now": -10.07,
+        "k_prev": 37.84,
+        "d_prev": 52.91,
+        "j_prev": 7.69,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 0
+    },
+    "002384": {
+      "name": "东山精密",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 34.95,
+        "d_now": 27.55,
+        "j_now": 49.76,
+        "k_prev": 22.43,
+        "d_prev": 23.85,
+        "j_prev": 19.6,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 8.99,
+        "d_now": 14.35,
+        "j_now": -1.73,
+        "k_prev": 10.07,
+        "d_prev": 17.03,
+        "j_prev": -3.85,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 0
+    },
+    "600749": {
+      "name": "西藏旅游",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 30.58,
+        "d_now": 30.68,
+        "j_now": 30.38,
+        "k_prev": 29.2,
+        "d_prev": 30.73,
+        "j_prev": 26.14,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "k_now": 17.2,
+        "d_now": 30.78,
+        "j_now": -9.95,
+        "k_prev": 23.42,
+        "d_prev": 37.57,
+        "j_prev": -4.86,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_bonus": 0
+    },
+    "603283": {
+      "name": "赛腾股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2472,8 +1316,8 @@
       },
       "kdj_bonus": 0
     },
-    "603106": {
-      "name": "恒银科技",
+    "002015": {
+      "name": "协鑫能科",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2485,8 +1329,27 @@
       },
       "kdj_bonus": 0
     },
-    "600183": {
-      "name": "生益科技",
+    "002824": {
+      "name": "和胜股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "k_now": 3.67,
+        "d_now": 7.66,
+        "j_now": -4.32,
+        "k_prev": 5.5,
+        "d_prev": 9.66,
+        "j_prev": -2.8,
+        "time": "2026-10-12 15:00"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002600": {
+      "name": "领益智造",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2498,8 +1361,8 @@
       },
       "kdj_bonus": 0
     },
-    "000408": {
-      "name": "藏格矿业",
+    "603988": {
+      "name": "中电电机",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2511,8 +1374,8 @@
       },
       "kdj_bonus": 0
     },
-    "603360": {
-      "name": "百傲化学",
+    "603499": {
+      "name": "翔港科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2524,8 +1387,8 @@
       },
       "kdj_bonus": 0
     },
-    "002407": {
-      "name": "多氟多",
+    "000815": {
+      "name": "美利云",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2537,112 +1400,8 @@
       },
       "kdj_bonus": 0
     },
-    "000716": {
-      "name": "黑芝麻",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002915": {
-      "name": "中欣氟材",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "600309": {
-      "name": "万华化学",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002602": {
-      "name": "世纪华通",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "603535": {
-      "name": "嘉诚国际",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "003043": {
-      "name": "华亚智能",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "000430": {
-      "name": "张家界",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "002270": {
-      "name": "华明装备",
-      "source": "top200",
-      "kdj_5m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_30m": {
-        "meets": false,
-        "error": "K线获取失败"
-      },
-      "kdj_bonus": 0
-    },
-    "605598": {
-      "name": "上海港湾",
+    "003010": {
+      "name": "若羽臣",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2667,8 +1426,8 @@
       },
       "kdj_bonus": 0
     },
-    "600489": {
-      "name": "中金黄金",
+    "002654": {
+      "name": "万润科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2680,8 +1439,8 @@
       },
       "kdj_bonus": 0
     },
-    "002938": {
-      "name": "鹏鼎控股",
+    "000890": {
+      "name": "法尔胜",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2693,8 +1452,8 @@
       },
       "kdj_bonus": 0
     },
-    "603778": {
-      "name": "国晟科技",
+    "600176": {
+      "name": "中国巨石",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2706,8 +1465,1386 @@
       },
       "kdj_bonus": 0
     },
-    "002170": {
-      "name": "芭田股份",
+    "002943": {
+      "name": "宇晶股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002104": {
+      "name": "恒宝股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002902": {
+      "name": "铭普光磁",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002017": {
+      "name": "东信和平",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603331": {
+      "name": "百达精工",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600936": {
+      "name": "北投科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603063": {
+      "name": "禾望电气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "001319": {
+      "name": "铭科精技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002190": {
+      "name": "成飞集成",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603459": {
+      "name": "红板科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600114": {
+      "name": "东睦股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "001896": {
+      "name": "豫能控股",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002947": {
+      "name": "恒铭达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601020": {
+      "name": "华钰矿业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002602": {
+      "name": "世纪华通",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603344": {
+      "name": "星德胜",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600382": {
+      "name": "广东明珠",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605117": {
+      "name": "德业股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600821": {
+      "name": "金开新能",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605376": {
+      "name": "博迁新材",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601212": {
+      "name": "白银有色",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002859": {
+      "name": "洁美科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002284": {
+      "name": "亚太股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000582": {
+      "name": "北部湾港",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002448": {
+      "name": "中原内配",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600392": {
+      "name": "盛和资源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002765": {
+      "name": "蓝黛科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000988": {
+      "name": "华工科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000026": {
+      "name": "飞亚达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002961": {
+      "name": "瑞达期货",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002235": {
+      "name": "安妮股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603969": {
+      "name": "银龙股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002549": {
+      "name": "凯美特气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600378": {
+      "name": "昊华科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000960": {
+      "name": "锡业股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002199": {
+      "name": "东晶电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000711": {
+      "name": "京蓝科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600468": {
+      "name": "百利电气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603139": {
+      "name": "康惠股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000430": {
+      "name": "张家界",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600667": {
+      "name": "太极实业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002265": {
+      "name": "建设工业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002192": {
+      "name": "融捷股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603082": {
+      "name": "北自科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600054": {
+      "name": "黄山旅游",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600666": {
+      "name": "奥瑞德",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600203": {
+      "name": "福日电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600547": {
+      "name": "山东黄金",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603191": {
+      "name": "望变电气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601958": {
+      "name": "金钼股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603699": {
+      "name": "纽威股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603308": {
+      "name": "应流股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000586": {
+      "name": "汇源通信",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603057": {
+      "name": "紫燕食品",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600497": {
+      "name": "驰宏锌锗",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002171": {
+      "name": "楚江新材",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603163": {
+      "name": "圣晖集成",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002378": {
+      "name": "章源钨业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603011": {
+      "name": "合锻智能",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "003036": {
+      "name": "泰坦股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "003031": {
+      "name": "中瓷电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600353": {
+      "name": "旭光电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002418": {
+      "name": "康盛股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603880": {
+      "name": "南卫股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600151": {
+      "name": "航天机电",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002651": {
+      "name": "利君股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603078": {
+      "name": "江化微",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600851": {
+      "name": "海欣股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002364": {
+      "name": "中恒电气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600850": {
+      "name": "电科数字",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600602": {
+      "name": "云赛智联",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601788": {
+      "name": "光大证券",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002281": {
+      "name": "光迅科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603678": {
+      "name": "火炬电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000779": {
+      "name": "甘咨询",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002126": {
+      "name": "银轮股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002897": {
+      "name": "意华股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002892": {
+      "name": "科力尔",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603050": {
+      "name": "科林电气",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000039": {
+      "name": "中集集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000603": {
+      "name": "盛达资源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605319": {
+      "name": "无锡振华",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "001208": {
+      "name": "华菱线缆",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002194": {
+      "name": "武汉凡谷",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002782": {
+      "name": "可立克",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002173": {
+      "name": "创新医疗",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000977": {
+      "name": "浪潮信息",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000007": {
+      "name": "全新好",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601702": {
+      "name": "华峰铝业",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603333": {
+      "name": "福华尚纬",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603045": {
+      "name": "福达合金",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002008": {
+      "name": "大族激光",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002886": {
+      "name": "沃特股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603992": {
+      "name": "松霖科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600078": {
+      "name": "澄星股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002392": {
+      "name": "北京利尔",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002518": {
+      "name": "科士达",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600783": {
+      "name": "鲁信创投",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603196": {
+      "name": "璞源材料",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002870": {
+      "name": "香山股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605377": {
+      "name": "华旺科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603012": {
+      "name": "创力集团",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002059": {
+      "name": "云南旅游",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002986": {
+      "name": "宇新股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600162": {
+      "name": "香江控股",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002203": {
+      "name": "海亮股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "001267": {
+      "name": "汇绿生态",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2732,8 +2869,8 @@
       },
       "kdj_bonus": 0
     },
-    "002094": {
-      "name": "青岛金王",
+    "000938": {
+      "name": "紫光股份",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2745,8 +2882,8 @@
       },
       "kdj_bonus": 0
     },
-    "603950": {
-      "name": "长源东谷",
+    "603778": {
+      "name": "国晟科技",
       "source": "top200",
       "kdj_5m": {
         "meets": false,
@@ -2758,9 +2895,334 @@
       },
       "kdj_bonus": 0
     },
-    "002517": {
-      "name": "恺英网络",
+    "000060": {
+      "name": "中金岭南",
       "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002456": {
+      "name": "欧菲光",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601606": {
+      "name": "长城军工",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002470": {
+      "name": "金正大",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603887": {
+      "name": "城地香江",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002446": {
+      "name": "盛路通信",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600330": {
+      "name": "天通股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002843": {
+      "name": "泰嘉股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002350": {
+      "name": "北京科锐",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002730": {
+      "name": "电光科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002222": {
+      "name": "福晶科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000888": {
+      "name": "峨眉山Ａ",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600498": {
+      "name": "烽火通信",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600726": {
+      "name": "华电能源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002261": {
+      "name": "拓维信息",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605277": {
+      "name": "新亚电子",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "605060": {
+      "name": "联德股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002097": {
+      "name": "山河智能",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600522": {
+      "name": "中天科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000657": {
+      "name": "中钨高新",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "001258": {
+      "name": "立新能源",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603991": {
+      "name": "领先股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603688": {
+      "name": "石英股份",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603327": {
+      "name": "福蓉科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002552": {
+      "name": "宝鼎科技",
+      "source": "top200",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "003043": {
+      "name": "华亚智能",
+      "source": "tracked",
       "kdj_5m": {
         "meets": false,
         "error": "K线获取失败"
@@ -2784,9 +3246,9 @@
       },
       "kdj_bonus": 0
     },
-    "001225": {
-      "name": "和泰机电",
-      "source": "tracked",
+    "600345": {
+      "name": "长江通信",
+      "source": "top200",
       "kdj_5m": {
         "meets": false,
         "error": "K线获取失败"
@@ -2927,6 +3389,32 @@
       },
       "kdj_bonus": 0
     },
+    "000968": {
+      "name": "蓝焰控股",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "600499": {
+      "name": "科达制造",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
     "002440": {
       "name": "闰土股份",
       "source": "tracked",
@@ -2979,6 +3467,32 @@
       },
       "kdj_bonus": 0
     },
+    "002497": {
+      "name": "雅化集团",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "002240": {
+      "name": "盛新锂能",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
     "001379": {
       "name": "腾达科技",
       "source": "tracked",
@@ -2994,6 +3508,19 @@
     },
     "603777": {
       "name": "来伊份",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000158": {
+      "name": "常山北明",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
@@ -3031,8 +3558,21 @@
       },
       "kdj_bonus": 0
     },
-    "603067": {
-      "name": "振华股份",
+    "002366": {
+      "name": "融发核电",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "601126": {
+      "name": "四方股份",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
@@ -3046,6 +3586,32 @@
     },
     "600105": {
       "name": "永鼎股份",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "000688": {
+      "name": "国城矿业",
+      "source": "tracked",
+      "kdj_5m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_30m": {
+        "meets": false,
+        "error": "K线获取失败"
+      },
+      "kdj_bonus": 0
+    },
+    "603067": {
+      "name": "振华股份",
       "source": "tracked",
       "kdj_5m": {
         "meets": false,
