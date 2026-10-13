@@ -35,6 +35,17 @@ jobs:
         with:
           python-version: '3.11'
 
+      # 2026-10-14加: 大盘30分K跌后回升监控（云端兜底，电脑关机时顶上）
+      # - 独立脚本，放在数据管道之前 + continue-on-error：监控挂了不拖垮数据刷新
+      # - 本地每5分钟跑同脚本，双端靠远端状态文件 .index_kdj_state.json 去重防双推
+      # - 非交易时段脚本自检后直接跳过，正常行为
+      - name: Index KDJ rebound watch (cloud backup)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+        continue-on-error: true
+        run: python index_kdj_watch.py --cloud
+
       - name: Run update pipeline
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
