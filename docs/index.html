@@ -4954,7 +4954,7 @@ function renderStockRow(stock, index) {
     ? `<span class="dip-badge" title="跌透三条件（9月回测n=50，次日胜率70%）: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓">✓跌透</span>`
     : '';
 
-  // 大盘30K综合建议动作（2026-09-14改为独立列，基于 INDEX_KDJ30 三态 + 个股自身多维度）
+  // 综合建议动作（★2026-10-13与大盘解耦：仅基于个股自身多维度；大盘横幅另行展示，仅供参考）
   var _sg = getStockSuggestion(stock);
   var _suggestionHtml = '<span class="action-tag ' + _sg.cls + '" title="' + escapeHtml(_sg.reason || '') + '">' + escapeHtml(_sg.label) + '</span>';
 
@@ -7782,37 +7782,16 @@ function renderIndexBanner() {
   banner.title = '操作矩阵回测：242个交易日（2025-09~2026-09）区间×方向，方向口径=K vs 前一根bar（与红旗总闸一致）；全年择时+33%/最大回撤-9.7% vs 全仓持有+34.5%/-25.3%';
 }
 
-// 抢反弹红旗拦截器（2026-09-22）：防止弱势抢反弹陷阱
-// 任一命中 → 返回 {block:true, reason:'...'}，调用方降级观望
-// 触发条件：
-//   1) 大盘30分K≥65（高位鱼尾 或 刚跌破70转弱过渡期，反弹被大区拖累概率大）
-//   2) 5分K未金叉（个股没真正拐头，追进去容易接刀）
-//   3) 量比<2（资金没进来，无量反弹假动作多）
-//   4) 个股日线空头排列（未站上5日均线，独立反弹动力不足）
+// 抢反弹红旗拦截器（纯个股条件，2026-10-13与大盘解耦）
 function _snapRedFlagBlock(stock, idxKDJ) {
-  if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
-    return { block: false }; // 无大盘数据时不拦
-  }
-  // ★【2026-09-23 需求变更】总闸：四条红旗**仅在大盘30分K处于【下降】状态时**启用。
-  //   「大盘在跌」判定 = 当前K < 上一根已完成bar的K（idxKDJ.prevK，由 fetchIndexKDJ30 计算）。
-  //   大盘走平或上升 → 四条红旗全部失效，抢反弹按原规则正常输出（= 未加红旗前的行为）。
-  //   无开关：上行时不拦截是硬性需求。
-  var _mk = parseFloat(idxKDJ.k), _mpk = parseFloat(idxKDJ.prevK);
-  var _mktFalling = !isNaN(_mk) && !isNaN(_mpk) && _mk < _mpk;
-  if (!_mktFalling) {
-    // 大盘未下跌（走平 / 上升）→ 四道红旗全部失效，抢反弹按原规则输出，等同"未加红旗"时的行为。
-    // 注：此处为硬逻辑，不设开关——按需求，大盘上行时不应有任何拦截。
-    return { block: false, gateOff: true };
-  }
-  // 1) 大盘 K ≥ 65
-  if (idxKDJ.k >= 65) {
-    return { block: true, reason: '大盘还在高位下跌（风险大）' };
-  }
-  // 2) 5分K未金叉
-  //    【2026-09-23修正】kd5_cross 在数据链路上存在两套值域："金叉/死叉" 与 "上升/下降"。
-  //    原判断只认 "金叉"，而注入数据里 32/34 只的值为 "上升" → 全被误判为未金叉，
-  //    叠加 bear 阶段规则后导致全池动作降级为观望（实测 33 观望 / 0 抢反弹）。
-  //    现改为：优先用 K/D 数值判定（K>D 即多头），字符串回退时同时接受 "金叉" 和 "上升"。
+  // ★【2026-10-13 用户决定】个股动作与大盘解耦：删除原①大盘30分K≥65 和
+  //   "仅大盘30分K下降时启用"总闸（大盘状态由横幅另行展示，用户自己盯）。
+  //   以下三条纯个股条件常开，用于拦截弱势抢反弹：
+  //   1) 5分K未金叉（个股没真正拐头，追进去容易接刀）
+  //   2) 量比<2（资金没进来，无量反弹假动作多）
+  //   3) 个股日线空头排列（未站上5日均线，独立反弹动力不足）
+  //    【kd5_cross 值域坑】数据链路存在"金叉/死叉"与"上升/下降"两套值域，
+  //    优先用 K/D 数值判定（K>D 即多头），字符串回退时同时接受"金叉"和"上升"。
   var _k5v = parseFloat(stock.kd5_k), _d5v = parseFloat(stock.kd5_d);
   var _hasKD5 = !isNaN(_k5v) && !isNaN(_d5v);
   var _kd5Gold = _hasKD5 ? (_k5v > _d5v)
@@ -7820,11 +7799,11 @@ function _snapRedFlagBlock(stock, idxKDJ) {
   if ((_hasKD5 || stock.kd5_cross !== undefined) && !_kd5Gold) {
     return { block: true, reason: '这只票短线还没真正拐头向上' };
   }
-  // 3) 量比<2（仅在量比字段有数的情况下拦，缺数据时不拦）
+  // 量比<2（仅在量比字段有数的情况下拦，缺数据时不拦）
   if (stock.volRatio !== undefined && stock.volRatio !== null && !isNaN(stock.volRatio) && stock.volRatio < 2) {
     return { block: true, reason: '资金没进来（无量反弹不可信）' };
   }
-  // 4) 个股日线空头排列
+  // 个股日线空头排列
   if (stock.ma === '空头排列') {
     return { block: true, reason: '日线还在下跌趋势里（没站上5日均线）' };
   }
@@ -7881,80 +7860,55 @@ function applySuggestionRule(stock, idxKDJ) {
   return core;
 }
 
-// 个股建议动作（基于个股KD+大盘三态综合）
-// 入参：stock对象 + INDEX_KDJ30 全局对象 + 当前价changePct
+// 个股建议动作（★2026-10-13 与大盘解耦：只看个股自身状态；大盘横幅另行展示仅供参考）
+// 入参：stock对象（idxKDJ 参数保留兼容旧调用，不再参与个股决策）
 // 出参：{ label: '追涨'|'减仓'|'禁碰'|'抢反弹'|'观望', cls: 'chase|cut|ban|snap|hold', reason: 简短理由 }
 function _applySuggestionCore(stock, idxKDJ) {
-  if (!idxKDJ || idxKDJ.k === null || idxKDJ.k === undefined) {
-    return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
-  }
   // ★ close=0 护栏（2026-10-08）：当日收盘价未入库=数据源故障，指标失真，禁止给出任何买入类信号
   if (stock.close !== undefined && stock.close !== null && stock.close <= 0) {
     return { label: '⛔数据缺失', cls: 'ban', reason: '这只票当日收盘价未入库（数据源故障），健康度与各项指标可能失真，勿据此操作' };
   }
-  var indexK = idxKDJ.k;
-  var indexStage = idxKDJ.stage;
   var kd30k = (stock.kd30_k !== undefined && stock.kd30_k !== null) ? stock.kd30_k : (stock.kdj30 || null);
   var kd5k = (stock.kd5_k !== undefined && stock.kd5_k !== null) ? stock.kd5_k : null;
   var tier = stock.tier || 'C';
-  var trend = stock.trend || '';
   var dailyTrend = stock.dailyTrend || '';
   var score = stock.healthScore || 0;
-  var chgPct = stock.changePct;
 
-  // ===== 大盘三态分流 =====
-  if (indexStage === 'bull') {
-    // 🟥 上升期：K≥70 警惕随时见顶
-    if (kd30k !== null && kd30k >= 80) return { label: '⚠该卖了', cls: 'cut', reason: '大盘和这只票都涨到高位了，先卖一些锁定利润' };
-    if (kd30k !== null && kd30k >= 70) return { label: '😐等等看', cls: 'hold', reason: '大盘涨得偏热，这只票也快到高位了，先别买' };
-    // 持仓评分高+日线朝上
-    if (score >= 60 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘在涨，这只票质地好（健康度' + score + '）且日线朝上，可以买（短线1-3天，次日冲高即走）' };
-    return { label: '😐等等看', cls: 'hold', reason: '大盘在涨，但这只票自身动能不够，再等等' };
+  // ===== 个股自身状态分流（10/13起不看大盘，用户决定） =====
+  // 高位风险：短线涨多了先兑现
+  if (kd30k !== null && kd30k >= 75) return { label: '⚠该卖了', cls: 'cut', reason: '这只票30分K已到' + kd30k + '高位（短线涨多了），先卖一些锁定利润' };
+  if (kd30k !== null && kd30k >= 70) return { label: '😐等等看', cls: 'hold', reason: '这只票30分K已上70高位，追进去容易接最后一棒，先别买' };
+  // 深度超卖：小仓抄底（红旗拦截弱势假反弹）
+  if (kd30k !== null && kd30k < 20) {
+    var _rf1 = _snapRedFlagBlock(stock, idxKDJ);
+    if (_rf1.block) return { label: '😐等等看', cls: 'hold', reason: '这只票跌得深，但' + _rf1.reason + '，先别抄底' };
+    return { label: '💰小仓抄底', cls: 'snap', reason: '这只票30分K超卖到20以下，跌多了，可以小仓位抄底' };
   }
-  if (indexStage === 'health') {
-    // 🟨 健康期：40≤K<70 主操作区
-    if (kd30k !== null && kd30k < 25) {
-      var _rf1 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf1.block) return { label: '😐等等看', cls: 'hold', reason: '这只票跌得深，但' + _rf1.reason + '，先别抄底' };
-      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘正常，这只票短线跌多了，可以小仓位抄底' };
-    }
-    if (kd30k !== null && kd30k >= 75) return { label: '⚠该卖了', cls: 'cut', reason: '这只票短线涨多了（偏高），先卖一些' };
-    if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这只票位置低而且日线朝上，可以买' };
-    if (score >= 70 && tier === 'A') return { label: '✅可以买', cls: 'chase', reason: '大盘正常，这是A级好票（健康度' + score + '），可以买（短线1-3天，次日冲高即走）' };
-    return { label: '😐等等看', cls: 'hold', reason: '大盘正常，但这只票还没到买点，等等' };
+  // 双周期低位共振：30分+5分都超卖
+  if (kd30k !== null && kd30k < 30 && kd5k !== null && kd5k < 25) {
+    var _rf2 = _snapRedFlagBlock(stock, idxKDJ);
+    if (_rf2.block) return { label: '😐等等看', cls: 'hold', reason: '这只票短线超跌，但' + _rf2.reason + '，先别抄底' };
+    return { label: '💰小仓抄底', cls: 'snap', reason: '这只票短线两个周期（30分+5分）都跌多了，可以小仓位抄底' };
   }
-  if (indexStage === 'bear') {
-    // 🟩 超卖期：K<40 主防御
-    if (kd30k !== null && kd30k >= 70) return { label: '❌别碰', cls: 'ban', reason: '大盘在跌，这只票却在高位逆势拉，容易补跌，别碰' };
-    if (kd30k !== null && kd30k < 20) {
-      var _rf2 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf2.block) return { label: '😐等等看', cls: 'hold', reason: '大盘和这只票都跌得深，但' + _rf2.reason + '，先别抄底' };
-      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘和这只票都跌得很深了，可以小仓位抄底反弹' };
-    }
-    if (kd30k !== null && kd30k < 30 && kd5k !== null && kd5k < 25) {
-      var _rf3 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf3.block) return { label: '😐等等看', cls: 'hold', reason: '这只票短线超跌，但' + _rf3.reason + '，先别抄底' };
-      return { label: '💰小仓抄底', cls: 'snap', reason: '这只票短线两个周期都跌多了，可以小仓位抄底' };
-    }
-    if (dailyTrend === '↑' && score >= 65) {
-      var _rf4 = _snapRedFlagBlock(stock, idxKDJ);
-      if (_rf4.block) return { label: '😐等等看', cls: 'hold', reason: '大盘跌但这只票日线还朝上，不过' + _rf4.reason + '，先别抄底' };
-      return { label: '💰小仓抄底', cls: 'snap', reason: '大盘跌但这只票逆势走强（健康度' + score + '），可以小仓位试试' };
-    }
-    return { label: '😐等等看', cls: 'hold', reason: '大盘在跌，先别动，管住手' };
-  }
+  // 低位 + 日线朝上
+  if (kd30k !== null && kd30k < 40 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '这只票位置低（30分K' + kd30k + '）而且日线朝上，可以买' };
+  // A级好票
+  if (score >= 70 && tier === 'A') return { label: '✅可以买', cls: 'chase', reason: '这是A级好票（健康度' + score + '），可以买（短线1-3天，次日冲高即走）' };
+  // 质地好 + 日线朝上
+  if (score >= 60 && dailyTrend === '↑') return { label: '✅可以买', cls: 'chase', reason: '这只票质地好（健康度' + score + '）且日线朝上，可以买（短线1-3天，次日冲高即走）' };
   // 兜底
-  return { label: '😐等等看', cls: 'hold', reason: '没有明确信号，先等等' };
+  return { label: '😐等等看', cls: 'hold', reason: '这只票还没到明确买点，再等等' };
 }
 
 // 统一入口（2026-09-14）：桌面表格 / 移动卡片 / 表头筛选器 共用
+// ★2026-10-13 与大盘解耦：不再等大盘KDJ加载，大盘拉取失败也照常出个股建议
 function getStockSuggestion(stock) {
   try {
-    if (typeof applySuggestionRule === 'function' && INDEX_KDJ30) {
+    if (typeof applySuggestionRule === 'function') {
       return applySuggestionRule(stock, INDEX_KDJ30);
     }
   } catch (_e) { }
-  return { label: '😐等等看', cls: 'hold', reason: '大盘数据还没加载好' };
+  return { label: '😐等等看', cls: 'hold', reason: '建议引擎还没加载好，稍等刷新' };
 }
 
 function renderDataVersion() {
