@@ -1,6 +1,37 @@
 {
-  "scan_time": "2026-10-12 13:40:04",
-  "total_scanned": 34,
-  "total_qualified": 0,
-  "top30": []
+  "scan_time": "2026-10-13 13:06:29",
+  "total_scanned": 30,
+  "total_qualified": 1,
+  "top30": [
+    {
+      "code": "sz000582",
+      "name": "北部湾港",
+      "chg_pct": -3.44,
+      "price": 8.98,
+      "kd30_k": 34.42,
+      "kd30_d": 33.9,
+      "kd30_j": 35.48,
+      "kd30_prev_k": 34.25,
+      "trend30": "up",
+      "kd5_k": 24.51,
+      "kd5_d": 17.24,
+      "kd5_j": 39.06,
+      "vwap": 8.929,
+      "above_vwap_pct": 0.57,
+      "k_rising": true,
+      "just_golden": false,
+      "approaching_cross": false,
+      "bottom_divergence": true,
+      "vol_shrink": true,
+      "signals": [
+        "底背离(底背离: 价8.94->8.90, K26.9->27.9)",
+        "30分KDJ低位回升(K=34.4,前值=34.2)",
+        "缩量止跌(近5根量<前5根70%)",
+        "5分低位上拐(K5=24.5)",
+        "站上分时均价线(+0.6%)"
+      ],
+      "pre_launch_score": 74.9,
+      "daily_score": 49.4
+    }
+  ]
 }
