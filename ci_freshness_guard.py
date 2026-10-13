@@ -31,6 +31,16 @@ def flow_date_from_text(html):
     return stocks[0].get('flowDate', '') if stocks else ''
 
 
+def stocks_count_from_text(html):
+    m = re.search(r'const STOCKS\s*=\s*(\[.*?\]);', html, re.DOTALL)
+    if not m:
+        return 0
+    try:
+        return len(json.loads(m.group(1)))
+    except Exception:
+        return 0
+
+
 def flow_date_from_file(path):
     try:
         with open(path, encoding='utf-8') as f:
@@ -57,6 +67,19 @@ def main():
         print(f'[guard] FATAL: 本次数据({local}) 比远端({remote}) 旧 —— '
               f'作业使用了过期 checkout，拒绝推送以避免线上数据回退')
         sys.exit(1)
+    # ===== 2026-10-12 新增护栏：STOCKS 数量健康度 =====
+    # 防 49b8a1a91 事故：注入端崩溃未兜底，0 只空版本被推上 CDN
+    try:
+        with open('docs/index.html', encoding='utf-8') as f:
+            local_html = f.read()
+        n = stocks_count_from_text(local_html)
+        if n < 30:
+            print(f'[guard] FATAL: 本次 STOCKS 数量={n} < 30 健康阈值 —— '
+                  f'注入端可能崩溃，请检查 rescan_low_position.py:91 判空')
+            sys.exit(1)
+        print(f'[guard] STOCKS 数量={n} ✅')
+    except FileNotFoundError:
+        pass
     print('[guard] OK: 数据新鲜度校验通过')
     return 0
 

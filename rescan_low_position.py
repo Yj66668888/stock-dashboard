@@ -88,6 +88,9 @@ def fetch_quotes_batch(codes):
         secids = ','.join(to_secid(c) for c in chunk)
         d = curl_json(f'https://push2delay.eastmoney.com/api/qt/ulist.np/get'
                       f'?secids={secids}&fields=f12,f14,f2,f3,f21,f62&fltt=2&invt=2')
+        if not d:  # 2026-10-12 修复: 东财偶发空响应/限流返None, 避免整批崩
+            time.sleep(0.3)
+            continue
         for it in (d.get('data') or {}).get('diff') or []:
             try:
                 out[str(it.get('f12'))] = {
@@ -450,6 +453,15 @@ def main():
     if not m:
         print('❌ 未找到 STOCKS 数组'); sys.exit(1)
     old_arr = json.loads(m.group(2))
+    # ★ 2026-10-12 护栏（事故: 49b8a1a91/本次 rescan）：行情全失败时 selected 为空，
+    # 旧代码会注入"0 只 selected + 4 只固定票"=4 只池子，把原 34 只池子全部清空。
+    # 修复: 行情命中率 <30% 时直接拒绝注入，保留原池子不动（前端 JS 会自行用实时数据覆盖）
+    if not selected and old_arr:
+        print(f"⛔ 本次行情拉取全失败（selected={len(selected)}），拒绝注入（保留原 {len(old_arr)} 只池子）")
+        sys.exit(0)
+    if selected and len(selected) < 5:
+        print(f"⛔ 本次 selected 仅 {len(selected)} 只（疑似数据源严重限流），拒绝注入（保留原 {len(old_arr)} 只池子）")
+        sys.exit(0)
     # 固定票去重抽取（2026-09-09修复: 历史重复条目被原样滚雪球, 四方股份最多4条同屏）。
     # 数组前部=最近一次selected新注入(最新数据), 故每code只保留第一条。
     seen_pinned = set()

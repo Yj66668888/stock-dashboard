@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """推送 docs/index.html 到 GitHub Pages（走 Git Database API，绕过 GFW 对 git 协议的干扰）"""
-import urllib.request, json, base64, os, sys, time
+import urllib.request, json, base64, os, sys, time, re as _re_fd
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 LOCAL_FILE = os.path.join(BASE, "docs", "index.html")
@@ -36,7 +36,6 @@ def api(url, method="GET", data=None, timeout=120):
 
 def get_flow_date(html):
     """提取 STOCKS 中最新的 flowDate，用于数据新旧比较"""
-    import re as _re_fd
     m = _re_fd.search(r'const\s+STOCKS\s*=\s*(\[.*?\]);', html, _re_fd.DOTALL)
     if not m:
         return None
@@ -57,15 +56,35 @@ def main():
     force = "--force" in sys.argv
     deploy_check = os.path.join(BASE, "deploy", "index.html")
     local_date = None
+    stocks_count = 0
     for f in [deploy_check, LOCAL_FILE]:
         if os.path.exists(f):
             try:
                 with open(f, "r", encoding="utf-8", errors="ignore") as fh:
-                    local_date = get_flow_date(fh.read())
+                    fhtml = fh.read()
+                local_date = get_flow_date(fhtml)
+                # 同步提取 STOCKS 数量用于 10/12 事故护栏
+                _m = _re_fd.search(r'const\s+STOCKS\s*=\s*(\[.*?\]);', fhtml, _re_fd.DOTALL)
+                if _m:
+                    try:
+                        stocks_count = len(json.loads(_m.group(1)))
+                    except Exception:
+                        pass
                 if local_date:
                     break
             except Exception:
                 pass
+    # ===== 2026-10-12 新增护栏：STOCKS 数量健康度 =====
+    # 背景：49b8a1a91 事故——rescan_low_position.py:91 东财返 None 未判空崩溃，
+    # 注入脚本把 STOCKS 数组清空到 0，原推送护栏只校验 flowDate 没校验数量，
+    # 结果 0 只空版本被推上线，CDN 缓存命中后用户看到空白仪表盘。
+    if not force and stocks_count < 30:
+        print(f"⛔ 推送被拦截：STOCKS 数量={stocks_count} < 30 健康阈值！")
+        print(f"⛔ 根因：注入脚本崩溃未兜底，把 STOCKS 清空后推送（10/12 49b8a1a91 事故）")
+        print(f"⛔ 请先排查 rescan_low_position.py:91 判空 / 数据源限流")
+        print(f"⛔ 如确认要强制推送，请加 --force 参数。")
+        return False
+    print(f"   STOCKS 数量护栏：{stocks_count} 只 {'✅' if stocks_count >= 30 else '❌'}")
     if local_date and not force:
         # 2026-09-17修复：原来只用 raw.githubusercontent.com 取远端版本，
         # 该域名有 CDN 缓存层，缓存旧版本时会误判"本地不旧"从而放行旧数据覆盖云端
