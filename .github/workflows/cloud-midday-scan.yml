@@ -1,10 +1,10 @@
 name: Cloud Midday Scan
 
+# 2026-10-14 用户拍板取消午盘扫描（数据刷新降为每天10:00/13:30两次）。
+# schedule 已移除，仅保留 workflow_dispatch 手动触发能力；
+# 恢复方法：把下面的 schedule 块加回 on: 即可。
+
 on:
-  schedule:
-    # 1:03 PM Beijing = 5:03 UTC, Mon-Fri (午盘换票 + 低位启动扫描微信推送)
-    # 2026-08-27 错峰: 整点是GitHub高峰易丢run; 13:03仍在wechat_notify的13:00推送窗(12:57-13:45)内
-    - cron: '3 5 * * 1-5'
   workflow_dispatch:
 
 permissions:

@@ -2,16 +2,15 @@ name: Cloud Dashboard Update
 
 on:
   schedule:
-    # 数据刷新: 9:00-15:30 北京时间每30分钟 (UTC 1:00-7:30)
-    #   - 13:00整点(UTC 5:00)除外——由 cloud-midday-scan 负责该时段推送，避免建仓预警重复
-    #   - 整点仅 UTC 1,2,3,4,6,7 = 北京 9/10/11/12/14/15 点
-    # 推送时间点(北京时间): 10:00 / 11:00 / 13:00(midday) / 14:00 / 14:40
-    #   - 非推送时间点的运行由 wechat_notify.py 时间闸门拦截推送，数据照常刷新
-    # 2026-08-27 错峰: 整点/半点是GitHub高峰易丢run(实测8/27延迟9.5h/盘中全丢)，挪到:07/:37/:43
-    - cron: '7 1,2,3,4,6,7 * * 1-5'
-    - cron: '37 1-7 * * 1-5'
-    # 14:40 北京时间 建仓预警推送点
-    - cron: '43 6 * * 1-5'
+    # 2026-10-14 用户改版：数据刷新+推送从每30分钟降为每天两次
+    #   - 上午 10:00 档：北京 10:07 启动（UTC 2:07），落在 10:00 推送窗(9:57-10:45)
+    #   - 下午 13:30 档：北京 13:37 启动（UTC 5:37），落在 13:30 推送窗(13:27-14:15)
+    # 推送窗口由 wechat_notify._PUSH_TIMES 定义（10:00/13:30 两档）；
+    # 午盘换票扫描 cloud-midday-scan 已同日取消（用户拍板）
+    # 大盘30分K回升监控已拆到独立的 cloud-index-kdj-watch.yml（仍每30分钟跑）
+    # 2026-08-27 错峰经验: 整点/半点是GitHub高峰易丢run，故仍用 :07/:37 起跑
+    - cron: '7 2 * * 1-5'
+    - cron: '37 5 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -34,17 +33,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      # 2026-10-14加: 大盘30分K跌后回升监控（云端兜底，电脑关机时顶上）
-      # - 独立脚本，放在数据管道之前 + continue-on-error：监控挂了不拖垮数据刷新
-      # - 本地每5分钟跑同脚本，双端靠远端状态文件 .index_kdj_state.json 去重防双推
-      # - 非交易时段脚本自检后直接跳过，正常行为
-      - name: Index KDJ rebound watch (cloud backup)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
-        continue-on-error: true
-        run: python index_kdj_watch.py --cloud
 
       - name: Run update pipeline
         env:
