@@ -1271,18 +1271,18 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=32低位无追高，5日主力仍流出-1972万(待回流确认)）｜综合·独立走势",
     "healthScore": 59.9,
-    "preBreakoutScore": 22,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 12,
+    "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
-        "signal": "MACD收敛",
-        "score": 15,
-        "detail": "MACD柱翻正: -0.0460->0.1539"
+        "signal": "资金反转",
+        "score": 5,
+        "detail": "流出减速"
       },
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(3763529)<上涨日量(7125883)的70%"
+        "detail": "下跌日量(3963505)<上涨日量(7125883)的70%"
       }
     ],
     "kd30_k": 15.12,
@@ -1296,7 +1296,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.06,
     "volRatio": 1.33,
-    "liveTimestamp": "20261014153154"
+    "liveTimestamp": "20261014161454"
   },
   {
     "code": "sh600830",
@@ -1327,8 +1327,8 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=31低位无追高，5日主力净流入+3415万）｜综合·独立走势",
     "healthScore": 51.3,
-    "preBreakoutScore": 30,
-    "preBreakoutPhase": "approaching_breakout",
+    "preBreakoutScore": 22,
+    "preBreakoutPhase": "building_base",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
@@ -1336,9 +1336,9 @@ const STOCKS = [
         "detail": "底背离: 价8.74->8.69, K17.6->20.0"
       },
       {
-        "signal": "MACD收敛",
-        "score": 15,
-        "detail": "MACD柱翻正: -0.0043->0.0359"
+        "signal": "缩量止跌",
+        "score": 7,
+        "detail": "缩量(量比0.7)"
       }
     ],
     "kd30_k": 18.91,
@@ -1352,7 +1352,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.35,
     "volRatio": 0.72,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   },
   {
     "code": "sh600702",
@@ -1383,18 +1383,13 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=25低位无追高，5日主力仍流出-1903万(待回流确认)）｜综合·独立走势",
     "healthScore": 51.1,
-    "preBreakoutScore": 22,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 7,
+    "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
-      {
-        "signal": "MACD收敛",
-        "score": 15,
-        "detail": "MACD柱翻正: -0.0293->0.1412"
-      },
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(4401048)<上涨日量(6513976)的70%"
+        "detail": "下跌日量(4498897)<上涨日量(6513976)的70%"
       }
     ],
     "kd30_k": 9.99,
@@ -1408,7 +1403,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.12,
     "volRatio": 1.21,
-    "liveTimestamp": "20261014153201"
+    "liveTimestamp": "20261014161439"
   },
   {
     "code": "sz002541",
@@ -1439,9 +1434,15 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=22低位无追高，5日主力仍流出-3510万(待回流确认)）｜综合·独立走势",
     "healthScore": 50.5,
-    "preBreakoutScore": 0,
+    "preBreakoutScore": 3,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [],
+    "preBreakoutSignals": [
+      {
+        "signal": "缩量止跌",
+        "score": 3,
+        "detail": "量微缩(比0.8)"
+      }
+    ],
     "kd30_k": 11.39,
     "kd30_d": 19.13,
     "kd30_cross": "下降",
@@ -1453,7 +1454,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.8,
     "volRatio": 0.82,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161424"
   },
   {
     "code": "sh603171",
@@ -1490,7 +1491,7 @@ const STOCKS = [
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(4147976)<上涨日量(6657101)的70%"
+        "detail": "下跌日量(4054453)<上涨日量(6657101)的70%"
       }
     ],
     "kd30_k": 12.79,
@@ -1504,7 +1505,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.86,
     "volRatio": 0.98,
-    "liveTimestamp": "20261014153150"
+    "liveTimestamp": "20261014161450"
   },
   {
     "code": "sh600502",
@@ -1535,13 +1536,18 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=43低位无追高，5日主力仍流出-5411万(待回流确认)）｜综合·独立走势",
     "healthScore": 47.1,
-    "preBreakoutScore": 22,
+    "preBreakoutScore": 27,
     "preBreakoutPhase": "building_base",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
         "score": 15,
         "detail": "类背离: 价持平, K回升63.1->77.4"
+      },
+      {
+        "signal": "缩量止跌",
+        "score": 5,
+        "detail": "今日止跌+0.0%"
       },
       {
         "signal": "量价背离",
@@ -1560,7 +1566,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": 0.0,
     "volRatio": 1.02,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz002677",
@@ -1591,18 +1597,13 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=16低位无追高，5日主力小幅回流+540万）｜综合·独立走势",
     "healthScore": 48.8,
-    "preBreakoutScore": 22,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 3,
+    "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
-        "signal": "MACD收敛",
-        "score": 15,
-        "detail": "MACD柱翻正: -0.0081->0.0166"
-      },
-      {
-        "signal": "量价背离",
-        "score": 7,
-        "detail": "下跌日量(7000288)<上涨日量(10196922)的70%"
+        "signal": "缩量止跌",
+        "score": 3,
+        "detail": "量微缩(比0.9)"
       }
     ],
     "kd30_k": 11.3,
@@ -1616,7 +1617,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.4,
     "volRatio": 0.94,
-    "liveTimestamp": "20261014153130"
+    "liveTimestamp": "20261014161430"
   },
   {
     "code": "sz001222",
@@ -1647,8 +1648,8 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=22低位无追高，5日主力仍流出-73万(待回流确认)）｜综合·独立走势",
     "healthScore": 50.6,
-    "preBreakoutScore": 18,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 11,
+    "preBreakoutPhase": "weak",
     "preBreakoutSignals": [
       {
         "signal": "资金反转",
@@ -1658,12 +1659,7 @@ const STOCKS = [
       {
         "signal": "MACD收敛",
         "score": 8,
-        "detail": "MACD柱缩小: -0.1478->-0.1363"
-      },
-      {
-        "signal": "量价背离",
-        "score": 7,
-        "detail": "下跌日量(3190074)<上涨日量(4634799)的70%"
+        "detail": "MACD柱缩小: -0.1985->-0.1931"
       }
     ],
     "kd30_k": 8.92,
@@ -1677,7 +1673,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -5.09,
     "volRatio": 1.46,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   },
   {
     "code": "sz000518",
@@ -1708,13 +1704,23 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=28低位无追高，5日主力小幅回流+393万）｜综合·独立走势",
     "healthScore": 47.0,
-    "preBreakoutScore": 15,
-    "preBreakoutPhase": "building_base",
+    "preBreakoutScore": 30,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
         "score": 15,
         "detail": "类背离: 价持平, K回升7.5->12.6"
+      },
+      {
+        "signal": "缩量止跌",
+        "score": 7,
+        "detail": "缩量(量比0.7)"
+      },
+      {
+        "signal": "MACD收敛",
+        "score": 8,
+        "detail": "MACD柱缩小: -0.0692->-0.0579"
       }
     ],
     "kd30_k": 12.63,
@@ -1728,7 +1734,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.08,
     "volRatio": 0.7,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz002961",
@@ -1770,12 +1776,12 @@ const STOCKS = [
       {
         "signal": "MACD收敛",
         "score": 12,
-        "detail": "MACD柱收敛: -1.4023->-0.8699"
+        "detail": "MACD柱收敛: -1.1834->-0.6513"
       },
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(11455448)<上涨日量(26508539)的70%"
+        "detail": "下跌日量(14785550)<上涨日量(26508539)的70%"
       }
     ],
     "kd30_k": 12.74,
@@ -1789,7 +1795,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.92,
     "volRatio": 1.77,
-    "liveTimestamp": "20261014153130"
+    "liveTimestamp": "20261014161430"
   },
   {
     "code": "sz002251",
@@ -1820,8 +1826,8 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=28低位无追高，5日主力仍流出-134万(待回流确认)）｜综合·独立走势",
     "healthScore": 45.0,
-    "preBreakoutScore": 50,
-    "preBreakoutPhase": "imminent",
+    "preBreakoutScore": 38,
+    "preBreakoutPhase": "approaching_breakout",
     "preBreakoutSignals": [
       {
         "signal": "底背离",
@@ -1829,9 +1835,9 @@ const STOCKS = [
         "detail": "底背离: 价3.46->3.45, K16.3->45.2"
       },
       {
-        "signal": "MACD收敛",
-        "score": 15,
-        "detail": "MACD柱翻正: -0.0128->0.0012"
+        "signal": "缩量止跌",
+        "score": 3,
+        "detail": "量微缩(比0.8)"
       }
     ],
     "kd30_k": 15.92,
@@ -1845,7 +1851,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.27,
     "volRatio": 0.82,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz001382",
@@ -1876,15 +1882,9 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=20低位无追高，5日主力仍流出-141万(待回流确认)）｜综合·独立走势",
     "healthScore": 44.1,
-    "preBreakoutScore": 5,
+    "preBreakoutScore": 0,
     "preBreakoutPhase": "weak",
-    "preBreakoutSignals": [
-      {
-        "signal": "缩量止跌",
-        "score": 5,
-        "detail": "今日止跌-0.4%"
-      }
-    ],
+    "preBreakoutSignals": [],
     "kd30_k": 14.77,
     "kd30_d": 19.73,
     "kd30_cross": "下降",
@@ -1896,7 +1896,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.72,
     "volRatio": 1.19,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz000811",
@@ -1927,20 +1927,9 @@ const STOCKS = [
     "sectorResonance": "独立走势",
     "reason": "🔄低位票（30分K=18低位无追高，5日主力仍流出-1834万(待回流确认)）｜综合·独立走势",
     "healthScore": 44.8,
-    "preBreakoutScore": 15,
-    "preBreakoutPhase": "building_base",
-    "preBreakoutSignals": [
-      {
-        "signal": "MACD收敛",
-        "score": 8,
-        "detail": "MACD柱缩小: -0.6891->-0.5414"
-      },
-      {
-        "signal": "量价背离",
-        "score": 7,
-        "detail": "下跌日量(30007909)<上涨日量(43956424)的70%"
-      }
-    ],
+    "preBreakoutScore": 0,
+    "preBreakoutPhase": "weak",
+    "preBreakoutSignals": [],
     "kd30_k": 6.95,
     "kd30_d": 18.19,
     "kd30_cross": "下降",
@@ -1952,7 +1941,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -8.9,
     "volRatio": 1.19,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sh605188",
@@ -1999,7 +1988,7 @@ const STOCKS = [
       {
         "signal": "量价背离",
         "score": 7,
-        "detail": "下跌日量(10372797)<上涨日量(17135538)的70%"
+        "detail": "下跌日量(10420156)<上涨日量(19700550)的70%"
       }
     ],
     "kd30_k": 51.16,
@@ -2013,7 +2002,7 @@ const STOCKS = [
     "kd60_cross": "上升",
     "dayChg": 1.81,
     "volRatio": 1.65,
-    "liveTimestamp": "20261014153150"
+    "liveTimestamp": "20261014161450"
   },
   {
     "code": "sz002200",
@@ -2064,7 +2053,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.55,
     "volRatio": 1.19,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   },
   {
     "code": "sz002339",
@@ -2101,7 +2090,7 @@ const STOCKS = [
       {
         "signal": "MACD收敛",
         "score": 8,
-        "detail": "MACD柱缩小: -0.1594->-0.1133"
+        "detail": "MACD柱缩小: -0.1412->-0.1319"
       }
     ],
     "kd30_k": 7.84,
@@ -2115,7 +2104,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.77,
     "volRatio": 1.08,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161442"
   },
   {
     "code": "sh600969",
@@ -2171,7 +2160,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -6.12,
     "volRatio": 1.3,
-    "liveTimestamp": "20261014153147"
+    "liveTimestamp": "20261014161447"
   },
   {
     "code": "sh603616",
@@ -2216,7 +2205,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.76,
     "volRatio": 1.18,
-    "liveTimestamp": "20261014153158"
+    "liveTimestamp": "20261014161458"
   },
   {
     "code": "sz001236",
@@ -2272,7 +2261,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.94,
     "volRatio": 1.89,
-    "liveTimestamp": "20261014153154"
+    "liveTimestamp": "20261014161454"
   },
   {
     "code": "sz000955",
@@ -2328,7 +2317,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.38,
     "volRatio": 0.94,
-    "liveTimestamp": "20261014153203"
+    "liveTimestamp": "20261014161415"
   },
   {
     "code": "sh603879",
@@ -2389,7 +2378,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.21,
     "volRatio": 0.81,
-    "liveTimestamp": "20261014153152"
+    "liveTimestamp": "20261014161452"
   },
   {
     "code": "sz002163",
@@ -2445,7 +2434,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.87,
     "volRatio": 1.08,
-    "liveTimestamp": "20261014153136"
+    "liveTimestamp": "20261014161436"
   },
   {
     "code": "sz002769",
@@ -2506,7 +2495,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -2.64,
     "volRatio": 0.75,
-    "liveTimestamp": "20261014153151"
+    "liveTimestamp": "20261014161451"
   },
   {
     "code": "sz002072",
@@ -2567,7 +2556,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.1,
     "volRatio": 0.95,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz000533",
@@ -2623,7 +2612,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.43,
     "volRatio": 0.65,
-    "liveTimestamp": "20261014153142"
+    "liveTimestamp": "20261014161442"
   },
   {
     "code": "sz002112",
@@ -2684,7 +2673,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.18,
     "volRatio": 0.75,
-    "liveTimestamp": "20261014153130"
+    "liveTimestamp": "20261014161430"
   },
   {
     "code": "sz000949",
@@ -2735,7 +2724,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -7.24,
     "volRatio": 0.92,
-    "liveTimestamp": "20261014153200"
+    "liveTimestamp": "20261014161500"
   },
   {
     "code": "sz000505",
@@ -2791,7 +2780,7 @@ const STOCKS = [
     "kd60_cross": "上升",
     "dayChg": -2.66,
     "volRatio": 0.6,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   },
   {
     "code": "sh605033",
@@ -2842,7 +2831,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.02,
     "volRatio": 0.95,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   },
   {
     "code": "sh601069",
@@ -2898,7 +2887,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -3.55,
     "volRatio": 0.78,
-    "liveTimestamp": "20261014153151"
+    "liveTimestamp": "20261014161451"
   },
   {
     "code": "sh601126",
@@ -2971,7 +2960,7 @@ const STOCKS = [
     "phase": "approaching",
     "dayChg": -3.44,
     "volRatio": 0.61,
-    "liveTimestamp": "20261014153158"
+    "liveTimestamp": "20261014161458"
   },
   {
     "code": "sh603067",
@@ -3029,7 +3018,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -0.73,
     "volRatio": 0.72,
-    "liveTimestamp": "20261014153143"
+    "liveTimestamp": "20261014161443"
   },
   {
     "code": "sh600105",
@@ -3097,7 +3086,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -4.86,
     "volRatio": 0.68,
-    "liveTimestamp": "20261014153146"
+    "liveTimestamp": "20261014161446"
   },
   {
     "code": "sz000688",
@@ -3160,7 +3149,7 @@ const STOCKS = [
     "kd60_cross": "下降",
     "dayChg": -1.3,
     "volRatio": 0.81,
-    "liveTimestamp": "20261014153145"
+    "liveTimestamp": "20261014161445"
   }
 ];
 
