@@ -32,6 +32,13 @@ stocks_data_v4.js
 # deploy_davis 是本地仪表盘，不需要云端
 deploy_davis/
 
+# 7-9月大宗回测原始数据（2026-10-15 误提交过tmp_aug_history，已移出git保留本地）
+tmp_aug_history/
+block_trades_*.json
+block_trade_stock_stats_*.json
+julsep_klines.json
+backtest_events_*.json
+
 # 旧版补丁/工具脚本（cloud pipeline 不依赖）
 calc_kdj.py
 calc_kdj_v2.py

@@ -2,8 +2,16 @@
 """
 暗盘资金注入脚本（明盘资金走前端 fetchCapitalFlow，IP 限流只影响本机）
 - 暗盘: datacenter-web.eastmoney.com/.../RPT_DATA_BLOCKTRADE
-- 默认拉最近2个交易日（因为大宗主要为盘后，盘前可能昨日数据未落库）
-- 把每只股票的: 净买入(机构万元)、总成交(万元)、笔数、数据日期 注入 STOCKS[].blockFlow*
+- 默认拉最近4个交易日（大宗主要为盘后，盘前可能昨日数据未落库）
+- 字段语义（按 T = 脚本运行当日）：
+    * blockFlowNetWan           当日机构净买入（万元）
+    * blockFlowTotalWan         当日总成交（万元）
+    * blockFlowCount            当日笔数
+    * blockFlowDate             当日日期（YYYY-MM-DD）
+    * blockFlowRecentNetWan     近4日累计机构净买入（万元）
+    * blockFlowRecentCount      近4日累计笔数
+    * blockFlowLatestDate       最近一次有交易的日期（可能早于今日）
+- 当日无数据时 blockFlowNetWan 设为 None（前端显示"-- 今日无"）
 """
 import json
 import subprocess
@@ -82,33 +90,70 @@ def fetch_dark_range(start_date, end_date):
 
 
 def merge_into_stocks(pool, per_day_block):
-    """把暗盘数据合并到每只票（取最近一个有数据的一天作为'当日'）"""
+    """把暗盘数据合并到每只票：
+    - blockFlowNetWan / blockFlowDate 只反映今日（T 日）
+    - blockFlowRecentNetWan 反映近 N 日累计（含今日）
+    - blockFlowLatestDate 反映最近一次大宗发生的日期
+    """
     if not per_day_block:
+        # 无任何数据：清空所有 block* 字段
+        for s in pool:
+            s['blockFlowNetWan'] = None
+            s['blockFlowTotalWan'] = None
+            s['blockFlowCount'] = None
+            s['blockFlowDate'] = None
+            s['blockFlowRecentNetWan'] = None
+            s['blockFlowRecentCount'] = None
+            s['blockFlowLatestDate'] = None
+            s['blockFlowSource'] = 'datacenter-empty'
         return 0
-    # 按日期排序，从最新往旧回退
+
     dates = sorted(per_day_block.keys(), reverse=True)
-    matched = 0
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    matched_today = 0
+    matched_recent = 0
+
     for s in pool:
         code_full = s['code']
         code_short = code_full[2:]  # 去掉 sh/sz
-        # 找最近一天该票有大宗记录的
+
+        # ----- 字段初始化 -----
+        s['blockFlowNetWan'] = None
+        s['blockFlowTotalWan'] = None
+        s['blockFlowCount'] = None
+        s['blockFlowDate'] = None
+
+        # ----- 1) 今日 -----
+        today_data = per_day_block.get(today_str, {}).get(code_short)
+        if today_data:
+            s['blockFlowNetWan'] = round(today_data['net'], 2)
+            s['blockFlowTotalWan'] = round(today_data['total'], 2)
+            s['blockFlowCount'] = today_data['count']
+            s['blockFlowDate'] = today_str
+            matched_today += 1
+
+        # ----- 2) 近 4 日累计 + 最近日期 -----
+        recent_net = 0.0
+        recent_count = 0
+        latest_date = None
         for d in dates:
             day_data = per_day_block[d].get(code_short)
             if day_data:
-                s['blockFlowNetWan'] = round(day_data['net'], 2)
-                s['blockFlowTotalWan'] = round(day_data['total'], 2)
-                s['blockFlowCount'] = day_data['count']
-                s['blockFlowDate'] = d
-                s['blockFlowSource'] = 'datacenter'
-                matched += 1
-                break
-        else:
-            # 该票当日及往前 N 天都无大宗
-            s.setdefault('blockFlowNetWan', None)
-            s.setdefault('blockFlowTotalWan', None)
-            s.setdefault('blockFlowCount', None)
-            s.setdefault('blockFlowDate', None)
-    return matched
+                recent_net += day_data['net']
+                recent_count += day_data['count']
+                if latest_date is None:
+                    latest_date = d
+
+        s['blockFlowRecentNetWan'] = round(recent_net, 2) if recent_count > 0 else None
+        s['blockFlowRecentCount'] = recent_count if recent_count > 0 else None
+        s['blockFlowLatestDate'] = latest_date
+        s['blockFlowSource'] = 'datacenter'
+
+        if recent_count > 0:
+            matched_recent += 1
+
+    print(f'  今日命中 {matched_today}/{len(pool)} · 近4日命中 {matched_recent}/{len(pool)}')
+    return matched_today
 
 
 def inject_to_html(html_path, pool):
@@ -147,7 +192,6 @@ def main():
 
     print(f'\n[2/2] 合并注入 STOCKS...')
     matched = merge_into_stocks(pool, per_day_block)
-    print(f'  暗盘命中 {matched}/{len(pool)}')
 
     print('\n[3] 写入三份 HTML...')
     for fn in ['deploy/index.html', 'docs/index.html', 'index.html']:
