@@ -22,12 +22,12 @@ sign('DeleteTrigger', {'FunctionName': 'kdj-watch-trigger',
                        'TriggerName': 'every5min-trading-hours', 'Type': 'timer'})
 time.sleep(1)
 
-# 3) 挂定时触发器
+# 3) 挂定时触发器（cron 从 deploy_scf.py 统一读取，避免两处不一致）
 r = sign('CreateTrigger', {
     'FunctionName': 'kdj-watch-trigger',
     'TriggerName': 'every5min-trading-hours',
     'Type': 'timer',
-    'TriggerDesc': '0 */5 9-15 * * 1-5 *',
+    'TriggerDesc': g['CRON'],
     'Enable': 'OPEN',
 })
 resp = r.get('Response', {})

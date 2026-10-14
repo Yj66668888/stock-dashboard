@@ -12,13 +12,19 @@ HOST = 'scf.tencentcloudapi.com'
 TOKEN = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.github_token')).read().strip()
 
 FUNC_CODE = '''# -*- coding: utf-8 -*-
-# 每5分钟触发 GitHub 云端大盘KDJ监控 workflow（由腾讯云定时器驱动）
+# 腾讯云定时器 → GitHub Actions 三路调度器（10/14 升级：GitHub 自带 schedule 连续哑火）
+# 每5分钟一个tick，按北京时间分发：
+#   - 盘中每tick(9:00-15:59): cloud-index-kdj-watch（大盘30分KDJ回升监控+个股推送）
+#   - 8:35 tick: cloud-full-scan（早间全量选票+注入+推送）
+#   - 10:10/11:10/13:10/14:10/14:45 tick: cloud-dashboard-update（盘中5档数据刷新+推送）
+#   推送窗口由 wechat_notify._PUSH_TIMES 控制（10:00/11:00/13:00/14:00/14:40），晚几分钟仍在窗内
 import json, os, urllib.request
+from datetime import datetime, timedelta
 
-def main_handler(event, context):
-    token = os.environ.get('GH_TOKEN', '')
+
+def _dispatch(token, wf):
     url = ('https://api.github.com/repos/Yj66668888/stock-dashboard'
-           '/actions/workflows/cloud-index-kdj-watch.yml/dispatches')
+           '/actions/workflows/%s/dispatches' % wf)
     req = urllib.request.Request(
         url, method='POST',
         data=json.dumps({'ref': 'main'}).encode(),
@@ -30,12 +36,31 @@ def main_handler(event, context):
         })
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
-            return {'ok': True, 'http': r.status}
+            return r.status
     except Exception as e:
-        return {'ok': False, 'error': str(e)[:200]}
+        return str(e)[:120]
+
+
+def main_handler(event, context):
+    token = os.environ.get('GH_TOKEN', '')
+    now = datetime.utcnow() + timedelta(hours=8)  # 北京时间（SCF运行环境为UTC）
+    h, m = now.hour, now.minute
+    results = {}
+    # 1) 大盘KDJ监控：交易日盘中每tick（workflow自身有交易时段/去重闸门）
+    if 9 <= h <= 15:
+        results['kdj-watch'] = _dispatch(token, 'cloud-index-kdj-watch.yml')
+    # 2) 早间全量扫描：8:35 tick（窗口8:33-8:39只含一个tick，防重复）
+    if h == 8 and 33 <= m <= 39:
+        results['full-scan'] = _dispatch(token, 'cloud-full-scan.yml')
+    # 3) 仪表盘更新5档：10:10/11:10/13:10/14:10/14:45 tick
+    if (h in (10, 11, 13, 14) and 7 <= m <= 13) or (h == 14 and 43 <= m <= 49):
+        results['dashboard-update'] = _dispatch(token, 'cloud-dashboard-update.yml')
+    ok = all(isinstance(v, int) and v < 300 for v in results.values()) if results else True
+    return {'ok': ok, 'time': now.strftime('%m-%d %H:%M'), 'dispatched': results}
 '''
 
-CRON = '0 */5 9-15 * * 1-5 *'  # 秒 分 时 日 月 周 年（UTC+8）
+# 2026-10-14 扩窗 9-15 → 8-15：覆盖 8:35 全量扫描 tick（秒 分 时 日 月 周 年，UTC+8）
+CRON = '0 */5 8-15 * * 1-5 *'
 
 
 def sign(action, payload):
@@ -89,7 +114,7 @@ def main():
             'Runtime': 'Python3.9',
             'Code': {'ZipFile': zip_b64},
             'Handler': 'index.main_handler',
-            'Description': '每5分钟触发GitHub云端大盘KDJ回升监控推送',
+            'Description': '每5分钟三路调度GitHub：KDJ监控+8:35全量扫描+5档仪表盘更新',
             'MemorySize': 128,
             'Timeout': 30,
             'Environment': {'Variables': [

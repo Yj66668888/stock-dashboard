@@ -389,11 +389,17 @@ def update_only():
     print("=" * 60)
 
     # Step 1: 起涨前预判（更新 deploy/index.html 中的 preBreakoutScore 等字段）
-    run_script("[1/3] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
+    run_script("[1/4] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
+
+    # Step 1b: 盘中实时价注入（2026-10-14 加）
+    # 此前 update 模式只刷新 dayChg/量比，close/现价停留在早间全量扫描值，
+    # 造成「仪表盘下午还是上午的价」。inject_live_quotes 用 qt.gtimg 把
+    # close/dayChg/turnover/volRatio/flowDate 刷到当前时点（写 deploy+docs）。
+    run_script("[1b/4] 盘中实时价注入", 'inject_live_quotes.py', timeout=120)
 
     # Step 2: 复制 deploy -> docs + root
     print(f"\n{'=' * 60}")
-    print("  [2/3] 复制 + 预计算注入")
+    print("  [2/4] 复制 + 预计算注入")
     print(f"{'=' * 60}")
 
     os.makedirs(DOCS_DIR, exist_ok=True)
