@@ -1122,6 +1122,7 @@
             <th data-filter="trend" onclick="toggleFilter(event,'trend')">趋势<span class="th-filter-icon">▼</span></th>
             <th data-filter="volSignal" onclick="toggleFilter(event,'volSignal')">量价信号<span class="th-filter-icon">▼</span></th>
             <th data-filter="mainFlow" onclick="toggleFilter(event,'mainFlow')">主力资金<span class="th-filter-icon">▼</span></th>
+            <th data-filter="blockFlow" onclick="toggleFilter(event,'blockFlow')">暗盘资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="openRate" onclick="toggleFilter(event,'openRate')">30日高开率<span class="th-filter-icon">▼</span></th>
             <th data-filter="flow5d" onclick="toggleFilter(event,'flow5d')">5日/10日资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="resonance" onclick="toggleFilter(event,'resonance')">板块共振<span class="th-filter-icon">▼</span></th>
@@ -3465,6 +3466,10 @@ function getSortValue(stock, field) {
       const v = parseMoneyText(stock.mainFlow);
       return v !== null ? v : -Infinity;
     }
+    case 'blockFlow': {
+      return stock.blockFlowNetWan !== undefined && stock.blockFlowNetWan !== null
+        ? stock.blockFlowNetWan : -Infinity;
+    }
     case 'openRate': return stock.openRate30d !== undefined ? parseFloat(stock.openRate30d) : -Infinity;
     case 'flow5d': {
       if (stock.flow5d !== undefined && stock.flow5d !== null) {
@@ -3576,6 +3581,12 @@ function getFilterValue(stock, field) {
       const v = parseMoneyText(stock.mainFlow);
       if (v !== null) return v >= 0 ? '流入' : '流出';
       return stock.mainFlow ? stock.mainFlow : '--';
+    }
+    case 'blockFlow': {
+      const w = stock.blockFlowNetWan;
+      if (w === undefined || w === null) return '--';
+      const sign = w >= 0 ? '+' : '';
+      return sign + Math.round(w) + '万';
     }
     case 'openRate': {
       const r = stock.openRate30d;
@@ -4443,6 +4454,15 @@ function renderMobileCard(stock) {
   let flow10dCls = 'flat';
   if (flow10d) { flow10dStr = flow10d; flow10dCls = isPositiveFlow(flow10d) ? 'up' : 'down'; }
 
+  // 暗盘资金（大宗交易机构净买入，单位万元）
+  const blockW = stock.blockFlowNetWan;
+  let blockStr = '--';
+  let blockCls = 'flat';
+  if (blockW !== undefined && blockW !== null) {
+    blockStr = (blockW >= 0 ? '+' : '') + Math.round(blockW) + '万';
+    blockCls = blockW >= 0 ? 'up' : 'down';
+  }
+
   // 板块共振
   const resonance = stock.sectorResonance || '';
   let resonShort = '--';
@@ -4480,6 +4500,7 @@ function renderMobileCard(stock) {
       <span class="mc-info-item"><span class="mc-info-label">主力</span><span class="mc-info-val ${flowCls}">${escapeHtml(flowStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">5日</span><span class="mc-info-val ${flow5dCls}">${escapeHtml(flow5dStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">10日</span><span class="mc-info-val ${flow10dCls}">${escapeHtml(flow10dStr)}</span></span>
+      <span class="mc-info-item"><span class="mc-info-label">暗盘</span><span class="mc-info-val ${blockCls}">${escapeHtml(blockStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">共振</span><span class="mc-info-val">${escapeHtml(resonShort)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">30分KD</span><span class="mc-info-val ${kd30Cls}">${escapeHtml(kd30Str)}</span></span>
     </div>

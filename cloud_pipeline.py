@@ -397,6 +397,12 @@ def update_only():
     # close/dayChg/turnover/volRatio/flowDate 刷到当前时点（写 deploy+docs）。
     run_script("[1b/4] 盘中实时价注入", 'inject_live_quotes.py', timeout=120)
 
+    # Step 1c: 暗盘资金注入（2026-10-14 加）— 拉全市场当日大宗交易并
+    # 把每只票的"机构净买入额/总成交/笔数/数据日期"注入 STOCKS。
+    # 明盘资金走前端 fetchCapitalFlow（push2.* 实时接口，本机IP被限流
+    # 不影响用户浏览器），暗盘走 datacenter-web 不限流。
+    run_script("[1c/4] 暗盘资金注入", 'inject_dark_capital.py', timeout=60)
+
     # Step 2: 复制 deploy -> docs + root
     print(f"\n{'=' * 60}")
     print("  [2/4] 复制 + 预计算注入")
