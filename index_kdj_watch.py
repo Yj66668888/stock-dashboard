@@ -34,8 +34,15 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE, '.index_kdj_state.json')
 
 INDEX_CODE = 'sh000001'    # 上证指数
-K_CROSS = 20.0             # 回升目标线：K 上穿 20
-MAX_DAILY_PUSH = 2         # 当日推送上限（防抖动刷屏）
+# ★★★ 10/14 用户拍板：大盘回升分两档判定 → 即时推个股清单 ★★★
+#   区间 A（超卖回升）：当前 K < 40  时，前bar K<20 且当前 K≥20 触发（抢反弹）
+#   区间 B（中位回升）：当前 K 40~65 时，前bar K<45 且当前 K≥45 触发（站稳中位）
+#   高位 (K>65) 不推——避免追高，符合用户一贯"回调到位稳健型"偏好
+K_LOW_CROSS = 20.0        # 区间A 回升目标线（前bar<20 → 当前≥20）
+K_MID_CROSS = 45.0        # 区间B 回升目标线（前bar<45 → 当前≥45）
+K_MID_LO = 40.0           # 区间B 下界（区间A 上界）
+K_MID_HI = 65.0           # 区间B 上界（>此值完全不推）
+MAX_DAILY_PUSH = 4        # 当日推送上限（A+B+重叠保护）
 BAR_MIN_LEN = 30           # 重放所需最少bar数
 
 _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
@@ -212,22 +219,105 @@ def save_remote_state(state):
 
 
 def check(kdj):
-    """三条件判定，返回 (触发?, 原因说明)"""
+    """大盘30分K回升分档判定（10/14 用户拍板版）。
+
+    返回 (触发?, zone_id, 原因说明)
+      zone_id ∈ {'A','B',None}
+        A: 当前 K<40 区间，K 从 20 下方回升到 20 上方（超卖回升·抢反弹窗口）
+        B: 当前 40≤K≤65 区间，K 从 45 下方回升到 45 上方（中位站稳窗口）
+        None: 不触发
+    """
     cur, prev = kdj['cur'], kdj['prev']
-    c1 = prev['k'] < K_CROSS          # 前一完成bar在20下方（下跌低位）
-    c2 = cur['k'] >= K_CROSS          # 实时回升到20上方
-    c3 = cur['k'] > prev['k']         # 方向向上（回升，非下跌）
-    if c1 and c2 and c3:
-        return True, (f"前bar K={prev['k']}<{K_CROSS:.0f} → 当前 K={cur['k']}"
-                      f"≥{K_CROSS:.0f} 且向上（+{cur['k'] - prev['k']:.1f}）")
-    why = []
-    if not c1:
-        why.append(f"前bar K={prev['k']}≥{K_CROSS:.0f}（不在低位，无需回升信号）")
-    if not c2:
-        why.append(f"当前 K={cur['k']}<{K_CROSS:.0f}（尚未回升到{K_CROSS:.0f}）")
-    if c1 and c2 and not c3:
-        why.append(f"K={cur['k']} 较前bar {prev['k']} 回落（不是回升）")
-    return False, '；'.join(why)
+    ck, pk = cur['k'], prev['k']
+
+    # 高位 (>K_MID_HI) 完全不推——避免追高
+    if ck > K_MID_HI:
+        return False, None, (f"当前 K={ck} > {K_MID_HI:.0f}（高位，不追）")
+
+    # === 区间 B：中位回升（40 ≤ K ≤ 65），目标线 K_MID_CROSS ===
+    if K_MID_LO <= ck <= K_MID_HI:
+        c1 = pk < K_MID_CROSS
+        c2 = ck >= K_MID_CROSS
+        c3 = ck > pk
+        if c1 and c2 and c3:
+            return True, 'B', (f"区间B【中位站稳】前bar K={pk}<{K_MID_CROSS:.0f} "
+                                f"→ 当前 K={ck}≥{K_MID_CROSS:.0f} 且向上 +{ck - pk:.1f}")
+        return False, None, (f"区间B不满足: c1={c1}(前bar<{K_MID_CROSS:.0f}={pk}) "
+                             f"c2={c2}(当前≥{K_MID_CROSS:.0f}={ck}) c3={c3}")
+
+    # === 区间 A：超卖回升（K < 40），目标线 K_LOW_CROSS ===
+    if ck < K_MID_LO:
+        c1 = pk < K_LOW_CROSS
+        c2 = ck >= K_LOW_CROSS
+        c3 = ck > pk
+        if c1 and c2 and c3:
+            return True, 'A', (f"区间A【超卖回升】前bar K={pk}<{K_LOW_CROSS:.0f} "
+                                f"→ 当前 K={ck}≥{K_LOW_CROSS:.0f} 且向上 +{ck - pk:.1f}")
+        return False, None, (f"区间A不满足: c1={c1}(前bar<{K_LOW_CROSS:.0f}={pk}) "
+                             f"c2={c2}(当前≥{K_LOW_CROSS:.0f}={ck}) c3={c3}")
+
+    # K 处于 (K_MID_HI, K_MID_LO) 不可能的取值兜底（理论上 K 是连续值）
+    return False, None, f"K={ck} 处于未覆盖区间"
+
+
+def pick_low_bounce_stocks(zone_id):
+    """从 dynamic_stocks.json 池子筛「低位启动型」个股，配套大盘回升推送。
+
+    筛选规则（项目一贯稳健偏好）：
+      - 30分 KDJ K 值 < 30（低位）
+      - 30分方向向上（kdj30Dir = '↑'，启动中）
+      - 5分 K < 35（5分钟也低位未追高）或 5分 J < 60
+      - score >= 35（综合评分够格）
+      - dailyFlow >= -2000 万（资金未大幅流出，可接受小幅流出）
+      - final_rank 升序排，取 top 5
+
+    池子为空或读不到时返回空 list，调用方按"只推大盘、不附个股"降级处理。
+    """
+    pool_path = os.path.join(BASE, 'dynamic_stocks.json')
+    try:
+        pool = json.load(open(pool_path)).get('stocks', [])
+    except Exception:
+        return []
+
+    ZONE_LABEL = {'A': '（抢反弹窗口·优先选超卖票）', 'B': '（中位站稳·优先选启动型票）'}
+
+    candidates = []
+    for s in pool:
+        try:
+            k30 = float(s.get('kdj30') or 999)
+            kd30_dir = s.get('kdj30Dir', '')
+            k5 = float(s.get('kdj5') or 999)
+            kd5_j = float(s.get('kdj5J') or 999)
+            score = float(s.get('score') or 0)
+            daily_flow = float(s.get('dailyFlow') or 0)
+            rank = float(s.get('final_rank') or 9999)
+        except (TypeError, ValueError):
+            continue
+
+        if zone_id == 'A':
+            # 抢反弹：30K 越低越好（但 < 30）；资金限制放宽到 -8000 万
+            # （超卖票本来就在流出期，方向↑才是关键；过滤掉爆量出逃票即可）
+            ok = k30 < 30 and kd30_dir in ('↑', '↗') and score >= 35 and daily_flow >= -8000
+        else:
+            # 中位站稳：30K 处于 30-65 + 方向向上，5分也低位
+            ok = (K_MID_LO <= k30 <= K_MID_HI and kd30_dir == '↑'
+                  and (k5 < 35 or kd5_j < 60)
+                  and score >= 35 and daily_flow >= -2000)
+
+        if ok:
+            candidates.append({
+                'code': s.get('code', ''),
+                'name': s.get('name', ''),
+                'kdj30': k30,
+                'kdj5': k5,
+                'score': score,
+                'dailyFlow': daily_flow,
+                'final_rank': rank,
+                'industry': s.get('industry', ''),
+                'reason': s.get('reason', ''),
+            })
+    candidates.sort(key=lambda x: x['final_rank'])
+    return candidates[:5]
 
 
 def main():
@@ -245,11 +335,12 @@ def main():
         return
 
     cur, prev = kdj['cur'], kdj['prev']
-    fired, why = check(kdj)
+    fired, zone, why = check(kdj)
     print(f'[index_kdj] {now.strftime("%H:%M:%S")} 大盘30分KDJ: '
           f'当前bar={cur["bar"]} K={cur["k"]} D={cur["d"]} J={cur["j"]} '
           f'收盘={cur["close"]:.2f} | 前bar={prev["bar"]} K={prev["k"]}')
-    print(f'[index_kdj] 判定: {"🔔 触发回升信号" if fired else "未触发"} — {why}')
+    zone_str = f' [区间{zone}]' if zone else ''
+    print(f'[index_kdj] 判定: {"🔔 触发回升信号" if fired else "未触发"}{zone_str} — {why}')
 
     if test_mode:
         return
@@ -259,37 +350,64 @@ def main():
     # 去重：本地+远端合并状态（本地每5分钟与云端每30分钟共用，防双推）
     state = merge_state(load_state(), load_remote_state())
     if state.get('date') != today:
-        state = {'date': today, 'pushed_bars': [], 'push_count': 0}
+        state = {'date': today, 'pushed_bars': [], 'push_count': 0,
+                 'pushed_zones': []}
     if cur['bar'] in state['pushed_bars']:
         print(f'[index_kdj] bar {cur["bar"]} 已推送过，跳过')
+        return
+    if zone in state.get('pushed_zones', []):
+        print(f'[index_kdj] 区间{zone} 今日已推送过，跳过')
         return
     if state['push_count'] >= MAX_DAILY_PUSH:
         print(f'[index_kdj] 已达当日上限 {MAX_DAILY_PUSH} 次，跳过')
         return
 
+    # ★★★ 个股清单：从 dynamic_stocks.json 筛低位启动型 ★★★
+    stocks = pick_low_bounce_stocks(zone)
+
     # 推送（FORCE_PUSH=1 绕过时间闸门，频控由本脚本自己管）
     try:
         from wechat_notify import send_wechat
         os.environ['FORCE_PUSH'] = '1'
-        title = f"大盘30分K回升到{K_CROSS:.0f}：K={cur['k']}（前bar {prev['k']}）"
-        lines = [f"## 大盘30分钟KDJ 跌后回升提醒\n",
-                 f"> 时间: {now.strftime('%Y-%m-%d %H:%M:%S')}\n",
+        target = K_LOW_CROSS if zone == 'A' else K_MID_CROSS
+        title = f"🚨 大盘拐头·区间{zone}｜K={cur['k']}→{target}·{len(stocks)}只低位启动"
+        lines = [f"## 大盘30分钟KDJ 分档回升｜即时个票清单\n",
+                 f"> 时间: {now.strftime('%Y-%m-%d %H:%M:%S')} | 区间 **{zone}**\n",
                  f"> 上证指数: **{cur['close']:.2f}**\n\n",
-                 f"### 回升信号确认\n",
-                 f"- 前一完成bar（{prev['bar'][:8]} {prev['bar'][8:]}）: K=**{prev['k']}**（低位）",
-                 f"- 当前实时bar（{cur['bar'][:8]} {cur['bar'][8:]}）: K=**{cur['k']}** ≥ {K_CROSS:.0f}",
-                 f"- 方向: **回升**（较前bar +{cur['k'] - prev['k']:.1f} 点，非下跌途中）",
-                 f"- 当前 D={cur['d']} J={cur['j']}\n\n",
-                 f"---\n",
-                 f"大盘已从低位拐头回升穿过 K={K_CROSS:.0f}。请自行结合个股信号决策，",
-                 f"注意 K 在 20 附近仍属弱势区初期，若再度回落破 20 需警惕二次探底。"]
-        ok = send_wechat(title, '\n'.join(lines), push_type='index_rebound')
+                 f"### 区间判定\n",
+                 f"- 前一完成bar ({prev['bar'][:8]} {prev['bar'][8:]}): K=**{prev['k']}**（{'超卖低位' if zone=='A' else '中位'}）",
+                 f"- 当前实时bar ({cur['bar'][:8]} {cur['bar'][8:]}): K=**{cur['k']}** ≥ {target:.0f}",
+                 f"- 方向: **回升**（较前bar +{cur['k'] - prev['k']:.1f} 点）",
+                 f"- D={cur['d']} J={cur['j']}\n\n",
+                 f"### 🎯 仪表盘低位启动型（{len(stocks)}只）\n"]
+
+        if not stocks:
+            lines += [f"> ⚠️ 池子里当前没有匹配的低位启动型票（数据可能滞后）",
+                      f"> 仅大盘信号，个股决策仍按原仪表盘五档推送节奏\n\n"]
+        else:
+            for i, s in enumerate(stocks, 1):
+                flow_dir = '🔴出' if s['dailyFlow'] < 0 else '🟢入'
+                lines += [f"{i}. **{s['name']}** ({s['code']}) {s['industry']}",
+                          f"   30K={s['kdj30']:.1f}↑ · 5K={s['kdj5']:.1f} · 评{s['score']:.0f} · {flow_dir}{abs(s['dailyFlow']):.0f}万"]
+            lines += [""]
+        notes = (f"- 区间{zone} 目标线={target:.0f}："
+                 f"{'A=抢反弹窗口，B=站稳中位可关注；' if zone=='A' else 'B=站稳中位，A=抢反弹窗口；'}"
+                 f"K 重新回落穿越阈值警惕二次探底")
+        lines += [f"### 操作提示\n", notes,
+                  f"- 配套 {MAX_DAILY_PUSH} 档/日 上限（防高位追）",
+                  f"- 仪表盘标准推送（10/11/13/14/14:40）仍按时触发"]
+        lines += ["\n---\n",
+                  f"个体决策请结合个股30分K/资金流向，回调到位+资金回流型优先。"]
+
+        ok = send_wechat(title, '\n'.join(lines), push_type='index_rebound_v2')
         if ok:
             state['pushed_bars'].append(cur['bar'])
             state['push_count'] += 1
+            state.setdefault('pushed_zones', []).append(zone)
             save_state(state)          # 本地文件
             save_remote_state(state)   # 远端同步（云端/本地双路去重，失败不阻断）
-            print(f'[index_kdj] ✅ 已推送（今日第{state["push_count"]}次，bar={cur["bar"]}）')
+            print(f'[index_kdj] ✅ 已推送（今日第{state["push_count"]}次，区间{zone}，'
+                  f'bar={cur["bar"]}，附{len(stocks)}只个股）')
         else:
             print('[index_kdj] ⚠️ 推送失败，未记录状态（下轮可重试）')
     except ImportError:
