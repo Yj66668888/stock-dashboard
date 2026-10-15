@@ -1030,6 +1030,8 @@
   .action-tag.hold { background: rgba(110,118,130,0.15); color: #8b949e; border: 1px solid rgba(110,118,130,0.3); }
 .action-tag.hold-star { background: rgba(110,118,130,0.20); color: rgba(200,210,220,0.85); border: 1px dashed rgba(200,210,220,0.4); margin-left: 6px; }
 .action-tag.s4b1 { box-shadow: 0 0 4px rgba(200,210,220,0.25); }
+/* 2026-10-15 二元信号灯：观望态（不带⭐⭐）视觉降级，无发光 */
+.action-tag.s4b1.s4b1-wait { box-shadow: none; opacity: 0.65; }
 
   .mc-section-header.on-deck { color: var(--red, #f85149); }
   .mc-section-header.on-deck .mc-count { background: rgba(248,81,73,0.2); }
@@ -5238,6 +5240,26 @@ function _mktActionAdvice(ik) {
   r.dir = rising ? '升' : '降';
   r.ma = maTxt;
   return r;
+}
+
+// ★2026-10-15 二元信号灯：把 _mktActionAdvice 7 区间×方向×MA20 的 11 种状态
+// 合并为 3 个可执行信号 — 只有"到位"和"清仓"才亮 ⭐⭐
+//   买入信号（到位·可买）：回调买点·满仓档 / 最佳做多区 / 抢反弹·轻仓
+//   卖出信号（反弹顶·清仓）：清仓禁追·超买区上升 / 减仓·超买回落 / 末段减仓·强势区
+//   其它（观望·持有）：持有·弱换强 / 持有不动 / 观望·初反弹陷阱 / 回调观望·破位期轻仓
+function _classifySignal(adv) {
+  if (!adv || !adv.a) return { label: '观望·持有', cls: 'hold', star: false, signal: 'wait' };
+  var a = adv.a;
+  // 卖出信号（最优先 — 高位风险大于机会）
+  if (a.indexOf('清仓') >= 0 || a.indexOf('减仓') >= 0) {
+    return { label: '反弹顶·清仓', cls: 'hold-star', star: true, signal: 'sell' };
+  }
+  // 买入信号
+  if (a.indexOf('回调买点') >= 0 || a.indexOf('最佳做多区') >= 0 || a.indexOf('抢反弹') >= 0) {
+    return { label: '到位·可买', cls: 'hold-star', star: true, signal: 'buy' };
+  }
+  // 其它 = 观望
+  return { label: '观望·持有', cls: 'hold', star: false, signal: 'wait' };
 }
 
 function renderIndexBanner() {
