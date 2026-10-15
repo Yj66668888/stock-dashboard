@@ -337,28 +337,45 @@ def full_scan(with_prelaunch=False):
     # 2026-09-18: 增加覆盖率校验 —— precompute 拉K线失败时返回码仍为0(静默跳过)，
     # 曾导致「阶段/MACD/均线/趋势/30日高开率/支撑价」整列空白照常上线。
     # 覆盖率不足则重跑一次，仍不足直接 exit(1) 中止推送。
+    # 2026-10-15 改: docs/root 两个 HTML 并行跑，precompute_daily_indicators 内部已用 6 worker 并发拉 K 线。
     di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
     if os.path.exists(di_script):
-        for html_file in [DOCS_HTML, ROOT_HTML]:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def _run_with_retry(html_file):
             for attempt in range(2):
                 try:
                     result = subprocess.run(
                         [sys.executable, di_script, html_file],
-                        capture_output=True, text=True, timeout=300, cwd=BASE
+                        capture_output=True, text=True, timeout=600, cwd=BASE
                     )
                     if result.returncode == 0:
-                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功", flush=True)
                     else:
-                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}", flush=True)
+                except subprocess.TimeoutExpired:
+                    print(f"  [WARN] 日线指标预计算 {os.path.basename(html_file)} 超时（>10分钟）", flush=True)
                 except Exception as e:
-                    print(f"  [WARN] 日线指标预计算异常: {e}")
+                    print(f"  [WARN] 日线指标预计算异常: {e}", flush=True)
                 if verify_daily_coverage(html_file):
-                    break
+                    return html_file
                 if attempt == 0:
-                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...")
+                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...", flush=True)
                     time.sleep(2)
-            else:
-                print("\n  [FATAL] 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
+            return None
+
+        t0 = time.time()
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            futs = {ex.submit(_run_with_retry, f): f for f in [DOCS_HTML, ROOT_HTML]}
+            results = {}
+            for fut in as_completed(futs):
+                f = futs[fut]
+                results[f] = fut.result()
+        print(f"  [OK] 日线指标并发完成，耗时 {time.time()-t0:.1f}s", flush=True)
+
+        for f in [DOCS_HTML, ROOT_HTML]:
+            if not results.get(f):
+                print(f"\n  [FATAL] {os.path.basename(f)} 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
                 sys.exit(1)
 
     # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏
@@ -421,28 +438,45 @@ def update_only():
     # 2026-09-18: 增加覆盖率校验 —— precompute 拉K线失败时返回码仍为0(静默跳过)，
     # 曾导致「阶段/MACD/均线/趋势/30日高开率/支撑价」整列空白照常上线。
     # 覆盖率不足则重跑一次，仍不足直接 exit(1) 中止推送。
+    # 2026-10-15 改: docs/root 两个 HTML 并行跑，precompute_daily_indicators 内部已用 6 worker 并发拉 K 线。
     di_script = os.path.join(BASE, 'precompute_daily_indicators.py')
     if os.path.exists(di_script):
-        for html_file in [DOCS_HTML, ROOT_HTML]:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def _run_with_retry(html_file):
             for attempt in range(2):
                 try:
                     result = subprocess.run(
                         [sys.executable, di_script, html_file],
-                        capture_output=True, text=True, timeout=300, cwd=BASE
+                        capture_output=True, text=True, timeout=600, cwd=BASE
                     )
                     if result.returncode == 0:
-                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功")
+                        print(f"  [OK] 日线指标预计算: {os.path.basename(html_file)} 注入成功", flush=True)
                     else:
-                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}")
+                        print(f"  [WARN] 日线指标预计算失败: {result.stderr[:200]}", flush=True)
+                except subprocess.TimeoutExpired:
+                    print(f"  [WARN] 日线指标预计算 {os.path.basename(html_file)} 超时（>10分钟）", flush=True)
                 except Exception as e:
-                    print(f"  [WARN] 日线指标预计算异常: {e}")
+                    print(f"  [WARN] 日线指标预计算异常: {e}", flush=True)
                 if verify_daily_coverage(html_file):
-                    break
+                    return html_file
                 if attempt == 0:
-                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...")
+                    print(f"  [RETRY] {os.path.basename(html_file)} 日线指标覆盖率不足，重跑一次...", flush=True)
                     time.sleep(2)
-            else:
-                print("\n  [FATAL] 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
+            return None
+
+        t0 = time.time()
+        with ThreadPoolExecutor(max_workers=2) as ex:
+            futs = {ex.submit(_run_with_retry, f): f for f in [DOCS_HTML, ROOT_HTML]}
+            results = {}
+            for fut in as_completed(futs):
+                f = futs[fut]
+                results[f] = fut.result()
+        print(f"  [OK] 日线指标并发完成，耗时 {time.time()-t0:.1f}s", flush=True)
+
+        for f in [DOCS_HTML, ROOT_HTML]:
+            if not results.get(f):
+                print(f"\n  [FATAL] {os.path.basename(f)} 日线指标覆盖率不足（K线数据源异常）！中止推送以保护线上页面。")
                 sys.exit(1)
 
     # ★ JS 语法验证安全网 — 防止推送有语法错误的 HTML 导致页面白屏

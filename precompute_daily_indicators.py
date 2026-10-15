@@ -15,6 +15,7 @@
 """
 
 import json, os, re, sys, time, urllib.request, ssl
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 HTML_PATH = os.path.join(BASE, 'deploy', 'index.html')
@@ -643,36 +644,69 @@ def inject_into_html(html_path):
             sector_counts[sec] = sector_counts.get(sec, 0) + 1
     print(f"板块分布: {sector_counts}")
 
-    # 为每只股票计算指标
+    # 为每只股票计算指标（2026-10-15 改：ThreadPoolExecutor 并发拉 K 线）
     all_stocks = stocks + launch
     # 盘中兜底：批量拉 qt 实时行情（今日 bar 缺失时拼当日 bar 算 dayChg/volRatio）
     live_quotes = fetch_live_quotes([s.get('code') for s in all_stocks if s.get('code')])
     print(f"qt 实时行情: {len(live_quotes)}/{len(all_stocks)} 只")
+
+    # 去重（按 code，同一 code 只处理一次）
     seen_codes = set()
+    unique_stocks = []
+    for s in all_stocks:
+        c = s.get('code', '')
+        if not c or c in seen_codes:
+            continue
+        seen_codes.add(c)
+        unique_stocks.append(s)
+
+    # 并发参数：每只票 ~1-2s（拉 K 线 + 重试） + 0.15s 限速，40 只串行 ~80s
+    # 8 worker 并发拉 K 线，腾讯K线接口对单 IP QPS 较宽，但保险起见限 6 worker
+    _MAX_WORKERS = int(os.environ.get('PRECOMPUTE_WORKERS', '6'))
     ok_cnt = 0
     fail_codes = []
-    for i, stock in enumerate(all_stocks):
-        code = stock.get('code', '')
-        if code in seen_codes:
-            continue
-        seen_codes.add(code)
 
-        print(f"  [{i+1}/{len(all_stocks)}] {stock.get('name', '?')} ({code})...", end=' ')
+    def _do_one(stock):
+        """单只股票的 enrich，线程内可安全 in-place 改 stock dict（每只独立实例）"""
+        code = stock.get('code', '')
+        name = stock.get('name', '?')
         try:
             enrich_stock(stock, sector_counts, live_quotes)
-            # 检查结果
-            filled = sum(1 for k in ['macd', 'ma', 'trend', 'supportPrice', 'openRate30d', 'sectorResonance', 'preLaunchPhase'] if stock.get(k))
-            phase_label = stock.get('preLaunchPhase', '?')
-            if stock.get('macd'):
+            filled = sum(1 for k in ['macd', 'ma', 'trend', 'supportPrice', 'openRate30d',
+                                     'sectorResonance', 'preLaunchPhase'] if stock.get(k))
+            phase = stock.get('preLaunchPhase', '?')
+            ok = bool(stock.get('macd'))
+            return (code, name, ok, filled, phase, None)
+        except Exception as e:
+            return (code, name, False, 0, '?', str(e))
+
+    if _MAX_WORKERS > 1 and len(unique_stocks) > 1:
+        print(f"  并发模式: {_MAX_WORKERS} workers × {len(unique_stocks)} 只票")
+        t0 = time.time()
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as ex:
+            futures = {ex.submit(_do_one, s): s for s in unique_stocks}
+            for fut in as_completed(futures):
+                code, name, ok, filled, phase, err = fut.result()
+                if ok:
+                    ok_cnt += 1
+                else:
+                    fail_codes.append(code)
+                tag = '✅' if ok else '❌'
+                detail = f"{filled}/7 字段 | 阶段={phase}" if ok else (err or 'K线不足')
+                print(f"  {tag} {name} ({code}) {detail}", flush=True)
+        print(f"  并发完成，耗时 {time.time()-t0:.1f}s")
+    else:
+        # 串行回退（debug/单线程场景）
+        for i, stock in enumerate(unique_stocks):
+            code, name, ok, filled, phase, err = _do_one(stock)
+            if ok:
                 ok_cnt += 1
             else:
                 fail_codes.append(code)
-            print(f"✅ {filled}/7 字段已填充 | 阶段={phase_label}", flush=True)
-        except Exception as e:
-            fail_codes.append(code)
-            print(f"❌ {e}", flush=True)
-
-        time.sleep(0.15)  # 限速
+            tag = '✅' if ok else '❌'
+            detail = f"{filled}/7 字段 | 阶段={phase}" if ok else (err or 'K线不足')
+            print(f"  [{i+1}/{len(unique_stocks)}] {tag} {name} ({code}) {detail}", flush=True)
+            time.sleep(0.15)
 
     # 2026-09-18加: 覆盖率汇总 — 覆盖率过低时明确告警(便于 pipeline 自检接管)
     total = len(seen_codes)

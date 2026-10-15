@@ -26,7 +26,7 @@ concurrency:
 jobs:
   dashboard-update:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20  # 2026-10-15 提到 20 分钟（precompute_daily_indicators 改 6 worker 并发后已很少触碰上限，留缓冲）
 
     steps:
       - name: Checkout
