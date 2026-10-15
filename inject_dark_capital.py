@@ -21,7 +21,9 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
-ROOT = Path('/Users/fuckyouasshole/WorkBuddy/2026-07-01-11-18-34')
+# 动态定位项目根目录（脚本所在目录），兼容本地与 GitHub Actions 云端环境
+# 2026-10-15 修复：原为硬编码本地绝对路径，云端 Actions 下读不到池子导致暗盘列全空
+ROOT = Path(__file__).resolve().parent
 
 
 def curl(url, retry=2, timeout=15):
