@@ -460,15 +460,6 @@ def main():
     if not m:
         print('❌ 未找到 STOCKS 数组'); sys.exit(1)
     old_arr = json.loads(m.group(2))
-    # ★ 2026-10-12 护栏（事故: 49b8a1a91/本次 rescan）：行情全失败时 selected 为空，
-    # 旧代码会注入"0 只 selected + 4 只固定票"=4 只池子，把原 34 只池子全部清空。
-    # 修复: 行情命中率 <30% 时直接拒绝注入，保留原池子不动（前端 JS 会自行用实时数据覆盖）
-    if not selected and old_arr:
-        print(f"⛔ 本次行情拉取全失败（selected={len(selected)}），拒绝注入（保留原 {len(old_arr)} 只池子）")
-        sys.exit(0)
-    if selected and len(selected) < 5:
-        print(f"⛔ 本次 selected 仅 {len(selected)} 只（疑似数据源严重限流），拒绝注入（保留原 {len(old_arr)} 只池子）")
-        sys.exit(0)
     # 固定票去重抽取（2026-09-09修复: 历史重复条目被原样滚雪球, 四方股份最多4条同屏）。
     # 数组前部=最近一次selected新注入(最新数据), 故每code只保留第一条。
     seen_pinned = set()
@@ -479,6 +470,61 @@ def main():
             pinned_entries.append(s)
     if len(pinned_entries) != len(PINNED):
         print(f'⚠️ 固定票只找到{len(pinned_entries)}/{len(PINNED)}，缺失的不动其他票')
+
+    # ★ 2026-10-16 修复（长期遗留）：固定票走"原样保留"分支，从不参与 KDJ 计算，
+    # 于是 9 只固定票的 kdj30/kdj5/kdj30Tier 恒为 null（继承历史空字段，滚雪球），
+    # 前端 KDJ 列空白、30分K分层与今日动作对这些票全部失真。
+    # 这里对缺字段的固定票单独补算一次（并发，量小不影响耗时）。
+    need_kdj = [s for s in pinned_entries
+                if s.get('kdj30') in (None, '', 0) or s.get('kdj5') in (None, '', 0)]
+    if need_kdj:
+        print(f"[FIX] {len(need_kdj)} 只固定票缺 KDJ 字段，补算中...")
+
+        def _pin_worker(s):
+            try:
+                return s['code'], calc_kdj_m30(s['code']), calc_kdj_m5(s['code'])
+            except Exception as e:
+                return s['code'], None, None
+
+        fixed = 0
+        with ThreadPoolExecutor(max_workers=3) as ex:
+            for code, r30, r5 in ex.map(_pin_worker, need_kdj):
+                tgt = next((x for x in pinned_entries if x['code'] == code), None)
+                if tgt is None:
+                    continue
+                if r30:
+                    trend = classify_trend(r30)
+                    tier = classify_tier(r30['k'], trend)
+                    tgt['kdj30'] = r30['k']
+                    tgt['kdj30Dir'] = '↑' if trend == 'up' else ('↗' if trend == 'prep_up' else '↓')
+                    tgt['kdj30Trend'] = trend
+                    tgt['kdj30Tier'] = tier if tier is not None else 6
+                    fixed += 1
+                    print(f"  [FIX] {code} {tgt.get('name','')} K30={r30['k']}{tgt['kdj30Dir']} T{tgt['kdj30Tier']}")
+                if r5:
+                    tgt['kdj5'] = r5['k']
+                    tgt['kdj5Dir'] = '↑' if r5['k'] > r5['k_prev'] else '↓'
+                    tgt['kdj5J'] = r5['j']
+        print(f"[FIX] 固定票 KDJ 补算完成: {fixed}/{len(need_kdj)}")
+
+    # ★ 2026-10-12 护栏: 行情全失败时 selected 为空，旧代码会注入"0只 selected + 固定票"，
+    # 把原池子清空（事故 49b8a1a91）。→ 拒绝注入，保留原池子。
+    if not selected and old_arr:
+        print(f"⛔ 本次行情拉取全失败（selected=0），拒绝注入（保留原 {len(old_arr)} 只池子）")
+        sys.exit(0)
+    # ★ 2026-10-16 护栏升级（事故 2026-10-16 整天断更）:
+    # 旧阈值只判 selected<5，于是"选票部分超时"场景（全市场扫描/资金流扫描各超时600s
+    # → 只选出 15 只）能轻松越过 5 只门槛，把 40 只池子冲成 25 只，
+    # 再触发 ci_freshness_guard 的 STOCKS>=30 护栏 → 全天不推送。
+    # 新规则：最终池子 = selected + 固定票，不足 MIN_POOL_SIZE 则**拒绝换票**
+    # （保留原池子，后续 enrich/precompute 仍会刷新字段），宁可不换票也别让全池缩水。
+    MIN_POOL_SIZE = 30
+    final_pool = len(selected) + len(pinned_entries)
+    if old_arr and final_pool < MIN_POOL_SIZE:
+        print(f"⛔ 换票后池子仅 {final_pool} 只（selected {len(selected)} + 固定 {len(pinned_entries)}）"
+              f" < {MIN_POOL_SIZE} 健康阈值，拒绝换票"
+              f"（保留原 {len(old_arr)} 只池子，仅刷新字段）")
+        sys.exit(0)
 
     new_entries = []
     # 旧池中按代码保留资金流数据（盘前/开盘初期 f62 拉不到当日值时兜底，避免覆盖成0）
