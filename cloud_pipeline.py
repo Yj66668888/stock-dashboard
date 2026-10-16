@@ -393,6 +393,21 @@ def full_scan(with_prelaunch=False):
 
     restore_deploy_placeholders()
 
+    # 固定票 KDJ 补算（2026-10-16 加，与 update 模式同一步）
+    # rescan 虽已内嵌补算，但 rescan 触发兜底 sys.exit(0) 时会跳过，此处兜底。
+    fpk_script = os.path.join(BASE, 'fix_pinned_kdj.py')
+    if os.path.exists(fpk_script):
+        try:
+            result = subprocess.run(
+                [sys.executable, fpk_script, '--local', DEPLOY_HTML, DOCS_HTML, ROOT_HTML],
+                capture_output=True, text=True, timeout=180, cwd=BASE)
+            print("  固定票 KDJ 补算:", flush=True)
+            print((result.stdout or '')[-2000:], flush=True)
+            if result.returncode != 0:
+                print(f"  [WARN] 固定票KDJ补算返回码 {result.returncode}: {result.stderr[:200]}", flush=True)
+        except Exception as e:
+            print(f"  [WARN] 固定票KDJ补算异常: {e}", flush=True)
+
     print("\n" + "=" * 60)
     print("  FULL SCAN DONE - ready for git commit & push")
     print("=" * 60)
@@ -493,6 +508,24 @@ def update_only():
         sys.exit(1)
 
     restore_deploy_placeholders()
+
+    # Step 3b: 固定票 KDJ 补算（2026-10-16 加）
+    # 固定票走"原样保留"分支，从不参与选票计算 → kdj30/kdj5 恒为 null。
+    # 更要命的是 update 模式每轮用 deploy 覆盖 docs，本地手动补的字段会被整轮冲掉
+    # （实测 10-16 14:36 补算 → 15:07 那轮 update 后 9 只又变回 null）。
+    # 所以在推送前统一就地补算三份 HTML，保证每轮上线数据都齐全。
+    fpk_script = os.path.join(BASE, 'fix_pinned_kdj.py')
+    if os.path.exists(fpk_script):
+        try:
+            result = subprocess.run(
+                [sys.executable, fpk_script, '--local', DEPLOY_HTML, DOCS_HTML, ROOT_HTML],
+                capture_output=True, text=True, timeout=180, cwd=BASE)
+            print("  [3b/4] 固定票 KDJ 补算:", flush=True)
+            print((result.stdout or '')[-2000:], flush=True)
+            if result.returncode != 0:
+                print(f"  [WARN] 固定票KDJ补算返回码 {result.returncode}: {result.stderr[:200]}", flush=True)
+        except Exception as e:
+            print(f"  [WARN] 固定票KDJ补算异常: {e}", flush=True)
 
     print("\n" + "=" * 60)
     print("  UPDATE DONE - ready for git commit & push")
