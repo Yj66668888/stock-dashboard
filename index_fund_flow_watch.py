@@ -44,12 +44,14 @@ STATE_FILE = os.path.join(BASE, '.index_fund_state.json')
 # ---------- 判定阈值（全部可在下方独立调整）----------
 MIN_RECALL_YI = 2.0          # 净回补绝对下限：2 亿。低于此数视为噪声，不推
 RECALL_RATIO = 0.08          # 相对回流比例下限：当日流出峰值的 8%
-SUSTAIN_POINTS = 5           # 持续性：最近 N 个分钟点（≈5分钟）
+SUSTAIN_POINTS = 5           # 持续性：最近 N 个点（分钟序列≈5分钟；快照序列降级用全部点）
+MIN_POINTS_FLOOR = 5         # 序列最短点数（快照稀疏模式 5 点即可判定）
 SUSTAIN_MIN_YI = 1.0         # 持续性：N 点内净回升至少 1 亿
 STRONG_RECALL_YI = 8.0       # 强回流：净回补 >= 8 亿
 COOLDOWN_MIN = 30            # 冷却：距上次推送至少 30 分钟才算新一波
 TRENCH_REFRESH_YI = 5.0      # 坑刷新：trough 再深 5 亿以上才允许重推
 MAX_DAILY_PUSH = 2           # 当日上限（与 index_kdj_watch 合计受 Server酱 5 条约束）
+THROTTLE_SEC = 60            # 跨进程取数节流：任意两次真实取数间隔下限，防东财限流
 
 YI = 1e8                    # 1 亿
 
@@ -90,7 +92,10 @@ def _http_get(url, timeout=12, retries=4):
     两路请求都强制绕过本机代理。"""
     import urllib.request
     headers = {'User-Agent': 'Mozilla/5.0', 'Referer': 'https://data.eastmoney.com/'}
-    delays = [0, 3, 6, 12]
+    # 指数退避 3/10/25/45 秒。东财对**连续密集请求**会整段限流
+    # （实测 20+ 次/5分钟 → 所有 push2 接口持续 RemoteDisconnected 数分钟），
+    # 而每 5 分钟一次的正常监控频率不会触发。退避到位即可自然恢复。
+    delays = [0, 3, 10, 25]
     for i in range(retries):
         if delays[i]:
             time.sleep(delays[i])
@@ -224,8 +229,13 @@ def merge_snapshot_into_timeline(flows, snap):
 
 
 def analyze(flows):
-    """核心判定。返回 dict（含是否触发/强度/回补量等），无数据返回 None"""
-    if len(flows) < 10:
+    """核心判定。返回 dict（含是否触发/强度/回补量等），无数据返回 None
+
+    兼容两种序列：
+      - 分钟全量（240 点，东财 klt=1）
+      - 快照稀疏序列（每5分钟一点，降级模式，MIN_POINTS_FLOOR~5 点即可判定）
+    """
+    if len(flows) < MIN_POINTS_FLOOR:
         return None
 
     trough_i = min(range(len(flows)), key=lambda i: flows[i]['main'])
@@ -239,16 +249,16 @@ def analyze(flows):
     cur_yi, trough_yi = cur_v / YI, trough_v / YI
     recall_yi = recall / YI
 
-    # 持续性：最后 SUSTAIN_POINTS 个点里，起点→终点净回升 且 整体非单调下滑
-    tail = flows[-SUSTAIN_POINTS:]
-    if len(tail) < SUSTAIN_POINTS:
-        sustain = False
-        tail_rise_yi = 0.0
-    else:
-        tail_rise = tail[-1]['main'] - tail[0]['main']
-        tail_rise_yi = tail_rise / YI
-        # 允许中途小幅回落，但终点必须明显高于起点
-        sustain = tail_rise >= SUSTAIN_MIN_YI * YI
+    # 持续性：判定"最近一段是持续回升而非单点脉冲"
+    # 关键区分：
+    #   分钟全量序列（点间隔 1 分钟）→ 看最近 SUSTAIN_POINTS(5) 点，跨度约 5 分钟
+    #   快照稀疏序列（点间隔 5~30 分钟）→ 只看最后两点，
+    #     因为取更多点会把早盘深跌一起框进来，净变化反而为负导致漏报
+    span = SUSTAIN_POINTS if len(flows) > SUSTAIN_POINTS * 3 else 2
+    tail = flows[-span:]
+    tail_rise = tail[-1]['main'] - tail[0]['main']
+    tail_rise_yi = tail_rise / YI
+    sustain = tail_rise >= SUSTAIN_MIN_YI * YI
 
     thresh_yi = max(MIN_RECALL_YI, depth * RECALL_RATIO / YI)
     fired = recall_yi >= thresh_yi and sustain and trough_i < len(flows) - 1
@@ -271,6 +281,9 @@ def analyze(flows):
 def build_message(a, idx_note=''):
     """构建推送文案（全部用实时数值，不写死任何方向）"""
     level_txt = '弱回流' if a['level'] == 'WEAK' else '强回流'
+    dense = a.get('src', '').startswith('分钟')      # 分钟全量 vs 快照稀疏
+    pt_txt = f"{a['points']} 个分钟点" if dense else f"{a['points']} 次采样快照"
+    span_txt = '近 5 分钟' if dense else '最近一段'
     # 方向描述：当前累计值相对峰值收窄多少
     if a['cur_yi'] < 0:
         head = (f"大盘主力资金**回补 {a['recall_yi']:.2f} 亿**，"
@@ -283,7 +296,7 @@ def build_message(a, idx_note=''):
         verdict = f"{level_txt}·资金已转正，指数层面转强"
 
     if a['level'] == 'STRONG':
-        advice = ('回补量已超过阈值且持续 5 分钟以上，属于**资金层面的真实回升**，'
+        advice = ('回补量已超过阈值且末段仍在持续回升，属于**资金层面的真实回升**，'
                   '与大盘 30 分 K 拐头共振时反弹概率最高。')
     else:
         advice = ('回补幅度还不足以确认趋势反转，历史上**流出收窄常是下跌中继**，'
@@ -291,12 +304,12 @@ def build_message(a, idx_note=''):
 
     lines = [
         '## 大盘资金流向变化监测\n',
-        f"> 时间: {a['cur_t']}（{a['points']} 个分钟点）\n\n",
+        f"> 时间: {a['cur_t']}（{pt_txt}）\n\n",
         '### 1、资金变化\n',
         f"- 净流出峰值：**{a['trough_yi']:.2f} 亿**（{a['trough_t']}）",
         f"- 当前累计：{a['cur_yi']:+.2f} 亿",
         f"- **净回补：{a['recall_yi']:+.2f} 亿**（阈值 {a['thresh_yi']:.2f} 亿）",
-        f"- 持续性：近 5 分钟净回升 {a['tail_rise_yi']:+.2f} 亿"
+        f"- 持续性：{span_txt}净回升 {a['tail_rise_yi']:+.2f} 亿"
         f"{'（成立）' if a['sustain'] else '（未成立）'}",
         f"- 结构：大单 {a['big_yi']:+.2f} 亿 / 超大单 {a['xlbig_yi']:+.2f} 亿\n\n",
         f'### 2、结论\n',
@@ -305,8 +318,8 @@ def build_message(a, idx_note=''):
     if idx_note:
         lines += ['', f'### 3、大盘 30 分 K\n', idx_note]
     lines += ['', '---',
-              '> 口径：东财上证指数分钟级主力净流入累计曲线；'
-              '回补额 = 当前值 − 当日最低值；阈值 = max(2亿, 峰值深度×8%)。',
+              '> 口径：东财上证指数主力净流入累计曲线；'
+              '回补额 = 当前值 − 当日最低值；阈值 = max(2亿, 峰值深度×8%)，且末段须持续回升。',
               '> 提示：资金收窄≠见底，历史上多为下跌中继，务必配合 30 分 KDJ 趋势方向判断。']
     title = (f"{'✅' if a['cur_yi'] >= 0 else '🔄'} 大盘资金{'转正' if a['cur_yi'] >= 0 else '回流'}·{level_txt}"
              f"｜回补{a['recall_yi']:+.2f}亿｜当前{a['cur_yi']:+.2f}亿")
@@ -330,6 +343,33 @@ def index_kdj_note():
         return ''
 
 
+def _throttle():
+    """跨进程节流：距上次取数不足 THROTTLE_SEC 秒就直接跳过本轮。
+
+    东财限流的根因是**密集请求**。即使 automation 每 5 分钟一次，
+    手工调试 + automation 撞在一起仍可能触发。加一层跨进程节流，
+    保证任意两次真实取数之间至少间隔 THROTTLE_SEC 秒。
+    调试时可用 SKIP_THROTTLE=1 绕过。
+    """
+    if os.environ.get('SKIP_THROTTLE') == '1' or os.environ.get('FORCE_PUSH') == '1':
+        return True
+    try:
+        st = load_state()
+        last = st.get('last_fetch')
+        if last:
+            gap = (bj_now() - datetime.strptime(last, '%Y-%m-%d %H:%M:%S').replace(
+                tzinfo=timezone(timedelta(hours=8)))).total_seconds()
+            if gap < THROTTLE_SEC:
+                print(f'[fund_flow] 距上次取数仅 {int(gap)}s（<{THROTTLE_SEC}s），本轮跳过')
+                return False
+    except Exception:
+        pass
+    st = load_state()
+    st['last_fetch'] = bj_now().strftime('%Y-%m-%d %H:%M:%S')
+    save_state(st)
+    return True
+
+
 def main():
     test_mode = '--test' in sys.argv
     force = os.environ.get('FORCE_PUSH') == '1'
@@ -338,6 +378,9 @@ def main():
 
     if not test_mode and not force and not in_trading_time(now):
         print(f'[fund_flow] {now.strftime("%H:%M")} 非交易时段，跳过')
+        return
+
+    if not _throttle():
         return
 
     flows = fetch_market_flow()
