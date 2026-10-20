@@ -44,7 +44,7 @@ STATE_FILE = os.path.join(BASE, '.index_fund_state.json')
 # ---------- 判定阈值（全部可在下方独立调整）----------
 MIN_RECALL_YI = 2.0          # 净回补绝对下限：2 亿。低于此数视为噪声，不推
 RECALL_RATIO = 0.08          # 相对回流比例下限：当日流出峰值的 8%
-SUSTAIN_POINTS = 5           # 持续性：最近 N 个点（分钟序列≈5分钟；快照序列降级用全部点）
+SUSTAIN_POINTS = 5           # 持续性窗口：分钟密集序列看最近 5 点(≈5分钟)；稀疏序列只看最近 2 点
 MIN_POINTS_FLOOR = 5         # 序列最短点数（快照稀疏模式 5 点即可判定）
 SUSTAIN_MIN_YI = 1.0         # 持续性：N 点内净回升至少 1 亿
 STRONG_RECALL_YI = 8.0       # 强回流：净回补 >= 8 亿
