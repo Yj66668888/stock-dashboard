@@ -42,7 +42,7 @@ K_LOW_CROSS = 20.0        # 区间A 回升目标线（前bar<20 → 当前≥20�
 K_MID_CROSS = 45.0        # 区间B 回升目标线（前bar<45 → 当前≥45）
 K_MID_LO = 40.0           # 区间B 下界（区间A 上界）
 K_MID_HI = 65.0           # 区间B 上界（>此值完全不推）
-MAX_DAILY_PUSH = 4        # 当日推送上限（A+B+重叠保护）
+MAX_DAILY_PUSH = 2        # 当日推送上限（脚本内频控；另有共享预算 MKT_PUSH_BUDGET=3 与资金回流信号共用）
 BAR_MIN_LEN = 30           # 重放所需最少bar数
 
 _CLEAN_ENV = {k: v for k, v in os.environ.items() if 'proxy' not in k.lower()}
@@ -366,10 +366,12 @@ def main():
     # ★★★ 个股清单：从 dynamic_stocks.json 筛低位启动型 ★★★
     stocks = pick_low_bounce_stocks(zone)
 
-    # 推送（FORCE_PUSH=1 绕过时间闸门，频控由本脚本自己管）
+    # 推送（走大盘通道共享预算闸门，本脚本自有 bar/区间/次数频控）
     try:
         from wechat_notify import send_wechat
-        os.environ['FORCE_PUSH'] = '1'
+        # 注意：这里**不**设 FORCE_PUSH。大盘通道走 push_gate 的共享预算闸门
+        # （_MKT_PUSH_TYPES 白名单 → 每日 3 条共享上限，与资金回流信号共用），
+        # 必须让闸门真正生效，否则会吃光 Server酱 5 条/日的额度导致个股两档推不出。
         target = K_LOW_CROSS if zone == 'A' else K_MID_CROSS
         title = f"🚨 大盘拐头·区间{zone}｜K={cur['k']}→{target}·{len(stocks)}只低位启动"
         lines = [f"## 大盘30分钟KDJ 分档回升｜即时个票清单\n",
