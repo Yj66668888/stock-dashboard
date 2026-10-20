@@ -55,10 +55,28 @@ def load_sendkey():
 #   - FORCE_PUSH=1 环境变量可绕过闸门（手动测试用）
 # 2026-10-14 演变：凌晨两档(10:00/13:30) → 早间用户改回原版五档，
 #   云端 update 在每个窗口起跑一次（10:07/11:07/13:07/14:07/14:43）
+# 2026-10-20 用户改版（第二轮）：五档 → 三档
+#   ① 10:40（上午一次）② 13:10（区间 13:00-14:00）③ 14:30（区间 14:00-14:40）
+#   第四档原 11:10 已删除 —— Server酱免费额度每天仅 5 条，
+#   三档个股推送 + 1~2 条大盘到位信号正好卡在额度内，绝不能再多推。
+#   结论式播报("所以呢?"那段)不单独发条，合并进当档推送正文，
+#   更新完成后补推时复用同一 push_type，同样只占 1 条额度。
+#   AFTER 保留 45 分钟容错——GitHub cron 实测延迟可达 38 分钟，漏推比晚推更糟
 # ============================================================
 
-_PUSH_TIMES = [(10, 0), (11, 0), (13, 0), (14, 0), (14, 40)]
-_PUSH_TIMES_STR = '10:00/11:00/13:00/14:00/14:40'
+_PUSH_TIMES = [(10, 40), (13, 10)]
+_PUSH_TIMES_STR = '10:40/13:10 + 下午收尾档(更新完成即推)'
+
+# ★ 下午收尾档（2026-10-20 用户拍板）：
+#   用户要求「下午13:50自动更新，尽量在14:30前更新好，更新好后推一次带结论的」。
+#   云端 update 实际耗时 20~30 分钟，13:50 起跑 → 14:10~14:20 完成，
+#   固定 14:30 窗口根本等不到（闸门只认管道启动时刻）。
+#   故单独设第三档：管道启动时刻落在 [13:45, 14:45] 内即算「下午收尾档」，
+#   用 PIPELINE_START 锚点 + 当日去重，13:50 和 14:30 两种起跑方式都能命中，
+#   但一天只推 1 次，绝不双推。
+_PM_PUSH_TYPE = 'daily_pm'
+_PM_PUSH_FROM = 13 * 60 + 45     # 13:45 起
+_PM_PUSH_TO = 14 * 60 + 45       # 14:45 止
 _PUSH_WINDOW_BEFORE = 3   # 提前3分钟开窗
 _PUSH_WINDOW_AFTER = 45   # 延后45分钟关窗——GitHub cron高峰期实测延迟可达38分钟
 _STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.wechat_push_state.json')
@@ -123,16 +141,69 @@ def _save_push_state(state):
 
 def push_gate(push_type):
     """推送闸门检查，返回 (allowed, window, state_key)
-    allowed=False 时 window 携带拦截原因说明"""
+
+    allowed=False 时 window 携带拦截原因说明
+
+    三档个股推送（用户 10/20 拍板，额度有限一天只 3 条）：
+      ① daily_am : 10:40 固定窗口
+      ② daily_pm : 13:10 固定窗口
+      ③ 收尾档   : _PM_PUSH_TYPE='daily_pm'，13:45-14:45 任意时刻起跑即命中，
+                   用于「13:50 自动更新 → 14:30 前更新好 → 推一次带结论」
+    其余 push_type（bottom/intraday/index_rebound_v2 等）沿用原固定窗口逻辑，
+    不受三档改造影响。
+    """
     if os.environ.get('FORCE_PUSH') == '1':
         return True, 'forced', None
-    window, now = _match_push_window()
+
+    now = _anchor_now()
+    minutes = now.hour * 60 + now.minute
+    today = now.strftime('%Y-%m-%d')
+
+    # ---- 下午收尾档：13:45-14:45 之间起跑都算，每日 1 次 ----
+    if push_type == _PM_PUSH_TYPE:
+        if not (_PM_PUSH_FROM <= minutes <= _PM_PUSH_TO):
+            return False, f"管道启动时刻{now.strftime('%H:%M')}不在下午收尾档(13:45-14:45)内", None
+        state_key = f"{push_type}:{today}"
+        if _load_push_state().get(state_key):
+            return False, f"下午收尾档今日已推送过", None
+        return True, 'pm-close', state_key
+
+    # ---- 其余：原固定窗口逻辑 ----
+    window, _ = _match_push_window()
     if not window:
         return False, f"管道启动时刻{now.strftime('%H:%M')}不在推送时间窗({_PUSH_TIMES_STR})内", None
-    state_key = f"{push_type}:{now.strftime('%Y-%m-%d')}"
+    state_key = f"{push_type}:{today}"
     if _load_push_state().get(state_key) == window:
         return False, f"时间窗{window}类型{push_type}今日已推送过", None
     return True, window, state_key
+
+
+def digest_gate():
+    """每日三档合并推送('digest')的闸门：自动识别落在哪一档。
+
+    返回 (allowed, window_key, state_key)
+      - 13:45-14:45 起跑  → 'pm-close'（下午收尾档：13:50 更新跑完即推）
+      - 10:40 / 13:10 窗  → 'am' / 'noon'
+    三档各只推 1 条/天，state_key 按档位分开记账。
+    """
+    if os.environ.get('FORCE_PUSH') == '1':
+        return True, 'forced', None
+    now = _anchor_now()
+    minutes = now.hour * 60 + now.minute
+    today = now.strftime('%Y-%m-%d')
+
+    if _PM_PUSH_FROM <= minutes <= _PM_PUSH_TO:
+        key = 'pm-close'
+    else:
+        fixed, _ = _match_push_window()
+        if not fixed:
+            return False, f"管道启动时刻{now.strftime('%H:%M')}不在三档推送窗(10:40/13:10/收尾档)内", None
+        key = 'am' if fixed == '1040' else 'noon'
+
+    state_key = f"digest:{key}:{today}"
+    if _load_push_state().get(state_key):
+        return False, f"{key} 档今日已推送过", None
+    return True, key, state_key
 
 
 # ============================================================
@@ -437,3 +508,248 @@ def notify_bottom_accumulation(stocks, context='指标计算', vol_ratios=None):
         print(f"  {s['name']:6s} {s['code']} 阶段={s['phase']:12s} 换手={s['turnover']:.1f}% 量比={vr_str} 当日={s['daily_flow']:+.0f}万")
 
     return bottom_stocks
+
+
+# ============================================================
+# 每日三档合并推送（digest）—— 2026-10-20 用户拍板
+# ============================================================
+# 用户原话：「在股票更新完成后进行一次推送」+「要有下面这段文字」，
+#   并强调那段文字必须实时（"不要我这里写大盘30分趋势向下，你就写个向下"）。
+#
+# 三条硬约束：
+# 1. Server酱免费额度每天仅 5 条，个股推送 3 档已占 3 条，大盘到位信号再占 1~2 条。
+#    所以结论段**不单独发条**，而是作为每档推送正文的第一段，
+#    底部缩量建仓明细接在其后 —— 一档只消耗 1 条额度。
+# 2. 大盘判断实时拉腾讯分钟线重算 KDJ(9,3,3)，任何结论词都不写死。
+#    五种实时情形各对应一句措辞，随数据变化：
+#      超低位回升 / 趋势向下(5分金叉只是先兆) / 黄金位向上 / 高位不追 / 方向未明
+# 3. 个股真到位 = 30分K<25 且拐头(↑/↗)，剔除当日跌超5%（大跌带后没拐头=接刀），
+#    剔掉的票名要在正文里点名说明为什么剔。
+#
+# 三档：10:40(am) / 13:10(noon) / 13:45-14:45起跑(pm-close，覆盖13:50自动更新)
+# ============================================================
+
+_MARKET_BRIEF_SENT = False   # 本次进程只推一次（多HTML重复注入防重）
+
+
+def _index_m5_goldencross():
+    """大盘5分KDJ 是否金叉/回升（K向上 + 已上穿D 或 J低位）。失败返回 (None, '')"""
+    try:
+        from index_kdj_watch import fetch_index_m30
+        kdj = fetch_index_m30(period='m5')
+        if not kdj:
+            return None, ''
+        cur, prev = kdj['cur'], kdj['prev']
+        golden = cur['k'] > prev['k'] and (cur['k'] > cur['d'] or cur['j'] < 30)
+        return golden, f"K={cur['k']}/D={cur['d']}/J={cur['j']}"
+    except Exception as e:
+        print(f"[WeChat] 大盘5分KDJ获取失败: {e}")
+        return None, ''
+
+
+def _num(s, key, default=None):
+    try:
+        v = s.get(key)
+        return float(v) if v is not None else default
+    except (TypeError, ValueError):
+        return default
+
+
+def _chg_of(s):
+    """当日涨跌幅：chg_today / dayChg 双字段兼容"""
+    v = _num(s, 'chg_today')
+    if v is None:
+        v = _num(s, 'dayChg')
+    return v
+
+
+def _judge_market():
+    """实时拉大盘30分/5分KDJ并给结论。返回 (verdict, advice, 指数行, 是否到位)"""
+    try:
+        from index_kdj_watch import fetch_index_m30
+        idx = fetch_index_m30()
+    except Exception as e:
+        print(f"[WeChat] 大盘30分KDJ获取失败: {e}")
+        idx = None
+
+    if not idx:
+        return ('大盘数据异常',
+                '本次大盘30分KDJ未取到，以下候选仅供参考，暂不据此决策。', '—', False)
+
+    cur, prev = idx['cur'], idx['prev']
+    k30, d30, j30 = cur['k'], cur['d'], cur['j']
+    rising = cur['k'] > prev['k']        # 本bar K是否向上
+    above_d = k30 >= d30                 # K是否已上穿D
+    golden5, m5_str = _index_m5_goldencross()
+    m5_txt = f"，5分{m5_str}" if m5_str else ""
+    idx_line = f"上证 {cur['close']:.2f}｜30分K={k30} D={d30} J={j30}"
+
+    # —— 实时分情形，措辞随数据变（绝不写死"向下"）——
+    if k30 < 25 and rising:
+        verdict = '大盘30分K超低位回升，接近真到位'
+        advice = (f"大盘30分K={k30}，已从超卖低位回升（前一bar K={prev['k']}）{m5_txt}。"
+                  f"等 K 有效反穿 D（当前 D={d30}）并站稳再动手，可分批轻仓试。")
+        in_zone = True
+    elif not above_d and not rising:
+        gc = '5分金叉只是盘中反弹先兆' if golden5 else '5分也未见金叉'
+        verdict = '现在不是买点'
+        advice = (f"大盘30分趋势仍向下（K={k30} 仍在 D={d30} 下方，且本bar继续走弱）{m5_txt}，{gc}。"
+                  f"要等 30分 K 反穿 D + 站稳才考虑。")
+        in_zone = False
+    elif 40 <= k30 <= 65 and above_d and rising:
+        verdict = '大盘黄金位，回调票可关注'
+        advice = (f"大盘30分K={k30} 处于 40-65 黄金位，已反穿 D（{k30}≥{d30}）并向上{m5_txt}，"
+                  f"到位票可按清单分批关注，仍不追高。")
+        in_zone = True
+    elif k30 > 65:
+        verdict = '大盘高位，不追'
+        advice = f"大盘30分K={k30} 已偏高（>65）{m5_txt}，只看不动手，等回调。"
+        in_zone = False
+    else:
+        verdict = '大盘方向未明，观望'
+        advice = (f"大盘30分K={k30} D={d30}（{'已反穿D' if above_d else '仍在D下方'}，"
+                  f"本bar{'向上' if rising else '走弱'}）{m5_txt}，方向未明，等信号。")
+        in_zone = False
+    return verdict, advice, idx_line, in_zone
+
+
+def build_market_brief(stocks):
+    """构建「所以呢?」结论段（全部实时计算）。返回 (title, desp)"""
+    now_str = datetime.now().strftime('%m-%d %H:%M')
+    verdict, advice, idx_line, _ = _judge_market()
+
+    # ---- 真到位候选：30分K<25 且拐头，剔除当日跌超5% ----
+    cands, excluded = [], []
+    for s in stocks:
+        k30s = _num(s, 'kdj30')
+        if k30s is None or k30s >= 25:
+            continue
+        if s.get('kdj30Dir') not in ('↑', '↗'):
+            continue
+        chg = _chg_of(s)
+        item = {'name': s.get('name', '?'), 'code': s.get('code', ''),
+                'k30': k30s, 'chg': chg}
+        if chg is not None and chg <= -5:
+            excluded.append(item)     # 大跌带后没真拐头，追进去就是接刀
+            continue
+        item.update({
+            'k5': _num(s, 'kdj5', 0.0),
+            'score': _num(s, 'score', 0.0),
+            'flow': _num(s, 'dailyFlow', 0.0),
+            'pe': _num(s, 'pe'),
+            'roe': _num(s, 'roe', 0.0),
+            'rank': _num(s, 'final_rank', 9999.0),
+        })
+        cands.append(item)
+
+    cands.sort(key=lambda x: x['rank'])
+    total = len(cands) + len(excluded)
+    cands = cands[:8]
+
+    if cands:
+        names_str = '/'.join(c['name'] for c in cands)
+        title = f"更新播报｜{verdict}｜候选{len(cands)}只: {names_str}"
+    else:
+        title = f"更新播报｜{verdict}｜暂无真到位候选"
+
+    lines = ["## 所以呢？", "", f"> {now_str}｜{idx_line}", "",
+             f"**1、{verdict}。**{advice}", ""]
+
+    if cands:
+        line2 = f"**2、真到位候选 {total} 只**（30分K<25 且拐头）"
+        if excluded:
+            line2 += (f"，要排除今日跌超 5% 的（{'/'.join(e['name'] for e in excluded)}）"
+                      f"——大跌带后没拐头，追进去就是接刀")
+        lines += [line2 + "。", "", f"**3、剩余 {len(cands)} 只**：{names_str}——"]
+        pe_cands = [c for c in cands if c['pe'] and c['pe'] > 0]
+        if pe_cands:
+            top2 = sorted(pe_cands, key=lambda c: (c['pe'], -c['roe']))[:2]
+            pick_desc = '、'.join(
+                f"**{c['name']}**（PE {c['pe']:.1f}，ROE {c['roe']:.1f}）"
+                if c['roe'] and c['roe'] > 0 else f"**{c['name']}**（PE {c['pe']:.1f}）"
+                for c in top2)
+            lines += [f"其中{pick_desc}基本面最扎实，大盘真到位时优先看。", ""]
+        else:
+            lines += ["基本面暂无突出标的，按技术面（30分K拐头+资金）择优。", ""]
+        lines += ["<font color=\"comment\">明细｜30分K · 5分K · 今日涨跌 · 主力 · 评分</font>", ""]
+        for c in cands:
+            chg_s = f"{c['chg']:+.1f}%" if c['chg'] is not None else "—"
+            flow_s = f"{'🟢入' if c['flow'] >= 0 else '🔴出'}{abs(c['flow']):.0f}万"
+            lines += [f"· {c['name']}({c['code']}) 30分K={c['k30']:.0f}↑ · 5分K={c['k5']:.0f} · "
+                      f"今日{chg_s} · {flow_s} · 评分{c['score']:.0f}", ""]
+    else:
+        lines += ["**2、暂无真到位候选**：池子里没有 30分K<25 且拐头的票，继续等。", ""]
+
+    lines += ["---", "",
+              "> 口径：大盘方向看30分K/D关系与本bar走向；5分金叉≠买点；"
+              "候选=30分K<25且拐头，剔除当日跌超5%的接刀票。"]
+    return title, '\n'.join(lines)
+
+
+def _send_with_key(title, desp, state_key):
+    """绕过 push_gate 直接发（state_key 已由 digest_gate 判定并记账）。"""
+    sendkey = load_sendkey()
+    if not sendkey:
+        print("[WeChat] 未配置 SendKey, 跳过推送")
+        return False
+    title = title[:100]
+    desp = desp[:30000]
+    try:
+        url = f'https://sctapi.ftqq.com/{sendkey}.send'
+        data = urllib.parse.urlencode(
+            {'title': title, 'desp': desp, 'channel': '9'}).encode('utf-8')
+        req = urllib.request.Request(url, data=data, method='POST')
+        req.add_header('User-Agent', 'StockDashboard/1.0')
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = resp.read().decode('utf-8')
+            result = json.loads(body)
+            if result.get('code') == 0 or result.get('data', {}).get('error') == 'SUCCESS':
+                print(f"[WeChat] 推送成功: {title}")
+                if state_key:
+                    state = _load_push_state()
+                    state[state_key] = 'digest'
+                    _save_push_state(state)
+                return True
+            print(f"[WeChat] 推送失败: {body}")
+            return False
+    except Exception as e:
+        print(f"[WeChat] 推送异常: {e}")
+        return False
+
+
+def notify_market_brief(stocks, context='股票更新'):
+    """每档合并推送：结论段 + 底部缩量建仓明细，一条消息只占 1 条 Server酱额度。"""
+    global _MARKET_BRIEF_SENT
+    if _MARKET_BRIEF_SENT:
+        print("[WeChat] 本次运行合并推送已发过, 跳过")
+        return False
+
+    try:
+        title, desp = build_market_brief(stocks)
+    except Exception as e:
+        print(f"[WeChat] 结论段构建失败: {e}")
+        return False
+
+    # 底部缩量建仓明细接在结论后面（同一条消息内，不额外占额度）
+    try:
+        bottom = detect_bottom_accumulation(stocks)
+    except Exception:
+        bottom = []
+    if bottom:
+        desp += "\n\n---\n\n### 📦 底部缩量建仓（同期命中）\n"
+        for i, s in enumerate(bottom, 1):
+            vr = f"{s['vol_ratio']:.2f}" if s['vol_ratio'] is not None else "N/A"
+            drop = f"{s['drop_20d']:+.1f}%" if s['drop_20d'] is not None else "N/A"
+            sig = ' / '.join(s['signals']) if s['signals'] else '无'
+            desp += (f"{i}. **{s['name']}**({s['code']}) {s['phase_label']} · "
+                     f"换手{s['turnover']:.1f}% · 量比{vr} · 当日主力{s['daily_flow']:+.0f}万 "
+                     f"· 20日{drop}\n   信号: {sig}\n\n")
+
+    allowed, window, state_key = digest_gate()
+    if not allowed:
+        print(f"[WeChat] 合并推送未发送: {window}")
+        return False
+    ok = _send_with_key(title, desp, state_key)
+    _MARKET_BRIEF_SENT = True
+    print(f"[WeChat] 合并推送{'已发送' if ok else '发送失败'}｜档位={window}｜来源={context}")
+    return ok
