@@ -64,8 +64,8 @@ def load_sendkey():
 #   AFTER 保留 45 分钟容错——GitHub cron 实测延迟可达 38 分钟，漏推比晚推更糟
 # ============================================================
 
-_PUSH_TIMES = [(10, 40), (13, 10)]
-_PUSH_TIMES_STR = '10:40/13:10 + 下午收尾档(更新完成即推)'
+_PUSH_TIMES = [(10, 40)]
+_PUSH_TIMES_STR = '10:40 + 下午收尾档(13:45-14:45更新完成即推)'
 
 # ★ 下午收尾档（2026-10-20 用户拍板）：
 #   用户要求「下午13:50自动更新，尽量在14:30前更新好，更新好后推一次带结论的」。
@@ -77,6 +77,14 @@ _PUSH_TIMES_STR = '10:40/13:10 + 下午收尾档(更新完成即推)'
 _PM_PUSH_TYPE = 'daily_pm'
 _PM_PUSH_FROM = 13 * 60 + 45     # 13:45 起
 _PM_PUSH_TO = 14 * 60 + 45       # 14:45 止
+
+# ---- 大盘通道共享额度（2026-10-20）----
+# Server酱免费额度 5 条/日：2 条个股换票推送 + 3 条大盘信号 = 5 条刚好卡满。
+# 大盘通道按用户要求「不限次数和时间」（全天任意时刻可触发），
+# 但物理上限就是那 3 条，故用共享预算做硬闸门，防止大盘信号把额度吃光导致个股档推不出。
+MKT_PUSH_BUDGET = 3
+_MKT_PUSH_TYPES = ('index_rebound_v2', 'index_rebound', 'index_fundflow')
+
 _PUSH_WINDOW_BEFORE = 3   # 提前3分钟开窗
 _PUSH_WINDOW_AFTER = 45   # 延后45分钟关窗——GitHub cron高峰期实测延迟可达38分钟
 _STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.wechat_push_state.json')
@@ -144,13 +152,14 @@ def push_gate(push_type):
 
     allowed=False 时 window 携带拦截原因说明
 
-    三档个股推送（用户 10/20 拍板，额度有限一天只 3 条）：
-      ① daily_am : 10:40 固定窗口
-      ② daily_pm : 13:10 固定窗口
-      ③ 收尾档   : _PM_PUSH_TYPE='daily_pm'，13:45-14:45 任意时刻起跑即命中，
+    两档个股推送（用户 10/20 第三轮拍板，额度有限一天只 2 条）：
+      ① digest am      : 10:40 固定窗口（早上换一次票推一次）
+      ② digest pm-close: _PM_PUSH_TYPE='daily_pm'，13:45-14:45 任意时刻起跑即命中，
                    用于「13:50 自动更新 → 14:30 前更新好 → 推一次带结论」
-    其余 push_type（bottom/intraday/index_rebound_v2 等）沿用原固定窗口逻辑，
-    不受三档改造影响。
+    大盘信号（30分KDJ到位 / 资金回流）走独立脚本，不受这两档限制，全天任意时刻可推，
+    但两者**共享 MKT_PUSH_BUDGET 条/日的额度**（Server酱免费额度仅 5 条/日）：
+      2 条个股 + 3 条大盘 = 5 条，刚好卡满不溢出。
+    其余 push_type（bottom/intraday 等）沿用原固定窗口逻辑。
     """
     if os.environ.get('FORCE_PUSH') == '1':
         return True, 'forced', None
@@ -158,6 +167,14 @@ def push_gate(push_type):
     now = _anchor_now()
     minutes = now.hour * 60 + now.minute
     today = now.strftime('%Y-%m-%d')
+
+    # ---- 大盘通道共享额度闸门（30分KDJ到位 / 资金回流 共用）----
+    if push_type in _MKT_PUSH_TYPES:
+        state = _load_push_state()
+        used = int(state.get(f'mkt_budget:{today}') or 0)
+        if used >= MKT_PUSH_BUDGET:
+            return False, f"大盘通道今日已达共享额度上限({MKT_PUSH_BUDGET}条/日)", None
+        return True, 'mkt', f'{push_type}:{today}'
 
     # ---- 下午收尾档：13:45-14:45 之间起跑都算，每日 1 次 ----
     if push_type == _PM_PUSH_TYPE:
@@ -179,12 +196,13 @@ def push_gate(push_type):
 
 
 def digest_gate():
-    """每日三档合并推送('digest')的闸门：自动识别落在哪一档。
+    """每日两档合并推送('digest')的闸门：自动识别落在哪一档。
 
     返回 (allowed, window_key, state_key)
       - 13:45-14:45 起跑  → 'pm-close'（下午收尾档：13:50 更新跑完即推）
-      - 10:40 / 13:10 窗  → 'am' / 'noon'
-    三档各只推 1 条/天，state_key 按档位分开记账。
+      - 10:40 固定窗      → 'am'（早上换一次票推一次）
+    两档各只推 1 条/天，state_key 按档位分开记账。
+    2026-10-20 用户第三轮：原 13:10 午盘档删除，只留早/晚两次换票推送。
     """
     if os.environ.get('FORCE_PUSH') == '1':
         return True, 'forced', None
@@ -197,8 +215,8 @@ def digest_gate():
     else:
         fixed, _ = _match_push_window()
         if not fixed:
-            return False, f"管道启动时刻{now.strftime('%H:%M')}不在三档推送窗(10:40/13:10/收尾档)内", None
-        key = 'am' if fixed == '1040' else 'noon'
+            return False, f"管道启动时刻{now.strftime('%H:%M')}不在两档推送窗(10:40/下午收尾档)内", None
+        key = 'am'
 
     state_key = f"digest:{key}:{today}"
     if _load_push_state().get(state_key):
@@ -258,6 +276,13 @@ def send_wechat(title, desp='', push_type='default'):
                 if state_key:
                     state = _load_push_state()
                     state[state_key] = window
+                    # 大盘通道记账：共享预算逐条扣减（KDJ到位 / 资金回流 共用）
+                    if window == 'mkt':
+                        today = _anchor_now().strftime('%Y-%m-%d')
+                        bkey = f'mkt_budget:{today}'
+                        used = int(state.get(bkey) or 0) + 1
+                        state[bkey] = used
+                        print(f"[WeChat] 大盘通道今日已用 {used}/{MKT_PUSH_BUDGET}")
                     _save_push_state(state)
                 return True
             else:
