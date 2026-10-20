@@ -737,13 +737,16 @@ def inject_into_html(html_path):
 
     print(f"\n✅ 注入完成: {html_path}")
 
-    # 微信推送: 底部缩量建仓预警 (与仪表盘 lowVolAccum 筛选器同一标准)
-    # 此时 stocks 已包含 preLaunchPhase, turnover, dailyFlow 等富化字段
+    # 微信推送: 每日三档合并推送（10:40 / 13:10 / 13:45-14:45起跑）
+    #   正文 = 「所以呢?」实时结论段 + 底部缩量建仓明细，**一条消息只占 1 条额度**
+    #   （2026-10-20 用户改版：Server酱每天仅5条，拆成两条会超限）
+    #   结论段所有措辞实时计算，绝不写死"趋势向下"等预设结论
     if WECHAT_ENABLED:
         try:
-            notify_bottom_accumulation(stocks, context='指标计算')
+            from wechat_notify import notify_market_brief
+            notify_market_brief(stocks, context='指标计算/更新完成')
         except Exception as e:
-            print(f"[WeChat] 推送异常(不影响指标计算): {e}")
+            print(f"[WeChat] 合并推送异常(不影响指标计算): {e}")
 
     return True
 
