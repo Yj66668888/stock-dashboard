@@ -71,16 +71,17 @@ def curl_get(url, timeout=8):
         return b''
 
 
-def fetch_index_m30():
-    """拉上证30分K并重放KDJ(9,3,3)（与前端 fetchIndexKDJ30 同口径）
+def fetch_index_m30(period='m30'):
+    """拉上证分钟K并重放KDJ(9,3,3)（与前端 fetchIndexKDJ30 同口径）
+    period: 'm30'（默认，保持向后兼容）或 'm5'（大盘5分KDJ，供结论播报用）
     返回 dict：cur(进行中bar) / prev(前一完成bar) 的 K/D/J + close + bar时间"""
     raw = curl_get(f'https://ifzq.gtimg.cn/appstock/app/kline/mkline'
-                   f'?param={INDEX_CODE},m30,,320')
+                   f'?param={INDEX_CODE},{period},,320')
     if not raw:
         return None
     try:
         d = json.loads(raw.decode('utf-8', errors='ignore'))
-        bars = d['data'][INDEX_CODE]['m30']
+        bars = d['data'][INDEX_CODE][period]
     except (KeyError, TypeError, json.JSONDecodeError):
         return None
     if not bars or len(bars) < BAR_MIN_LEN:
