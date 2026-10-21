@@ -1,22 +1,46 @@
 #!/usr/bin/env python3
-"""大盘资金「流出→回流」监测 v1（2026-10-20）
-================================================
-用户原话（10/20 16:00）：
-  「比如说今天的大盘在下跌，资金已经流出了90亿了，然后过了一会资金变成了85亿，
-    这种是不是也可以相当于大盘在开始回升，像这种情况你能监测不，
-    就是大盘资金在流出，然后他们可能又在一点点的流入」
+"""大盘资金「流出→回流」监测 v2（2026-10-21 按回测结论改造）
+================================================================
+v1 的问题（10/21 回测证实）：
+  单独用「资金回补 X 亿」当信号是无效的——回补≥10亿在 7-10 月 74 个交易日里
+  触发 56 天（75.7%），次日胜率 53.6%、5日胜率 34.0%，**双双低于不设门槛的
+  基准（54.8% / 37.7%）**。回补额这个维度本身没有稳定的超额。
 
-判定思路（累计净流出的"变浅"逻辑）：
-  1. 东财上证指数**分钟级**资金流（klt=1，全天 240 个点），取"主力净流入"累计曲线
-  2. 当日最低点 = 流出峰值（trough）。trough 值为负 = 净流出
-  3. 回流判定 = 当前累计值 - trough 值 = 净回补额
-       阈值 = max(绝对下限, trough深度的比例)   —— 深跌市要求回补更多才承认
-  4. 持续性 = 最近若干点单调不降（排除单点脉冲/插针）
-  5. 去重 = 同一波回流只推一次；要么 trough 刷新为更深的坑，要么距上次推送 >= COOLDOWN_MIN
+v2 的核心改动：**30 分 KDJ 位置变成前置门，资金回流只做确认**
+------------------------------------------------------------------
+用户澄清（10/21）：「回流10亿」不是无条件用的，是**大盘30分K在30-40之间时**
+才开始回流的那个 10 亿。前置条件过滤后样本完全变了。
 
-两档强度（对应用户"一点点流入"的模糊描述）：
-  WEAK  弱回流：刚收窄，多半只是跌速放缓，不构成买点
-  STRONG 强回流：回补量足够大 + 持续，可与大盘30分KDJ回升共振 → 真回升概率高
+回测依据（backtest_kdj30_40_recall.py，2026-07-01~10-20，74 个交易日）：
+
+  收盘 30 分 K 位置分档（不加任何资金条件）：
+    K<20     12天  次日胜 66.7%  5日 -0.89%（超卖钝化，5日反而最差）
+    K 20~30   8天  次日胜 75.0%  5日 +1.00% 胜 71.4%  ← 5日最强
+    K 30~40   6天  次日胜 83.3% / +0.72%（超额+0.85） ← 次日最强（用户问的档）
+    K 40~50   7天  次日胜 71.4%
+    K 50~65  12天  次日胜 25.0%  ← 最差，别碰
+    K>65     28天  次日胜 46.4%
+    K 20~40 合并 14天 次日胜 78.6% / +0.24%，5日胜 61.5% / +0.51%（唯一次日+5日双超基准）
+
+  ⚠️ 关键反直觉发现：
+    「盘中曾触及 30~40」43天 → 次日胜 58.1%（几乎无超额）
+    「K 由<30 上穿进 30~40」事件化 10天 → 次日胜 50.0%（**低于基准**）
+    → 说明：盘中路过的不算数，**收盘停在低位**才算数。盘中实时触发天然弱于收盘确认。
+
+  ⚠️ 关于「10 亿」的结论：
+    在 K30~40 这个子集里，Δ≥10亿 只剩 2 个样本（次日 +1.53% 胜率100%，
+    但 5日胜率 0%）。样本太少，**测不出 10 亿的边际增益**，但也测不出害处。
+    所以 10 亿在这里的定位是「确认资金没有继续恶化」，不是「提升胜率」。
+    触发频率由 K 位置卡死（74 天只有 6~14 天），不会像 v1 那样刷爆额度。
+
+  ⚠️ 持仓期限：K30~40 的 5 日表现转负（Δ≥10亿那 2 天 5 日胜率 0%）→ **只做次日短打**。
+     唯一 5 日也有超额的是 K 20~40 合并档（+0.51% / 胜 61.5%）。
+
+判定思路：
+  门1（位置）：当前 30 分 K 落在 [KDJ_RANGE_LO, KDJ_RANGE_HI)  —— 不在区间直接不推
+  门2（资金）：当日累计主力净流出从峰值回补 ≥ MIN_RECALL_YI 亿
+  门3（持续）：末段仍在净回升（排除单点脉冲）
+  门4（方向，可选）：KDJ_REQUIRE_K_ABOVE_D = True 时额外要求 K > D
 
 频控：当日上限 MAX_DAILY_PUSH 条；**不受个股推送时间窗限制**（全天任意时刻可推），
      但与 index_kdj_watch 的大盘通道合计预算受 Server酱 5 条/日额度约束。
@@ -41,13 +65,22 @@ from datetime import datetime, timedelta, timezone
 BASE = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE, '.index_fund_state.json')
 
-# ---------- 判定阈值（全部可在下方独立调整）----------
-MIN_RECALL_YI = 2.0          # 净回补绝对下限：2 亿。低于此数视为噪声，不推
-RECALL_RATIO = 0.08          # 相对回流比例下限：当日流出峰值的 8%
+# ---------- 门1：30 分 KDJ 位置（v2 新增，回测证实这是真正有效的过滤器）----------
+KDJ_GATE_ENABLED = True      # False = 退回 v1 的纯资金判定（不推荐）
+KDJ_RANGE_LO = 30.0          # 用户 10/21 指定：K 在 30~40 之间
+KDJ_RANGE_HI = 40.0          # ⚠️ 回测显示 K 20~30 那 8 天 5 日更强(+1.00%/胜71.4%)，
+                             #    想放宽就把 LO 改成 20.0，合并档 14 天次日胜 78.6%
+KDJ_REQUIRE_K_ABOVE_D = False  # True = 额外要求 K>D（金叉向上）。回测：K20~40∧K>D 仅 3 样本，
+                               # 次日胜 66.7% / 5日 +0.91% 胜 66.7%，方向对但样本太少
+
+# ---------- 门2/3：资金回流判定 ----------
+MIN_RECALL_YI = 10.0         # ★ 用户 10/21 拍板：回补 ≥ 10 亿才算数（v1 是 2 亿，太松）
+                             #   注：v2 里它的作用是「确认资金没继续恶化」，不是提升胜率
+RECALL_RATIO = 0.0           # 相对比例门槛：0 = 不启用（K 位置已卡住频率，无需再加码）
 SUSTAIN_POINTS = 5           # 持续性窗口：分钟密集序列看最近 5 点(≈5分钟)；稀疏序列只看最近 2 点
 MIN_POINTS_FLOOR = 5         # 序列最短点数（快照稀疏模式 5 点即可判定）
 SUSTAIN_MIN_YI = 1.0         # 持续性：N 点内净回升至少 1 亿
-STRONG_RECALL_YI = 8.0       # 强回流：净回补 >= 8 亿
+STRONG_RECALL_YI = 20.0      # 强回流：净回补 >= 20 亿（v1 的 8 亿在新阈值下失去区分度）
 COOLDOWN_MIN = 30            # 冷却：距上次推送至少 30 分钟才算新一波
 TRENCH_REFRESH_YI = 5.0      # 坑刷新：trough 再深 5 亿以上才允许重推
 MAX_DAILY_PUSH = 2           # 当日上限（与 index_kdj_watch 合计受 Server酱 5 条约束）
@@ -278,7 +311,7 @@ def analyze(flows):
     }
 
 
-def build_message(a, idx_note=''):
+def build_message(a, ks=None):
     """构建推送文案（全部用实时数值，不写死任何方向）"""
     level_txt = '弱回流' if a['level'] == 'WEAK' else '强回流'
     dense = a.get('src', '').startswith('分钟')      # 分钟全量 vs 快照稀疏
@@ -303,44 +336,89 @@ def build_message(a, idx_note=''):
                   '建议等资金转正或 30 分 K 反穿 D 再动手。')
 
     lines = [
-        '## 大盘资金流向变化监测\n',
+        '## 大盘资金回流 × 30分K低位\n',
         f"> 时间: {a['cur_t']}（{pt_txt}）\n\n",
-        '### 1、资金变化\n',
+        '### 1、位置门（本次信号的真正依据）\n',
+    ]
+    if ks:
+        trend = '已反穿D' if ks['above_d'] else '仍在D下方'
+        in_range = KDJ_RANGE_LO <= ks['k'] < KDJ_RANGE_HI
+        lines += [
+            f"- 上证 {ks['close']:.2f}｜30分 **K={ks['k']}** D={ks['d']} J={ks['j']}"
+            f"（{trend}，本bar{'向上' if ks['rising'] else '走弱'}，前bar K={ks['prev_k']}）",
+            f"- K {'落在' if in_range else '不在'}目标区间 {KDJ_RANGE_LO:g}~{KDJ_RANGE_HI:g}"
+            f"（回测：该区间 6 个样本次日胜率 83.3%、均 +0.72%）\n\n",
+        ]
+    else:
+        lines += ['- 30分KDJ 取数失败（位置门未校验）\n\n']
+    lines += [
+        '### 2、资金确认\n',
         f"- 净流出峰值：**{a['trough_yi']:.2f} 亿**（{a['trough_t']}）",
         f"- 当前累计：{a['cur_yi']:+.2f} 亿",
         f"- **净回补：{a['recall_yi']:+.2f} 亿**（阈值 {a['thresh_yi']:.2f} 亿）",
         f"- 持续性：{span_txt}净回升 {a['tail_rise_yi']:+.2f} 亿"
         f"{'（成立）' if a['sustain'] else '（未成立）'}",
         f"- 结构：大单 {a['big_yi']:+.2f} 亿 / 超大单 {a['xlbig_yi']:+.2f} 亿\n\n",
-        f'### 2、结论\n',
+        '### 3、结论\n',
         f"**{verdict}。**{head}。{advice}",
+        '',
+        '⚠️ **持仓提示**：回测显示该位置只做**次日短打**有效，'
+        '持有到 5 日反而跑输基准，别恋战。',
     ]
-    if idx_note:
-        lines += ['', f'### 3、大盘 30 分 K\n', idx_note]
     lines += ['', '---',
-              '> 口径：东财上证指数主力净流入累计曲线；'
-              '回补额 = 当前值 − 当日最低值；阈值 = max(2亿, 峰值深度×8%)，且末段须持续回升。',
-              '> 提示：资金收窄≠见底，历史上多为下跌中继，务必配合 30 分 KDJ 趋势方向判断。']
+              '> 口径 v2：30分K位置门(K 30~40) + 资金回补≥10亿 + 末段持续回升，三关全过才推。',
+              '> 回测：7-10月 74 个交易日。K 位置分档次日胜率 K20~30=75%、K30~40=83.3%、'
+              'K50~65=25%；单纯「资金回补≥10亿」无门槛时触发 75.7% 的交易日且跑输基准，'
+              '故资金只做确认、不做主信号。']
     title = (f"{'✅' if a['cur_yi'] >= 0 else '🔄'} 大盘资金{'转正' if a['cur_yi'] >= 0 else '回流'}·{level_txt}"
-             f"｜回补{a['recall_yi']:+.2f}亿｜当前{a['cur_yi']:+.2f}亿")
+             f"｜回补{a['recall_yi']:+.2f}亿｜30分K={ks['k'] if ks else '—'}")
     return title, '\n'.join(lines)
 
 
-def index_kdj_note():
-    """顺手带上大盘 30 分 KDJ 状态（同一接口口径），共振时更有说服力"""
+def fetch_kdj_state():
+    """拉大盘 30 分 KDJ 当前状态（与前端 fetchIndexKDJ30、index_kdj_watch 同口径）"""
     try:
         from index_kdj_watch import fetch_index_m30
         k = fetch_index_m30()
         if not k:
-            return ''
+            return None
         cur, prev = k['cur'], k['prev']
-        rising = cur['k'] > prev['k']
-        above_d = cur['k'] >= cur['d']
-        trend = '已反穿D' if above_d else '仍在D下方'
-        return (f"- 上证 {cur['close']:.2f}｜30分K={cur['k']} D={cur['d']} J={cur['j']}"
-                f"（{trend}，本bar{'向上' if rising else '走弱'}，前bar K={prev['k']}）")
+        return {'k': cur['k'], 'd': cur['d'], 'j': cur['j'], 'close': cur['close'],
+                'prev_k': prev['k'], 'bar': cur['bar'],
+                'rising': cur['k'] > prev['k'], 'above_d': cur['k'] >= cur['d']}
     except Exception:
+        return None
+
+
+def kdj_gate(ks):
+    """门1：30 分 K 位置是否落在目标区间。返回 (通过?, 原因文案)"""
+    if not KDJ_GATE_ENABLED:
+        return True, '位置门已关闭（v1 纯资金模式）'
+    if not ks:
+        return False, '30分KDJ 取数失败，位置门无法通过（保守不推）'
+    k, d = ks['k'], ks['d']
+    if not (KDJ_RANGE_LO <= k < KDJ_RANGE_HI):
+        if k < KDJ_RANGE_LO:
+            where = f'区间下方(<{KDJ_RANGE_LO:g})'
+        elif k < 65:
+            where = f'中位区({KDJ_RANGE_HI:g}-65)'
+        else:
+            where = '高位区(>65)'
+        return False, f'K={k} 落在{where}，不在目标区间 {KDJ_RANGE_LO:g}~{KDJ_RANGE_HI:g}'
+    if KDJ_REQUIRE_K_ABOVE_D and not ks['above_d']:
+        return False, f'K={k} ≤ D={d}（方向仍向下），被方向门拦下'
+    return True, f'K={k} 落在目标区间 {KDJ_RANGE_LO:g}~{KDJ_RANGE_HI:g}'
+
+
+def index_kdj_note(ks=None):
+    """大盘 30 分 KDJ 状态文案（同一接口口径），共振时更有说服力"""
+    if ks is None:
+        ks = fetch_kdj_state()
+    if not ks:
         return ''
+    trend = '已反穿D' if ks['above_d'] else '仍在D下方'
+    return (f"- 上证 {ks['close']:.2f}｜30分K={ks['k']} D={ks['d']} J={ks['j']}"
+            f"（{trend}，本bar{'向上' if ks['rising'] else '走弱'}，前bar K={ks['prev_k']}）")
 
 
 def _throttle():
@@ -398,9 +476,24 @@ def main():
     print(f'[fund_flow] {now.strftime("%H:%M:%S")} 点数={a["points"]} '
           f'当前={a["cur_yi"]:+.2f}亿 峰值={a["trough_yi"]:.2f}亿({a["trough_t"]}) '
           f'回补={a["recall_yi"]:+.2f}亿 阈值={a["thresh_yi"]:.2f}亿 持续={"Y" if a["sustain"] else "N"}')
-    print(f'[fund_flow] 判定: {"🔔 触发(" + a["level"] + ")" if a["fired"] else "未触发回流"}')
+    print(f'[fund_flow] 资金门: {"通过(" + a["level"] + ")" if a["fired"] else "未通过"}')
 
-    title, desp = build_message(a, index_kdj_note())
+    # ---- 门1：30 分 K 位置（v2 核心，回测证实这才是有效过滤器）----
+    ks = fetch_kdj_state()
+    gate_ok, gate_reason = kdj_gate(ks)
+    print(f'[fund_flow] 位置门: {"通过" if gate_ok else "拦下"} —— {gate_reason}')
+    if ks:
+        print(f'[fund_flow] 30分K={ks["k"]} D={ks["d"]} J={ks["j"]} '
+              f'上证={ks["close"]:.2f}（{"向上" if ks["rising"] else "走弱"}，'
+              f'{"K≥D" if ks["above_d"] else "K<D"}）')
+
+    if not gate_ok:
+        # 位置门拦下时，资金门即使通过也不推（v2 语义：K 位置优先）
+        # 注意：KDJ 取数失败也走这里 —— 位置门无法校验时保守不推，避免退回 v1 的无效资金信号
+        a['fired'] = False
+        a['level'] = 'NONE'
+
+    title, desp = build_message(a, ks)
     if test_mode:
         print('-' * 60)
         print(f'TITLE: {title}')
