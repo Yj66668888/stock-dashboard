@@ -14,6 +14,8 @@ wechat_config.json
 # 运行时状态文件（自动任务本地状态，每次运行会变化）
 .wechat_push_state.json
 .intraday_watch_state.json
+# 推送账本的本地快照（远端真值在仓库 push_ledger.json，不入 .gitignore）
+.cache_push_ledger.json
 
 # Excel 报告（不需要版本管理）
 *.xlsx
