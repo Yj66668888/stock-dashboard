@@ -1200,8 +1200,6 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <button class="nav-btn active" onclick="switchPage('stocks', event)">📊 选股仪表盘</button>
-    <button class="nav-btn" onclick="switchPage('auction', event)">🔴 竞价监测</button>
-    <button class="nav-btn" onclick="switchPage('lowauc', event)">🧲 低位竞价</button>
     <button class="nav-btn" onclick="switchPage('volume', event)">📉 量价状态</button>
   </nav>
 
@@ -1272,101 +1270,6 @@
     <!-- 手机版卡片容器 -->
     <div class="mobile-card-list" id="mobileCardList"></div>
   </div>
-  </div>
-
-  <!-- Page: Auction 竞价监测 -->
-  <div class="page" id="page-auction">
-    <div class="auction-status-bar">
-      <span class="auction-phase-chip phase-wait" id="aucPhase">⏳ 加载中</span>
-      <span class="auction-clock" id="aucClock">--:--:--</span>
-      <span class="auction-countdown" id="aucCountdown"></span>
-      <span class="auction-meta" id="aucMeta">数据时间: --</span>
-      <span style="flex:1"></span>
-      <button class="auction-btn" id="aucAutoBtn" onclick="toggleAuctionAuto()">⏸ 暂停自动刷新</button>
-      <button class="auction-btn" onclick="fetchAuctionData(true)">↻ 立即刷新</button>
-    </div>
-    <div class="auc-filter-bar" id="aucFilterBar"></div>
-    <div class="auction-summary" id="aucSummary"></div>
-    <div class="auction-table-wrap">
-      <table class="auction-table">
-        <thead>
-          <tr>
-            <th class="left-align">名称</th>
-            <th>代码</th>
-            <th>昨收</th>
-            <th id="aucPriceTh">竞价价</th>
-            <th>高开幅度</th>
-            <th>竞价金额↓</th>
-            <th>竞价量(手)</th>
-            <th>委买(手)</th>
-            <th>委卖(手)</th>
-            <th>买卖比</th>
-            <th>换手%</th>
-            <th>量比</th>
-            <th class="left-align">信号</th>
-          </tr>
-        </thead>
-        <tbody id="aucBody"></tbody>
-      </table>
-    </div>
-    <div class="auction-note" id="aucNote">
-      信号说明：★大幅高开 ≥5% · ↑高开 ≥2% · ↓低开 ≤-2% · ★大幅低开 ≤-5% · ¥竞价金额 ≥1000万<br>
-      表格按竞价金额由高到低排序（同金额按高开幅度）。委买/委卖 = 五档未成交委托合计（竞价阶段为未匹配申报）；买卖比 = 委买÷委卖，&gt;1 买盘占优（红），&lt;1 卖压占优（绿）。9:20-9:25 不可撤单，数据最真实。
-    </div>
-  </div>
-
-  <!-- Page: 低位竞价（全市场30分KDJ低位候选池 × 竞价实时监测） -->
-  <div class="page" id="page-lowauc">
-    <div class="auction-status-bar">
-      <span class="auction-phase-chip phase-wait" id="laPhase">⏳ 加载中</span>
-      <span class="auction-clock" id="laClock">--:--:--</span>
-      <span class="auction-countdown" id="laCountdown"></span>
-      <span class="auction-meta" id="laMeta">候选池: --</span>
-      <span style="flex:1"></span>
-      <button class="auction-btn" id="laAutoBtn" onclick="toggleLowAucAuto()">⏸ 暂停自动刷新</button>
-      <button class="auction-btn" onclick="fetchLowAucData(true)">↻ 立即刷新</button>
-    </div>
-    <div class="auc-filter-bar" id="laFilterBar"></div>
-    <div class="auction-summary" id="laSummary"></div>
-    <div class="auction-table-wrap">
-      <table class="auction-table">
-        <thead>
-          <tr>
-            <th class="left-align">名称</th>
-            <th>代码</th>
-            <th>30分K/D</th>
-            <th class="left-align">趋势</th>
-            <th>昨收</th>
-            <th id="laPriceTh">竞价价</th>
-            <th>高开幅度</th>
-            <th>竞价金额↓</th>
-            <th title="9:25集合竞价定格撮合量：竞价中显示待9:25，9:25撮合完成自动定格，开盘后不随全天量漂移">竞价量(手)</th>
-            <th>委买(手)</th>
-            <th>委卖(手)</th>
-            <th>买卖比</th>
-            <th class="left-align">信号</th>
-            <th id="laConfirmTh">盘中确认</th>
-          </tr>
-        </thead>
-        <tbody id="laBody"></tbody>
-      </table>
-    </div>
-    <details style="margin:10px 0;border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card-bg);">
-      <summary style="cursor:pointer;font-weight:600;color:var(--text);">📋 三线确认法 · 买入确认标准（点击展开）</summary>
-      <div style="font-size:12.5px;line-height:1.9;margin-top:8px;color:var(--text-muted);">
-        <b>三线关系：</b>白线=现价 · 黄线=分时均价线（当日成交额÷成交量） · 虚线=昨收<br>
-        ① <b style="color:#5DCAA5;">✅ 强势</b>：现价 &gt; 均价线 &gt; 昨收 → 回踩均价线不破可参与<br>
-        ② <b style="color:#EF9F27;">⚠️ 修复观察</b>：现价 &gt; 均价线，但仍在昨收下方 → 弱势修复，次日高开站稳均价线才算确认<br>
-        ③ <b style="color:#E24B4A;">❌ 破位</b>：现价跌破均价线，反弹收不回 → 直接放弃，竞价再漂亮也不碰<br>
-        <b>量能：</b>量比 1.0~2.5 温和放大最健康；&gt;3 警惕爆量出货；&lt;0.8 无承接<br>
-        <b>口诀：价在黄线上、量比一到二、回踩不破就动手；破了黄线，竞价再漂亮也不碰。</b>开盘30分钟（10:00）后判定最可靠，盘中确认列 9:35 起实时更新。
-      </div>
-    </details>
-    <div class="auction-note" id="laNote">
-      候选池口径：全市场 60/00 主板（排除ST）· 30分钟KDJ K≤35 且 趋势上升(K&gt;D)或待升(乖离收敛/K上拐) · 每日8:30云端扫描生成<br>
-      表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。<br>
-      盘中确认（三线确认法）：✅强势=现价&gt;分时均价线&gt;昨收 · ⚠️修复观察=现价在均价线上但未收复昨收 · ❌破位=现价跌破均价线。量比1.0~2.5温和放大，&gt;3警惕爆量、&lt;0.8无承接。
-    </div>
   </div>
 
   <!-- Page: 量价状态（2026-10-22 新增：缩量止跌 vs 放量破位，一眼看清） -->
@@ -6183,10 +6086,6 @@ function switchPage(pageId, event) {
     });
   }
   if (btn) btn.classList.add('active');
-  // 竞价监测页：进入时启动实时刷新，离开时停止
-  if (pageId === 'auction') { startAuctionLoop(); } else { stopAuctionLoop(); }
-  // 低位竞价页：同上
-  if (pageId === 'lowauc') { startLowAucLoop(); } else { stopLowAucLoop(); }
   // 量价状态页：首次进入时懒加载日K并计算
   if (pageId === 'volume') { vsEnsureLoaded(); }
 }
