@@ -32,6 +32,45 @@ from datetime import datetime
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 _CONFIG_FILE = os.path.join(_SCRIPT_DIR, 'wechat_config.json')
 
+# ---- 2026-10-22 新增：跨环境全局额度闸门 ----
+# 背景事故：本地 / 云端 GitHub Actions(每5分钟一个全新容器) 各自把「今天推过几次」
+#   记在自己的本地文件里（且都在 .gitignore 中不会被 checkout 带上），
+#   于是每个容器都以为今天是第一次推 —— 同一档个股播报被推了 3 遍，
+#   Server酱 5 条/日额度一上午打光。
+# 修复：所有出站推送统一先过 push_ledger 的全局账本（远端 push_ledger.json，
+#   带本地缓存兜底），账本才是当日额度的唯一真相源。
+try:
+    from push_ledger import consume_quota, append_record
+    _LEDGER_OK = True
+except ImportError:
+    _LEDGER_OK = False
+
+
+def _global_quota_ok(push_type, title='', slot=''):
+    """全局额度闸门（唯一真相源）。返回 (ok, reason)
+
+    slot 传档位标识（如 digest:am:2026-10-22）时，额外做跨环境「同档去重」。
+    """
+    if os.environ.get('FORCE_PUSH') == '1':
+        return True, 'forced'
+    if not _LEDGER_OK:
+        return True, 'ledger-unavailable(降级: 仅本地闸门)'
+    try:
+        return consume_quota(push_type, slot=slot or None)
+    except Exception as e:
+        print(f"[WeChat] 账本读取异常({e})，降级为仅本地闸门")
+        return True, f'ledger-error:{e}'
+
+
+def _global_quota_note(push_type, title='', slot=''):
+    """推送成功后记账到全局账本"""
+    if not _LEDGER_OK or os.environ.get('FORCE_PUSH') == '1':
+        return
+    try:
+        append_record(push_type, title, slot)
+    except Exception as e:
+        print(f"[WeChat] 账本记账失败(不影响本次推送): {e}")
+
 
 def load_sendkey():
     """读取 SendKey — 优先环境变量，其次配置文件"""
@@ -252,6 +291,13 @@ def send_wechat(title, desp='', push_type='default'):
         print(f"[WeChat] 推送被时间闸门拦截: {window}")
         return False
 
+    # 全局额度闸门（2026-10-22 加）：本地/云端多容器共享同一份当日账本，
+    # 这是唯一能挡住「同一档被不同环境各推一遍」的地方
+    quota_ok, quota_reason = _global_quota_ok(push_type, title, slot=state_key or '')
+    if not quota_ok:
+        print(f"[WeChat] 推送被全局额度闸门拦截: {quota_reason}")
+        return False
+
     # 截断防止超限
     title = title[:100]
     if desp:
@@ -284,6 +330,8 @@ def send_wechat(title, desp='', push_type='default'):
                         state[bkey] = used
                         print(f"[WeChat] 大盘通道今日已用 {used}/{MKT_PUSH_BUDGET}")
                     _save_push_state(state)
+                # 全局账本记账（跨环境共享当日额度）
+                _global_quota_note(push_type, title, slot=state_key or '')
                 return True
             else:
                 print(f"[WeChat] 推送失败: {body}")
@@ -712,11 +760,22 @@ def build_market_brief(stocks):
 
 
 def _send_with_key(title, desp, state_key):
-    """绕过 push_gate 直接发（state_key 已由 digest_gate 判定并记账）。"""
+    """绕过 push_gate 直接发（state_key 已由 digest_gate 判定并记账）。
+
+    注意：虽然绕过了「时间窗闸门」，但**全局额度闸门仍然生效** ——
+    2026-10-22 事故正是出在个股digest档：本地和云端各推一遍，本地闸门拦不住对方。
+    """
     sendkey = load_sendkey()
     if not sendkey:
         print("[WeChat] 未配置 SendKey, 跳过推送")
         return False
+
+    # 全局额度闸门（必须与时间窗闸门独立存在）
+    quota_ok, quota_reason = _global_quota_ok('digest', title, slot=state_key or '')
+    if not quota_ok:
+        print(f"[WeChat] 推送被全局额度闸门拦截: {quota_reason}")
+        return False
+
     title = title[:100]
     desp = desp[:30000]
     try:
@@ -734,6 +793,7 @@ def _send_with_key(title, desp, state_key):
                     state = _load_push_state()
                     state[state_key] = 'digest'
                     _save_push_state(state)
+                _global_quota_note('digest', title, slot=state_key or '')
                 return True
             print(f"[WeChat] 推送失败: {body}")
             return False
