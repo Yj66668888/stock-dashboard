@@ -32,6 +32,8 @@ jobs:
       - name: Run midday pipeline (full + prelaunch scan)
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          # 2026-10-22 加：读取远端共享推送账本需要（全局额度闸门依赖它）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python cloud_pipeline.py midday
 
       - name: Validate JS syntax (safety net)
