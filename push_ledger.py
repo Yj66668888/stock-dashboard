@@ -203,6 +203,10 @@ def usage_report(ledger=None, verbose=False):
     led = ledger if ledger is not None else load_ledger()[0]
     ents = led.get('entries', [])
     total = len(ents)
+    exhausted = led.get('exhausted')
+    if exhausted:
+        # Server酱 已明确返回「超过当天次数限制」→ 无论本地记了几条都视作满额
+        total = SERVERCHAN_DAILY_QUOTA
     digest_used = len([e for e in ents if e.get('type', '').startswith('digest')])
     mkt_used = len([e for e in ents if e.get('type') in MKT_TYPES])
     other_used = total - digest_used - mkt_used
@@ -210,6 +214,7 @@ def usage_report(ledger=None, verbose=False):
         'date': led.get('date'),
         'total': total, 'quota': SERVERCHAN_DAILY_QUOTA, 'left': SERVERCHAN_DAILY_QUOTA - total,
         'digest_used': digest_used, 'mkt_used': mkt_used, 'other_used': other_used,
+        'exhausted': exhausted,
     }
     if verbose:
         rep['entries'] = ents
@@ -229,6 +234,12 @@ def consume_quota(push_type, slot=None, verbose=True):
     ledger, source = load_ledger()
     rep = usage_report(ledger)
     total, left = rep['total'], rep['left']
+
+    # ---- Server酱 主动上报「超过当天次数限制」→ 当天直接熔断 ----
+    ex = ledger.get('exhausted')
+    if ex:
+        return False, (f"Server酱已回报当日超限（{ex.get('at','')} {ex.get('reason','')}）"
+                       f"｜今日账本已熔断，勿重复尝试")
 
     if verbose:
         print(f'[ledger] 今日用量 {total}/{SERVERCHAN_DAILY_QUOTA}'
@@ -287,6 +298,33 @@ def append_record(push_type, title='', slot=''):
     return ok, rep
 
 
+def mark_exhausted(reason='Server酱返回当日超限'):
+    """Server酱明确回报「超过当天发送次数限制」时的反向同步。
+
+    ★ 为什么要这一步 ★
+    账本是**本地/云端的自记账**，Server酱 才是真正的计费方。两者可能不一致：
+    例如 10/22 上午的重复推送事故里，我们账上只认到 1 条，实际已打满 5 条。
+    一旦收到 40001，说明真额度已耗尽 —— 立刻把账本置为熔断，
+    后续所有环境（尤其每 5 分钟一个的云端 job）直接本地拒绝，
+    不再逐个白撞 HTTP 请求。
+    """
+    ledger, _ = load_ledger()
+    if ledger.get('exhausted'):
+        print(f"[ledger] 当日已熔断（{ledger['exhausted'].get('at')}），跳过重复标记", flush=True)
+        return True
+    ledger['exhausted'] = {
+        'at': bj_now().strftime('%Y-%m-%d %H:%M:%S'),
+        'reason': (reason or '')[:80],
+        'by': 'cloud' if os.environ.get('GITHUB_ACTIONS') else 'local',
+    }
+    ledger['date'] = today_str()
+    ok = save_ledger(ledger)
+    print(f"[ledger] ⛔ 当日额度已熔断：{reason}", flush=True)
+    if not ok:
+        print('[ledger] ⚠️ 远端熔断写入失败，已保底写本地缓存', flush=True)
+    return ok
+
+
 if __name__ == '__main__':
     import sys
     if '--reset' in sys.argv:
@@ -300,6 +338,9 @@ if __name__ == '__main__':
         print(f"# 已用 {rep['total']}/{rep['quota']} 条"
               f"（个股{rep['digest_used']}｜大盘{rep['mkt_used']}｜其他{rep['other_used']}）"
               f"，剩余 {rep['left']}")
+        if rep.get('exhausted'):
+            print(f"# ⛔ 当日已熔断: {rep['exhausted'].get('at')} "
+                  f"{rep['exhausted'].get('reason')}（Server酱真额度已耗尽）")
         for e in rep.get('entries', []):
             print(f"  - {e.get('ts')}  [{e.get('type')}]  slot={e.get('slot','')}  "
                   f"{e.get('env','')}  {e.get('title','')}")
