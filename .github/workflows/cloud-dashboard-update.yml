@@ -40,6 +40,9 @@ jobs:
       - name: Run update pipeline
         env:
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          # 2026-10-22 加：推送前要读远端共享账本 push_ledger.json 核对当日额度，
+          # 缺少 GITHUB_TOKEN 会让全局额度闸门在云端静默失效（10/22 事故根因之一）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python cloud_pipeline.py update
 
       - name: Validate JS syntax (safety net)
