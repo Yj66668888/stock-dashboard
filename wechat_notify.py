@@ -40,10 +40,12 @@ _CONFIG_FILE = os.path.join(_SCRIPT_DIR, 'wechat_config.json')
 # 修复：所有出站推送统一先过 push_ledger 的全局账本（远端 push_ledger.json，
 #   带本地缓存兜底），账本才是当日额度的唯一真相源。
 try:
-    from push_ledger import consume_quota, append_record
+    from push_ledger import consume_quota, append_record, mark_exhausted
     _LEDGER_OK = True
 except ImportError:
     _LEDGER_OK = False
+    def mark_exhausted(reason=''):
+        return False
 
 
 def _global_quota_ok(push_type, title='', slot=''):
@@ -70,6 +72,47 @@ def _global_quota_note(push_type, title='', slot=''):
         append_record(push_type, title, slot)
     except Exception as e:
         print(f"[WeChat] 账本记账失败(不影响本次推送): {e}")
+
+
+def _is_quota_exceeded(text):
+    """判断 Server酱 响应是否是「当日发送次数超限」"""
+    t = text or ''
+    return ('40001' in t) or ('发送次数限制' in t) or ('超过当天' in t)
+
+
+def _handle_serverchan_error(exc=None, body=''):
+    """发送失败时的收尾：若 Server酱 明确报当日超限，反向熔断全局账本。
+
+    Server酱 才是真正的计费方，本地账本可能与它不一致（10/22 事故里
+    本地只认到 1 条、实际已打满 5 条）。一旦发现 40001，
+    立刻把当天账本置为熔断，后续所有环境（含每 5 分钟一个的云端 job）
+    会在本地直接拒绝，不再逐个白撞 HTTP。
+    """
+    text = body or ''
+    if exc is not None:
+        try:
+            raw = exc.read()
+            if isinstance(raw, bytes):
+                raw = raw.decode('utf-8', 'ignore')
+            text = text or (raw or str(exc))
+        except Exception:
+            text = text or str(exc)
+    reason = text
+    try:                       # Server酱 返回的是 JSON，取人类可读字段
+        obj = json.loads(text)
+        reason = obj.get('info') or obj.get('message') or text
+    except Exception:
+        pass
+    if not _is_quota_exceeded(text):
+        return False
+    print(f"[WeChat] ⛔ Server酱当日额度已耗尽: {reason[:90]}")
+    if os.environ.get('FORCE_PUSH') == '1':
+        return True
+    try:
+        mark_exhausted(str(reason)[:80] or 'Server酱返回当日超限')
+    except Exception as e:
+        print(f"[WeChat] 熔断写入失败: {e}")
+    return True
 
 
 def load_sendkey():
@@ -335,9 +378,11 @@ def send_wechat(title, desp='', push_type='default'):
                 return True
             else:
                 print(f"[WeChat] 推送失败: {body}")
+                _handle_serverchan_error(body=body)
                 return False
     except Exception as e:
         print(f"[WeChat] 推送异常: {e}")
+        _handle_serverchan_error(exc=e)
         return False
 
 
@@ -796,9 +841,11 @@ def _send_with_key(title, desp, state_key):
                 _global_quota_note('digest', title, slot=state_key or '')
                 return True
             print(f"[WeChat] 推送失败: {body}")
+            _handle_serverchan_error(body=body)
             return False
     except Exception as e:
         print(f"[WeChat] 推送异常: {e}")
+        _handle_serverchan_error(exc=e)
         return False
 
 
