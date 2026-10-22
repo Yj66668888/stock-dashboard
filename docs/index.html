@@ -1039,6 +1039,69 @@
   .mc-section-header.approaching .mc-count { background: rgba(210,153,34,0.2); }
   .mc-section-header.building { color: var(--blue, #58a6ff); }
   .mc-section-header.building .mc-count { background: rgba(88,166,255,0.15); }
+
+  /* ==================== 量价状态页（2026-10-22 新增） ==================== */
+  .vs-wrap { display: flex; flex-direction: column; gap: 12px; padding-bottom: 28px; }
+  .vs-verdict {
+    background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--gray);
+    border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .vs-verdict .vs-big { font-size: 19px; font-weight: 800; letter-spacing: 0.4px; white-space: nowrap; }
+  .vs-verdict .vs-sub { font-size: 12px; color: var(--text-muted); line-height: 1.75; flex: 1; min-width: 220px; }
+  .vs-verdict .vs-sub b { color: var(--text); }
+  .vs-kpis { display: flex; gap: 16px; flex-wrap: wrap; }
+  .vs-kpi { text-align: center; min-width: 58px; }
+  .vs-kpi .v { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .vs-kpi .k { font-size: 10px; color: var(--text-dim); margin-top: 2px; white-space: nowrap; }
+
+  .vs-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+  .vs-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; }
+  .vs-card .n { font-size: 10.5px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+  .vs-card .c { font-size: 19px; font-weight: 800; margin-top: 3px; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .vs-card .d { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+
+  .vs-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; }
+  .vs-panel-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .vs-panel-title .hint { font-size: 10.5px; font-weight: 400; color: var(--text-dim); }
+
+  .vs-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; border: 1px solid transparent; }
+  .vs-lv-good    { background: rgba(63,185,80,0.15);  color: #3fb950; border-color: rgba(63,185,80,0.35); }
+  .vs-lv-good2   { background: rgba(86,212,176,0.15); color: #56d4b0; border-color: rgba(86,212,176,0.35); }
+  .vs-lv-warn    { background: rgba(210,153,34,0.15); color: #d29922; border-color: rgba(210,153,34,0.35); }
+  .vs-lv-bad     { background: rgba(248,81,73,0.15);  color: #f85149; border-color: rgba(248,81,73,0.35); }
+  .vs-lv-bad2    { background: rgba(219,109,40,0.15); color: #db6d28; border-color: rgba(219,109,40,0.35); }
+  .vs-lv-watch   { background: rgba(88,166,255,0.15); color: #58a6ff; border-color: rgba(88,166,255,0.35); }
+  .vs-lv-neutral { background: rgba(110,118,130,0.15); color: #8b949e; border-color: rgba(110,118,130,0.30); }
+
+  table.vs-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.vs-table thead th { background: var(--header-bg); color: var(--text-muted); font-size: 10.5px; font-weight: 700;
+    padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: right;
+    position: sticky; top: 0; z-index: 2; cursor: pointer; user-select: none; }
+  table.vs-table thead th.l { text-align: left; }
+  table.vs-table thead th:hover { color: var(--text); }
+  table.vs-table tbody td { padding: 7px 8px; border-bottom: 1px solid rgba(48,54,61,0.5); text-align: right; font-variant-numeric: tabular-nums; }
+  table.vs-table tbody td.l { text-align: left; }
+  table.vs-table tbody tr:hover { background: var(--hover-bg); }
+  .vs-bar { position: relative; height: 5px; border-radius: 3px; background: rgba(110,118,130,0.25); overflow: hidden; min-width: 50px; }
+  .vs-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+  .vs-bar-wrap { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+
+  .vs-scroll { max-height: 460px; overflow-y: auto; }
+  .vs-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 10.5px; color: var(--text-muted); margin-bottom: 8px; align-items: center; }
+  .vs-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .vs-legend i.sq { border-radius: 1px; }
+  .vs-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 8px; }
+  .vs-mx { border-radius: 8px; padding: 9px 12px; border: 1px solid; }
+  .vs-mx .t { font-size: 12px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .vs-mx .t em { font-style: normal; font-size: 10px; font-weight: 600; opacity: 0.8; }
+  .vs-mx .c { font-size: 10.5px; opacity: 0.85; margin-top: 3px; }
+  .vs-mx .w { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+  .vs-svg text { font-family: inherit; }
+  @media (max-width: 720px) {
+    .vs-verdict { padding: 12px 14px; gap: 12px; }
+    .vs-verdict .vs-big { font-size: 16px; }
+    .vs-kpis { gap: 12px; }
+  }
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -1081,6 +1144,7 @@
     <button class="nav-btn active" onclick="switchPage('stocks', event)">📊 选股仪表盘</button>
     <button class="nav-btn" onclick="switchPage('auction', event)">🔴 竞价监测</button>
     <button class="nav-btn" onclick="switchPage('lowauc', event)">🧲 低位竞价</button>
+    <button class="nav-btn" onclick="switchPage('volume', event)">📉 量价状态</button>
   </nav>
 
   <!-- Page: Stocks -->
@@ -1243,6 +1307,73 @@
       候选池口径：全市场 60/00 主板（排除ST）· 30分钟KDJ K≤35 且 趋势上升(K&gt;D)或待升(乖离收敛/K上拐) · 每日8:30云端扫描生成<br>
       表格按竞价金额由高到低排序。K/D 为最近收盘的30分KDJ状态（当日首根30分K 10:00才走完，竞价阶段即当前状态）。9:15-9:20可撤单仅供参考，9:20-9:25不可撤单数据最真实。<br>
       盘中确认（三线确认法）：✅强势=现价&gt;分时均价线&gt;昨收 · ⚠️修复观察=现价在均价线上但未收复昨收 · ❌破位=现价跌破均价线。量比1.0~2.5温和放大，&gt;3警惕爆量、&lt;0.8无承接。
+    </div>
+  </div>
+
+  <!-- Page: 量价状态（2026-10-22 新增：缩量止跌 vs 放量破位，一眼看清） -->
+  <div class="page" id="page-volume">
+    <div class="vs-wrap">
+      <div class="vs-verdict" id="vsVerdict" style="border-left-color:var(--gray);">
+        <span class="vs-big" id="vsBig" style="color:var(--text-muted);">加载中…</span>
+        <span class="vs-sub" id="vsSub">正在拉取日K线，逐只计算量能比、涨跌幅与10日新低…</span>
+        <div class="vs-kpis" id="vsKpis"></div>
+        <button class="auction-btn" onclick="vsReload()" style="white-space:nowrap;flex:none;">↻ 刷新</button>
+      </div>
+
+      <div class="vs-cards" id="vsCards"></div>
+
+      <div class="vs-panel">
+        <div class="vs-panel-title">量价定位图
+          <span class="hint">横轴=量能比（今日量÷前5日均量）· 纵轴=当日涨跌 · 虚线为 0.8 / 1.2 / 0 的分界</span>
+        </div>
+        <div class="vs-legend">
+          <span><i class="sq" style="background:#58a6ff;"></i>大盘指数</span>
+          <span><i style="background:#f85149;"></i>创10日新低</span>
+          <span><i style="background:#d29922;"></i>未创新低</span>
+          <span>左上＝缩量上涨（无量反弹）· 右下＝放量下跌（真出货）</span>
+        </div>
+        <div id="vsScatter"></div>
+      </div>
+
+      <div class="vs-panel">
+        <div class="vs-panel-title">判定明细
+          <span class="hint" id="vsTableHint">按状态严重度排序 · 点表头可切换</span>
+        </div>
+        <div class="vs-scroll">
+          <table class="vs-table" id="vsTable">
+            <thead><tr>
+              <th class="l" data-sort="name">名称</th>
+              <th class="l" data-sort="code">代码</th>
+              <th data-sort="close">收盘</th>
+              <th data-sort="chg">涨跌</th>
+              <th data-sort="ratio">量能比</th>
+              <th data-sort="low10">10日最低</th>
+              <th data-sort="newlow">创新低</th>
+              <th class="l" data-sort="state">状态</th>
+            </tr></thead>
+            <tbody id="vsBody"><tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:24px;">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="vs-panel">
+        <div class="vs-panel-title">六态判定矩阵 <span class="hint">括号内为当前池内的实际命中数</span></div>
+        <div class="vs-matrix" id="vsMatrix"></div>
+      </div>
+
+      <details class="vs-panel">
+        <summary style="font-size:13px;font-weight:700;cursor:pointer;">📖 怎么用（点击展开判定规则与最容易踩的坑）</summary>
+        <div style="font-size:12px;line-height:1.95;margin-top:10px;color:var(--text-muted);">
+          <b style="color:#56d4b0;">「缩量止跌」必须同时满足三条</b>：① 量能比 &lt; 0.8　② 不创 10 日新低　③ <b style="color:var(--text);">当日跌幅 &lt; 3%</b>（跌得更凶的叫<b style="color:#58a6ff;">缩量下跌</b>，不是止跌）。<br>
+          只满足第一条的叫 <b style="color:#db6d28;">无量阴跌</b>——缩量还破新低，是最容易骗人的形态，别当底。<br><br>
+          <b style="color:#d29922;">最容易踩的坑：缩量反弹 ≠ 缩量止跌。</b>缩量小涨几天看着像企稳，其实是空头暂歇、多头没进场；没有量能支撑，任何一根阴线都能把几天的涨幅一次吃掉，并且往往直接创新低。<br>
+          <b style="color:var(--text);">判据：缩量上涨不算底，缩量下跌且不创新低才算。</b>
+        </div>
+      </details>
+
+      <div style="font-size:10.5px;color:var(--text-dim);line-height:1.7;" id="vsFooter">
+        数据源：腾讯 ifzq.gtimg.cn 日K（前复权）· 页面打开时实时拉取 · 只描述当下量价状态，不构成买卖建议
+      </div>
     </div>
   </div>
 
@@ -2839,6 +2970,8 @@ function switchPage(pageId, event) {
   if (pageId === 'auction') { startAuctionLoop(); } else { stopAuctionLoop(); }
   // 低位竞价页：同上
   if (pageId === 'lowauc') { startLowAucLoop(); } else { stopLowAucLoop(); }
+  // 量价状态页：首次进入时懒加载日K并计算
+  if (pageId === 'volume') { vsEnsureLoaded(); }
 }
 
 // ============================================
@@ -5468,6 +5601,369 @@ function renderDataVersion() {
     }
   }
 })();
+
+// ============================================
+// 量价状态页（2026-10-22 新增）
+// 判定口径与 volume_state_check.py 完全一致：
+//   R = 今日成交量 / 前5日均成交量
+//   R<0.8 缩量 / 0.8~1.2 平量 / R>1.2 放量
+//   三维：量能比 × 当日涨跌 × 是否创10日新低 → 九态
+// 数据：打开页面时实时拉腾讯日K（前复权），本地缓存 5 分钟
+// ============================================
+var VS_SHORT_VOL = 0.8, VS_LONG_VOL = 1.2, VS_LOOKBACK = 10, VS_BARS = 28;
+var VS_HOSTS = ['web.ifzq.gtimg.cn', 'ifzq.gtimg.cn'];
+var VS_CACHE_KEY = 'vs_kline_cache_v1';
+var VS_CACHE_TTL = 5 * 60 * 1000;
+var VS_INDEXES = [
+  ['sh000001', '上证指数'], ['sz399001', '深证成指'],
+  ['sz399006', '创业板指'], ['sz399673', '创业板50']
+];
+var VS_STATE_META = {
+  '放量上攻': { lv: 'good',    cond: 'R>1.2 且上涨',        why: '量价齐升，资金真进场' },
+  '缩量反弹': { lv: 'warn',    cond: 'R<0.8 且上涨',        why: '没有量能支撑，空头暂歇而非多头进场' },
+  '平量上涨': { lv: 'neutral', cond: '0.8≤R≤1.2 且上涨',    why: '温和上行，缺爆发力' },
+  '放量破位': { lv: 'bad',     cond: 'R>1.2 且跌且创新低',  why: '跌幅放大且创新低，主跌段特征' },
+  '放量承接': { lv: 'watch',   cond: 'R>1.2 且跌但不创新低', why: '有资金接但没接住价，分歧加剧' },
+  '无量阴跌': { lv: 'bad2',    cond: 'R<0.8 且跌且创新低',  why: '缩量还创新低，抛压没出清，别当底' },
+  '缩量止跌': { lv: 'good2',   cond: 'R<0.8 且跌<3%且不创新低', why: '抛压衰竭+价格站住，唯一偏多的下跌态' },
+  '缩量下跌': { lv: 'watch',   cond: 'R<0.8 且跌≥3%但不创新低', why: '缩量仍在重挫，抛压未完全衰竭，别急着当底' },
+  '平量破位': { lv: 'bad',     cond: '0.8≤R≤1.2 且跌且创新低', why: '量能未缩却破新低，卖压主动' },
+  '平量整理': { lv: 'neutral', cond: '0.8≤R≤1.2 且跌但不创新低', why: '多空僵持，方向未定' }
+};
+var VS_ORDER = ['放量破位', '无量阴跌', '平量破位', '缩量下跌', '缩量反弹', '放量承接', '平量上涨', '平量整理', '放量上攻', '缩量止跌'];
+var VS_STOP_MAX_DROP = 3.0;  // 「缩量止跌」的第三条判据：跌幅必须温和（<3%）
+var VS_RESULT = [], VS_FAIL = 0, VS_LOADING = false, VS_LOADED = false;
+var VS_SORT = { key: 'severity', dir: 1 };
+
+function vsEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function vsFetchDay(code) {
+  var pi = 0;
+  function attempt() {
+    if (pi >= VS_HOSTS.length) return Promise.reject(new Error('hosts exhausted'));
+    var host = VS_HOSTS[pi++];
+    var url = 'https://' + host + '/appstock/app/fqkline/get?param=' + code + ',day,,,' + VS_BARS + ',qfq';
+    return fetch(url, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      var data = (d || {}).data || {};
+      var keys = Object.keys(data);
+      var node = data[code] || (keys.length ? data[keys[0]] : {}) || {};
+      var bars = node.qfqday || node.day || [];
+      if (!bars || bars.length < 13) throw new Error('bars ' + (bars ? bars.length : 0));
+      return bars.map(function (b) {
+        return { d: String(b[0]), o: +b[1], c: +b[2], h: +b[3], l: +b[4], v: +b[5] };
+      });
+    }).catch(function () { return attempt(); });
+  }
+  return attempt();
+}
+
+function vsCacheGet(code) {
+  try {
+    var raw = localStorage.getItem(VS_CACHE_KEY);
+    if (!raw) return null;
+    var e = JSON.parse(raw)[code];
+    if (!e || !e.t || Date.now() - e.t > VS_CACHE_TTL) return null;
+    return e.bars || null;
+  } catch (err) { return null; }
+}
+function vsCacheSet(code, bars) {
+  try {
+    var raw = localStorage.getItem(VS_CACHE_KEY);
+    var all = raw ? JSON.parse(raw) : {};
+    all[code] = { t: Date.now(), bars: bars };
+    var now = Date.now();
+    Object.keys(all).forEach(function (k) { if (now - (all[k].t || 0) > 86400000) delete all[k]; });
+    localStorage.setItem(VS_CACHE_KEY, JSON.stringify(all));
+  } catch (err) {}
+}
+
+// 与 Python 版 judge() 逐条对应
+// 注意：缩量下跌分支必须同时满足三条才叫「缩量止跌」——R<0.8、不创10日新低、跌幅<3%
+//       （跌幅≥3% 只缩量不叫止跌，单列为「缩量下跌」，否则 -6% 也会被标成止跌）
+function vsJudge(ratio, chg, newLow) {
+  if (chg > 0) {
+    if (ratio > VS_LONG_VOL) return '放量上攻';
+    if (ratio < VS_SHORT_VOL) return '缩量反弹';
+    return '平量上涨';
+  }
+  if (ratio > VS_LONG_VOL) return newLow ? '放量破位' : '放量承接';
+  if (ratio < VS_SHORT_VOL) {
+    if (newLow) return '无量阴跌';
+    return Math.abs(chg) < VS_STOP_MAX_DROP ? '缩量止跌' : '缩量下跌';
+  }
+  return newLow ? '平量破位' : '平量整理';
+}
+
+function vsAnalyze(code, name, kind, bars) {
+  var b = bars[bars.length - 1], p = bars[bars.length - 2];
+  var chg = (b.c / p.c - 1) * 100;
+  var ref = bars.slice(-6, -1);
+  var ma5 = ref.reduce(function (a, x) { return a + x.v; }, 0) / ref.length;
+  var ratio = ma5 > 0 ? b.v / ma5 : 0;
+  var prev = bars.slice(-1 - VS_LOOKBACK, -1).map(function (x) { return x.c; });
+  var low10 = Math.min.apply(null, prev);
+  var newLow = b.c < low10;
+  var state = vsJudge(ratio, chg, newLow);
+  var meta = VS_STATE_META[state] || { lv: 'neutral', why: '' };
+  return {
+    code: code, name: name, kind: kind, date: b.d, close: b.c,
+    chg: Math.round(chg * 100) / 100, ratio: Math.round(ratio * 100) / 100,
+    low10: low10, newLow: newLow, state: state, lv: meta.lv, why: meta.why
+  };
+}
+
+function vsProgress(done, total) {
+  var el = document.getElementById('vsSub');
+  if (el && !VS_LOADED) el.textContent = '正在拉取日K线… ' + done + ' / ' + total;
+}
+
+function vsEnsureLoaded() {
+  if (VS_LOADED || VS_LOADING) return;
+  vsLoadAll(false);
+}
+
+function vsReload() {
+  var el = document.getElementById('vsSub');
+  if (el) el.textContent = '正在强制刷新（跳过缓存）…';
+  VS_LOADED = false;
+  VS_RESULT = [];
+  vsLoadAll(true);
+}
+
+function vsLoadAll(force) {
+  if (VS_LOADING) return;
+  VS_LOADING = true;
+  VS_FAIL = 0;
+  var tasks = [];
+  VS_INDEXES.forEach(function (it) { tasks.push({ code: it[0], name: it[1], kind: 'index' }); });
+  var pool = (typeof STOCKS !== 'undefined' && STOCKS) ? STOCKS : [];
+  pool.forEach(function (s) {
+    if (s && s.code) tasks.push({ code: s.code, name: s.name || s.code, kind: 'stock' });
+  });
+  var queue = tasks.slice(), out = [], done = 0, total = tasks.length, CONC = 5;
+
+  function next() {
+    if (!queue.length) return Promise.resolve();
+    var t = queue.shift();
+    var cached = force ? null : vsCacheGet(t.code);
+    var job = cached ? Promise.resolve(cached)
+      : vsFetchDay(t.code).then(function (bars) { vsCacheSet(t.code, bars); return bars; });
+    return job.then(function (bars) {
+      if (bars && bars.length >= 13) out.push(vsAnalyze(t.code, t.name, t.kind, bars));
+      else VS_FAIL++;
+    }).catch(function () { VS_FAIL++; }).then(function () {
+      done++; vsProgress(done, total);
+      return next();
+    });
+  }
+  var runners = [];
+  for (var i = 0; i < CONC; i++) runners.push(next());
+  Promise.all(runners).then(function () {
+    VS_LOADING = false; VS_LOADED = true;
+    VS_RESULT = out;
+    vsRender();
+  });
+}
+
+function vsSorted() {
+  var R = VS_RESULT.slice();
+  var k = VS_SORT.key, d = VS_SORT.dir;
+  R.sort(function (a, b) {
+    var va, vb;
+    if (k === 'severity') { va = VS_ORDER.indexOf(a.state); vb = VS_ORDER.indexOf(b.state); }
+    else if (k === 'newlow') { va = a.newLow ? 0 : 1; vb = b.newLow ? 0 : 1; }
+    else if (k === 'name' || k === 'code' || k === 'state') { va = a[k]; vb = b[k]; return String(va).localeCompare(String(vb), 'zh') * d; }
+    else { va = a[k]; vb = b[k]; }
+    return (va - vb) * d;
+  });
+  return R;
+}
+
+function vsRender() {
+  var R = VS_RESULT;
+  var big = document.getElementById('vsBig');
+  var sub = document.getElementById('vsSub');
+  var kpis = document.getElementById('vsKpis');
+  var cards = document.getElementById('vsCards');
+  var body = document.getElementById('vsBody');
+  if (!R.length) {
+    big.textContent = '数据拉取失败';
+    big.style.color = 'var(--red)';
+    sub.innerHTML = '一只都没拉到（失败 ' + VS_FAIL + ' 次）。常见原因：<b>本地 file:// 打开被跨域拦截</b>、腾讯接口限流 501、或网络代理拦截。请刷新重试；若持续失败，改跑 <b>volume_state_check.py</b> 看离线版。';
+    kpis.innerHTML = ''; cards.innerHTML = ''; 
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--red);padding:24px;">无数据</td></tr>';
+    return;
+  }
+  var idx = R.filter(function (r) { return r.kind === 'index'; });
+  var nLow = R.filter(function (r) { return r.newLow; }).length;
+  var nStop = R.filter(function (r) { return r.state === '缩量止跌'; }).length;
+  var nBreak = R.filter(function (r) { return r.state === '放量破位' || r.state === '无量阴跌' || r.state === '平量破位'; }).length;
+  var nShrink = R.filter(function (r) { return r.ratio < VS_SHORT_VOL; }).length;
+  var date = R[0].date;
+
+  if (nStop > 0) {
+    big.textContent = nStop + ' 只缩量止跌';
+    big.style.color = '#56d4b0';
+  } else if (nLow === R.length) {
+    big.textContent = '全部创 10 日新低';
+    big.style.color = 'var(--red)';
+  } else if (nBreak > 0) {
+    big.textContent = '无一止跌 · ' + nBreak + ' 只破位';
+    big.style.color = 'var(--red)';
+  } else {
+    big.textContent = '无一止跌';
+    big.style.color = 'var(--yellow)';
+  }
+  var idxTxt = idx.map(function (r) { return r.name.replace('指数', '').replace('成指', '') + '「' + r.state + '」'; }).join('　');
+  sub.innerHTML = '大盘：' + vsEsc(idxTxt) + '<br>全池 <b>' + R.length + '</b> 只中 <b>' + nLow + '</b> 只创 10 日新低'
+    + (nStop > 0 ? '，<b style="color:#56d4b0">' + R.filter(function (r) { return r.state === '缩量止跌'; }).map(function (r) { return r.name; }).join('、') + '</b> 满足缩量止跌' : '，<b style="color:#f85149">无一只满足缩量止跌</b>')
+    + (VS_FAIL > 0 ? '　（' + VS_FAIL + ' 只拉取失败未计入）' : '');
+  kpis.innerHTML = [
+    ['创新低', nLow + '/' + R.length, nLow === R.length ? 'var(--red)' : 'var(--text)'],
+    ['缩量', nShrink, 'var(--yellow)'],
+    ['止跌', nStop, nStop > 0 ? '#56d4b0' : 'var(--text-dim)'],
+    ['破位', nBreak, nBreak > 0 ? 'var(--red)' : 'var(--text-dim)']
+  ].map(function (k) {
+    return '<div class="vs-kpi"><div class="v" style="color:' + k[2] + '">' + k[1] + '</div><div class="k">' + k[0] + '</div></div>';
+  }).join('');
+
+  // 六态汇总卡
+  cards.innerHTML = VS_ORDER.map(function (st) {
+    var m = VS_STATE_META[st];
+    var n = R.filter(function (r) { return r.state === st; }).length;
+    var cls = 'vs-lv-' + m.lv;
+    return '<div class="vs-card"><div class="n"><span class="vs-badge ' + cls + '" style="padding:0 6px;font-size:10px;">' + st + '</span></div>'
+      + '<div class="c" style="color:' + (n ? 'var(--text)' : 'var(--text-dim)') + '">' + n + '</div>'
+      + '<div class="d">' + vsEsc(m.cond) + '</div></div>';
+  }).join('');
+
+  // 散点
+  var sc = document.getElementById('vsScatter');
+  if (sc) sc.innerHTML = vsScatterSvg(R);
+
+  // 明细表
+  var sorted = vsSorted();
+  body.innerHTML = sorted.map(function (r) {
+    var cls = 'vs-lv-' + r.lv;
+    var chgColor = r.chg > 0 ? 'var(--red)' : (r.chg < 0 ? 'var(--green)' : 'var(--text-muted)');
+    var ratioColor = r.ratio < VS_SHORT_VOL ? '#56d4b0' : (r.ratio > VS_LONG_VOL ? '#f85149' : 'var(--text-muted)');
+    var bw = Math.min(100, r.ratio / 1.6 * 100);
+    return '<tr>'
+      + '<td class="l">' + (r.kind === 'index' ? '📊 ' : '') + vsEsc(r.name) + '</td>'
+      + '<td class="l" style="color:var(--text-dim);font-size:11px;">' + vsEsc(r.code) + '</td>'
+      + '<td>' + r.close.toFixed(2) + '</td>'
+      + '<td style="color:' + chgColor + ';font-weight:700;">' + (r.chg > 0 ? '+' : '') + r.chg.toFixed(2) + '%</td>'
+      + '<td><div class="vs-bar-wrap"><div class="vs-bar" style="width:54px;"><i style="width:' + bw + '%;background:' + ratioColor + ';"></i></div>'
+      + '<span style="color:' + ratioColor + ';font-weight:700;">' + r.ratio.toFixed(2) + '</span></div></td>'
+      + '<td style="color:var(--text-dim);">' + r.low10.toFixed(2) + '</td>'
+      + '<td>' + (r.newLow ? '<span style="color:var(--red);font-weight:700;">是</span>' : '<span style="color:var(--text-dim);">—</span>') + '</td>'
+      + '<td class="l"><span class="vs-badge ' + cls + '" title="' + vsEsc(r.why) + '">' + r.state + '</span></td>'
+      + '</tr>';
+  }).join('');
+
+  // 矩阵
+  var mx = document.getElementById('vsMatrix');
+  if (mx) {
+    mx.innerHTML = VS_ORDER.map(function (st) {
+      var m = VS_STATE_META[st];
+      var list = R.filter(function (r) { return r.state === st; });
+      var cls = 'vs-lv-' + m.lv;
+      var names = list.length ? list.slice(0, 6).map(function (r) { return r.name; }).join('、') + (list.length > 6 ? ' 等' : '') : '当前无';
+      return '<div class="vs-mx ' + cls + '" style="background:rgba(255,255,255,0.02);">'
+        + '<div class="t"><span>' + st + '</span><em>' + list.length + ' 只</em></div>'
+        + '<div class="c">' + vsEsc(m.cond) + '</div>'
+        + '<div class="w">' + vsEsc(m.why) + '<br><span style="color:var(--text-dim);">' + vsEsc(names) + '</span></div></div>';
+    }).join('');
+  }
+
+  var hint = document.getElementById('vsTableHint');
+  if (hint) hint.textContent = date + ' 收盘 · 按状态严重度排序 · 点表头可切换';
+  var foot = document.getElementById('vsFooter');
+  if (foot) foot.textContent = '数据源：腾讯 ifzq.gtimg.cn 日K（前复权）· 抓取时间 ' + new Date().toLocaleString('zh-CN')
+    + ' · 量能比=今日量÷前5日均量 · 只描述当下量价状态，不构成买卖建议';
+}
+
+function vsScatterSvg(R) {
+  var W = 900, H = 380, PL = 54, PR = 20, PT = 16, PB = 42;
+  var iw = W - PL - PR, ih = H - PT - PB;
+  var xs = R.map(function (r) { return r.ratio; });
+  var ys = R.map(function (r) { return r.chg; });
+  var x0 = Math.max(0.2, Math.min(0.65, Math.min.apply(null, xs) - 0.08));
+  var x1 = Math.min(2.4, Math.max(1.45, Math.max.apply(null, xs) + 0.08));
+  var ymax = Math.max(0.6, Math.max.apply(null, ys) + 0.5);
+  var ymin = Math.min(-0.6, Math.min.apply(null, ys) - 0.5);
+  function X(v) { return PL + (v - x0) / (x1 - x0) * iw; }
+  function Y(v) { return PT + (ymax - v) / (ymax - ymin) * ih; }
+  function band(xa, xb, ya, yb, fill) {
+    var px = X(Math.max(x0, xa)), pw = X(Math.min(x1, xb)) - px;
+    var py = Y(Math.min(ymax, yb)), ph = Y(Math.max(ymin, ya)) - py;
+    if (pw <= 0 || ph <= 0) return '';
+    return '<rect x="' + px.toFixed(1) + '" y="' + py.toFixed(1) + '" width="' + pw.toFixed(1) + '" height="' + ph.toFixed(1) + '" fill="' + fill + '"/>';
+  }
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;display:block;" class="vs-svg">';
+  s += band(x0, VS_SHORT_VOL, 0, ymax, 'rgba(210,153,34,0.08)');
+  s += band(x0, VS_SHORT_VOL, ymin, 0, 'rgba(86,212,176,0.10)');
+  s += band(VS_LONG_VOL, x1, 0, ymax, 'rgba(63,185,80,0.07)');
+  s += band(VS_LONG_VOL, x1, ymin, 0, 'rgba(248,81,73,0.11)');
+  s += band(VS_SHORT_VOL, VS_LONG_VOL, ymin, ymax, 'rgba(110,118,130,0.05)');
+
+  // Y 网格 + 刻度
+  var yr = ymax - ymin, ystep = yr > 14 ? 3 : (yr > 8 ? 2 : (yr > 4 ? 1 : 0.5));
+  for (var vy = Math.ceil(ymin / ystep) * ystep; vy <= ymax + 1e-9; vy += ystep) {
+    var py = Y(vy);
+    s += '<line x1="' + PL + '" y1="' + py.toFixed(1) + '" x2="' + (W - PR) + '" y2="' + py.toFixed(1) + '" stroke="rgba(139,148,158,0.14)" stroke-width="1"/>';
+    s += '<text x="' + (PL - 8) + '" y="' + (py + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" fill="#8b949e">' + (Math.abs(vy) < 1e-9 ? '0' : (vy > 0 ? '+' : '') + vy.toFixed(vy % 1 === 0 ? 0 : 1) + '%') + '</text>';
+  }
+  // X 刻度
+  for (var vx = Math.ceil(x0 / 0.2) * 0.2; vx <= x1 + 1e-9; vx += 0.2) {
+    var px = X(vx);
+    s += '<text x="' + px.toFixed(1) + '" y="' + (PT + ih + 16) + '" text-anchor="middle" font-size="10" fill="#8b949e">' + vx.toFixed(1) + '</text>';
+  }
+  // 分界线
+  s += '<line x1="' + X(VS_SHORT_VOL).toFixed(1) + '" y1="' + PT + '" x2="' + X(VS_SHORT_VOL).toFixed(1) + '" y2="' + (PT + ih) + '" stroke="rgba(139,148,158,0.35)" stroke-width="1" stroke-dasharray="4 4"/>';
+  s += '<line x1="' + X(VS_LONG_VOL).toFixed(1) + '" y1="' + PT + '" x2="' + X(VS_LONG_VOL).toFixed(1) + '" y2="' + (PT + ih) + '" stroke="rgba(139,148,158,0.35)" stroke-width="1" stroke-dasharray="4 4"/>';
+  s += '<line x1="' + PL + '" y1="' + Y(0).toFixed(1) + '" x2="' + (W - PR) + '" y2="' + Y(0).toFixed(1) + '" stroke="rgba(139,148,158,0.45)" stroke-width="1"/>';
+  // 区域标签
+  s += '<text x="' + (PL + 8) + '" y="' + (PT + 16) + '" font-size="10" fill="#d29922" opacity="0.9">缩量上涨·无量反弹</text>';
+  s += '<text x="' + (W - PR - 8) + '" y="' + (PT + 16) + '" text-anchor="end" font-size="10" fill="#3fb950" opacity="0.9">放量上涨·真进场</text>';
+  s += '<text x="' + (PL + 8) + '" y="' + (PT + ih - 8) + '" font-size="10" fill="#56d4b0" opacity="0.9">缩量下跌·看是否创新低</text>';
+  s += '<text x="' + (W - PR - 8) + '" y="' + (PT + ih - 8) + '" text-anchor="end" font-size="10" fill="#f85149" opacity="0.9">放量下跌·真出货</text>';
+  // 轴标题
+  s += '<text x="' + (PL + iw / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#6e7681">量能比（今日量 ÷ 前5日均量）</text>';
+  s += '<text x="14" y="' + (PT + ih / 2).toFixed(1) + '" text-anchor="middle" font-size="10" fill="#6e7681" transform="rotate(-90 14 ' + (PT + ih / 2).toFixed(1) + ')">当日涨跌 %</text>';
+
+  // 点
+  R.forEach(function (r) {
+    var cx = X(r.ratio), cy = Y(r.chg);
+    var tip = r.name + '　' + r.state + '｜收 ' + r.close.toFixed(2) + '｜' + (r.chg > 0 ? '+' : '') + r.chg.toFixed(2) + '%｜量能比 ' + r.ratio.toFixed(2) + (r.newLow ? '｜创10日新低' : '');
+    if (r.kind === 'index') {
+      s += '<rect x="' + (cx - 4.5).toFixed(1) + '" y="' + (cy - 4.5).toFixed(1) + '" width="9" height="9" fill="#58a6ff" stroke="#0d1117" stroke-width="1.2"><title>' + vsEsc(tip) + '</title></rect>';
+      s += '<text x="' + (cx + 8).toFixed(1) + '" y="' + (cy + 3.5).toFixed(1) + '" font-size="9.5" fill="#58a6ff">' + vsEsc(r.name) + '</text>';
+    } else {
+      var col = r.newLow ? '#f85149' : '#d29922';
+      s += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="4" fill="' + col + '" fill-opacity="0.85" stroke="#0d1117" stroke-width="1"><title>' + vsEsc(tip) + '</title></circle>';
+    }
+  });
+  s += '</svg>';
+  return s;
+}
+
+// 表头排序
+document.addEventListener('click', function (e) {
+  var th = e.target && e.target.closest ? e.target.closest('#vsTable thead th[data-sort]') : null;
+  if (!th) return;
+  var key = th.getAttribute('data-sort');
+  if (VS_SORT.key === key) VS_SORT.dir = -VS_SORT.dir;
+  else { VS_SORT.key = key; VS_SORT.dir = (key === 'name' || key === 'code' || key === 'state') ? 1 : -1; }
+  if (VS_LOADED) vsRender();
+});
 </script>
 </body>
 </html>
