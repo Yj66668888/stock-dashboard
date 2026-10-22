@@ -1102,6 +1102,64 @@
     .vs-verdict .vs-big { font-size: 16px; }
     .vs-kpis { gap: 12px; }
   }
+
+  /* ===== 选股表列显隐：默认精简为 11 列 =====
+     保留：代码(3) 名称(4) 驱动方向(6) 今日动作(8) 涨跌幅(10) 换手率(11) MACD(16) 均线(18) 量价信号(20) 主力资金(21) 板块共振(25)
+     其余列不删除，仅 CSS 隐藏；点表格上方「👁 显示全部列」可临时恢复全部 28 列 */
+  table.stock-table.cols-min thead th:nth-child(1),
+  table.stock-table.cols-min tbody td:nth-child(1),   /* 评分 */
+  table.stock-table.cols-min thead th:nth-child(2),
+  table.stock-table.cols-min tbody td:nth-child(2),   /* 梯队 */
+  table.stock-table.cols-min thead th:nth-child(5),
+  table.stock-table.cols-min tbody td:nth-child(5),   /* 赛道 */
+  table.stock-table.cols-min thead th:nth-child(7),
+  table.stock-table.cols-min tbody td:nth-child(7),   /* 阶段 */
+  table.stock-table.cols-min thead th:nth-child(9),
+  table.stock-table.cols-min tbody td:nth-child(9),   /* 现价 */
+  table.stock-table.cols-min thead th:nth-child(12),
+  table.stock-table.cols-min tbody td:nth-child(12),  /* PE/PB */
+  table.stock-table.cols-min thead th:nth-child(13),
+  table.stock-table.cols-min tbody td:nth-child(13),  /* 基本面 */
+  table.stock-table.cols-min thead th:nth-child(14),
+  table.stock-table.cols-min tbody td:nth-child(14),  /* 5分钟KD */
+  table.stock-table.cols-min thead th:nth-child(15),
+  table.stock-table.cols-min tbody td:nth-child(15),  /* 30分钟KD */
+  table.stock-table.cols-min thead th:nth-child(17),
+  table.stock-table.cols-min tbody td:nth-child(17),  /* RSI */
+  table.stock-table.cols-min thead th:nth-child(19),
+  table.stock-table.cols-min tbody td:nth-child(19),  /* 趋势 */
+  table.stock-table.cols-min thead th:nth-child(22),
+  table.stock-table.cols-min tbody td:nth-child(22),  /* 暗盘资金 */
+  table.stock-table.cols-min thead th:nth-child(23),
+  table.stock-table.cols-min tbody td:nth-child(23),  /* 30日高开率 */
+  table.stock-table.cols-min thead th:nth-child(24),
+  table.stock-table.cols-min tbody td:nth-child(24),  /* 5日/10日资金 */
+  table.stock-table.cols-min thead th:nth-child(26),
+  table.stock-table.cols-min tbody td:nth-child(26),  /* 大盘β */
+  table.stock-table.cols-min thead th:nth-child(27),
+  table.stock-table.cols-min tbody td:nth-child(27),  /* 支撑价 */
+  table.stock-table.cols-min thead th:nth-child(28),
+  table.stock-table.cols-min tbody td:nth-child(28) { /* 逻辑 */
+    display: none;
+  }
+  /* 精简模式下可见的最后一列是「板块共振」(25)，去掉它的右边框 */
+  table.stock-table.cols-min thead th:nth-child(25),
+  table.stock-table.cols-min tbody td:nth-child(25) { border-right: none; }
+  /* 列显隐切换按钮 */
+  .col-toggle-btn {
+    margin-left: auto;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .col-toggle-btn:hover { background: rgba(88,166,255,0.12); color: var(--text); }
+  .col-toggle-btn.all { border-color: rgba(88,166,255,0.5); color: #58a6ff; }
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -1169,12 +1227,13 @@
       <span class="fs-text" id="filterStatusText"></span>
       <button class="fs-clear-btn" onclick="clearAllFilters()">✕ 清除所有筛选</button>
     </div>
+    <button class="col-toggle-btn" id="btnColToggle" onclick="toggleTableCols()" title="默认只显示 11 项核心列，点击可临时展开全部 28 列">👁 显示全部列</button>
   </div>
 
   <!-- Main Table -->
   <div class="table-container">
     <div class="table-scroll">
-      <table class="stock-table" id="stockTable">
+      <table class="stock-table cols-min" id="stockTable">
         <thead>
           <tr>
             <th data-filter="score" onclick="toggleFilter(event,'score')">评分<span class="th-filter-icon">▼</span></th>
@@ -1869,6 +1928,34 @@ function compareSort(a, b, dir) {
     cmp = sa.localeCompare(sb, 'zh-CN');
   }
   return dir === 'desc' ? -cmp : cmp;
+}
+
+// ============================================
+// 选股表列显隐（默认精简 11 列，可临时展开全部 28 列）
+// ============================================
+function toggleTableCols() {
+  var t = document.getElementById('stockTable');
+  var b = document.getElementById('btnColToggle');
+  if (!t || !b) return;
+  var isMin = t.classList.toggle('cols-min');   // 精简模式
+  b.classList.toggle('all', !isMin);
+  b.textContent = isMin ? '👁 显示全部列' : '👁 只显示核心列';
+  b.title = isMin
+    ? '当前只显示 11 项核心列（代码/名称/驱动方向/今日动作/涨跌幅/换手率/MACD/均线/量价信号/主力资金/板块共振），点击展开全部 28 列'
+    : '当前显示全部 28 列，点击回到 11 项核心列';
+  try { localStorage.setItem('dashColsMin', isMin ? '1' : '0'); } catch (e) {}
+}
+// 恢复上次选择；无记录时默认精简
+function initTableCols() {
+  var t = document.getElementById('stockTable');
+  var b = document.getElementById('btnColToggle');
+  if (!t || !b) return;
+  var saved = null;
+  try { saved = localStorage.getItem('dashColsMin'); } catch (e) {}
+  var isMin = (saved === null) ? true : (saved === '1');
+  t.classList.toggle('cols-min', isMin);
+  b.classList.toggle('all', !isMin);
+  b.textContent = isMin ? '👁 显示全部列' : '👁 只显示核心列';
 }
 
 function updateSortHeaders() {
@@ -5547,6 +5634,9 @@ function renderDataVersion() {
 
     // 同步按钮高亮状态
     document.getElementById('btnStocks').classList.toggle('active', currentPool === 'stocks');
+
+    // 恢复选股表列显隐状态（默认精简 11 列）
+    try { initTableCols(); } catch (e) { console.warn('[initTableCols]', e); }
 
     // ★ 先从KDJ_PRECOMPUTED缓存填充5分钟/30分钟KDJ（最新数据）
     initPrecomputedKDJ();
