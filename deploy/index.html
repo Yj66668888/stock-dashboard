@@ -5695,14 +5695,18 @@ function vsBjClock() {
   var bj = new Date(d.getTime() + (8 * 60 + d.getTimezoneOffset()) * 60000);
   return { wd: bj.getDay(), m: bj.getHours() * 60 + bj.getMinutes() };
 }
+function vsSessionMins() {   // 已开市分钟数 0~240；未开盘=0，非交易日=-1
+  var t = vsBjClock();
+  if (t.wd === 0 || t.wd === 6) return -1;
+  if (t.m < 570) return 0;                            // 09:30 前
+  if (t.m <= 690) return t.m - 570;                   // 09:30-11:30
+  if (t.m < 780) return 120;                          // 午休
+  if (t.m <= 900) return 120 + (t.m - 780);           // 13:00-15:00
+  return 240;                                          // 已收盘
+}
 function vsSessionPct() {
-  var t = vsBjClock(), mins;
-  if (t.wd === 0 || t.wd === 6) return 0;            // 非交易日
-  if (t.m < 570) return 0;                            // 09:30 前未开盘
-  else if (t.m <= 690) mins = t.m - 570;              // 09:30-11:30
-  else if (t.m < 780) mins = 120;                     // 午休
-  else if (t.m <= 900) mins = 120 + (t.m - 780);      // 13:00-15:00
-  else mins = 240;                                     // 已收盘
+  var mins = vsSessionMins();
+  if (mins <= 0) return 0;
   for (var i = 1; i < VS_SESSION.length; i++) {
     if (mins <= VS_SESSION[i][0]) {
       var a = VS_SESSION[i - 1], b = VS_SESSION[i];
@@ -5724,19 +5728,29 @@ function vsBuildLive(bars, q) {
   var last = bars[bars.length - 1];
   var qd = vsQtDate(q);
   if (!qd || qd <= last.d) return null;               // 日K已含当日 → 用真实收盘数据
-  var pct = vsSessionPct();
-  if (pct <= 0) return null;                          // 未开盘/非交易日 → 不合成
+  var mins = vsSessionMins(), pct = vsSessionPct();
+  if (mins <= 0 || pct <= 0) return null;             // 未开盘 / 非交易日 → 不合成
   var price = parseFloat(q[3]);
-  // 成交量取 p[6]（成交手数，与项目内 inject_live_quotes.py 口径一致），p[36] 兜底
-  var vol = parseFloat(q[6]);
-  if (!isFinite(vol) || vol <= 0) vol = parseFloat(q[36]);
-  vol = vol * VS_VOL_SCALE;
   if (!isFinite(price) || price <= 0) return null;
-  if (!isFinite(vol) || vol <= 0) return null;
+  // 求「预估全日量能比 R = 预估全日量 ÷ 前5日均量」
+  // 方式A（首选）：用腾讯量比 p[49] 反推。量比=(当日每分钟均量)/(过去5日每分钟均量)，故
+  //   R = 量比 × 已开市分钟 ÷ (240 × 日内节奏进度) —— 完全不依赖成交量单位，最稳。
+  // 方式B（兜底）：实时累计成交手数 p[6]（口径同 inject_live_quotes.py）÷ 节奏进度 ÷ 前5日均量
+  var ratio = NaN;
+  var vr = parseFloat(q[49]);
+  if (isFinite(vr) && vr > 0) ratio = vr * mins / (240 * pct);
+  var volRaw = NaN, viaVol = false;
+  if (!(isFinite(ratio) && ratio > 0)) {
+    volRaw = parseFloat(q[6]);
+    if (!isFinite(volRaw) || volRaw <= 0) volRaw = parseFloat(q[36]);
+    if (isFinite(volRaw) && volRaw > 0) { viaVol = true; }
+  }
+  if (!isFinite(ratio) || ratio <= 0) { if (!viaVol) return null; }
   return {
     d: qd, o: parseFloat(q[5]) || price, c: price,
     h: Math.max(price, last.c), l: Math.min(price, last.c),
-    v: vol / pct, _pct: pct, _raw: vol, _t: vsQtHm(q)
+    v: 0, _ratio: (isFinite(ratio) && ratio > 0) ? ratio : null,
+    _vol: viaVol ? volRaw / pct : null, _pct: pct, _mins: mins, _t: vsQtHm(q)
   };
 }
 function vsAnalyze(code, name, kind, bars, q) {
@@ -5746,7 +5760,10 @@ function vsAnalyze(code, name, kind, bars, q) {
   var chg = (b.c / p.c - 1) * 100;
   var ref = series.slice(-6, -1);
   var ma5 = ref.reduce(function (a, x) { return a + x.v; }, 0) / ref.length;
-  var ratio = ma5 > 0 ? b.v / ma5 : 0;
+  var ratio = 0;
+  if (live && live._ratio != null) ratio = live._ratio;              // 量比反推（首选）
+  else if (live && live._vol != null && ma5 > 0) ratio = live._vol / ma5;  // 累计量折算（兜底）
+  else if (ma5 > 0) ratio = b.v / ma5;                                // 盘后真实收盘
   var ratioOk = isFinite(ratio) && ratio >= 0.05 && ratio <= 4;
   if (!ratioOk) ratio = 1;   // 量纲/折算异常时退化为「平量」，不拿错数据误导
   var prev = series.slice(-1 - VS_LOOKBACK, -1).map(function (x) { return x.c; });
