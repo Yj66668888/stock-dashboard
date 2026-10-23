@@ -5613,8 +5613,13 @@ var VS_STATE_META = {
 };
 var VS_ORDER = ['放量破位', '无量阴跌', '平量破位', '缩量下跌', '缩量反弹', '放量承接', '平量上涨', '平量整理', '放量上攻', '缩量止跌'];
 var VS_STOP_MAX_DROP = 3.0;  // 「缩量止跌」的第三条判据：跌幅必须温和（<3%）
-var VS_RESULT = [], VS_FAIL = 0, VS_LOADING = false, VS_LOADED = false;
+var VS_RESULT = [], VS_FAIL = 0, VS_LOADING = false, VS_LOADED = false, VS_LAST_LOAD = 0, VS_LIVE_N = 0, VS_ASOF = '';
 var VS_SORT = { key: 'severity', dir: 1 };
+var VS_QUOTES = {};      // 实时快照缓存 {code: [字段数组]}
+var VS_VOL_SCALE = 1;    // qt 快照成交量 -> 日K成交量 的量纲系数
+// 日内成交节奏累计曲线：横轴=开市后已交易分钟(0~240)，纵轴=已完成全日成交量百分比
+// A股早盘与尾盘放量、午间清淡；线性外推会系统性高估，故按经验节奏折算
+var VS_SESSION = [[0,0],[30,22],[60,36],[90,47],[120,57],[150,68],[180,78],[210,87],[240,100]];
 
 function vsEsc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -5682,13 +5687,69 @@ function vsJudge(ratio, chg, newLow) {
   return newLow ? '平量破位' : '平量整理';
 }
 
-function vsAnalyze(code, name, kind, bars) {
-  var b = bars[bars.length - 1], p = bars[bars.length - 2];
+// ---------- 盘中实时：用实时快照合成「今日虚拟 bar」 ----------
+// 腾讯日K接口盘中不返回当日那根 bar（只到昨日收盘），所以盘中直接读日K永远是昨天的状态。
+// 这里用实时快照的现价 + 实时累计成交量，按日内成交节奏折算成预估全日量，补上今日那根。
+function vsBjClock() {
+  var d = new Date();
+  var bj = new Date(d.getTime() + (8 * 60 + d.getTimezoneOffset()) * 60000);
+  return { wd: bj.getDay(), m: bj.getHours() * 60 + bj.getMinutes() };
+}
+function vsSessionPct() {
+  var t = vsBjClock(), mins;
+  if (t.wd === 0 || t.wd === 6) return 0;            // 非交易日
+  if (t.m < 570) return 0;                            // 09:30 前未开盘
+  else if (t.m <= 690) mins = t.m - 570;              // 09:30-11:30
+  else if (t.m < 780) mins = 120;                     // 午休
+  else if (t.m <= 900) mins = 120 + (t.m - 780);      // 13:00-15:00
+  else mins = 240;                                     // 已收盘
+  for (var i = 1; i < VS_SESSION.length; i++) {
+    if (mins <= VS_SESSION[i][0]) {
+      var a = VS_SESSION[i - 1], b = VS_SESSION[i];
+      return (a[1] + (b[1] - a[1]) * (mins - a[0]) / (b[0] - a[0])) / 100;
+    }
+  }
+  return 1;
+}
+function vsQtDate(q) {
+  var s = String((q && q[30]) ? q[30] : '').replace(/\D/g, '');
+  return s.length >= 8 ? s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) : '';
+}
+function vsQtHm(q) {
+  var s = String((q && q[30]) ? q[30] : '').replace(/\D/g, '');
+  return s.length >= 12 ? s.slice(8, 10) + ':' + s.slice(10, 12) : '';
+}
+function vsBuildLive(bars, q) {
+  if (!bars || bars.length < 13 || !q || !q.length) return null;
+  var last = bars[bars.length - 1];
+  var qd = vsQtDate(q);
+  if (!qd || qd <= last.d) return null;               // 日K已含当日 → 用真实收盘数据
+  var pct = vsSessionPct();
+  if (pct <= 0) return null;                          // 未开盘/非交易日 → 不合成
+  var price = parseFloat(q[3]);
+  // 成交量取 p[6]（成交手数，与项目内 inject_live_quotes.py 口径一致），p[36] 兜底
+  var vol = parseFloat(q[6]);
+  if (!isFinite(vol) || vol <= 0) vol = parseFloat(q[36]);
+  vol = vol * VS_VOL_SCALE;
+  if (!isFinite(price) || price <= 0) return null;
+  if (!isFinite(vol) || vol <= 0) return null;
+  return {
+    d: qd, o: parseFloat(q[5]) || price, c: price,
+    h: Math.max(price, last.c), l: Math.min(price, last.c),
+    v: vol / pct, _pct: pct, _raw: vol, _t: vsQtHm(q)
+  };
+}
+function vsAnalyze(code, name, kind, bars, q) {
+  var live = vsBuildLive(bars, q);
+  var series = live ? bars.concat([live]) : bars;
+  var b = series[series.length - 1], p = series[series.length - 2];
   var chg = (b.c / p.c - 1) * 100;
-  var ref = bars.slice(-6, -1);
+  var ref = series.slice(-6, -1);
   var ma5 = ref.reduce(function (a, x) { return a + x.v; }, 0) / ref.length;
   var ratio = ma5 > 0 ? b.v / ma5 : 0;
-  var prev = bars.slice(-1 - VS_LOOKBACK, -1).map(function (x) { return x.c; });
+  var ratioOk = isFinite(ratio) && ratio >= 0.05 && ratio <= 4;
+  if (!ratioOk) ratio = 1;   // 量纲/折算异常时退化为「平量」，不拿错数据误导
+  var prev = series.slice(-1 - VS_LOOKBACK, -1).map(function (x) { return x.c; });
   var low10 = Math.min.apply(null, prev);
   var newLow = b.c < low10;
   var state = vsJudge(ratio, chg, newLow);
@@ -5696,8 +5757,32 @@ function vsAnalyze(code, name, kind, bars) {
   return {
     code: code, name: name, kind: kind, date: b.d, close: b.c,
     chg: Math.round(chg * 100) / 100, ratio: Math.round(ratio * 100) / 100,
-    low10: low10, newLow: newLow, state: state, lv: meta.lv, why: meta.why
+    low10: low10, newLow: newLow, state: state, lv: meta.lv, why: meta.why,
+    live: !!live, ratioOk: ratioOk, pct: live ? live._pct : 1,
+    asOf: live ? live._t : ''
   };
+}
+// 批量实时快照：qt.gtimg.cn 一次可查多只，返回 {code: [字段数组]}
+function vsFetchQuotes(codes) {
+  var out = {}, CHUNK = 30, chunks = [];
+  for (var i = 0; i < codes.length; i += CHUNK) chunks.push(codes.slice(i, i + CHUNK));
+  function decode(buf) {
+    try { return new TextDecoder('gbk').decode(buf); } catch (e) { }
+    try { return new TextDecoder('utf-8').decode(buf); } catch (e) { }
+    return '';
+  }
+  function one(ch) {
+    var url = 'https://qt.gtimg.cn/q=' + ch.join(',');
+    return fetch(url, { cache: 'no-store' }).then(function (r) { return r.arrayBuffer(); })
+      .then(function (buf) {
+        (decode(buf) || '').split(';').forEach(function (line) {
+          var m = line.match(/v_([a-zA-Z0-9]+)\s*=\s*"([^"]*)"/);
+          if (!m) return;
+          out[m[1].toLowerCase()] = m[2].split('~');
+        });
+      }).catch(function () { });
+  }
+  return Promise.all(chunks.map(one)).then(function () { return out; });
 }
 
 function vsProgress(done, total) {
@@ -5706,7 +5791,10 @@ function vsProgress(done, total) {
 }
 
 function vsEnsureLoaded() {
-  if (VS_LOADED || VS_LOADING) return;
+  if (VS_LOADING) return;
+  var pct = vsSessionPct();
+  var inSession = pct > 0 && pct < 1;   // 盘中：切回页面超过 60 秒就重算一次
+  if (VS_LOADED && !(inSession && Date.now() - VS_LAST_LOAD > 60000)) return;
   vsLoadAll(false);
 }
 
@@ -5729,28 +5817,44 @@ function vsLoadAll(force) {
     if (s && s.code) tasks.push({ code: s.code, name: s.name || s.code, kind: 'stock' });
   });
   var queue = tasks.slice(), out = [], done = 0, total = tasks.length, CONC = 5;
+  var allCodes = tasks.map(function (t) { return t.code; });
+  vsProgress(0, total);
+  return vsFetchQuotes(allCodes).then(function (qmap) {
+    VS_QUOTES = qmap || {};
 
-  function next() {
-    if (!queue.length) return Promise.resolve();
-    var t = queue.shift();
-    var cached = force ? null : vsCacheGet(t.code);
-    var job = cached ? Promise.resolve(cached)
-      : vsFetchDay(t.code).then(function (bars) { vsCacheSet(t.code, bars); return bars; });
-    return job.then(function (bars) {
-      if (bars && bars.length >= 13) out.push(vsAnalyze(t.code, t.name, t.kind, bars));
-      else VS_FAIL++;
-    }).catch(function () { VS_FAIL++; }).then(function () {
-      done++; vsProgress(done, total);
-      return next();
-    });
-  }
-  var runners = [];
-  for (var i = 0; i < CONC; i++) runners.push(next());
-  Promise.all(runners).then(function () {
-    VS_LOADING = false; VS_LOADED = true;
+    function next() {
+      if (!queue.length) return Promise.resolve();
+      var t = queue.shift();
+      var cached = force ? null : vsCacheGet(t.code);
+      var job = cached ? Promise.resolve(cached)
+        : vsFetchDay(t.code).then(function (bars) { vsCacheSet(t.code, bars); return bars; });
+      return job.then(function (bars) {
+        if (bars && bars.length >= 13) out.push(vsAnalyze(t.code, t.name, t.kind, bars, VS_QUOTES[t.code]));
+        else VS_FAIL++;
+      }).catch(function () { VS_FAIL++; }).then(function () {
+        done++; vsProgress(done, total);
+        return next();
+      });
+    }
+    var runners = [];
+    for (var i = 0; i < CONC; i++) runners.push(next());
+    return Promise.all(runners);
+  }).then(function () {
+    VS_LOADING = false; VS_LOADED = true; VS_LAST_LOAD = Date.now();
     VS_RESULT = out;
     vsRender();
   });
+}
+
+function vsStampHtml(R) {
+  var n = R.filter(function (r) { return r.live; }).length;
+  var asOf = '';
+  for (var i = 0; i < R.length; i++) { if (R[i].asOf) { asOf = R[i].asOf; break; } }
+  if (n) {
+    return '<br><span style="color:#56d4b0;">⏱ 实时价截至 <b>' + asOf + '</b>　·　' + n + '/' + R.length
+      + ' 只为盘中合成（腾讯日K盘中不出当日 bar，故价格取实时快照、量能按日内节奏折算）</span>';
+  }
+  return '<br><span style="color:var(--text-dim);">⏱ 已收盘 · 采用当日真实收盘数据</span>';
 }
 
 function vsSorted() {
@@ -5803,9 +5907,12 @@ function vsRender() {
     big.style.color = 'var(--yellow)';
   }
   var idxTxt = idx.map(function (r) { return r.name.replace('指数', '').replace('成指', '') + '「' + r.state + '」'; }).join('　');
+  VS_LIVE_N = R.filter(function (r) { return r.live; }).length;
+  VS_ASOF = '';
+  for (var ai = 0; ai < R.length; ai++) { if (R[ai].asOf) { VS_ASOF = R[ai].asOf; break; } }
   sub.innerHTML = '大盘：' + vsEsc(idxTxt) + '<br>全池 <b>' + R.length + '</b> 只中 <b>' + nLow + '</b> 只创 10 日新低'
     + (nStop > 0 ? '，<b style="color:#56d4b0">' + R.filter(function (r) { return r.state === '缩量止跌'; }).map(function (r) { return r.name; }).join('、') + '</b> 满足缩量止跌' : '，<b style="color:#f85149">无一只满足缩量止跌</b>')
-    + (VS_FAIL > 0 ? '　（' + VS_FAIL + ' 只拉取失败未计入）' : '');
+    + (VS_FAIL > 0 ? '　（' + VS_FAIL + ' 只拉取失败未计入）' : '') + vsStampHtml(R);
   kpis.innerHTML = [
     ['创新低', nLow + '/' + R.length, nLow === R.length ? 'var(--red)' : 'var(--text)'],
     ['缩量', nShrink, 'var(--yellow)'],
@@ -5842,7 +5949,9 @@ function vsRender() {
       + '<td>' + r.close.toFixed(2) + '</td>'
       + '<td style="color:' + chgColor + ';font-weight:700;">' + (r.chg > 0 ? '+' : '') + r.chg.toFixed(2) + '%</td>'
       + '<td><div class="vs-bar-wrap"><div class="vs-bar" style="width:54px;"><i style="width:' + bw + '%;background:' + ratioColor + ';"></i></div>'
-      + '<span style="color:' + ratioColor + ';font-weight:700;">' + r.ratio.toFixed(2) + '</span></div></td>'
+      + '<span style="color:' + ratioColor + ';font-weight:700;">' + (r.ratioOk ? r.ratio.toFixed(2) : '—') + '</span>'
+      + (r.live ? '<span style="color:var(--text-dim);font-size:10px;margin-left:3px;" title="盘中折算值（实时累计量÷日内节奏进度）">≈</span>' : '')
+      + '</div></td>'
       + '<td style="color:var(--text-dim);">' + r.low10.toFixed(2) + '</td>'
       + '<td>' + (r.newLow ? '<span style="color:var(--red);font-weight:700;">是</span>' : '<span style="color:var(--text-dim);">—</span>') + '</td>'
       + '<td class="l"><span class="vs-badge ' + cls + '" title="' + vsEsc(r.why) + '">' + r.state + '</span></td>'
@@ -5865,10 +5974,11 @@ function vsRender() {
   }
 
   var hint = document.getElementById('vsTableHint');
-  if (hint) hint.textContent = date + ' 收盘 · 按状态严重度排序 · 点表头可切换';
+  if (hint) hint.textContent = date + (VS_LIVE_N ? ' 盘中实时' : ' 收盘') + ' · 量能比' + (VS_LIVE_N ? '为折算值' : '') + ' · 按状态严重度排序 · 点表头可切换';
   var foot = document.getElementById('vsFooter');
   if (foot) foot.textContent = '数据源：腾讯 ifzq.gtimg.cn 日K（前复权）· 抓取时间 ' + new Date().toLocaleString('zh-CN')
-    + ' · 量能比=今日量÷前5日均量 · 只描述当下量价状态，不构成买卖建议';
+    + ' · 量能比=今日量÷前5日均量' + (VS_LIVE_N ? '（盘中：实时累计量 ÷ 日内成交节奏进度 = 预估全日量）' : '')
+    + ' · 只描述当下量价状态，不构成买卖建议';
 }
 
 function vsScatterSvg(R) {
