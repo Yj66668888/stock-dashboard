@@ -8861,49 +8861,70 @@ function vsQtHm(q) {
   var s = String((q && q[30]) ? q[30] : '').replace(/\D/g, '');
   return s.length >= 12 ? s.slice(8, 10) + ':' + s.slice(10, 12) : '';
 }
-function vsBuildLive(bars, q) {
-  if (!bars || bars.length < 13 || !q || !q.length) return null;
-  var last = bars[bars.length - 1];
-  var qd = vsQtDate(q);
-  if (!qd || qd <= last.d) return null;               // 日K已含当日 → 用真实收盘数据
+function vsLiveInfo(bars, q) {
+  var info = { inSession: false, ratio: null, volAdj: null, pct: 1, asOf: '', date: '' };
   var mins = vsSessionMins(), pct = vsSessionPct();
-  if (mins <= 0 || pct <= 0) return null;             // 未开盘 / 非交易日 → 不合成
-  var price = parseFloat(q[3]);
-  if (!isFinite(price) || price <= 0) return null;
-  // 求「预估全日量能比 R = 预估全日量 ÷ 前5日均量」
-  // 方式A（首选）：用腾讯量比 p[49] 反推。量比=(当日每分钟均量)/(过去5日每分钟均量)，故
-  //   R = 量比 × 已开市分钟 ÷ (240 × 日内节奏进度) —— 完全不依赖成交量单位，最稳。
-  // 方式B（兜底）：实时累计成交手数 p[6]（口径同 inject_live_quotes.py）÷ 节奏进度 ÷ 前5日均量
-  var ratio = NaN;
-  var vr = parseFloat(q[49]);
-  if (isFinite(vr) && vr > 0) ratio = vr * mins / (240 * pct);
-  var volRaw = NaN, viaVol = false;
-  if (!(isFinite(ratio) && ratio > 0)) {
-    volRaw = parseFloat(q[6]);
-    if (!isFinite(volRaw) || volRaw <= 0) volRaw = parseFloat(q[36]);
-    if (isFinite(volRaw) && volRaw > 0) { viaVol = true; }
+  info.pct = pct > 0 ? pct : 1;
+  if (!bars || bars.length < 13) return info;
+  var hasQ = q && q.length;
+  info.date = hasQ ? vsQtDate(q) : '';
+  if (mins <= 0 || pct <= 0 || pct >= 1) return info;    // 未开盘 / 非交易日 / 已收盘
+  info.inSession = true;
+  info.asOf = hasQ ? vsQtHm(q) : '';
+  // ★实测：腾讯日K盘中会带上「今日那根 bar」，但其成交量是【当日累计量】，
+  //   直接÷5日均量会严重低估（开盘半小时仅约全日22%，会被误判成"缩量"）→ 盘中必须折算。
+  // 预估全日量能比 R：
+  //   方式A（首选）腾讯量比 p[49] 反推：量比=(当日每分钟均量)/(过去5日每分钟均量)
+  //     R = 量比 × 已开市分钟 ÷ (240 × 日内节奏进度) —— 不依赖成交量单位，最稳
+  //   方式B（兜底）实时累计成交手数 p[6] ÷ 节奏进度 = 预估全日量（绝对手数）
+  var vr = hasQ ? parseFloat(q[49]) : NaN;
+  if (isFinite(vr) && vr > 0) {
+    info.ratio = vr * mins / (240 * pct);
+  } else {
+    var vol = hasQ ? parseFloat(q[6]) : NaN;
+    if (!isFinite(vol) || vol <= 0) vol = hasQ ? parseFloat(q[36]) : NaN;
+    if (isFinite(vol) && vol > 0) info.volAdj = vol / pct;
   }
-  if (!isFinite(ratio) || ratio <= 0) { if (!viaVol) return null; }
-  return {
-    d: qd, o: parseFloat(q[5]) || price, c: price,
-    h: Math.max(price, last.c), l: Math.min(price, last.c),
-    v: 0, _ratio: (isFinite(ratio) && ratio > 0) ? ratio : null,
-    _vol: viaVol ? volRaw / pct : null, _pct: pct, _mins: mins, _t: vsQtHm(q)
-  };
+  return info;
 }
 function vsAnalyze(code, name, kind, bars, q) {
-  var live = vsBuildLive(bars, q);
-  var series = live ? bars.concat([live]) : bars;
+  var li = vsLiveInfo(bars, q);
+  var series = bars, live = false;
+  var lastBar = bars[bars.length - 1];
+  // 情况C：日K还没有今日 bar，但实时快照是今日 → 合成今日虚拟 bar
+  if (li.inSession && li.date && li.date > lastBar.d && q && q.length) {
+    var price = parseFloat(q[3]);
+    if (isFinite(price) && price > 0) {
+      series = bars.concat([{
+        d: li.date, o: parseFloat(q[5]) || price, c: price,
+        h: Math.max(price, lastBar.c), l: Math.min(price, lastBar.c),
+        v: li.volAdj || 0
+      }]);
+      live = true;
+    }
+  }
+  // 情况B：日K已含今日 bar 且仍在盘中（腾讯盘中行为）→ 价格实时，量要折算
+  if (!live && li.inSession && lastBar.d === li.date) {
+    series = bars.slice();
+    series[series.length - 1] = Object.assign({}, lastBar);   // 克隆，避免污染缓存
+    live = true;
+  }
   var b = series[series.length - 1], p = series[series.length - 2];
+  // 盘中时用快照现价覆盖收盘价（缓存里的日K今日bar可能滞后最多5分钟）
+  if (live && q && q.length && vsQtDate(q) === b.d) {
+    var lp = parseFloat(q[3]);
+    if (isFinite(lp) && lp > 0) { b.c = lp; if (lp > b.h) b.h = lp; if (lp < b.l) b.l = lp; }
+  }
   var chg = (b.c / p.c - 1) * 100;
   var ref = series.slice(-6, -1);
   var ma5 = ref.reduce(function (a, x) { return a + x.v; }, 0) / ref.length;
   var ratio = 0;
-  if (live && live._ratio != null) ratio = live._ratio;              // 量比反推（首选）
-  else if (live && live._vol != null && ma5 > 0) ratio = live._vol / ma5;  // 累计量折算（兜底）
-  else if (ma5 > 0) ratio = b.v / ma5;                                // 盘后真实收盘
-  var ratioOk = isFinite(ratio) && ratio >= 0.05 && ratio <= 4;
-  if (!ratioOk) ratio = 1;   // 量纲/折算异常时退化为「平量」，不拿错数据误导
+  if (live && li.ratio != null) ratio = li.ratio;                          // 量比反推（首选）
+  else if (live && li.volAdj != null && ma5 > 0) ratio = li.volAdj / ma5;   // 快照累计量折算
+  else if (live && li.pct > 0 && ma5 > 0) ratio = (b.v / li.pct) / ma5;     // 日K今日bar累计量折算
+  else if (ma5 > 0) ratio = b.v / ma5;                                       // 盘后真实收盘
+  var ratioOk = isFinite(ratio) && ratio >= 0.02 && ratio <= 8;
+  if (!ratioOk) ratio = 1;   // 折算异常时退化为「平量」，不拿错数据误导
   var prev = series.slice(-1 - VS_LOOKBACK, -1).map(function (x) { return x.c; });
   var low10 = Math.min.apply(null, prev);
   var newLow = b.c < low10;
@@ -8913,8 +8934,8 @@ function vsAnalyze(code, name, kind, bars, q) {
     code: code, name: name, kind: kind, date: b.d, close: b.c,
     chg: Math.round(chg * 100) / 100, ratio: Math.round(ratio * 100) / 100,
     low10: low10, newLow: newLow, state: state, lv: meta.lv, why: meta.why,
-    live: !!live, ratioOk: ratioOk, pct: live ? live._pct : 1,
-    asOf: live ? live._t : ''
+    live: live, ratioOk: ratioOk, pct: li.pct,
+    asOf: live ? li.asOf : ''
   };
 }
 // 批量实时快照：qt.gtimg.cn 一次可查多只，返回 {code: [字段数组]}
@@ -9006,8 +9027,8 @@ function vsStampHtml(R) {
   var asOf = '';
   for (var i = 0; i < R.length; i++) { if (R[i].asOf) { asOf = R[i].asOf; break; } }
   if (n) {
-    return '<br><span style="color:#56d4b0;">⏱ 实时价截至 <b>' + asOf + '</b>　·　' + n + '/' + R.length
-      + ' 只为盘中合成（腾讯日K盘中不出当日 bar，故价格取实时快照、量能按日内节奏折算）</span>';
+    return '<br><span style="color:#56d4b0;">⏱ 盘中实时 · 数据截至 <b>' + asOf + '</b>　·　' + n + '/' + R.length
+      + ' 只实时计算（量能比 = 实时量按日内成交节奏折算的预估全日值，收盘后自动恢复精确值）</span>';
   }
   return '<br><span style="color:var(--text-dim);">⏱ 已收盘 · 采用当日真实收盘数据</span>';
 }
