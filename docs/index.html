@@ -8827,11 +8827,16 @@ function renderDataVersion() {
 // 数据：打开页面时实时拉腾讯日K（前复权），本地缓存 5 分钟
 // ============================================
 var VS_SHORT_VOL = 0.8, VS_LONG_VOL = 1.2, VS_LOOKBACK = 10, VS_BARS = 28;
-var VS_HOSTS = ['web.ifzq.gtimg.cn', 'ifzq.gtimg.cn'];
+// 实测：web.ifzq.gtimg.cn 在浏览器里会 301 重定向导致 CORS 失败（Failed to fetch），
+//       只有 ifzq.gtimg.cn 能直连成功 → 主源放 ifzq，web 仅作降级备份
+var VS_HOSTS = ['ifzq.gtimg.cn', 'web.ifzq.gtimg.cn'];
 var VS_CACHE_KEY = 'vs_kline_cache_v1';
 var VS_CACHE_TTL = 5 * 60 * 1000;
 // 历史 bars（不含今日那根）在盘中恒定不变，日K接口挂掉时仍可安全复用
 var VS_STALE_MAX = 7 * 24 * 60 * 60 * 1000;
+var VS_RETRY = 1;                    // 日K两个源都失败后的退避重试轮数（多了会加剧限流）
+var VS_CONC = 3;                     // 并发拉取数（腾讯是频率型 WAF，并发太高会被 501）
+var VS_LIMIT_N = 0, VS_LIMITED = false, VS_LIMIT_DAY = '';   // 日K限流熔断器
 var VS_AUTO_MS = 60000;          // 盘中停留时自动重算间隔
 var VS_TIMER = null;
 var VS_INDEXES = [
@@ -8853,7 +8858,7 @@ var VS_STATE_META = {
 var VS_ORDER = ['放量破位', '无量阴跌', '平量破位', '缩量下跌', '缩量反弹', '放量承接', '平量上涨', '平量整理', '放量上攻', '缩量止跌'];
 var VS_STOP_MAX_DROP = 3.0;  // 「缩量止跌」的第三条判据：跌幅必须温和（<3%）
 var VS_RESULT = [], VS_FAIL = 0, VS_LOADING = false, VS_LOADED = false, VS_LAST_LOAD = 0, VS_LIVE_N = 0, VS_ASOF = '';
-var VS_STALE_N = 0, VS_DAY_FAIL = 0;   // 历史基复用计数 / 日K彻底失败计数
+var VS_STALE_N = 0, VS_DAY_FAIL = 0, VS_STALE_OLD_N = 0;   // 历史基复用 / 日K彻底失败 / 陈旧历史基降级
 var VS_SORT = { key: 'severity', dir: 1 };
 var VS_QUOTES = {};      // 实时快照缓存 {code: [字段数组]}
 var VS_VOL_SCALE = 1;    // qt 快照成交量 -> 日K成交量 的量纲系数
@@ -8868,9 +8873,17 @@ function vsEsc(s) {
 }
 
 function vsFetchDay(code) {
-  var pi = 0;
+  var pi = 0, round = 0;
+  function backoff() {
+    return new Promise(function (r) { setTimeout(r, 350 * (round + 1)); });
+  }
   function attempt() {
-    if (pi >= VS_HOSTS.length) return Promise.reject(new Error('hosts exhausted'));
+    // 两个 host 都失败时退避重试：腾讯的 501 是频率型 WAF，等一下通常能恢复
+    if (pi >= VS_HOSTS.length) {
+      if (round >= VS_RETRY) return Promise.reject(new Error('hosts exhausted'));
+      pi = 0; round++;
+      return backoff().then(attempt);
+    }
     var host = VS_HOSTS[pi++];
     var url = 'https://' + host + '/appstock/app/fqkline/get?param=' + code + ',day,,,' + VS_BARS + ',qfq';
     return fetch(url, { cache: 'no-store' }).then(function (r) {
@@ -8896,6 +8909,23 @@ function vsTodayStr() {
   function p(n) { return (n < 10 ? '0' : '') + n; }
   return bj.getFullYear() + '-' + p(bj.getMonth() + 1) + '-' + p(bj.getDate());
 }
+function vsDowOf(ds) {   // 'YYYY-MM-DD' → 星期(0=周日)
+  var a = ds.split('-');
+  return new Date(+a[0], +a[1] - 1, +a[2]).getDay();
+}
+function vsShiftDays(ds, n) {
+  var a = ds.split('-');
+  var t = new Date(+a[0], +a[1] - 1, +a[2]);
+  t.setDate(t.getDate() + n);
+  function p(x) { return (x < 10 ? '0' : '') + x; }
+  return t.getFullYear() + '-' + p(t.getMonth() + 1) + '-' + p(t.getDate());
+}
+// 上一个交易日（只跳周末；法定假日的处理策略是"多推一天"，见 vsCacheGet 的容差说明）
+function vsPrevTradeDate(ds) {
+  var d = vsShiftDays(ds, -1);
+  while (vsDowOf(d) === 0 || vsDowOf(d) === 6) d = vsShiftDays(d, -1);
+  return d;
+}
 // allowStale=true：盘中允许复用「历史基」。判据是缓存最后一根的日期必须早于今天——
 // 说明它不含今日那根，是完整历史；今日 bar 由实时快照合成，所以复用后结果依然是实时的。
 function vsCacheGet(code, allowStale) {
@@ -8908,18 +8938,59 @@ function vsCacheGet(code, allowStale) {
     if (age <= VS_CACHE_TTL) return e.bars;
     if (!allowStale || age > VS_STALE_MAX) return null;
     var last = e.bars[e.bars.length - 1];
+    if (!last || !last.d) return null;
     var today = vsQtDate(VS_QUOTES[code] || []) || vsTodayStr();
-    return (last && last.d && last.d < today) ? e.bars : null;
+    // ★2026-10-26 修：旧判据是 last.d < today，任何陈旧历史基都能通过 →
+    //   用户上周五留下的缓存在周一被复用，盘后又不合成今日 bar，页面就一直是上周五的数据。
+    //   正确判据：历史基必须严格截止到「上一个交易日」，中间少一天 MA5 / 10日新低都会算错。
+    //   容差：允许截止日落在 prevTd 或更早 2 个自然日内（覆盖周末/假日），再旧一律丢弃重抓。
+    var prevTd = vsPrevTradeDate(today);
+    var earliest = vsShiftDays(prevTd, -2);
+    return (last.d >= earliest && last.d <= prevTd) ? e.bars : null;
   } catch (err) { return null; }
 }
-// 日K拉取失败时的兜底：优先拿历史基，实在没有才判失败
+// 任意未过期的历史基（不校验截止日）——日K被 501 限流时的最后兜底。
+// 差几天会让 MA5 / 10日新低略有偏差，但绝好过「整票丢失」或「停在昨天」。
+function vsCacheAny(code) {
+  try {
+    var raw = localStorage.getItem(VS_CACHE_KEY);
+    if (!raw) return null;
+    var e = JSON.parse(raw)[code];
+    if (!e || !e.t || !e.bars || e.bars.length < 13) return null;
+    if (Date.now() - e.t > VS_STALE_MAX) return null;
+    return e.bars;
+  } catch (err) { return null; }
+}
+// 腾讯日K是频率型 WAF（被限流时返回 501，且不带 CORS 头 → 浏览器侧直接 Failed to fetch）。
+// 一旦判定被限流就熔断，别再继续打请求：既拖慢加载，又让恢复更慢。跨交易日自动重置。
+function vsMarkDayFail() {
+  if (VS_LIMIT_DAY !== vsTodayStr()) { VS_LIMIT_DAY = vsTodayStr(); VS_LIMIT_N = 0; VS_LIMITED = false; }
+  VS_LIMIT_N++;
+  if (VS_LIMIT_N >= 6 && !VS_LIMITED) {
+    VS_LIMITED = true;
+    console.warn('[量价] 腾讯日K疑似被限流，已熔断：本次加载改用本地历史基 + 实时快照');
+  }
+}
+// 日K拉取失败时的兜底：①实时拉日K ②截止「上一交易日」的历史基 ③任意历史基（均会补今日bar）
 function vsBarsOrStale(code) {
-  return vsFetchDay(code).then(function (bars) { vsCacheSet(code, bars); return bars; })
-    .catch(function () {
+  if (VS_LIMITED) {
+    var c = vsCacheGet(code, true);
+    if (c) { VS_STALE_N++; return Promise.resolve({ bars: c, mode: 'stale-ok' }); }
+    var c2 = vsCacheAny(code);
+    if (c2) { VS_STALE_OLD_N++; return Promise.resolve({ bars: c2, mode: 'stale-old' }); }
+    VS_DAY_FAIL++;
+    return Promise.reject(new Error('limited, no cache'));
+  }
+  if (VS_LIMIT_DAY !== vsTodayStr()) { VS_LIMIT_DAY = vsTodayStr(); VS_LIMIT_N = 0; VS_LIMITED = false; }
+  return vsFetchDay(code).then(function (bars) { vsCacheSet(code, bars); return { bars: bars, mode: 'live' }; })
+    .catch(function (e) {
+      vsMarkDayFail();
       var st = vsCacheGet(code, true);
-      if (st) { VS_STALE_N++; return st; }   // 日K接口挂了 → 用历史基，今日仍由快照合成
+      if (st) { VS_STALE_N++; return { bars: st, mode: 'stale-ok' }; }
+      var any = vsCacheAny(code);
+      if (any) { VS_STALE_OLD_N++; return { bars: any, mode: 'stale-old' }; }
       VS_DAY_FAIL++;
-      throw new Error('no bars');
+      throw e;
     });
 }
 function vsCacheSet(code, bars) {
@@ -8987,13 +9058,21 @@ function vsQtHm(q) {
   return s.length >= 12 ? s.slice(8, 10) + ':' + s.slice(10, 12) : '';
 }
 function vsLiveInfo(bars, q) {
-  var info = { inSession: false, ratio: null, volAdj: null, pct: 1, asOf: '', date: '' };
+  var info = { inSession: false, closed: false, ratio: null, volAdj: null, pct: 1, asOf: '', date: '' };
   var mins = vsSessionMins(), pct = vsSessionPct();
   info.pct = pct > 0 ? pct : 1;
   if (!bars || bars.length < 13) return info;
   var hasQ = q && q.length;
   info.date = hasQ ? vsQtDate(q) : '';
-  if (mins <= 0 || pct <= 0 || pct >= 1) return info;    // 未开盘 / 非交易日 / 已收盘
+  // ★2026-10-26 修：原来 pct>=1（已收盘）直接 return，导致收盘后永远不补当日那根 bar。
+  //   历史基截止上一交易日 + 不合成 = 页面停在昨天/上周五，这正是「刷新不出来」的根因。
+  if (mins < 0) return info;                              // 非交易日
+  if (mins === 0 || pct <= 0) return info;                // 未开盘
+  if (pct >= 1) {                                         // 已收盘：行情已定格，快照即为收盘真实值
+    info.closed = true;
+    info.asOf = hasQ ? vsQtHm(q) : '';
+    return info;
+  }
   info.inSession = true;
   info.asOf = hasQ ? vsQtHm(q) : '';
   // ★实测：腾讯日K盘中会带上「今日那根 bar」，但其成交量是【当日累计量】，
@@ -9016,20 +9095,23 @@ function vsAnalyze(code, name, kind, bars, q) {
   var li = vsLiveInfo(bars, q);
   var series = bars, live = false;
   var lastBar = bars[bars.length - 1];
-  // 情况C：日K还没有今日 bar，但实时快照是今日 → 合成今日虚拟 bar
-  if (li.inSession && li.date && li.date > lastBar.d && q && q.length) {
+  // 情况C：日K还没有今日 bar，但实时快照是今日 → 合成今日 bar
+  //   （盘中=虚拟 bar 需折算；收盘=快照已是当日真实 OHLCV，直接用）
+  if ((li.inSession || li.closed) && li.date && li.date > lastBar.d && q && q.length) {
     var price = parseFloat(q[3]);
     if (isFinite(price) && price > 0) {
+      var hi = parseFloat(q[33]), lo = parseFloat(q[34]), op = parseFloat(q[5]), vol = parseFloat(q[36]);
       series = bars.concat([{
-        d: li.date, o: parseFloat(q[5]) || price, c: price,
-        h: Math.max(price, lastBar.c), l: Math.min(price, lastBar.c),
-        v: li.volAdj || 0
+        d: li.date, o: isFinite(op) ? op : price, c: price,
+        h: li.closed && isFinite(hi) ? hi : Math.max(price, lastBar.c),
+        l: li.closed && isFinite(lo) ? lo : Math.min(price, lastBar.c),
+        v: li.closed && isFinite(vol) && vol > 0 ? vol : (li.volAdj || 0)
       }]);
       live = true;
     }
   }
-  // 情况B：日K已含今日 bar 且仍在盘中（腾讯盘中行为）→ 价格实时，量要折算
-  if (!live && li.inSession && lastBar.d === li.date) {
+  // 情况B：日K已含今日 bar（腾讯盘中即返回当日那根）→ 价格实时，量要折算
+  if (!live && (li.inSession || li.closed) && lastBar.d === li.date) {
     series = bars.slice();
     series[series.length - 1] = Object.assign({}, lastBar);   // 克隆，避免污染缓存
     live = true;
@@ -9059,7 +9141,7 @@ function vsAnalyze(code, name, kind, bars, q) {
     code: code, name: name, kind: kind, date: b.d, close: b.c,
     chg: Math.round(chg * 100) / 100, ratio: Math.round(ratio * 100) / 100,
     low10: low10, newLow: newLow, state: state, lv: meta.lv, why: meta.why,
-    live: live, ratioOk: ratioOk, pct: li.pct,
+    live: live, closed: !!li.closed, ratioOk: ratioOk, pct: li.pct,
     asOf: live ? li.asOf : ''
   };
 }
@@ -9095,7 +9177,14 @@ function vsEnsureLoaded() {
   if (VS_LOADING) return;
   var pct = vsSessionPct();
   var inSession = pct > 0 && pct < 1;   // 盘中：切回页面超过 60 秒就重算一次
-  if (VS_LOADED && !(inSession && Date.now() - VS_LAST_LOAD > 60000)) { vsAutoTick(); return; }
+  if (VS_LOADED) {
+    // 自愈：已加载的结果里只要有票的日期落后于今天（用了陈旧历史基又没补上今日bar），
+    //       就直接重算，不让用户停在昨天的数据上
+    var todayStr = vsTodayStr();
+    var staleRow = VS_RESULT.some(function (r) { return r.date && r.date < todayStr; });
+    if (staleRow) { vsLoadAll(false); return; }
+    if (!(inSession && Date.now() - VS_LAST_LOAD > 60000)) { vsAutoTick(); return; }
+  }
   vsLoadAll(false);
 }
 
@@ -9104,6 +9193,7 @@ function vsReload() {
   if (el) el.textContent = '正在强制刷新（跳过缓存）…';
   VS_LOADED = false;
   VS_RESULT = [];
+  VS_LIMITED = false; VS_LIMIT_N = 0; VS_LIMIT_DAY = '';   // 手动刷新 = 重置限流熔断，真刀真枪再试一次
   vsLoadAll(true);
 }
 
@@ -9117,7 +9207,7 @@ function vsLoadAll(force) {
   pool.forEach(function (s) {
     if (s && s.code) tasks.push({ code: s.code, name: s.name || s.code, kind: 'stock' });
   });
-  var queue = tasks.slice(), out = [], done = 0, total = tasks.length, CONC = 5;
+  var queue = tasks.slice(), out = [], done = 0, total = tasks.length, CONC = VS_CONC;
   var allCodes = tasks.map(function (t) { return t.code; });
   vsProgress(0, total);
   return vsFetchQuotes(allCodes).then(function (qmap) {
@@ -9128,10 +9218,13 @@ function vsLoadAll(force) {
       if (!queue.length) return Promise.resolve();
       var t = queue.shift();
       var cached = force ? null : vsCacheGet(t.code, true);
-      var job = cached ? Promise.resolve(cached) : vsBarsOrStale(t.code);
-      return job.then(function (bars) {
-        if (bars && bars.length >= 13) out.push(vsAnalyze(t.code, t.name, t.kind, bars, VS_QUOTES[t.code]));
-        else VS_FAIL++;
+      var job = cached ? Promise.resolve({ bars: cached, mode: 'cache' }) : vsBarsOrStale(t.code);
+      return job.then(function (res) {
+        if (res && res.bars && res.bars.length >= 13) {
+          var row = vsAnalyze(t.code, t.name, t.kind, res.bars, VS_QUOTES[t.code]);
+          row.baseMode = res.mode;      // live / cache / stale-ok / stale-old
+          out.push(row);
+        } else VS_FAIL++;
       }).catch(function () { VS_FAIL++; }).then(function () {
         done++; vsProgress(done, total);
         return next();
@@ -9164,13 +9257,36 @@ function vsAutoTick() {
 
 function vsStampHtml(R) {
   var n = R.filter(function (r) { return r.live; }).length;
+  var nClosed = R.filter(function (r) { return r.live && r.closed; }).length;
   var asOf = '';
   for (var i = 0; i < R.length; i++) { if (R[i].asOf) { asOf = R[i].asOf; break; } }
-  if (n) {
+  if (n && nClosed < n) {
     return '<br><span style="color:#56d4b0;">⏱ 盘中实时 · 数据截至 <b>' + asOf + '</b>　·　' + n + '/' + R.length
       + ' 只实时计算（量能比 = 实时量按日内成交节奏折算的预估全日值，收盘后自动恢复精确值）</span>';
   }
-  return '<br><span style="color:var(--text-dim);">⏱ 已收盘 · 采用当日真实收盘数据</span>';
+  if (nClosed) {
+    return '<br><span style="color:#56d4b0;">⏱ 已收盘 · ' + nClosed + '/' + R.length
+      + ' 只今日 bar 由实时快照合成（腾讯日K被限流时的兜底，价格与成交量为当日真实值）</span>';
+  }
+  // 收盘档：必须校验结果日期就是今天，否则说明当日行情没补上（此前会伪装成"真实收盘数据"）
+  var todayStr = vsTodayStr();
+  var dates = {};
+  R.forEach(function (r) { if (r.date) dates[r.date] = (dates[r.date] || 0) + 1; });
+  var olds = Object.keys(dates).filter(function (d) { return d < todayStr; }).sort();
+  if (olds.length) {
+    var cnt = olds.reduce(function (a, d) { return a + dates[d]; }, 0);
+    return '<br><span style="color:var(--red);">⚠ 有 <b>' + cnt + '</b> 只仍停在 ' + olds.join(' / ')
+      + '，今日行情未取到 → 请点「↻ 刷新」强制重拉</span>';
+  }
+  var oldBase = R.filter(function (r) { return r.baseMode === 'stale-old'; }).length;
+  var okBase = R.filter(function (r) { return r.baseMode === 'stale-ok' || r.baseMode === 'cache'; }).length;
+  var tip = '<br><span style="color:var(--text-dim);">⏱ 已收盘 · 全部 ' + R.length
+    + ' 只已对齐今日（价格/量能用实时快照合成）';
+  if (oldBase || okBase) {
+    tip += '　·　其中 ' + okBase + ' 只沿用上一交易日历史基'
+      + (oldBase ? '，<b style="color:#ffb454;">' + oldBase + ' 只历史基偏旧（腾讯日K 501 限流，MA5/新低价可能略偏）</b>' : '');
+  }
+  return tip + '</span>';
 }
 
 function vsSorted() {
@@ -9228,8 +9344,10 @@ function vsRender() {
   for (var ai = 0; ai < R.length; ai++) { if (R[ai].asOf) { VS_ASOF = R[ai].asOf; break; } }
   sub.innerHTML = '大盘：' + vsEsc(idxTxt) + '<br>全池 <b>' + R.length + '</b> 只中 <b>' + nLow + '</b> 只创 10 日新低'
     + (nStop > 0 ? '，<b style="color:#56d4b0">' + R.filter(function (r) { return r.state === '缩量止跌'; }).map(function (r) { return r.name; }).join('、') + '</b> 满足缩量止跌' : '，<b style="color:#f85149">无一只满足缩量止跌</b>')
-    + (VS_FAIL > 0 ? '　（' + VS_FAIL + ' 只拉取失败未计入）' : '')
-    + (VS_STALE_N > 0 ? '<br><span style="color:var(--yellow)">⚠ 日K接口不可用，' + VS_STALE_N + ' 只改用本地历史K线做基准；今日价格与成交量仍取自实时快照</span>' : '')
+    + (VS_FAIL > 0 ? '　<span style="color:var(--red)">（' + VS_FAIL + ' 只没取到，未计入：本地无历史K线缓存 + 腾讯日K被限流）</span>' : '')
+    + (VS_LIMITED ? '<br><span style="color:var(--yellow)">⚠ 已检测到腾讯日K接口限流（501），已熔断停止请求，避免越打越糟。点「↻ 刷新」可重置熔断重试</span>' : '')
+    + (VS_STALE_N > 0 ? '<br><span style="color:var(--yellow)">⚠ ' + VS_STALE_N + ' 只改用本地历史K线作基准；今日那根 bar 仍由实时快照合成，价格/成交量是当天的真实值</span>' : '')
+    + (VS_STALE_OLD_N > 0 ? '<br><span style="color:var(--yellow)">⚠ ' + VS_STALE_OLD_N + ' 只历史基偏旧（缺中间交易日），MA5 与 10 日新低会有偏差，仅供粗判</span>' : '')
     + vsStampHtml(R);
   kpis.innerHTML = [
     ['创新低', nLow + '/' + R.length, nLow === R.length ? 'var(--red)' : 'var(--text)'],
