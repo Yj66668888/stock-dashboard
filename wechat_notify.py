@@ -40,25 +40,65 @@ _CONFIG_FILE = os.path.join(_SCRIPT_DIR, 'wechat_config.json')
 # 修复：所有出站推送统一先过 push_ledger 的全局账本（远端 push_ledger.json，
 #   带本地缓存兜底），账本才是当日额度的唯一真相源。
 try:
-    from push_ledger import consume_quota, append_record, mark_exhausted
+    from push_ledger import consume_quota, append_record, mark_exhausted, claim, release
     _LEDGER_OK = True
 except ImportError:
     _LEDGER_OK = False
+    claim = release = None          # 老版 push_ledger（无 claim）→ 自动降级到旧路径
     def mark_exhausted(reason=''):
         return False
+
+
+def _claim_quota(push_type, title='', slot=''):
+    """占坑式闸门。返回 (ok, mode, reason)
+
+    mode='claim'  → 已原子占坑，发送成功后**不需要**再 append_record；
+                    发送失败必须调 _release_claim 归还额度
+    mode='legacy' → push_ledger 太旧不支持 claim，退回「判定+事后记账」旧路径
+    """
+    if os.environ.get('FORCE_PUSH') == '1':
+        return True, 'legacy', 'forced'
+    if not _LEDGER_OK or claim is None:
+        return True, 'legacy', 'ledger-unavailable(降级: 仅本地闸门)'
+    try:
+        ok, reason = claim(push_type, slot=slot or None, title=title or '')
+        if ok:
+            return True, 'claim', reason
+        return False, 'blocked', reason
+    except Exception as e:
+        # 占坑链路自身出问题 → 退回旧路径，宁可冒重复的风险也不要完全推不出去
+        print(f"[WeChat] 占坑异常({e})，降级为旧闸门")
+        try:
+            ok, reason = consume_quota(push_type, slot=slot or None, title=title or '')
+            return ok, 'legacy', reason
+        except Exception as e2:
+            print(f"[WeChat] 账本读取异常({e2})，降级为仅本地闸门")
+            return True, 'legacy', f'ledger-error:{e2}'
+
+
+def _release_claim(title='', slot=''):
+    """推送失败时归还 claim 占到的坑"""
+    if release is None:
+        return
+    try:
+        release(title=title or '', slot=slot or None)
+    except Exception as e:
+        print(f"[WeChat] 占坑归还失败(会白占 1 条额度，请手动 push_ledger 核对): {e}")
 
 
 def _global_quota_ok(push_type, title='', slot=''):
     """全局额度闸门（唯一真相源）。返回 (ok, reason)
 
     slot 传档位标识（如 digest:am:2026-10-22）时，额外做跨环境「同档去重」。
+    title 传消息标题时，额外做「同内容去重」（2026-10-28 加，见 push_ledger.content_fp）——
+    这是挡住「同一个内容连续提示两次」的最后一道锁。
     """
     if os.environ.get('FORCE_PUSH') == '1':
         return True, 'forced'
     if not _LEDGER_OK:
         return True, 'ledger-unavailable(降级: 仅本地闸门)'
     try:
-        return consume_quota(push_type, slot=slot or None)
+        return consume_quota(push_type, slot=slot or None, title=title or '')
     except Exception as e:
         print(f"[WeChat] 账本读取异常({e})，降级为仅本地闸门")
         return True, f'ledger-error:{e}'
@@ -334,11 +374,13 @@ def send_wechat(title, desp='', push_type='default'):
         print(f"[WeChat] 推送被时间闸门拦截: {window}")
         return False
 
-    # 全局额度闸门（2026-10-22 加）：本地/云端多容器共享同一份当日账本，
-    # 这是唯一能挡住「同一档被不同环境各推一遍」的地方
-    quota_ok, quota_reason = _global_quota_ok(push_type, title, slot=state_key or '')
-    if not quota_ok:
-        print(f"[WeChat] 推送被全局额度闸门拦截: {quota_reason}")
+    # 全局额度闸门（2026-10-22 加；2026-10-28 升级为**原子占坑**）：
+    # 本地/云端多容器共享同一份当日账本。旧做法是「先判定→发送→成功后记账」，
+    # 中间 15 秒空窗会让并发的第二个进程也判定通过 → 同一条内容发两遍。
+    # claim() 把判定和写账本合成一次带 sha 的 CAS，竞争时必有一方被拒。
+    gate_ok, gate_mode, gate_reason = _claim_quota(push_type, title, slot=state_key or '')
+    if not gate_ok:
+        print(f"[WeChat] 推送被全局额度闸门拦截: {gate_reason}")
         return False
 
     # 截断防止超限
@@ -373,15 +415,20 @@ def send_wechat(title, desp='', push_type='default'):
                         state[bkey] = used
                         print(f"[WeChat] 大盘通道今日已用 {used}/{MKT_PUSH_BUDGET}")
                     _save_push_state(state)
-                # 全局账本记账（跨环境共享当日额度）
-                _global_quota_note(push_type, title, slot=state_key or '')
+                # claim 模式下账本已经记过了（ Pending→已成事实 ），只有旧模式才补记
+                if gate_mode == 'legacy':
+                    _global_quota_note(push_type, title, slot=state_key or '')
                 return True
             else:
                 print(f"[WeChat] 推送失败: {body}")
+                if gate_mode == 'claim':
+                    _release_claim(title, slot=state_key or '')
                 _handle_serverchan_error(body=body)
                 return False
     except Exception as e:
         print(f"[WeChat] 推送异常: {e}")
+        if gate_mode == 'claim':
+            _release_claim(title, slot=state_key or '')
         _handle_serverchan_error(exc=e)
         return False
 
@@ -692,7 +739,7 @@ def _judge_market():
 
     if not idx:
         return ('大盘数据异常',
-                '本次大盘30分KDJ未取到，以下候选仅供参考，暂不据此决策。', '—', False)
+                '本次大盘30分KDJ未取到，以下候选仅供参考，暂不据此决策。', '—', False, None)
 
     cur, prev = idx['cur'], idx['prev']
     k30, d30, j30 = cur['k'], cur['d'], cur['j']
@@ -728,13 +775,37 @@ def _judge_market():
         advice = (f"大盘30分K={k30} D={d30}（{'已反穿D' if above_d else '仍在D下方'}，"
                   f"本bar{'向上' if rising else '走弱'}）{m5_txt}，方向未明，等信号。")
         in_zone = False
-    return verdict, advice, idx_line, in_zone
+    return verdict, advice, idx_line, in_zone, k30
+
+
+def _k30_zone_note(k30):
+    """大盘30分K 的历史档位事实（2026-10-27 回测，72 个交易日 × 40 只票池口径）。
+
+    ⚠️ 只做提示、不做拦截 —— 用户 10/27 拍板：K<20 与 K∈[60,80) 这两条红线
+       先不写进判定逻辑，把事实推给他，买不买他自己定。
+    """
+    try:
+        k = float(k30)
+    except (TypeError, ValueError):
+        return ''
+    if k < 20:
+        fact = '⚠️ **K<20 超卖钝化区**：大盘口径 11 天，票池日均 **-1.014%**（不是"跌够了"）'
+    elif k < 40:
+        fact = ('✅ **K∈[20,40) 最强档**：13 天票池日均 **+1.145%**、三关全过；'
+                '但只有 13 天，请当"值得试"别当"确定有"')
+    elif k < 60:
+        fact = '中性档 K∈[40,60)：K≥40 那 47 天合计日均 -0.238%、日胜率 40.4%'
+    elif k < 80:
+        fact = ('⚠️ **K∈[60,80) 全档最差**：19 天票池日均 **-1.080%**、日胜率仅 **26.3%**')
+    else:
+        fact = '⚠️ **K≥80 偏高位**：个股口径日均 -0.308%，大盘档样本少，倾向不追'
+    return f"- 大盘30分K档位：{fact}｜**只提示，买不买你自己定**"
 
 
 def build_market_brief(stocks):
     """构建「所以呢?」结论段（全部实时计算）。返回 (title, desp)"""
     now_str = datetime.now().strftime('%m-%d %H:%M')
-    verdict, advice, idx_line, _ = _judge_market()
+    verdict, advice, idx_line, _, k30 = _judge_market()
 
     # ---- 真到位候选：30分K<25 且拐头，剔除当日跌超5% ----
     cands, excluded = [], []
@@ -770,8 +841,11 @@ def build_market_brief(stocks):
     else:
         title = f"更新播报｜{verdict}｜暂无真到位候选"
 
-    lines = ["## 所以呢？", "", f"> {now_str}｜{idx_line}", "",
-             f"**1、{verdict}。**{advice}", ""]
+    lines = ["## 所以呢？", "", f"> {now_str}｜{idx_line}", ""]
+    zone_note = _k30_zone_note(k30)
+    if zone_note:
+        lines += [zone_note, ""]
+    lines += [f"**1、{verdict}。**{advice}", ""]
 
     if cands:
         line2 = f"**2、真到位候选 {total} 只**（30分K<25 且拐头）"
@@ -815,10 +889,10 @@ def _send_with_key(title, desp, state_key):
         print("[WeChat] 未配置 SendKey, 跳过推送")
         return False
 
-    # 全局额度闸门（必须与时间窗闸门独立存在）
-    quota_ok, quota_reason = _global_quota_ok('digest', title, slot=state_key or '')
-    if not quota_ok:
-        print(f"[WeChat] 推送被全局额度闸门拦截: {quota_reason}")
+    # 全局额度闸门（必须与时间窗闸门独立存在），同 send_wechat 走原子占坑
+    gate_ok, gate_mode, gate_reason = _claim_quota('digest', title, slot=state_key or '')
+    if not gate_ok:
+        print(f"[WeChat] 推送被全局额度闸门拦截: {gate_reason}")
         return False
 
     title = title[:100]
@@ -838,13 +912,18 @@ def _send_with_key(title, desp, state_key):
                     state = _load_push_state()
                     state[state_key] = 'digest'
                     _save_push_state(state)
-                _global_quota_note('digest', title, slot=state_key or '')
+                if gate_mode == 'legacy':
+                    _global_quota_note('digest', title, slot=state_key or '')
                 return True
             print(f"[WeChat] 推送失败: {body}")
+            if gate_mode == 'claim':
+                _release_claim(title, slot=state_key or '')
             _handle_serverchan_error(body=body)
             return False
     except Exception as e:
         print(f"[WeChat] 推送异常: {e}")
+        if gate_mode == 'claim':
+            _release_claim(title, slot=state_key or '')
         _handle_serverchan_error(exc=e)
         return False
 
