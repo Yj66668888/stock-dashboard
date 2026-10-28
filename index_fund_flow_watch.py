@@ -57,6 +57,14 @@ v2 的核心改动：**30 分 KDJ 位置变成前置门，资金回流只做确�
 频控：当日上限 MAX_DAILY_PUSH 条；**不受个股推送时间窗限制**（全天任意时刻可推），
      但与 index_kdj_watch 的大盘通道合计预算受 Server酱 5 条/日额度约束。
 
+★ 2026-10-27 变更：index_kdj_watch 的「K 上穿 20」自动化（automation-1791912762067）已停用删除。
+  依据 compare_indexkd_vs_pick.py / robust_matrix.py（72 个交易日 × 40 只票池）：
+    K 上穿 20           18 天 → 票池日均值 -0.060%，扣成本累计 -4.0%，三关全挂 ❌
+    收盘 K∈[20,40)（本脚本）13 天 → 票池日均值 +1.145%，扣成本 +13.6%，三关全过 ✅
+  两者信号日只重叠 5 天，不是一回事。**以后者为准。**
+  ⚠️ 另两条红线（K<20 不买 / K∈[60,80) 不买）用户 10/27 拍板**暂不写进判定**，
+     改为在每日三档播报里推送事实（wechat_notify._k30_zone_note），买不买由他自己决定。
+
 数据源：
   https://push2.eastmoney.com/api/qt/stock/fflow/kline/get
     ?secid=1.000001 & klt=1(1分钟) & lmt=0(全天)
@@ -76,6 +84,30 @@ from datetime import datetime, timedelta, timezone
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(BASE, '.index_fund_state.json')
+RUN_LOG = os.path.join(BASE, '.index_fund_run.log')   # 运行留痕（诊断用，见 _log）
+RUN_LOG_MAX_LINES = 2000
+
+def _log(msg):
+    """每轮跑完写一行到运行日志。
+
+    存在的理由：2026-10-28 发现「资金回流一整天 0 条推送」，但状态文件的
+    last_fetch 停在 10-27 14:05 ——没法区分是「automation 没触发」还是
+    「脚本跑了但每次都没通过 gate」。没有留痕就只能靠猜。
+    每轮无论成败都记一行，第二天直接 tail 就能判定。
+    """
+    try:
+        line = '[%s] %s' % (bj_now().strftime('%Y-%m-%d %H:%M:%S'), msg)
+        with open(RUN_LOG, 'a', encoding='utf-8') as f:
+            f.write(line + '\n')
+        # 控制体积：超过上限就砍掉前半
+        if RUN_LOG_MAX_LINES > 0:
+            with open(RUN_LOG, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            if len(lines) > RUN_LOG_MAX_LINES:
+                with open(RUN_LOG, 'w', encoding='utf-8') as f:
+                    f.writelines(lines[-RUN_LOG_MAX_LINES:])
+    except Exception:
+        pass
 
 # ---------- 门1：30 分 KDJ 位置（v2 新增，回测证实这是真正有效的过滤器）----------
 KDJ_GATE_ENABLED = True      # False = 退回 v1 的纯资金判定（不推荐）
@@ -575,20 +607,26 @@ def main():
 
     if not test_mode and not force and not in_trading_time(now):
         print(f'[fund_flow] {now.strftime("%H:%M")} 非交易时段，跳过')
+        _log('SKIP 非交易时段 %s' % now.strftime('%H:%M'))
         return
 
     if not _throttle():
+        _log('SKIP 节流（距上次取数 <THROTTLE_SEC）')
         return
 
     flows = fetch_market_flow()
     src = f'分钟全量({len(flows)}点)'
     if len(flows) < 10:
         # 分钟接口限流/失败 → 退回快照时间序列
+        # ⚠️ 2026-10-28 起 push2 的 fflow/kline/get(klt=1) 长期 RemoteDisconnected，
+        #    实际主力数据源已经是这条快照序列（每 5 分钟一点，一天约 48 点）
         flows = merge_snapshot_into_timeline([], fetch_snapshot())
         src = f'快照序列({len(flows)}点)'
     a = analyze(flows)
     if not a:
         print('[fund_flow] 资金流数据不足/拉取失败，本轮跳过')
+        _log('SKIP 数据不足 src=%s 点数=%d（分钟接口空+快照累积未达 %d 点）'
+             % (src, len(flows), MIN_POINTS_FLOOR))
         return
     a['src'] = src
 
@@ -612,6 +650,14 @@ def main():
         a['fired'] = False
         a['level'] = 'NONE'
 
+    _log('RUN src=%s 点数=%d 当前=%+.2f亿 峰值=%.2f亿 回补=%+.2f亿 阈值=%.2f亿 持续=%s '
+         '| 资金门=%s 位置门=%s(30分K=%s)'
+         % (src, a['points'], a['cur_yi'], a['trough_yi'], a['recall_yi'], a['thresh_yi'],
+            'Y' if a['sustain'] else 'N',
+            a['level'] if a['fired'] else '未过',
+            '过' if gate_ok else '拦',
+            ('%.1f' % ks['k']) if ks else 'NA'))
+
     title, desp = build_message(a, ks)
     if test_mode:
         print('-' * 60)
@@ -630,6 +676,7 @@ def main():
                  'timeline_date': state.get('timeline_date'), 'timeline': state.get('timeline', [])}
     if state.get('push_count', 0) >= MAX_DAILY_PUSH:
         print(f'[fund_flow] 已达当日上限 {MAX_DAILY_PUSH} 次，跳过')
+        _log('SKIP 已达当日上限 %d 次' % MAX_DAILY_PUSH)
         return
     # 冷却
     if state.get('last_push'):
@@ -637,6 +684,7 @@ def main():
             last = datetime.strptime(state['last_push'], '%Y-%m-%d %H:%M')
             if (now.replace(tzinfo=None) - last).total_seconds() < COOLDOWN_MIN * 60:
                 print(f'[fund_flow] 距上次推送不足 {COOLDOWN_MIN} 分钟，冷却中')
+                _log('SKIP 冷却中（距上次推送不足 %d 分钟）' % COOLDOWN_MIN)
                 return
         except ValueError:
             pass
@@ -644,13 +692,14 @@ def main():
     prev_trough = float(state.get('last_trough_yi') or 0.0)
     if prev_trough and a['trough_yi'] > prev_trough - TRENCH_REFRESH_YI:
         print(f'[fund_flow] 本次坑({a["trough_yi"]:.2f}亿)未比上次({prev_trough:.2f}亿)更深，视为同一波回流')
+        _log('SKIP 同一波回流（坑 %.2f亿 未比上次 %.2f亿 深 %g 亿）'
+             % (a['trough_yi'], prev_trough, TRENCH_REFRESH_YI))
         return
 
     try:
         from wechat_notify import send_wechat
         # 注意：这里**不**设 FORCE_PUSH。大盘通道走 push_gate 的共享预算闸门
-        # （MKT_PUSH_TYPES 白名单 → 每日 3 条共享上限），必须让闸门真正生效，
-        # 否则资金信号会把 Server酱 5 条/日的额度吃光，导致个股两档推不出去。
+        # （MKT_PUSH_TYPES 白名单 → 每日 3 条共享上限），必须让闸门真正生效。
         ok = send_wechat(title, desp, push_type='index_fundflow')
         if ok:
             state['push_count'] += 1
@@ -658,10 +707,14 @@ def main():
             state['last_trough_yi'] = a['trough_yi']
             save_state(state)
             print(f'[fund_flow] ✅ 已推送（今日第{state["push_count"]}次，{a["level"]}）')
+            _log('PUSH ✅ 已推送 回补=%+.2f亿 峰值=%.2f亿 档=%s 今日第%d次'
+                 % (a['recall_yi'], a['trough_yi'], a['level'], state['push_count']))
         else:
             print('[fund_flow] ⚠️ 推送失败，未记录状态（下轮可重试）')
+            _log('PUSH ❌ 发送失败（被闸门拦截或网络异常，未记账）')
     except ImportError:
         print('[fund_flow] wechat_notify 不可用，无法推送')
+        _log('PUSH ❌ wechat_notify 不可用')
 
 
 if __name__ == '__main__':

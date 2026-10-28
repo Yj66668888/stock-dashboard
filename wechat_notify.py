@@ -200,12 +200,35 @@ _PM_PUSH_TYPE = 'daily_pm'
 _PM_PUSH_FROM = 13 * 60 + 45     # 13:45 起
 _PM_PUSH_TO = 14 * 60 + 45       # 14:45 止
 
-# ---- 大盘通道共享额度（2026-10-20）----
-# Server酱免费额度 5 条/日：2 条个股换票推送 + 3 条大盘信号 = 5 条刚好卡满。
-# 大盘通道按用户要求「不限次数和时间」（全天任意时刻可触发），
-# 但物理上限就是那 3 条，故用共享预算做硬闸门，防止大盘信号把额度吃光导致个股档推不出。
-MKT_PUSH_BUDGET = 3
+# ---- 大盘通道共享额度（2026-10-20 建，2026-10-28 放宽到 4）----
+# 原设计：Server酱 5 条/日 = 2 条个股换票 + 3 条大盘。
+# 2026-10-28 用户拍板「以后只给大盘推送」→ 个股那 2 条不再占用，
+# 额度全给大盘。两条大盘通道各有自己的当日上限（KDJ 2 次 + 资金回流 2 次），
+# 故共享预算取 4：既能跑满两条通道，也不会越过 Server酱 的 5 条物理上限。
+MKT_PUSH_BUDGET = 4
 _MKT_PUSH_TYPES = ('index_rebound_v2', 'index_rebound', 'index_fundflow')
+
+# ---- 2026-10-28 用户拍板：以后的微信推送「只给大盘」----
+# 背景：用户明确要求不再收个股候选播报（digest 两档 / 换票播报），
+#       只保留大盘相关信号 —— 大盘30分KDJ回升 + 大盘资金回流。
+# 实现：在 send_wechat / 合并推送两个入口统一前置拦截，不看调用方是谁，
+#       本地 automation 与云端 job 都绕不过去（要放开必须显式设环境变量）。
+# 排障：PUSH_ALLOW_NON_MKT=1 可整体放开（与 FORCE_PUSH 的区别：后者只绕时间窗）。
+_PUSH_NON_MKT_ENV = 'PUSH_ALLOW_NON_MKT'
+
+
+def _mkt_only_gate(push_type):
+    """只放行大盘通道。返回 (allowed, reason)
+
+    allowed=False 时 reason 说明被拦原因与放开方式。
+    """
+    if os.environ.get(_PUSH_NON_MKT_ENV) == '1':
+        return True, '已放开非大盘推送(%s=1)' % _PUSH_NON_MKT_ENV
+    if push_type in _MKT_PUSH_TYPES:
+        return True, '大盘通道'
+    return False, (f'已按用户要求关闭非大盘推送（push_type={push_type}）；'
+                   f'仅放行 {" / ".join(_MKT_PUSH_TYPES)}；'
+                   f'临时放开请设 {_PUSH_NON_MKT_ENV}=1')
 
 _PUSH_WINDOW_BEFORE = 3   # 提前3分钟开窗
 _PUSH_WINDOW_AFTER = 45   # 延后45分钟关窗——GitHub cron高峰期实测延迟可达38分钟
@@ -278,10 +301,12 @@ def push_gate(push_type):
       ① digest am      : 10:40 固定窗口（早上换一次票推一次）
       ② digest pm-close: _PM_PUSH_TYPE='daily_pm'，13:45-14:45 任意时刻起跑即命中，
                    用于「13:50 自动更新 → 14:30 前更新好 → 推一次带结论」
-    大盘信号（30分KDJ到位 / 资金回流）走独立脚本，不受这两档限制，全天任意时刻可推，
-    但两者**共享 MKT_PUSH_BUDGET 条/日的额度**（Server酱免费额度仅 5 条/日）：
-      2 条个股 + 3 条大盘 = 5 条，刚好卡满不溢出。
-    其余 push_type（bottom/intraday 等）沿用原固定窗口逻辑。
+    ⚠️ 2026-10-28 用户改口「以后只给大盘推送」→ 上面两档已被 _mkt_only_gate
+       在 send_wechat 入口前置拦下，实际不会真的发出去（代码保留以便随时恢复）。
+
+    大盘信号（30分KDJ到位 / 资金回流）走独立脚本，不受时间窗限制，全天任意时刻可推，
+    两者**共享 MKT_PUSH_BUDGET 条/日的额度**（Server酱免费额度仅 5 条/日）。
+    其余 push_type（bottom/intraday 等）沿用原固定窗口逻辑，但同样过不了 _mkt_only_gate。
     """
     if os.environ.get('FORCE_PUSH') == '1':
         return True, 'forced', None
@@ -366,6 +391,13 @@ def send_wechat(title, desp='', push_type='default'):
     sendkey = load_sendkey()
     if not sendkey:
         print("[WeChat] 未配置 SendKey, 跳过推送")
+        return False
+
+    # 「只推大盘」总闸（2026-10-28 用户拍板）：放在时间窗闸门之前，
+    # 非大盘类型连额度都不申请，避免白占 Server酱 5 条/日
+    mkt_ok, mkt_reason = _mkt_only_gate(push_type)
+    if not mkt_ok:
+        print(f"[WeChat] {mkt_reason}")
         return False
 
     # 推送时间闸门：非指定时间点一律拦截（FORCE_PUSH=1 可绕过）
@@ -929,8 +961,17 @@ def _send_with_key(title, desp, state_key):
 
 
 def notify_market_brief(stocks, context='股票更新'):
-    """每档合并推送：结论段 + 底部缩量建仓明细，一条消息只占 1 条 Server酱额度。"""
+    """每档合并推送：结论段 + 底部缩量建仓明细，一条消息只占 1 条 Server酱额度。
+
+    ⚠️ 2026-10-28 起用户要求「以后只给大盘推送」——本函数是**个股候选播报**，
+      默认直接拦下（不再消耗额度）。数据更新照常跑，只是不再发微信。
+      临时需要请设 PUSH_ALLOW_NON_MKT=1。
+    """
     global _MARKET_BRIEF_SENT
+    mkt_ok, mkt_reason = _mkt_only_gate('digest')
+    if not mkt_ok:
+        print(f"[WeChat] 个股候选播报未发送：{mkt_reason}")
+        return False
     if _MARKET_BRIEF_SENT:
         print("[WeChat] 本次运行合并推送已发过, 跳过")
         return False
