@@ -420,8 +420,14 @@ def analyze(flows):
     }
 
 
-def build_message(a, ks=None):
-    """构建推送文案（全部用实时数值，不写死任何方向）"""
+def build_message(a, ks=None, stocks=None):
+    """构建推送文案（全部用实时数值，不写死任何方向）
+
+    stocks: pool_ready.scan() 的返回值。
+      None 且本次真触发（level != NONE）时自动扫一遍票池 —— 未触发不扫，
+      省掉一次 40 只快照请求（这个脚本每 5 分钟跑一次）。
+      2026-10-28 用户要求：「大盘资金回流的时候下面应该带那些已经到位的个股」。
+    """
     def _ratio_pct(x):
         d = abs(x.get('depth_yi') or 0)
         return (x['recall_yi'] / d * 100) if d else 0.0
@@ -498,6 +504,30 @@ def build_message(a, ks=None):
         '',
         hold_txt,
         '',
+    ]
+
+    # ---- 第 4 段：已到位个股（用户 2026-10-28 要求，这步不能少）----
+    if stocks is None and a.get('level') != 'NONE':
+        try:
+            import pool_ready
+            stocks = pool_ready.scan()
+            if stocks.get('ok'):
+                print('[fund_flow] 到位个股：%d 只 / 池 %d 只'
+                      % (stocks.get('total', 0), stocks.get('pool', 0)))
+            else:
+                print('[fund_flow] 到位个股扫描失败：%s' % stocks.get('err'))
+        except Exception as e:
+            stocks = dict(ok=False, err='pool_ready 异常: %s' % e)
+            print('[fund_flow] 到位个股扫描异常：%s' % e)
+    if stocks is not None:
+        try:
+            import pool_ready
+            lines += ['---', ''] + pool_ready.fmt_md(stocks)
+        except Exception as e:
+            lines += ['', '### 4、已到位个股\n', f'- ⚠️ 渲染失败（{e}）\n']
+
+    lines += [
+        '---',
         '👀 **本条是提醒，不是买入指令** —— 三关全过只说明「位置+资金」条件齐了，'
         '是否下手由你自己判断，请结合个股基本面与仓位。',
     ]
@@ -523,6 +553,13 @@ def build_message(a, ks=None):
               '按提示而非按承诺看。']
     title = (f"{'✅' if a['cur_yi'] >= 0 else '🔄'} 大盘资金{'转正' if a['cur_yi'] >= 0 else '回流'}·{level_txt}"
              f"｜回补{a['recall_yi']:+.2f}亿｜30分K={ks['k'] if ks else '—'}")
+    # 标题里带上候选数量，锁屏就能看到「有没有票可选」
+    if stocks is not None:
+        if stocks.get('ok'):
+            n = stocks.get('total') or 0
+            title += f'｜到位{n}只' if n else '｜无票到位'
+        else:
+            title += '｜个股扫描失败'
     return title, '\n'.join(lines)
 
 
@@ -658,7 +695,15 @@ def main():
             '过' if gate_ok else '拦',
             ('%.1f' % ks['k']) if ks else 'NA'))
 
-    title, desp = build_message(a, ks)
+    # --test 时强制扫个股（哪怕没触发），方便调试名单
+    _stocks = None
+    if test_mode:
+        try:
+            import pool_ready
+            _stocks = pool_ready.scan()
+        except Exception as e:
+            _stocks = dict(ok=False, err='pool_ready 异常: %s' % e)
+    title, desp = build_message(a, ks, stocks=_stocks)
     if test_mode:
         print('-' * 60)
         print(f'TITLE: {title}')
