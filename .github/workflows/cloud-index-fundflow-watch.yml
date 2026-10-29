@@ -1,0 +1,64 @@
+name: Cloud Index Fund Flow Watch
+
+# 2026-10-29 新建：大盘资金回流监控的云端主通道。
+#
+# 为什么要建：
+#   资金回流（index_fund_flow_watch.py）此前只有本地 automation 在跑，
+#   而本地 automation 自 2026-10-27 起实测整体停摆（10-28 全天仅触发 1 次），
+#   导致这条通道 10-27/10-28 连续两天 0 推送。按 2026-10-28 用户拍板，
+#   微信推送只保留「大盘30分KDJ」与「大盘资金回流」两条，本 workflow 补上后者。
+#
+# 与 cloud-index-kdj-watch.yml 的关系：
+#   两者是并行的两条通道，共用 push_ledger 远端账本做跨端去重
+#   （内容指纹 + claim() 原子占坑），即使双端同时触发也只推一条。
+#
+# ⚠️ 个股名单（pool_ready）依赖 .cache_pool_daily.json，该文件未被 git 跟踪、
+#    远端 404，云端干净 checkout 拿不到 → 必须先跑 fetch_pool_daily.py 重建，
+#    否则资金回流消息第 4 段会退化成「票池缓存缺失」的降级文案。
+#    用户 2026-10-28 明确要求「这一步不能少」。
+#
+# 脚本内置交易时段闸门(9:31-11:30/13:01-15:02)与非交易日过滤，窗外自动跳过。
+
+on:
+  schedule:
+    # 每 15 分钟一档；刻意与 KDJ 通道的 '2,17,32,47' 错开 7 分钟，
+    # 避免两个 job 同时起跑争抢远端 push_ledger.json 的 sha（CAS 冲突会白跑一轮）。
+    # ⚠️ GitHub Actions schedule 有约 10 分钟排队延迟，实际起跑比 cron 晚一截，
+    #    再加密到 10 分钟以下收益会被延迟吃掉且白烧配额。
+    # UTC 1-7 = 北京 9-15；窗外由脚本自带闸门跳过。
+    - cron: '9,24,39,54 1-7 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cloud-fundflow-watch
+  cancel-in-progress: false
+
+jobs:
+  fundflow-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 重建票池日线缓存（40 只 × 320 根，腾讯源，并发 8）。
+      # 云端每次都是干净 checkout，缓存不落库，故每轮都要重建；
+      # 耗时约 30-60s，失败不阻断（资金回流本体仍会照常判定与推送）。
+      - name: Build pool daily cache (for stock list in message)
+        continue-on-error: true
+        run: python fetch_pool_daily.py
+
+      - name: Run index fund flow watch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+        run: python index_fund_flow_watch.py
