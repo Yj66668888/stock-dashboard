@@ -50,6 +50,12 @@ jobs:
         with:
           python-version: '3.11'
 
+      # ⚠️ 2026-10-29 实测：不做这一步，下一步会直接 ModuleNotFoundError: numpy 而静默失败
+      #    （slump_stage5_pool.py 用 numpy；scan_macd/scan_newlow 链路只用标准库）。
+      #    整个项目只有 numpy 一个第三方依赖，故不引 requirements.txt。
+      - name: Install deps
+        run: pip install -q numpy
+
       # 重建票池日线缓存（40 只 × 320 根，腾讯源，并发 8）。
       # 云端每次都是干净 checkout，缓存不落库，故每轮都要重建；
       # 耗时约 30-60s，失败不阻断（资金回流本体仍会照常判定与推送）。
