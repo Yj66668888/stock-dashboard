@@ -19,21 +19,26 @@ DOCS_DIR = os.path.join(BASE, 'docs')
 ROOT_HTML = os.path.join(BASE, 'index.html')  # GitHub Pages 从根目录构建
 
 
-def run_script(name, script_name, timeout=300):
-    """运行脚本，返回是否成功"""
+def run_script(name, script_name, timeout=300, args=None):
+    """运行脚本，返回是否成功
+
+    2026-10-31: 加 args 参数。以前 script_name 会被当作整条命令，
+    传 'scan_macd.py --dual --json' 时拼接出的路径不存在 → 静默 SKIP。
+    """
     script_path = os.path.join(BASE, script_name)
     if not os.path.exists(script_path):
         print(f"  [SKIP] {script_name} 不存在")
         return False
 
+    extra = list(args) if args else []
     print(f"\n{'=' * 60}")
     print(f"  {name}")
-    print(f"  > {script_name}")
+    print(f"  > {script_name}{(' ' + ' '.join(extra)) if extra else ''}")
     print(f"{'=' * 60}")
 
     try:
         result = subprocess.run(
-            [sys.executable, script_path],
+            [sys.executable, script_path] + extra,
             capture_output=True, text=True,
             timeout=timeout, cwd=BASE
         )
@@ -434,6 +439,15 @@ def update_only():
     # 明盘资金走前端 fetchCapitalFlow（push2.* 实时接口，本机IP被限流
     # 不影响用户浏览器），暗盘走 datacenter-web 不限流。
     run_script("[1c/4] 暗盘资金注入", 'inject_dark_capital.py', timeout=60)
+
+    # Step 1d: 大盘双名单（2026-10-31 加）
+    # 按「活跃度轴」生成两份名单：涨日进攻名单（活跃度高端）/ 跌日防御名单（活跃度低端）。
+    # 活跃度 = z(beta60) + z(vol20) + z(amt20) + z(newlow20)，取自近一年 243 天、
+    # 63 跌日 / 64 涨日 的横截面归因：跌日低活跃组占优、涨日高活跃组占优，符号镜像。
+    # 输出 .cache_dual_picks.json 到 ./ + docs/ + deploy/，页面端再自行实时判定大盘状态切名单。
+    # 实测耗时约 10s（40 只票池，日线 + 快照）。失败不致命，下一轮会补。
+    run_script("[1d/4] 大盘双名单生成", 'scan_macd.py', timeout=180,
+               args=['--dual', '--json'])
 
     # Step 2: 复制 deploy -> docs + root
     print(f"\n{'=' * 60}")
