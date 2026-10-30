@@ -316,6 +316,12 @@ def full_scan(with_prelaunch=False):
     #          竞价阶段当天首根30分K未走完，30分KDJ停在上一交易日收盘状态 → 盘前预扫即可
     run_script("[7c/9] 全市场KDJ竞价候选池", 'scan_kdj_auction_watchlist.py', timeout=900)
 
+    # Step 7d: 大盘双名单（2026-10-31 加）
+    #          full-scan 在北京 08:33 跑（开盘前），这份名单 = 以 T-1 收盘算出的活跃度排序，
+    #          开盘前就位；盘中再交给 update 模式（10:07/11:07/13:07/14:07/14:43）刷新。
+    run_script("[7d/9] 大盘双名单生成(盘前)", 'scan_macd.py', timeout=180,
+               args=['--dual', '--json'])
+
     # Step 8: 起涨前预判
     run_script("[8/9] 起涨前预判扫描", 'pre_breakout_v2.py', timeout=300)
 
