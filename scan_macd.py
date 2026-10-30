@@ -104,7 +104,9 @@ FILTER = True           # 标的过滤总开关
 # ---- 双名单（2026-10-31 新增，--dual 触发；不触发时行为与 v3.3 完全一致）----
 DOWN_TOPN = 8           # ★ 跌日防御名单取活跃度最低的 N 只
 UP_TOPN = 8             # ★ 涨日进攻名单最多列 N 只
-JSON_FILE = '.cache_dual_picks.json'
+# ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
+# 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
+JSON_FILE = 'dual_picks.json'
 # ====================================================================
 
 NAMES = {'603067': '振华股份', '600105': '永鼎股份', '601126': '四方股份',

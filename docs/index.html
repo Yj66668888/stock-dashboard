@@ -9603,7 +9603,7 @@ function initDualOnce() {
     });
     refreshDual();
   };
-  fetch('./.cache_dual_picks.json', { cache: 'no-store' }).then(function (r) {
+  fetch('./dual_picks.json', { cache: 'no-store' }).then(function (r) {
     return r.json();
   }).then(function (d) {
     DUAL_DATA = d;
