@@ -1160,6 +1160,43 @@
   }
   .col-toggle-btn:hover { background: rgba(88,166,255,0.12); color: var(--text); }
   .col-toggle-btn.all { border-color: rgba(88,166,255,0.5); color: #58a6ff; }
+  /* ===== 大盘双名单 (2026-10-31) ===== */
+  .dual-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#f6f7f9;border:1px solid #e3e6ea;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+  .dual-banner .db-dot{width:10px;height:10px;border-radius:50%;background:#b4b2a9;flex:none}
+  .dual-banner.up{background:#eaf3ec;border-color:#bcd9c4}
+  .dual-banner.up .db-dot{background:#1d9e75}
+  .dual-banner.down{background:#fdf0ef;border-color:#eec9c5}
+  .dual-banner.down .db-dot{background:#d85a30}
+  .dual-banner.flat{background:#f1efe8;border-color:#ddd9cc}
+  .db-label{font-weight:600;font-size:14px}
+  .db-divider{color:#c8ccd0}
+  .db-value{font-size:13px;color:#333}
+  .db-refresh{margin-left:auto;font-size:12px;padding:4px 10px;border:1px solid #d5d9dd;background:#fff;border-radius:6px;cursor:pointer;color:#555}
+  .db-refresh:hover{background:#f0f2f4}
+  .db-tip{font-size:12.5px;color:#5f5e5a;line-height:1.6;margin:0 0 12px;padding:0 2px}
+  .dual-switcher{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .ds-btn{font-size:13px;padding:7px 14px;border:1px solid #d5d9dd;background:#fff;border-radius:7px;cursor:pointer;color:#444}
+  .ds-btn.active{background:#185fa5;border-color:#185fa5;color:#fff}
+  .ds-btn:hover{border-color:#185fa5}
+  .ds-hint{font-size:12px;color:#888;margin-left:6px}
+  .dual-block{margin-bottom:22px;border:1px solid #e3e6ea;border-radius:10px;overflow:hidden}
+  .dual-block.hidden{display:none}
+  .db-head{display:flex;align-items:center;gap:10px;padding:11px 14px;flex-wrap:wrap}
+  .db-head.up{background:#eaf3ec}
+  .db-head.down{background:#fdf0ef}
+  .dbh-tag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#185fa5;color:#fff;font-size:12px;font-weight:600;flex:none}
+  .dbh-title{font-size:14.5px;font-weight:600;color:#222}
+  .dbh-sub{font-size:12.5px;color:#666}
+  .db-note{font-size:12.5px;color:#555;line-height:1.65;padding:10px 14px;background:#fafbfc;border-bottom:1px solid #eceff1}
+  .dual-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .dual-table th{background:#f6f7f9;padding:8px 9px;text-align:right;border-bottom:1px solid #e3e6ea;color:#555;font-weight:600;white-space:nowrap}
+  .dual-table th:nth-child(1),.dual-table th:nth-child(2),.dual-table th:nth-child(5),.dual-table th:nth-child(9),.dual-table th:nth-child(14){text-align:left}
+  .dual-table td{padding:7px 9px;text-align:right;border-bottom:1px solid #f0f2f4;white-space:nowrap}
+  .dual-table td:nth-child(1),.dual-table td:nth-child(2),.dual-table td:nth-child(5),.dual-table td:nth-child(9),.dual-table td:nth-child(14){text-align:left}
+  .dual-table tbody tr:hover{background:#f8fafb}
+  .act-cold{color:#1d9e75;font-weight:600}
+  .act-hot{color:#d85a30;font-weight:600}
+  .dual-foot{font-size:12.5px;color:#666;line-height:1.75;background:#fafbfc;border:1px solid #e3e6ea;border-radius:8px;padding:12px 14px}
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
 <script>
@@ -1200,7 +1237,8 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <button class="nav-btn active" onclick="switchPage('stocks', event)">📊 选股仪表盘</button>
-    <button class="nav-btn" onclick="switchPage('volume', event)">📉 量价状态</button>
+        <button class="nav-btn" onclick="switchPage('dual', event)">🎯 大盘双名单</button>
+<button class="nav-btn" onclick="switchPage('volume', event)">📉 量价状态</button>
   </nav>
 
   <!-- Page: Stocks -->
@@ -1270,6 +1308,72 @@
     <!-- 手机版卡片容器 -->
     <div class="mobile-card-list" id="mobileCardList"></div>
   </div>
+  </div>
+
+  <!-- Page: 大盘双名单 (2026-10-31 新增：涨日进攻 / 跌日防御，页面端实时判定切换) -->
+  <div class="page" id="page-dual">
+    <div class="dual-banner idle" id="dualBanner">
+      <span class="db-dot"></span>
+      <span class="db-label">大盘状态</span>
+      <span class="db-divider">|</span>
+      <span class="db-value" id="dualIdxVal">加载中…（实时拉取上证指数）</span>
+      <button class="db-refresh" onclick="refreshDual()" title="重新判定大盘状态">↻ 重新判定</button>
+    </div>
+    <div class="db-tip" id="dualTip"></div>
+
+    <div class="dual-switcher">
+      <button class="ds-btn" id="dsBtnUp" onclick="showDual('up')">📈 大盘涨时买 · 进攻</button>
+      <button class="ds-btn" id="dsBtnDown" onclick="showDual('down')">🛡 大盘跌时买 · 防御</button>
+      <span class="ds-hint" id="dsHint"></span>
+    </div>
+
+    <div class="dual-block" id="dualBlockUp">
+      <div class="db-head up">
+        <span class="dbh-tag">B</span>
+        <span class="dbh-title">涨日 · 进攻名单</span>
+        <span class="dbh-sub">高弹性 / 高波动 / 高成交额 / 创新低 —— 活跃股里的超跌反弹候选</span>
+      </div>
+      <div class="db-note">涨日实测：全市场基准红盘率 <b>67.06%</b>，活跃度高端组明显跑赢（bias60 低值组 75.3%）。
+        大盘上涨时买活跃股，弹性兑现得快。</div>
+      <div class="table-scroll">
+        <table class="dual-table" id="dualTableUp">
+          <thead><tr>
+            <th>代码</th><th>名称</th><th>现价</th><th>活跃度</th><th>档位</th>
+            <th>beta60</th><th>vol20</th><th>amt20</th><th>创新低</th>
+            <th>位置P</th><th>K值</th><th>DIF</th><th>volr20</th><th>MACD信号</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dual-block" id="dualBlockDown">
+      <div class="db-head down">
+        <span class="dbh-tag">A</span>
+        <span class="dbh-title">跌日 · 防御名单</span>
+        <span class="dbh-sub">低弹性 / 低波动 / 低成交额 / 未创新低 —— 冷门股里的抗跌品种</span>
+      </div>
+      <div class="db-note">跌日实测：全市场基准红盘率只有 <b>25.77%</b>，活跃度低端组抗跌（beta60 低值组 32.5%）。
+        大盘下跌时买冷门股，跌得少。</div>
+      <div class="table-scroll">
+        <table class="dual-table" id="dualTableDown">
+          <thead><tr>
+            <th>代码</th><th>名称</th><th>现价</th><th>活跃度</th><th>档位</th>
+            <th>beta60</th><th>vol20</th><th>amt20</th><th>创新低</th>
+            <th>位置P</th><th>K值</th><th>DIF</th><th>volr20</th><th>MACD信号</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dual-foot">
+      <b>口径说明</b><br>
+      · 活跃度 ACT = z(beta60) + z(vol20) + z(amt20) + z(newlow20) 等权合成，四者是同一根「活跃度/风险」轴的四个测度，不是四个独立 alpha。<br>
+      · 这 4 个因子是 15 个候选里仅有的「跌日/涨日两场景都分位单调、且方向完全镜像」者，其余 11 个（bias/ret/volr/P250 等）分位不单调，已淘汰。<br>
+      · 判定阈值 ±0.5%，与横截面归因的场景划分完全一致。平淡日（|涨跌幅| &lt; 0.5%）两名单都只作参考：<b>实测那 116 天里所有因子分位红盘率都挤在 44.5%~48.6%，没有结构差异</b>。<br>
+      · 名单只是排序结果，不是买卖指令 —— 买不买你自己定。
+    </div>
   </div>
 
   <!-- Page: 量价状态（2026-10-22 新增：缩量止跌 vs 放量破位，一眼看清） -->
@@ -6061,6 +6165,8 @@ function switchPage(pageId, event) {
     });
   }
   if (btn) btn.classList.add('active');
+  // 大盘双名单页：首次进入时加载名单 + 实时判定大盘状态
+  if (pageId === 'dual') { initDualOnce(); }
   // 量价状态页：首次进入时懒加载日K并计算
   if (pageId === 'volume') { vsEnsureLoaded(); }
 }
@@ -9369,6 +9475,143 @@ document.addEventListener('click', function (e) {
   else { VS_SORT.key = key; VS_SORT.dir = (key === 'name' || key === 'code' || key === 'state') ? 1 : -1; }
   if (VS_LOADED) vsRender();
 });
+
+/* ===== 大盘双名单 (2026-10-31 新增) ===== */
+var DUAL_DATA = null, DUAL_INITED = false, DUAL_MODE = 'all', DUAL_ST = 'unknown';
+
+function dnum(v, p) {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  return (+v).toFixed(p === undefined ? 3 : p);
+}
+
+/* 腾讯 JSONP。⚠️ 指数格式没有涨跌幅字段，必须 (现价/昨收-1)*100 */
+function loadShIndex() {
+  return new Promise(function (resolve) {
+    var s = document.createElement('script'), done = false;
+    var fin = function (r) { if (!done) { done = true; resolve(r); } };
+    s.src = 'https://qt.gtimg.cn/q=sh000001';
+    s.onload = function () {
+      try {
+        var f = String(window['v_sh000001'] || '').split('~');
+        var c = parseFloat(f[3]), p = parseFloat(f[4]);
+        (c > 0 && p > 0) ? fin({ ok: true, close: c, chg: (c / p - 1) * 100 }) : fin({ ok: false });
+      } catch (e) { fin({ ok: false }); }
+    };
+    s.onerror = function () { fin({ ok: false }); };
+    document.head.appendChild(s);
+    setTimeout(function () { fin({ ok: false }); }, 8000);
+  });
+}
+
+function dualStateOf(chg) {
+  return (chg >= 0.5) ? 'up' : ((chg <= -0.5) ? 'down' : 'flat');
+}
+
+function renderDualTable(tid, rows) {
+  var tb = document.querySelector('#' + tid + ' tbody');
+  if (!tb) return;
+  tb.innerHTML = '';
+  if (!rows || !rows.length) {
+    tb.innerHTML = '<tr><td colspan="14" style="text-align:center;color:#999;padding:18px">暂无数据</td></tr>';
+    return;
+  }
+  rows.forEach(function (r) {
+    var tr = document.createElement('tr');
+    var cls = (r.act >= 0.2) ? 'act-hot' : ((r.act <= -0.2) ? 'act-cold' : '');
+    var cells = [
+      (r.code || '-'), (r.name || '-'), dnum(r.close, 2),
+      '<span class="' + cls + '">' + dnum(r.act, 3) + '</span>',
+      (r.tag || '-'), dnum(r.beta60, 3), dnum(r.vol20, 4), dnum(r.amt20, 2),
+      (r.newlow20 ? '是' : '否'), dnum(r.P60, 1), dnum(r.K, 1),
+      dnum(r.DIF, 3), dnum(r.volr, 3), ((r.sigs || []).join('、') || '-')
+    ];
+    tr.innerHTML = '<td>' + cells.join('</td><td>') + '</td>';
+    tb.appendChild(tr);
+  });
+}
+
+function applyDualState(st) {
+  DUAL_ST = st;
+  var el = function (id) { return document.getElementById(id); };
+  var bu = el('dualBlockUp'), bd = el('dualBlockDown');
+  if (bu) bu.style.borderColor = (st === 'up') ? '#1d9e75' : '#e3e6ea';
+  if (bd) bd.style.borderColor = (st === 'down') ? '#d85a30' : '#e3e6ea';
+  if (st === 'up' && bu && bd && bu.parentNode) bu.parentNode.insertBefore(bu, bd);
+  var tip = el('dualTip'), hint = el('dsHint');
+  var msg = {
+    up: '>> 当前应看【B 涨日·进攻名单】：大盘上涨，活跃股弹性兑现得快；这时候别买冷门票。',
+    down: '>> 当前应看【A 跌日·防御名单】：大盘下跌，冷门股跌得少；这时候别买活跃股。',
+    flat: '>> 当前平淡日：实测这 116 天里所有因子分位红盘率都挤在 44.5%~48.6%，没有结构差异 → 两名单都只作参考，别硬找信号。',
+    unknown: '>> 大盘取数失败，两名单都只作参考，点「重新判定」重试。'
+  };
+  if (tip) tip.textContent = msg[st] || msg.unknown;
+  if (hint) {
+    hint.textContent = (st === 'up') ? '（已自动把进攻名单置顶）'
+      : ((st === 'down') ? '（已自动把防御名单置顶）' : '');
+  }
+  // 自动模式下按状态改按钮高亮
+  var bu2 = el('dsBtnUp'), bd2 = el('dsBtnDown');
+  if (bu2) bu2.classList.toggle('active', st === 'up');
+  if (bd2) bd2.classList.toggle('active', st === 'down');
+}
+
+function showDual(mode) {
+  DUAL_MODE = (DUAL_MODE === mode) ? 'all' : mode;
+  var el = function (id) { return document.getElementById(id); };
+  var bu = el('dualBlockUp'), bd = el('dualBlockDown');
+  if (bu) bu.classList.toggle('hidden', DUAL_MODE === 'down');
+  if (bd) bd.classList.toggle('hidden', DUAL_MODE === 'up');
+  var bu2 = el('dsBtnUp'), bd2 = el('dsBtnDown');
+  if (bu2) bu2.classList.toggle('active', DUAL_MODE === 'up');
+  if (bd2) bd2.classList.toggle('active', DUAL_MODE === 'down');
+}
+
+function refreshDual() {
+  var el = function (id) { return document.getElementById(id); };
+  loadShIndex().then(function (r) {
+    var st = 'unknown';
+    if (r.ok) {
+      st = dualStateOf(r.chg);
+      var v = el('dualIdxVal');
+      if (v) {
+        v.textContent = '上证 ' + r.close.toFixed(2) + '　' +
+          (r.chg >= 0 ? '+' : '') + r.chg.toFixed(2) + '%　→　' +
+          (st === 'up' ? '大盘涨' : (st === 'down' ? '大盘跌' : '大盘平淡'));
+      }
+      var b = el('dualBanner');
+      if (b) b.className = 'dual-banner ' + st;
+    } else {
+      var v2 = el('dualIdxVal');
+      if (v2) v2.textContent = '取数失败，名单仅供参考（点「重新判定」重试）';
+      var b2 = el('dualBanner');
+      if (b2) b2.className = 'dual-banner idle';
+    }
+    applyDualState(st);
+  });
+}
+
+function initDualOnce() {
+  if (DUAL_INITED) { refreshDual(); return; }
+  DUAL_INITED = true;
+  var miss = function () {
+    ['dualTableUp', 'dualTableDown'].forEach(function (t) {
+      var tb = document.querySelector('#' + t + ' tbody');
+      if (tb) {
+        tb.innerHTML = '<tr><td colspan="14" style="text-align:center;color:#999;padding:18px">' +
+          '名单数据未生成（需先跑 scan_macd.py --dual --json 并推送）</td></tr>';
+      }
+    });
+    refreshDual();
+  };
+  fetch('./.cache_dual_picks.json', { cache: 'no-store' }).then(function (r) {
+    return r.json();
+  }).then(function (d) {
+    DUAL_DATA = d;
+    renderDualTable('dualTableUp', d.up || []);
+    renderDualTable('dualTableDown', d.down || []);
+    refreshDual();
+  }).catch(miss);
+}
 </script>
 </body>
 </html>
