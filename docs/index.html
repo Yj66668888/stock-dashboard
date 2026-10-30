@@ -1196,6 +1196,7 @@
   .dual-table tbody tr:hover{background:#f8fafb}
   .act-cold{color:#1d9e75;font-weight:600}
   .act-hot{color:#d85a30;font-weight:600}
+  .ph-hi{color:#d85a30;font-weight:600}
   .dual-foot{font-size:12.5px;color:#666;line-height:1.75;background:#fafbfc;border:1px solid #e3e6ea;border-radius:8px;padding:12px 14px}
 </style>
 <script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
@@ -9522,7 +9523,11 @@ function renderDualTable(tid, rows) {
       (r.code || '-'), (r.name || '-'), dnum(r.close, 2),
       '<span class="' + cls + '">' + dnum(r.act, 3) + '</span>',
       (r.tag || '-'), dnum(r.beta60, 3), dnum(r.vol20, 4), dnum(r.amt20, 2),
-      (r.newlow20 ? '是' : '否'), dnum(r.P60, 1), dnum(r.K, 1),
+      (r.newlow20 ? '是' : '否'),
+      (r.P60 >= 75
+        ? '<span class="ph-hi" title="P60≥75：位置过高，按铁律应回避">' + dnum(r.P60, 1) + '▲</span>'
+        : dnum(r.P60, 1)),
+      dnum(r.K, 1),
       dnum(r.DIF, 3), dnum(r.volr, 3), ((r.sigs || []).join('、') || '-')
     ];
     tr.innerHTML = '<td>' + cells.join('</td><td>') + '</td>';
