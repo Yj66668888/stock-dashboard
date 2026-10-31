@@ -478,6 +478,42 @@ def dump_dual(rg, up_list, down_list):
           % ('、'.join(wrote), rg['label'], len(up_list), len(down_list)))
 
 
+POOL_FILES = ('pool.txt', 'mypool.txt')   # 独立票池（便于脱离仪表盘单独运行）
+
+
+def load_pool():
+    """票池加载优先级：pool.txt > deploy/index.html(STOCKS+PINNED)
+
+    pool.txt 每行一条，支持：
+        sz002973            # 带前缀
+        002973              # 自动判市场（6→sh，其余→sz）
+        sz002973 侨银股份    # 可带名称，空格分隔
+    `#` 开头为注释，空行忽略。
+    """
+    for fn in POOL_FILES:
+        pth = os.path.join(BASE, fn)
+        if not os.path.isfile(pth):
+            continue
+        codes = []
+        try:
+            for ln in open(pth, encoding='utf-8', errors='ignore'):
+                ln = ln.strip()
+                if not ln or ln.startswith('#'):
+                    continue
+                c = ln.split()[0]
+                if not c.startswith(('sh', 'sz', 'bj')):
+                    c = ('sh' if c[0] in '6' else 'sz') + c
+                if c not in codes:
+                    codes.append(c)
+        except Exception as e:
+            print('  !! 读取 %s 失败: %s' % (fn, e))
+            continue
+        if codes:
+            print('票池来源：%s（%d 只）' % (fn, len(codes)))
+            return codes
+    return pool_codes()
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     flags = set(a for a in sys.argv[1:] if a.startswith('--'))
@@ -534,9 +570,12 @@ def main():
         print('  ⚠️ 只提示，不拦截：名单照常全列出，买不买你自己定')
 
     # ---------- 指定个股 / 票池（实时） ----------
-    codes = args if args else pool_codes()
+    codes = args if args else load_pool()
     if not codes:
-        print('没有指定代码，也没读到票池（deploy/index.html）')
+        print('没有指定代码，也没读到票池。\n'
+              '  方式1：命令行传代码   python3 scan_macd.py sz002973 sh603986 --dual\n'
+              '  方式2：同目录建 pool.txt，每行一个代码（可用 # 写注释）\n'
+              '  方式3：沿用仪表盘票池 deploy/index.html 里的 STOCKS/PINNED')
         return
     codes = [c if c.startswith(('sh', 'sz')) else
              ('sh' + c if c[0] in '6' else 'sz' + c) for c in codes]
