@@ -685,7 +685,7 @@ def main():
     print('条件：DIF<0 + 水下信号 + volr20<%.1f  （共 %d/%d 只）'
           % (VOLR_MAX, len(pick), len(rows)))
     if gate_on and idx and idx['ok'] and idx['zone'] == 'weak':
-        print('⚠️ 大盘 K=%.1f ≥ %.0f → 弱势档。历史 45 天账户日均 -0.124%，'
+        print('⚠️ 大盘 K=%.1f ≥ %.0f → 弱势档。历史 45 天账户日均 -0.124%%，'
               % (idx['k'], IDX_BEST_LO))
         print('   K∈[60,80) 那 18 天更差：-0.421%、夏普 -0.187、回撤 12.6%。名单照列，自己定。')
     if gate_on and idx and idx['ok'] and idx['zone'] == 'low':
