@@ -111,6 +111,16 @@ UP_TOPN = 8             # ★ 涨日进攻名单最多列 N 只
 # ⚠️ 不是硬门槛：用户长期约束「买不买看我自己」，名单照列，只是排序优先级变了。
 DT_FIRST = True         # ★ True = 日K趋势优先；False = 回到纯活跃度排序
 DT_MIN_OK = 4           # ★ 优先层不足这个数就回退全池（说明当天票池整体偏弱）
+# ★★ 2026-11-02 实测（validate_day_trend.py，3046 只 × 243 天，T-1 口径无未来函数）：
+#   跌日：在涨组(G1) 超额 −0.093%/天 vs 下坡组(G3) −0.265%/天 → G1 少跌 0.171%/天，
+#         红盘率 29.63% vs 23.37%（+6.26pp），但聚类 t 只有 1.34（62 天），未达显著
+#   涨日：G1 +0.004%/天 vs G3 +0.113%/天 → G1 反而差 −0.109%/天，
+#         红盘率 61.58% vs 69.87%（−8.29pp），t=−0.89，同样未达显著
+#   全样本：G1 − G3 = +0.034%/天，t=0.59 → 整体等于没有
+# → 结论：日K优先层是「风险控制 / 观感」，不是 alpha。
+#   跌日站得住（方向对、幅度可观、样本不足），涨日是反向的。
+#   默认两名单都优先（按你的要求），但涨日这一路想关掉就把 DT_FIRST_UP 设成 False。
+DT_FIRST_UP = True      # ★ 涨日进攻名单是否也走日K优先（False = 涨日回到纯活跃度）
 # ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
 # 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
 JSON_FILE = 'dual_picks.json'
@@ -463,6 +473,11 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
     print()
     print('【B 涨日·进攻名单】活跃度最高的 %d 只（门槛：可买性 + 无除权）'
           % len(up_list))
+    if DT_FIRST_UP:
+        print('⚠️ 涨日实测（243 天）：「在涨」组次日超额 +0.004%/天、红盘率 61.58%，'
+              '反而低于「下坡」组的 +0.113%/天、69.87%（差 −8.29pp，t=−0.89 未显著）')
+        print('   → 涨日严格只挑在涨的票，统计上未必占便宜。这是按你的要求保留的优先层，'
+              '想关掉把 DT_FIRST_UP 设 False。')
     print('-' * 100)
     if up_list:
         print('%-6s %-10s %-6s %-4s %-15s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
@@ -724,7 +739,8 @@ def main():
         def take(n, reverse):
             """三级排序：日K档位（✦金叉/↑上涨 > →横盘/✦仍弱 > ↓下坡）第一键，
             活跃度第二键。reverse=True → 档内取活跃度高端（涨日进攻）"""
-            if not DT_FIRST:                      # 关掉日K优先 → 回到纯活跃度
+            first = DT_FIRST_UP if reverse else DT_FIRST
+            if not first:                         # 关掉日K优先 → 回到纯活跃度
                 return sorted(pool, key=lambda x: -(x.get('act', 0)) if reverse
                               else x.get('act', 0))[:n]
 
