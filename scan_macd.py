@@ -85,6 +85,7 @@ from scan_newlow import fetch_day, qt_snap, pool_codes   # noqa: E402
 
 import activity_factor as AF   # noqa: E402  活跃度/风险轴（2026-10-31）
 import mkt_regime as MR        # noqa: E402  大盘状态判定
+import day_trend as DT         # noqa: E402  日K趋势轴（2026-11-02，双名单优先层）
 
 # ==================== 参数区（★ = 可按你的偏好改） ====================
 VOLR_MA = 20            # 均量基准：与通达信 MA(VOL,20) 对齐
@@ -104,6 +105,12 @@ FILTER = True           # 标的过滤总开关
 # ---- 双名单（2026-10-31 新增，--dual 触发；不触发时行为与 v3.3 完全一致）----
 DOWN_TOPN = 8           # ★ 跌日防御名单取活跃度最低的 N 只
 UP_TOPN = 8             # ★ 涨日进攻名单最多列 N 只
+# ---- 日K趋势优先层（2026-11-02）----
+# 用户诉求：推的票日K很多在走下坡 → 双名单先在「日K上涨 or 刚金叉」的子集里挑，
+# 子集不够 TOPN 才用次优档补足（补足的票在「日K」列标 ↓/→，让你一眼看见）。
+# ⚠️ 不是硬门槛：用户长期约束「买不买看我自己」，名单照列，只是排序优先级变了。
+DT_FIRST = True         # ★ True = 日K趋势优先；False = 回到纯活跃度排序
+DT_MIN_OK = 4           # ★ 优先层不足这个数就回退全池（说明当天票池整体偏弱）
 # ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
 # 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
 JSON_FILE = 'dual_picks.json'
@@ -373,8 +380,13 @@ def _fmt(v, w=6, p=3):
 
 
 def dual_row(r):
+    dt = r.get('dt') or {}
     return {
         'code': r['code'], 'name': r['name'], 'close': r['close'],
+        'day': dt.get('label') or '-', 'day_state': dt.get('state') or '-',
+        'day_rank': dt.get('rank'), 'ret5': dt.get('ret5'),
+        'day_txt': DT.short(dt) if dt else '-', 'day_ok': bool(dt.get('ok')),
+        'ma20': dt.get('ma20'), 'above_ma20': dt.get('above_ma20'),
         'act': round(r.get('act') or 0.0, 3), 'act_rank': r.get('act_rank'),
         'tag': AF.tag(r.get('act')),
         'beta60': (round(r['beta60'], 3) if r.get('beta60') is not None else None),
@@ -388,7 +400,15 @@ def dual_row(r):
     }
 
 
-def print_dual(rg, up_list, down_list):
+def _day_cell(d):
+    """终端用的「日K」单元格：'↑上涨 +3.1%'"""
+    s = d['day'] or '-'
+    if d.get('ret5') is not None:
+        s += ' %+5.1f%%' % d['ret5']
+    return s
+
+
+def print_dual(rg, up_list, down_list, dt_stat=None):
     print()
     print('=' * 100)
     if rg['ok']:
@@ -408,18 +428,31 @@ def print_dual(rg, up_list, down_list):
 
     print('⚠️ 两份名单都不用 MACD 做门槛。原因：DIF<0 水下 + 缩量 筛出的正是低活跃度票，'
           '与「涨日买高活跃」直接冲突。MACD 信号只留在最右列供你参考。')
+    if dt_stat:
+        print('★ 日K优先层：票池 %d 只里「日K上涨或刚金叉」有 %d 只（✦刚金叉 %d / ↑上涨 %d）'
+              % (dt_stat['pool'], dt_stat['ok'], dt_stat['gold'], dt_stat['up']))
+        print('   其余：✦金叉·仍弱 %d（下跌途中反抽，不算数） / →横盘 %d / ↓下坡 %d'
+              % (dt_stat['weak'], dt_stat['flat'], dt_stat['down']))
+        print('   名单排序：✦/↑ 档优先 → 不够才补 →/✦仍弱 档 → 再不够才用 ↓下坡 档'
+              '（同级内再按活跃度取两端）')
+        if dt_stat['ok'] < DT_MIN_OK:
+            print('  ⚠️ 优先层仅 %d 只（< %d）：今天票池整体偏弱，名单里会有 →/✦仍弱 档的票，'
+                  '看「日K」列再定' % (dt_stat['ok'], DT_MIN_OK))
+        if dt_stat['fallback']:
+            print('  ⚠️ 名单里出现了 ↓下坡 档的票 —— 票池里在涨的样本不够，'
+                  '这列你自己把关')
     print()
     print('【A 跌日·防御名单】活跃度最低的 %d 只（门槛：可买性 + 无除权）'
           % len(down_list))
     print('-' * 100)
     if down_list:
-        print('%-6s %-10s %-6s %-4s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in down_list:
             d = dual_row(r)
-            print('[跌] %-10s %-6s %-4.2f %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], d['act'], d['tag'],
+            print('[跌] %-10s %-6s %-4.2f %-15s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -432,13 +465,13 @@ def print_dual(rg, up_list, down_list):
           % len(up_list))
     print('-' * 100)
     if up_list:
-        print('%-6s %-10s %-6s %-4s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in up_list:
             d = dual_row(r)
-            print('[涨] %-10s %-6s %-4.2f %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], d['act'], d['tag'],
+            print('[涨] %-10s %-6s %-4.2f %-15s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -448,10 +481,14 @@ def print_dual(rg, up_list, down_list):
     print()
     print('活跃度 ACT = z(beta60)+z(vol20)+z(amt20)+z(newlow20) 等权合成；'
           '四者是同一根轴的四个测度，不是四个独立 alpha')
+    print('日K档：✦刚金叉（近5根内 DIF 上穿 DEA 或 MACD 柱翻正）> ↑上涨（站上MA10且MA10上行、'
+          '5日正收益）> →横盘 > ↓下坡（破MA20且MA10下行、5日负收益）')
+    print('⚠️ 日K是「方向轴」，活跃度是「弹性轴」，两者正交：'
+          '日K向上只说明它在涨，不说明大盘跌时它抗跌。')
     print('名单只是排序结果，不是买卖指令 —— 买不买你自己定')
 
 
-def dump_dual(rg, up_list, down_list):
+def dump_dual(rg, up_list, down_list, dt_stat=None):
     import datetime
     data = {
         'ts': time.strftime('%Y-%m-%d %H:%M'),
@@ -459,7 +496,9 @@ def dump_dual(rg, up_list, down_list):
         'up': [dual_row(r) for r in up_list],
         'down': [dual_row(r) for r in down_list],
         'meta': {'down_topn': DOWN_TOPN, 'up_topn': UP_TOPN,
-                 'volr_max': VOLR_MAX, 'src': 'scan_macd.py --dual --json'},
+                 'volr_max': VOLR_MAX, 'src': 'scan_macd.py --dual --json',
+                 'day_trend_first': DT_FIRST, 'day_trend_min_ok': DT_MIN_OK,
+                 'dt_stat': dt_stat},
     }
     # 三处都写：根目录（本地）+ docs/（Pages 源）+ deploy/（本地预览）
     wrote = []
@@ -609,6 +648,8 @@ def main():
             r['turnover'] = (s or {}).get('turnover')
             # 活跃度/风险轴四因子（+ P60，与 check 的 pos 同口径）
             r.update(AF.calc(bs, mkt_ret))
+            # 日K趋势轴（2026-11-02）：方向 ↑/✦金叉/→/↓，与活跃度正交
+            r['dt'] = DT.calc(bs)
             rows.append(r)
         time.sleep(0.12)
     AF.act_score(rows)
@@ -659,11 +700,49 @@ def main():
         rg = MR.regime()
         # 同一候选池：可买性 + 无除权（MACD 不做门槛，只作展示列，理由见 print_dual 说明）
         pool = [r for r in rows if not r['filt'] and not r['dividend']]
-        dn_pick = sorted(pool, key=lambda x: x.get('act', 0))[:DOWN_TOPN]
-        up_pick = sorted(pool, key=lambda x: -x.get('act', 0))[:UP_TOPN]
-        print_dual(rg, up_pick, dn_pick)
+
+        # ---- 日K趋势优先层（2026-11-02）----
+        # 先在「日K上涨 or 刚金叉」子集里按活跃度取两端；
+        # 子集不够 DT_MIN_OK 只 → 说明当天票池整体偏弱，回退全池（日K列仍标档位）
+        st = {'pool': len(pool), 'ok': 0, 'gold': 0, 'up': 0, 'flat': 0, 'down': 0,
+              'weak': 0, 'fallback': False}
+        for r in pool:
+            s = (r.get('dt') or {}).get('state')
+            if s == 'gold':
+                st['gold'] += 1
+            elif s == 'up':
+                st['up'] += 1
+            elif s == 'gold_weak':
+                st['weak'] += 1          # 金叉但趋势分≤1：下跌途中反抽，不算数
+            elif s == 'down':
+                st['down'] += 1
+            else:
+                st['flat'] += 1
+        st['ok'] = st['gold'] + st['up']
+        st['mid'] = st['weak'] + st['flat']
+
+        def take(n, reverse):
+            """三级排序：日K档位（✦金叉/↑上涨 > →横盘/✦仍弱 > ↓下坡）第一键，
+            活跃度第二键。reverse=True → 档内取活跃度高端（涨日进攻）"""
+            if not DT_FIRST:                      # 关掉日K优先 → 回到纯活跃度
+                return sorted(pool, key=lambda x: -(x.get('act', 0)) if reverse
+                              else x.get('act', 0))[:n]
+
+            def tier(r):
+                d = r.get('dt') or {}
+                rk = d.get('rank') or 0
+                return 2 if rk >= 2 else (1 if rk == 1 else 0)
+
+            key = lambda x: (-tier(x), -(x.get('act', 0)) if reverse else x.get('act', 0))
+            return sorted(pool, key=key)[:n]
+
+        dn_pick = take(DOWN_TOPN, False)
+        up_pick = take(UP_TOPN, True)
+        st['fallback'] = any(((r.get('dt') or {}).get('state') == 'down')
+                             for r in (dn_pick + up_pick))
+        print_dual(rg, up_pick, dn_pick, st)
         if json_out:
-            dump_dual(rg, up_pick, dn_pick)
+            dump_dual(rg, up_pick, dn_pick, st)
 
 
 if __name__ == '__main__':
