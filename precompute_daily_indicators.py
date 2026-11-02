@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-日线指标预计算脚本 — Python端计算 MACD/均线/趋势/支撑价/30日高开率/板块共振/阶段
+指标预计算脚本 — Python端计算 MACD/均线/趋势/支撑价/30日高开率/板块共振/阶段
 注入到 HTML 的 STOCKS / LAUNCH_STOCKS 数组中，避免浏览器端 JSONP 调用失败导致数据缺失。
 
-数据源：新浪财经日线K线API (scale=240) + 东方财富(备用)
+★ 2026-11-02 变更：MACD 口径由「日线」改为「30分钟」（用户要求）
+  - MACD 走 get_m30_klines()（腾讯 mkline 320 根，新浪 scale=30 兜底）
+  - 其余指标（均线/趋势/支撑价/高开率/阶段）仍为日线，未改动
+  - 30 分取不到时 MACD 静默回退日线，避免整列空白（2026-09-18 教训）
+  - stock['macdSrc'] 记录实际口径：'m30' / 'day(fallback)'
+
+数据源：新浪财经日线K线API (scale=240) + 东方财富(备用) + 腾讯30分(mkline)
 计算指标：
-  - MACD (DIF/DEA/Histogram → 金叉/死叉/红柱/绿柱)
+  - MACD (DIF/DEA/Histogram → 金叉/死叉/红柱/绿柱)  ← 30分钟口径
   - MA(5/10/20/60) + 多头/空头排列
   - 趋势 (5日涨跌幅 + 上升/下降/震荡)
   - 支撑价 (近20日最低价 + 距离%)
@@ -142,8 +148,95 @@ def _get_daily_klines_once(code, lmt=200):
             return []
 
 
+# ===================================================================
+# 30分钟K线（2026-11-02 新增：MACD 口径由日线切到 30 分钟）
+# -------------------------------------------------------------------
+# 列序已用日线交叉验证（sh600519 20261030）：
+#   30分合成 open=1363.00 close=1392.05 vol=59927.3
+#   日线实际 open=1363.000 close=1392.050 vol=59927.000  → 完全一致
+# 腾讯 mkline 列序 = [时间, 开, 收, 高, 低, 量, {}, 额外]
+#   ⚠️ 收盘价 = 索引 2，不是 3（3 是最高价）
+# ⚠️ 腾讯 mkline 上限 320 根（≈40 个交易日），不支持分段拼接
+# ⚠️ 新浪 scale=30 硬上限 datalen=1023（>1023 返 null），这里只取 320 保持同源
+# ⚠️ 末根是盘中未走完的 K（如 202611021030），保留以保证实时性
+# ===================================================================
+M30_LMT = int(os.environ.get('M30_LMT', '320'))
+
+
+def get_m30_klines(code, lmt=M30_LMT, retries=2):
+    """30分钟K线获取（腾讯 mkline 优先，新浪 scale=30 兜底），带重试。
+
+    腾讯 ifzq.gtimg.cn 在云端（境外 IP）也可用（index_kdj_watch 已验证），
+    故作为主源；新浪作为兜底，防止单源故障造成整列空白（2026-09-18 教训）。
+    """
+    for attempt in range(retries + 1):
+        k = _get_m30_klines_once(code, lmt)
+        if k:
+            return k
+        if attempt < retries:
+            time.sleep(0.8 * (attempt + 1))
+    return []
+
+
+def _get_m30_klines_once(code, lmt=M30_LMT):
+    """单次 30 分钟 K 线获取：腾讯 mkline → 新浪 scale=30"""
+    # ---- 主源：腾讯 mkline ----
+    try:
+        url = (f"https://ifzq.gtimg.cn/appstock/app/kline/mkline"
+               f"?param={code},m30,,{lmt}")
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://gu.qq.com/'
+        })
+        raw = urllib.request.urlopen(req, context=_CTX, timeout=12).read().decode('utf-8', 'ignore')
+        data = json.loads(raw).get('data', {}).get(code, {})
+        rows = data.get('m30')
+        if isinstance(rows, dict):      # 部分标的返回 {'data': [...]}
+            rows = rows.get('data') or []
+        if rows:
+            out = []
+            for r in rows:
+                try:
+                    out.append({
+                        'date': str(r[0]),
+                        'open': float(r[1]),
+                        'close': float(r[2]),   # ★ 索引 2 = 收盘
+                        'high': float(r[3]),
+                        'low': float(r[4]),
+                        'volume': float(r[5]),
+                    })
+                except (ValueError, IndexError, TypeError):
+                    continue
+            if len(out) >= 40:
+                return out
+    except Exception as e:
+        print(f"  [WARN] {code} 腾讯30分K失败: {e}")
+
+    # ---- 兜底：新浪 scale=30 ----
+    try:
+        url2 = ("https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/"
+                f"CN_MarketData.getKLineData?symbol={code}&scale=30&datalen={min(lmt, 1023)}")
+        req2 = urllib.request.Request(url2, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://finance.sina.com.cn/'
+        })
+        raw2 = urllib.request.urlopen(req2, context=_CTX, timeout=12).read().decode('utf-8', 'ignore')
+        data2 = json.loads(raw2)
+        if data2:
+            # 新浪按字段名取，规避列序差异
+            return [{'date': d.get('day', ''),
+                     'open': float(d.get('open', 0)),
+                     'high': float(d.get('high', 0)),
+                     'low': float(d.get('low', 0)),
+                     'close': float(d.get('close', 0)),
+                     'volume': float(d.get('volume', 0))} for d in data2]
+    except Exception as e2:
+        print(f"  [WARN] {code} 新浪30分K失败: {e2}")
+    return []
+
+
 def calc_macd(klines, short=12, long=26, signal=9):
-    """计算MACD指标"""
+    """计算MACD指标（日线/30分钟通用，只认 klines 的 close 字段）"""
     if len(klines) < long + signal:
         return None
 
@@ -553,10 +646,24 @@ def enrich_stock(stock, sector_counts=None, live_quotes=None):
         print(f"  [SKIP] {code} K线数据不足")
         return stock
 
-    # MACD
-    macd = calc_macd(klines)
-    if macd:
-        stock['macd'] = macd['macd']
+    # MACD —— 2026-11-02 改：口径由日线切到 30 分钟
+    #   - 主源 30 分 K（末根为盘中未走完的实时 K，保证实时性）
+    #   - 30 分取不到时静默回退日线：宁可用旧口径，也不能让整列空白
+    #     （2026-09-18 教训：K线失败静默跳过 → 仪表盘整列空白）
+    #   - ⚠️ 底背离窗口仍按「根数」20/40，不是按天；30 分下 40 根 ≈ 5 个交易日
+    m30 = get_m30_klines(code)
+    macd = None
+    if m30:
+        macd = calc_macd(m30)
+        if macd:
+            stock['macd'] = macd['macd']
+            stock['macdSrc'] = 'm30'
+            stock['macdDif'] = macd['dif']     # 30分口径 DIF，供页面/诊断使用
+    if not macd:
+        macd = calc_macd(klines)
+        if macd:
+            stock['macd'] = macd['macd']
+            stock['macdSrc'] = 'day(fallback)'
 
     # MA + 高开率
     ma_data = calc_ma_full(klines)
