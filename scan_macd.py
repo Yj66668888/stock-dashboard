@@ -86,6 +86,7 @@ from scan_newlow import fetch_day, qt_snap, pool_codes   # noqa: E402
 import activity_factor as AF   # noqa: E402  活跃度/风险轴（2026-10-31）
 import mkt_regime as MR        # noqa: E402  大盘状态判定
 import day_trend as DT         # noqa: E402  日K趋势轴（2026-11-02，双名单优先层）
+import gap_quality as GQ       # noqa: E402  隔夜跳空质量轴（2026-11-03，双名单排除层）
 
 # ==================== 参数区（★ = 可按你的偏好改） ====================
 VOLR_MA = 20            # 均量基准：与通达信 MA(VOL,20) 对齐
@@ -121,6 +122,18 @@ DT_MIN_OK = 4           # ★ 优先层不足这个数就回退全池（说明�
 #   跌日站得住（方向对、幅度可观、样本不足），涨日是反向的。
 #   默认两名单都优先（按你的要求），但涨日这一路想关掉就把 DT_FIRST_UP 设成 False。
 DT_FIRST_UP = True      # ★ 涨日进攻名单是否也走日K优先（False = 涨日回到纯活跃度）
+# ---- 隔夜跳空质量排除层（2026-11-03）----
+# 用户诉求：好多票今天收一个价、第二天低开几个点、白天回不到昨收 → 这种别放进来。
+# 判据（gap_quality.py，回看近 5 个交易日）：
+#   R1 反复低开：5 日内低开 ≤ −1% 达 2 次以上（不要求"回补失败"，实测那样更弱）
+#   R2 单次深坑：5 日内有一次跳空 ≤ −3% 且当天未回补
+# ★★ 实测（validate_gap_quality.py，3046 只 × 732 天，窗口 5 日，按交易日聚类）：
+#   保留组 − 排除组： 次日跳空 +0.307%（t=16.17）｜ T收→T+1收 +0.188%（t=5.02）
+#   排除组次日跳空 ≤ −1% 占 24.2%、保留组仅 8.2% → **跳空行为有强持续性**
+#   分组递进：隔夜稳 hold +0.046% / 偶发低开 +0.033% / R1反复低开 −0.030% / R2深坑 −0.088%(t=−3.84)
+#   ⚠️ 但排除组「开盘→收盘」反而 +0.354% vs 保留组 +0.059% —— 漏水全在开盘那一刻，
+#      日内反抽更多。所以这条只对「收盘买、次日卖」的口径成立，改开盘买就不该排除。
+GQ_EXCLUDE = True       # ★ True = 命中的票不进双名单（False = 只标注不拦截）
 # ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
 # 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
 JSON_FILE = 'dual_picks.json'
@@ -391,12 +404,18 @@ def _fmt(v, w=6, p=3):
 
 def dual_row(r):
     dt = r.get('dt') or {}
+    gq = r.get('gq') or {}
     return {
         'code': r['code'], 'name': r['name'], 'close': r['close'],
         'day': dt.get('label') or '-', 'day_state': dt.get('state') or '-',
         'day_rank': dt.get('rank'), 'ret5': dt.get('ret5'),
         'day_txt': DT.short(dt) if dt else '-', 'day_ok': bool(dt.get('ok')),
         'ma20': dt.get('ma20'), 'above_ma20': dt.get('above_ma20'),
+        # 隔夜跳空质量（近 5 日）
+        'gq': GQ.short(gq) if gq else '-', 'gq_label': gq.get('label') or '-',
+        'gq_bad': gq.get('bad'), 'gq_worst': gq.get('worst'),
+        'gq_mean': gq.get('mean'), 'gq_rec': gq.get('rec'),
+        'gq_ok': bool(gq.get('ok')), 'gq_flags': list(gq.get('flags') or []),
         'act': round(r.get('act') or 0.0, 3), 'act_rank': r.get('act_rank'),
         'tag': AF.tag(r.get('act')),
         'beta60': (round(r['beta60'], 3) if r.get('beta60') is not None else None),
@@ -438,6 +457,16 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
 
     print('⚠️ 两份名单都不用 MACD 做门槛。原因：DIF<0 水下 + 缩量 筛出的正是低活跃度票，'
           '与「涨日买高活跃」直接冲突。MACD 信号只留在最右列供你参考。')
+    if dt_stat and dt_stat.get('gq_drop') is not None:
+        if dt_stat['gq_drop']:
+            print('★ 隔夜质量排除层：剔除 %d 只「近5日反复低开不回 / 深坑未补」→ 候选剩 %d 只'
+                  % (dt_stat['gq_drop'], dt_stat['gq_keep']))
+            print('   被剔除：%s' % (dt_stat.get('gq_drop_txt') or ''))
+            print('   依据：全市场 3046 只 × 732 天实测，这类票次日跳空 ≤ −1% 占 24.2%，'
+                  '保留组只有 8.2%；T收→T+1收 差 +0.19%/天（t=5.0）')
+        else:
+            print('★ 隔夜质量排除层：今天候选池 %d 只全部通过（没有反复低开不回的票）'
+                  % dt_stat['gq_keep'])
     if dt_stat:
         print('★ 日K优先层：票池 %d 只里「日K上涨或刚金叉」有 %d 只（✦刚金叉 %d / ↑上涨 %d）'
               % (dt_stat['pool'], dt_stat['ok'], dt_stat['gold'], dt_stat['up']))
@@ -452,17 +481,17 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
             print('  ⚠️ 名单里出现了 ↓下坡 档的票 —— 票池里在涨的样本不够，'
                   '这列你自己把关')
     print()
-    print('【A 跌日·防御名单】活跃度最低的 %d 只（门槛：可买性 + 无除权）'
+    print('【A 跌日·防御名单】活跃度最低的 %d 只（门槛：可买性 + 无除权 + 隔夜质量）'
           % len(down_list))
     print('-' * 100)
     if down_list:
-        print('%-6s %-10s %-6s %-4s %-15s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '日K(5日)', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in down_list:
             d = dual_row(r)
-            print('[跌] %-10s %-6s %-4.2f %-15s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['act'], d['tag'],
+            print('[跌] %-10s %-6s %-4.2f %-15s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['gq'], d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -471,7 +500,7 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
         print('  （无）票池内没有可买标的')
 
     print()
-    print('【B 涨日·进攻名单】活跃度最高的 %d 只（门槛：可买性 + 无除权）'
+    print('【B 涨日·进攻名单】活跃度最高的 %d 只（门槛：可买性 + 无除权 + 隔夜质量）'
           % len(up_list))
     if DT_FIRST_UP:
         print('⚠️ 涨日实测（243 天）：「在涨」组次日超额 +0.004%/天、红盘率 61.58%，'
@@ -480,13 +509,13 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
               '想关掉把 DT_FIRST_UP 设 False。')
     print('-' * 100)
     if up_list:
-        print('%-6s %-10s %-6s %-4s %-15s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '日K(5日)', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in up_list:
             d = dual_row(r)
-            print('[涨] %-10s %-6s %-4.2f %-15s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['act'], d['tag'],
+            print('[涨] %-10s %-6s %-4.2f %-15s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['gq'], d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -513,6 +542,8 @@ def dump_dual(rg, up_list, down_list, dt_stat=None):
         'meta': {'down_topn': DOWN_TOPN, 'up_topn': UP_TOPN,
                  'volr_max': VOLR_MAX, 'src': 'scan_macd.py --dual --json',
                  'day_trend_first': DT_FIRST, 'day_trend_min_ok': DT_MIN_OK,
+                 'gap_exclude': GQ_EXCLUDE, 'gap_win': GQ.WIN,
+                 'gap_th': GQ.GAP_TH, 'gap_bad_n': GQ.BAD_N, 'gap_hard': GQ.HARD_GAP,
                  'dt_stat': dt_stat},
     }
     # 三处都写：根目录（本地）+ docs/（Pages 源）+ deploy/（本地预览）
@@ -665,6 +696,8 @@ def main():
             r.update(AF.calc(bs, mkt_ret))
             # 日K趋势轴（2026-11-02）：方向 ↑/✦金叉/→/↓，与活跃度正交
             r['dt'] = DT.calc(bs)
+            # 隔夜跳空质量轴（2026-11-03）：近 5 日是否反复「低开 + 回不到前收」
+            r['gq'] = GQ.calc(bs)
             rows.append(r)
         time.sleep(0.12)
     AF.act_score(rows)
@@ -716,11 +749,20 @@ def main():
         # 同一候选池：可买性 + 无除权（MACD 不做门槛，只作展示列，理由见 print_dual 说明）
         pool = [r for r in rows if not r['filt'] and not r['dividend']]
 
+        # ---- 隔夜质量排除层（2026-11-03）----
+        # 只有这一层是硬排除：命中「反复低开不回 / 深坑未补」的票直接不进名单
+        gq_drop = [r for r in pool if (r.get('gq') and not r['gq']['ok'])]
+        if GQ_EXCLUDE:
+            pool = [r for r in pool if not (r.get('gq') and not r['gq']['ok'])]
+
         # ---- 日K趋势优先层（2026-11-02）----
         # 先在「日K上涨 or 刚金叉」子集里按活跃度取两端；
         # 子集不够 DT_MIN_OK 只 → 说明当天票池整体偏弱，回退全池（日K列仍标档位）
         st = {'pool': len(pool), 'ok': 0, 'gold': 0, 'up': 0, 'flat': 0, 'down': 0,
-              'weak': 0, 'fallback': False}
+              'weak': 0, 'fallback': False,
+              'gq_keep': len(pool), 'gq_drop': len(gq_drop),
+              'gq_drop_txt': '、'.join('%s%s' % (r['name'][:4], GQ.short(r.get('gq')))
+                                       for r in gq_drop[:8])}
         for r in pool:
             s = (r.get('dt') or {}).get('state')
             if s == 'gold':
