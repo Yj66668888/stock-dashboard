@@ -87,6 +87,7 @@ import activity_factor as AF   # noqa: E402  活跃度/风险轴（2026-10-31）
 import mkt_regime as MR        # noqa: E402  大盘状态判定
 import day_trend as DT         # noqa: E402  日K趋势轴（2026-11-02，双名单优先层）
 import gap_quality as GQ       # noqa: E402  隔夜跳空质量轴（2026-11-03，双名单排除层）
+import h60_kdj as H60          # noqa: E402  60分钟KDJ状态轴（2026-11-04，双名单排除层）
 
 # ==================== 参数区（★ = 可按你的偏好改） ====================
 VOLR_MA = 20            # 均量基准：与通达信 MA(VOL,20) 对齐
@@ -134,6 +135,9 @@ DT_FIRST_UP = True      # ★ 涨日进攻名单是否也走日K优先（False =
 #   ⚠️ 但排除组「开盘→收盘」反而 +0.354% vs 保留组 +0.059% —— 漏水全在开盘那一刻，
 #      日内反抽更多。所以这条只对「收盘买、次日卖」的口径成立，改开盘买就不该排除。
 GQ_EXCLUDE = True       # ★ True = 命中的票不进双名单（False = 只标注不拦截）
+# 60分KDJ（2026-11-04，用户拍板）：只收 ↑上行 / ✦刚金叉 / ⚡将金叉；↘高位回落与 ↓下行 不进名单
+# 判定用最新一根 m60（盘中=动态值，收盘=定稿）；数据获取失败 fail-open 不拦截
+H60_EXCLUDE = True      # ★ True = 60分KDJ 非上行状态的票不进双名单
 # ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
 # 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
 JSON_FILE = 'dual_picks.json'
@@ -416,6 +420,13 @@ def dual_row(r):
         'gq_bad': gq.get('bad'), 'gq_worst': gq.get('worst'),
         'gq_mean': gq.get('mean'), 'gq_rec': gq.get('rec'),
         'gq_ok': bool(gq.get('ok')), 'gq_flags': list(gq.get('flags') or []),
+        # 60分钟KDJ 状态（2026-11-04）
+        'h60': (H60.short(r.get('h60')) if r.get('h60') else '—'),
+        'h60_label': (r['h60'].get('label') or '-' if r.get('h60') else '无数据'),
+        'h60_state': (r['h60'].get('state') if r.get('h60') else '-'),
+        'h60_K': (r['h60'].get('K') if r.get('h60') else None),
+        'h60_D': (r['h60'].get('D') if r.get('h60') else None),
+        'h60_ok': bool(r.get('h60') and r['h60'].get('ok')),
         'act': round(r.get('act') or 0.0, 3), 'act_rank': r.get('act_rank'),
         'tag': AF.tag(r.get('act')),
         'beta60': (round(r['beta60'], 3) if r.get('beta60') is not None else None),
@@ -467,6 +478,15 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
         else:
             print('★ 隔夜质量排除层：今天候选池 %d 只全部通过（没有反复低开不回的票）'
                   % dt_stat['gq_keep'])
+    if dt_stat and dt_stat.get('h60_drop') is not None:
+        if dt_stat['h60_drop']:
+            print('★ 60分KDJ排除层：剔除 %d 只「60分K下行/高位回落」→ 候选剩 %d 只'
+                  % (dt_stat['h60_drop'], dt_stat['h60_keep']))
+            print('   被剔除：%s' % (dt_stat.get('h60_drop_txt') or ''))
+            print('   判据（h60_kdj.py，腾讯 m60 320根，KDJ 9,3,3）：只收 ↑上行/✦刚金叉/⚡将金叉；'
+                  '↘高位回落（K>D但K回头）与 ↓下行（K<D发散）不进名单')
+        else:
+            print('★ 60分KDJ排除层：候选池 %d 只全部是 ↑/✦/⚡ 状态' % dt_stat['h60_keep'])
     if dt_stat:
         print('★ 日K优先层：票池 %d 只里「日K上涨或刚金叉」有 %d 只（✦刚金叉 %d / ↑上涨 %d）'
               % (dt_stat['pool'], dt_stat['ok'], dt_stat['gold'], dt_stat['up']))
@@ -481,17 +501,17 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
             print('  ⚠️ 名单里出现了 ↓下坡 档的票 —— 票池里在涨的样本不够，'
                   '这列你自己把关')
     print()
-    print('【A 跌日·防御名单】活跃度最低的 %d 只（门槛：可买性 + 无除权 + 隔夜质量）'
+    print('【A 跌日·防御名单】活跃度最低的 %d 只（门槛：可买性 + 无除权 + 隔夜质量 + 60分KDJ）'
           % len(down_list))
     print('-' * 100)
     if down_list:
-        print('%-6s %-10s %-6s %-4s %-15s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '日K(5日)', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %-5s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '60分K', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in down_list:
             d = dual_row(r)
-            print('[跌] %-10s %-6s %-4.2f %-15s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['gq'], d['act'], d['tag'],
+            print('[跌] %-10s %-6s %-4.2f %-15s %-5s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['h60'], d['gq'], d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -500,7 +520,7 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
         print('  （无）票池内没有可买标的')
 
     print()
-    print('【B 涨日·进攻名单】活跃度最高的 %d 只（门槛：可买性 + 无除权 + 隔夜质量）'
+    print('【B 涨日·进攻名单】活跃度最高的 %d 只（门槛：可买性 + 无除权 + 隔夜质量 + 60分KDJ）'
           % len(up_list))
     if DT_FIRST_UP:
         print('⚠️ 涨日实测（243 天）：「在涨」组次日超额 +0.004%/天、红盘率 61.58%，'
@@ -509,13 +529,13 @@ def print_dual(rg, up_list, down_list, dt_stat=None):
               '想关掉把 DT_FIRST_UP 设 False。')
     print('-' * 100)
     if up_list:
-        print('%-6s %-10s %-6s %-4s %-15s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
-              % ('', '代码', '名称', '现价', '日K(5日)', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
+        print('%-6s %-10s %-6s %-4s %-15s %-5s %-6s %8s %-5s %8s %8s %8s %-4s %7s %6s %8s %8s %s'
+              % ('', '代码', '名称', '现价', '日K(5日)', '60分K', '隔夜', '活跃度', '档位', 'beta60', 'vol20',
                  'amt20', '新低', '位置P', 'K值', 'DIF', 'volr20', '信号'))
         for r in up_list:
             d = dual_row(r)
-            print('[涨] %-10s %-6s %-4.2f %-15s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
-                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['gq'], d['act'], d['tag'],
+            print('[涨] %-10s %-6s %-4.2f %-15s %-5s %-6s %8.3f %-5s %8s %8s %8s %-4s %7s %6.1f %8.3f %8.3f %s'
+                  % (d['code'], d['name'][:6], d['close'], _day_cell(d), d['h60'], d['gq'], d['act'], d['tag'],
                      _fmt(d['beta60'], 8, 3), _fmt(d['vol20'], 8, 4),
                      _fmt(d['amt20'], 8, 2), '是' if d['newlow20'] else '否',
                      _fmt(d['P60'], 7, 1), d['K'], d['DIF'], d['volr'],
@@ -544,6 +564,8 @@ def dump_dual(rg, up_list, down_list, dt_stat=None):
                  'day_trend_first': DT_FIRST, 'day_trend_min_ok': DT_MIN_OK,
                  'gap_exclude': GQ_EXCLUDE, 'gap_win': GQ.WIN,
                  'gap_th': GQ.GAP_TH, 'gap_bad_n': GQ.BAD_N, 'gap_hard': GQ.HARD_GAP,
+                 'h60_exclude': H60_EXCLUDE, 'h60_gold_win': H60.GOLD_WIN,
+                 'h60_near_th': H60.NEAR_TH, 'h60_exclude_fade': H60.EXCLUDE_FADE,
                  'dt_stat': dt_stat},
     }
     # 三处都写：根目录（本地）+ docs/（Pages 源）+ deploy/（本地预览）
@@ -755,6 +777,15 @@ def main():
         if GQ_EXCLUDE:
             pool = [r for r in pool if not (r.get('gq') and not r['gq']['ok'])]
 
+        # ---- 60分KDJ 状态层（2026-11-04）----
+        # 只收 ↑上行 / ✦刚金叉 / ⚡将金叉；↘高位回落 / ↓下行 不进名单（用户拍板）
+        # 数据获取失败 fail-open（r['h60']=None → 不拦截，展示 '-'）
+        for r in pool:
+            r['h60'] = H60.calc(H60.fetch(r['code']))
+        h60_drop = [r for r in pool if (r.get('h60') and not r['h60']['ok'])]
+        if H60_EXCLUDE:
+            pool = [r for r in pool if not (r.get('h60') and not r['h60']['ok'])]
+
         # ---- 日K趋势优先层（2026-11-02）----
         # 先在「日K上涨 or 刚金叉」子集里按活跃度取两端；
         # 子集不够 DT_MIN_OK 只 → 说明当天票池整体偏弱，回退全池（日K列仍标档位）
@@ -762,7 +793,10 @@ def main():
               'weak': 0, 'fallback': False,
               'gq_keep': len(pool), 'gq_drop': len(gq_drop),
               'gq_drop_txt': '、'.join('%s%s' % (r['name'][:4], GQ.short(r.get('gq')))
-                                       for r in gq_drop[:8])}
+                                       for r in gq_drop[:8]),
+              'h60_keep': len(pool), 'h60_drop': len(h60_drop),
+              'h60_drop_txt': '、'.join('%s%s' % (r['name'][:4], H60.short(r.get('h60')))
+                                        for r in h60_drop[:8])}
         for r in pool:
             s = (r.get('dt') or {}).get('state')
             if s == 'gold':
