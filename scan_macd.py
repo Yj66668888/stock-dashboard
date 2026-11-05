@@ -88,6 +88,7 @@ import mkt_regime as MR        # noqa: E402  大盘状态判定
 import day_trend as DT         # noqa: E402  日K趋势轴（2026-11-02，双名单优先层）
 import gap_quality as GQ       # noqa: E402  隔夜跳空质量轴（2026-11-03，双名单排除层）
 import h60_kdj as H60          # noqa: E402  60分钟KDJ状态轴（2026-11-04，双名单排除层）
+import day_kdj as DK           # noqa: E402  日线KDJ状态轴（2026-11-05，出票KDJ准入门）
 
 # ==================== 参数区（★ = 可按你的偏好改） ====================
 VOLR_MA = 20            # 均量基准：与通达信 MA(VOL,20) 对齐
@@ -138,6 +139,13 @@ GQ_EXCLUDE = True       # ★ True = 命中的票不进双名单（False = 只�
 # 60分KDJ（2026-11-04，用户拍板）：只收 ↑上行 / ✦刚金叉 / ⚡将金叉；↘高位回落与 ↓下行 不进名单
 # 判定用最新一根 m60（盘中=动态值，收盘=定稿）；数据获取失败 fail-open 不拦截
 H60_EXCLUDE = True      # ★ True = 60分KDJ 非上行状态的票不进双名单
+# ★★ KDJ 准入门（2026-11-05，用户拍板）：仪表盘出票时，日K KDJ 或 60分 KDJ
+#    必须处于「刚启动（✦刚金叉/⚡将金叉）或上升状态（↑上行）」，且对应 K 值 ≤ 60。
+#    OR 逻辑：两者满足其一即可。False = 只提示不拦截。
+#    ⚠️ 诚实记录：60分准入此前实测方向反且不显著（validate_h60_kdj.py）；
+#       K≤60 是防追高保护，切片验证见 _h60_k60_validation.json。
+KDJ_GATE = True
+KDJ_K_MAX = 60
 # ⚠️ 2026-10-31: 不能用点开头！GitHub Pages（无 .nojekyll 时走 Jekyll）不发布 dotfile，
 # 线上实测 .cache_dual_picks.json 直接 404，页面拿不到名单。
 JSON_FILE = 'dual_picks.json'
@@ -720,6 +728,8 @@ def main():
             r['dt'] = DT.calc(bs)
             # 隔夜跳空质量轴（2026-11-03）：近 5 日是否反复「低开 + 回不到前收」
             r['gq'] = GQ.calc(bs)
+            # 日线KDJ状态轴（2026-11-05）：KDJ 准入门的日线一侧（零额外请求，复用 bs）
+            r['dk'] = DK.calc(bs)
             rows.append(r)
         time.sleep(0.12)
     AF.act_score(rows)
@@ -733,12 +743,40 @@ def main():
         pick = [r for r in rows if r['sigs'] and r['below']]
     else:
         pick = [r for r in rows if r['pass'] and not r['filt']]
+
+    # ---------- KDJ 准入门（2026-11-05，用户拍板）----------
+    # 日K KDJ 或 60分 KDJ 必须是 ✦刚金叉/⚡将金叉/↑上行，且对应 K ≤ KDJ_K_MAX
+    def _kdj_ok(r):
+        dk, h6 = r.get('dk'), r.get('h60')
+        ok_d = bool(dk and dk['ok'] and dk['K'] <= KDJ_K_MAX)
+        ok_h = bool(h6 and h6['ok'] and h6['K'] <= KDJ_K_MAX)
+        return ok_d or ok_h, ok_d, ok_h
+
+    if pick and KDJ_GATE:
+        for r in pick:                       # 只对候选拉 m60（省请求）
+            if 'h60' not in r:
+                r['h60'] = H60.calc(H60.fetch(r['code']))
+        kdj_drop = [r for r in pick if not _kdj_ok(r)[0]]
+        for r in kdj_drop:
+            r['kdj_gate'] = 'dk:%s h60:%s' % (DK.short(r.get('dk')), H60.short(r.get('h60')))
+        if kdj_drop:
+            print('\nKDJ 准入门（日K或60分须 ✦/⚡/↑ 且 K≤%d）拦截 %d 只：'
+                  % (KDJ_K_MAX, len(kdj_drop)))
+            for r in kdj_drop:
+                print('   %-8s %-6s 日K %s｜60分 %s'
+                      % (r['code'], r['name'][:4], DK.txt(r.get('dk')), H60.txt(r.get('h60'))))
+            pick = [r for r in pick if _kdj_ok(r)[0]]
+        else:
+            print('\n★ KDJ 准入门：候选 %d 只全部通过（日K/60分 KDJ ✦/⚡/↑ 且 K≤%d）'
+                  % (len(pick), KDJ_K_MAX))
     pick.sort(key=lambda x: (x['zrank'], -x['score'], x['K']))
 
     # ---------- 大盘判档：只印 conclusion，名单一律全列（用户长期约束） ----------
     print('\nMACD 水下信号扫描（实时）　%s' % time.strftime('%Y-%m-%d %H:%M'))
-    print('条件：DIF<0 + 水下信号 + volr20<%.1f  （共 %d/%d 只）'
-          % (VOLR_MAX, len(pick), len(rows)))
+    print('条件：DIF<0 + 水下信号 + volr20<%.1f%s  （共 %d/%d 只）'
+          % (VOLR_MAX,
+             (' + KDJ准入（日K或60分 ✦/⚡/↑ 且 K≤%d）' % KDJ_K_MAX) if KDJ_GATE else '',
+             len(pick), len(rows)))
     if gate_on and idx and idx['ok'] and idx['zone'] == 'weak':
         print('⚠️ 大盘 K=%.1f ≥ %.0f → 弱势档。历史 45 天账户日均 -0.124%%，'
               % (idx['k'], IDX_BEST_LO))
@@ -748,13 +786,14 @@ def main():
               % (idx['k'], IDX_BEST_LO))
 
     print()
-    print('%-10s %-8s %-6s %-6s %-5s %-8s %-7s %-10s %-7s %s'
-          % ('代码', '名称', '现价', '位置P', 'K值', 'DIF', 'volr20', '成交额(万)', '换手%', '信号'))
-    print('-' * 104)
+    print('%-10s %-8s %-6s %-6s %-5s %-8s %-7s %-6s %-6s %-10s %-7s %s'
+          % ('代码', '名称', '现价', '位置P', 'K值', 'DIF', 'volr20', '日KDJ', '60分K', '成交额(万)', '换手%', '信号'))
+    print('-' * 116)
     for r in pick:
-        print('%-10s %-8s %6.2f %6.1f %5.1f %8.3f %7.3f %10s %7s %s'
+        print('%-10s %-8s %6.2f %6.1f %5.1f %8.3f %7.3f %-6s %-6s %10s %7s %s'
               % (r['code'], r['name'][:8], r['close'], r['pos'] or 0, r['K'],
                  r['dif'], r['volr'],
+                 DK.short(r.get('dk')), H60.short(r.get('h60')),
                  ('%.0f' % r['amount']) if r['amount'] else '-',
                  ('%.1f' % r['turnover']) if r['turnover'] is not None else '-',
                  '、'.join(n for n, _ in r['sigs'])))
@@ -781,7 +820,8 @@ def main():
         # 只收 ↑上行 / ✦刚金叉 / ⚡将金叉；↘高位回落 / ↓下行 不进名单（用户拍板）
         # 数据获取失败 fail-open（r['h60']=None → 不拦截，展示 '-'）
         for r in pool:
-            r['h60'] = H60.calc(H60.fetch(r['code']))
+            if 'h60' not in r:          # KDJ 准入门已拉过的不再重复请求
+                r['h60'] = H60.calc(H60.fetch(r['code']))
         h60_drop = [r for r in pool if (r.get('h60') and not r['h60']['ok'])]
         if H60_EXCLUDE:
             pool = [r for r in pool if not (r.get('h60') and not r['h60']['ok'])]
