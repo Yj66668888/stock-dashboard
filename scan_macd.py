@@ -113,7 +113,8 @@ UP_TOPN = 8             # ★ 涨日进攻名单最多列 N 只
 # 子集不够 TOPN 才用次优档补足（补足的票在「日K」列标 ↓/→，让你一眼看见）。
 # ⚠️ 不是硬门槛：用户长期约束「买不买看我自己」，名单照列，只是排序优先级变了。
 DT_FIRST = True         # ★ True = 日K趋势优先；False = 回到纯活跃度排序
-DT_MIN_OK = 4           # ★ 优先层不足这个数就回退全池（说明当天票池整体偏弱）
+DT_MIN_OK = 4           # ★ 提示阈值（2026-11-06审计B7勘误）：take() 按日K档位排序自动补足，
+                        #   名单恒为 TOPN；ok<DT_MIN_OK 时只在页面黄条提示「票池整体偏弱」
 # ★★ 2026-11-02 实测（validate_day_trend.py，3046 只 × 243 天，T-1 口径无未来函数）：
 #   跌日：在涨组(G1) 超额 −0.093%/天 vs 下坡组(G3) −0.265%/天 → G1 少跌 0.171%/天，
 #         红盘率 29.63% vs 23.37%（+6.26pp），但聚类 t 只有 1.34（62 天），未达显著
@@ -190,9 +191,11 @@ def limit_of(code):
     return 0.205 if c.startswith(('30', '68')) else 0.105
 
 
-def find_dividend(bs, look=25):
-    """检测除权：近 look 根内出现「隔日跌幅超涨跌停物理限制」→ 数据未复权，指标失真"""
-    lim = limit_of(bs.code) if hasattr(bs, 'code') else 0.105
+def find_dividend(code, bs, look=25):
+    """检测除权：近 look 根内出现「隔日跌幅超涨跌停物理限制」→ 数据未复权，指标失真
+    ⚠️ 修复(2026-11-06审计B1)：原实现 hasattr(bs,'code') 恒 False → 全部按 10.5% 阈值，
+    创业板/科创板(30/68)合法的 -11%~-20% 大跌被误判为除权 → 错误排除"""
+    lim = limit_of(code)
     hits = []
     c = [float(b[2]) for b in bs]
     o = [float(b[1]) for b in bs]
@@ -275,7 +278,7 @@ def check(code, bs, old=False, full_vol=None, snap=None):
             vol_ok = 0.8 <= volr5 <= 1.2
 
     # ---- 除权污染（腾讯日线不复权，必须查） ----
-    dv_hits = find_dividend(bs)
+    dv_hits = find_dividend(code, bs)
 
     if old:
         pass_all = (pos is not None and pos < 75) and below and sigs and vol_ok
@@ -376,8 +379,10 @@ def est_full_vol(bars, s):
     if len(v) < 25:
         return None, 'hist-short'
     m5 = sum(v[-5:]) / 5
+    # 修复(2026-11-06审计B5)：无量比时不再把「昨日全日量」当今日预估量（口径错乱），
+    # 返回 None → check 用当日实际量（盘中=累计量偏保守，收盘后=全日量正确）
     if not vr or m5 <= 0:
-        return float(v[-1]), 'fallback-lastday'
+        return None, 'fallback-today'
     return vr * m5 * TAIL_ADJ, 'volratio'
 
 
@@ -692,8 +697,10 @@ def main():
               '  方式2：同目录建 pool.txt，每行一个代码（可用 # 写注释）\n'
               '  方式3：沿用仪表盘票池 deploy/index.html 里的 STOCKS/PINNED')
         return
-    codes = [c if c.startswith(('sh', 'sz')) else
-             ('sh' + c if c[0] in '6' else 'sz' + c) for c in codes]
+    # 修复(2026-11-06审计B3)：北交所前缀 bj 原被拼成 szbj430047；8/4 开头补 bj
+    codes = [c if c.startswith(('sh', 'sz', 'bj')) else
+             ('sh' + c if c[0] == '6' else
+              ('bj' + c if c[0] in '48' else 'sz' + c)) for c in codes]
     print('实时拉取 %d 只（腾讯日线 + 快照）…' % len(codes))
 
     # 上证日线：beta60 回归需要（拉取失败则 beta60 缺失，其余三因子照常算）
@@ -716,6 +723,8 @@ def main():
             print('  !! %s 日线拉取失败' % c)
             continue
         fv, how = est_full_vol(bs, s)
+        if how in ('fallback-today', 'hist-short'):
+            print('  ⚠ %s 量能口径回退(%s)：volr20 以当日实际量计，盘中值偏保守' % (c, how))
         r = check(c, bs, old=old, full_vol=fv, snap=s)
         if r:
             r['name'] = (s or {}).get('name') or NAMES.get(c[2:], '')
@@ -749,16 +758,18 @@ def main():
     def _kdj_ok(r):
         dk, h6 = r.get('dk'), r.get('h60')
         ok_d = bool(dk and dk['ok'] and dk['K'] <= KDJ_K_MAX)
-        ok_h = bool(h6 and h6['ok'] and h6['K'] <= KDJ_K_MAX)
+        # 修复(2026-11-06审计B2)：h60 数据获取失败(calc→None)时 fail-open 放行，
+        # 与双名单 h60 层的 fail-open 语义一致；ok=False 仍代表真实「下行」判定，照拦
+        ok_h = True if h6 is None else bool(h6['ok'] and h6['K'] <= KDJ_K_MAX)
         return ok_d or ok_h, ok_d, ok_h
 
-    if pick and KDJ_GATE:
+    # 修复(2026-11-06审计B6)：--all-signals 是「只看信号不设门槛」的探索模式，
+    # docstring 承诺不要求量能，KDJ 准入门同样跳过（只拦截量能类过滤的模式才进门）
+    if pick and KDJ_GATE and not all_sig:
         for r in pick:                       # 只对候选拉 m60（省请求）
             if 'h60' not in r:
                 r['h60'] = H60.calc(H60.fetch(r['code']))
         kdj_drop = [r for r in pick if not _kdj_ok(r)[0]]
-        for r in kdj_drop:
-            r['kdj_gate'] = 'dk:%s h60:%s' % (DK.short(r.get('dk')), H60.short(r.get('h60')))
         if kdj_drop:
             print('\nKDJ 准入门（日K或60分须 ✦/⚡/↑ 且 K≤%d）拦截 %d 只：'
                   % (KDJ_K_MAX, len(kdj_drop)))
@@ -775,7 +786,9 @@ def main():
     print('\nMACD 水下信号扫描（实时）　%s' % time.strftime('%Y-%m-%d %H:%M'))
     print('条件：DIF<0 + 水下信号 + volr20<%.1f%s  （共 %d/%d 只）'
           % (VOLR_MAX,
-             (' + KDJ准入（日K或60分 ✦/⚡/↑ 且 K≤%d）' % KDJ_K_MAX) if KDJ_GATE else '',
+             (' + KDJ准入（日K或60分 ✦/⚡/↑ 且 K≤%d）' % KDJ_K_MAX)
+             if (KDJ_GATE and not all_sig) else
+             ('  [探索模式：KDJ/标的过滤均不生效]' if all_sig else ''),
              len(pick), len(rows)))
     if gate_on and idx and idx['ok'] and idx['zone'] == 'weak':
         print('⚠️ 大盘 K=%.1f ≥ %.0f → 弱势档。历史 45 天账户日均 -0.124%%，'
@@ -827,8 +840,8 @@ def main():
             pool = [r for r in pool if not (r.get('h60') and not r['h60']['ok'])]
 
         # ---- 日K趋势优先层（2026-11-02）----
-        # 先在「日K上涨 or 刚金叉」子集里按活跃度取两端；
-        # 子集不够 DT_MIN_OK 只 → 说明当天票池整体偏弱，回退全池（日K列仍标档位）
+        # take() 按日K档位（✦/↑ > →/✦弱 > ↓）三级排序自动补足，名单恒为 TOPN；
+        # ok<DT_MIN_OK 只触发页面黄条提示（说明当天票池整体偏弱），不改名单内容
         st = {'pool': len(pool), 'ok': 0, 'gold': 0, 'up': 0, 'flat': 0, 'down': 0,
               'weak': 0, 'fallback': False,
               'gq_keep': len(pool), 'gq_drop': len(gq_drop),

@@ -16,6 +16,11 @@ day_kdj.py —— 日线 KDJ 状态判定（2026-11-05，仪表盘出票 KDJ 准
   D = 2/3 * prevD + 1/3 * K       （初值 50）
   J = 3K - 2D
 
+⚠️ 口径声明（2026-11-06审计B4）：本模块 RSV 的 HHV/LLV 取「收盘价」的 9 期高低
+  （非通达信标准的 HIGH/LOW）。仪表盘展示列的 K 值（scan_macd.kdj_k）是
+  HIGH/LOW 标准口径，两者数值略有差异；KDJ 准入门的 K≤60 判定以本模块为准
+  （K≤60 的切片验证 validate_h60_kdj_k60.py 即基于本口径，勿混改）。
+
 ★ 五档（与 h60_kdj.py 完全同构，无未来函数：只用截至最新一根）
   ✦刚金叉 rank=3 / ↑上行 rank=2 / ⚡将金叉 rank=2 / ↘高位回落 rank=0 / ↓下行 rank=0
   ok = rank >= 2
