@@ -6840,7 +6840,7 @@ function renderMultiKdTiles() {
 
 // ============================================
 // 大盘实时动态（2026-11-19 新增）：30分实时动态(上升/下跌) + 两市实时资金量，每分钟刷新
-// 30分动态 = 最新30分K收盘 vs 前一根收盘，只有两个状态；资金量 = 沪+深两市实时成交额(东财f48)
+// 30分动态 = 最新30分K收盘 vs 前一根收盘，只有两个状态；资金量 = 上证实时成交额(腾讯s_sh000001字段[7])
 // ============================================
 var INDEX_RT30 = null;      // { dir: '上升'|'下跌', pct: x.x }
 var INDEX_FUND_AMT = null;  // { amount: 亿元 }
@@ -6858,15 +6858,14 @@ function fetchIndexRealtime30() {
 }
 
 function fetchIndexFundAmount() {
-  var get = function(secid) {
-    var url = 'https://push2.eastmoney.com/api/qt/stock/get?secid=' + secid + '&fields=f48&invt=2&fltt=2';
-    return fetch(url).then(function(r) { return r.json(); }).then(function(d) {
-      return ((d || {}).data || {}).f48 || 0; // 元
-    }).catch(function() { return 0; });
-  };
-  return Promise.all([get('1.000001'), get('0.399001')]).then(function(v) {
-    var sum = (v[0] + v[1]) / 1e8; // 亿元
-    if (sum > 0) INDEX_FUND_AMT = { amount: sum };
+  // 腾讯简版行情（CORS开放，与页面其他源一致）；字段[7]=成交额(万元)，负数/异常也照样更新
+  var url = 'https://qt.gtimg.cn/q=s_sh000001&r=' + Date.now();
+  return fetch(url).then(function(r) { return r.text(); }).then(function(t) {
+    var m = t.match(/v_s_sh000001="([^"]*)"/);
+    if (!m) return;
+    var f = m[1].split('~');
+    var amt = parseFloat(f[7]) / 10000; // 万元 → 亿元
+    if (!isNaN(amt)) INDEX_FUND_AMT = { amount: amt };
     if (typeof renderStats === 'function') renderStats();
   }).catch(function() {});
 }
@@ -6881,7 +6880,7 @@ function renderRealtimeTiles() {
   var amt = INDEX_FUND_AMT
     ? (INDEX_FUND_AMT.amount >= 10000 ? (INDEX_FUND_AMT.amount / 10000).toFixed(2) + '万亿' : INDEX_FUND_AMT.amount.toFixed(0) + '亿')
     : '--';
-  var t2 = '<div class="stat-mini"><div class="stat-mini-label">两市资金</div><div class="stat-mini-value orange">' + amt +
+  var t2 = '<div class="stat-mini"><div class="stat-mini-label">上证资金</div><div class="stat-mini-value orange">' + amt +
     '</div><div class="stat-mini-state st-flat">实时成交额</div></div>';
   return t1 + t2;
 }
