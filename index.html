@@ -1042,7 +1042,7 @@
 
   /* ===== 选股表列显隐：默认精简为 11 列 =====
      保留：代码(1) 名称(2) 驱动方向(4) 今日动作(6) 涨跌幅(8) 换手率(9) 30分MACD(13) 均线(14) 量价信号(16) 主力资金(17) 板块共振(20)
-     其余列不删除，仅 CSS 隐藏；点表格上方「👁 显示全部列」可临时恢复全部 20 列 */
+     其余列不删除，仅 CSS 隐藏；点表格上方「👁 显示全部列」可临时恢复全部 17 列 */
   table.stock-table.cols-min thead th:nth-child(3),
   table.stock-table.cols-min tbody td:nth-child(3),
   table.stock-table.cols-min thead th:nth-child(5),
@@ -1053,17 +1053,11 @@
   table.stock-table.cols-min tbody td:nth-child(10),
   table.stock-table.cols-min thead th:nth-child(11),
   table.stock-table.cols-min tbody td:nth-child(11),
-  table.stock-table.cols-min thead th:nth-child(12),
-  table.stock-table.cols-min tbody td:nth-child(12),
-  table.stock-table.cols-min thead th:nth-child(15),
-  table.stock-table.cols-min tbody td:nth-child(15),
-  table.stock-table.cols-min thead th:nth-child(18),
-  table.stock-table.cols-min tbody td:nth-child(18),
-  table.stock-table.cols-min thead th:nth-child(19),
-  table.stock-table.cols-min tbody td:nth-child(19) { display: none; }
+  table.stock-table.cols-min thead th:nth-child(16),
+  table.stock-table.cols-min tbody td:nth-child(16) { display: none; }
   /* 精简模式下可见的最后一列是「板块共振」，去掉它的右边框 */
-  table.stock-table.cols-min thead th:nth-child(20),
-  table.stock-table.cols-min tbody td:nth-child(20) { border-right: none; }
+  table.stock-table.cols-min thead th:nth-child(17),
+  table.stock-table.cols-min tbody td:nth-child(17) { border-right: none; }
   /* 列显隐切换按钮 */
   .col-toggle-btn {
     margin-left: auto;
@@ -1144,7 +1138,7 @@
       <span class="fs-text" id="filterStatusText"></span>
       <button class="fs-clear-btn" onclick="clearAllFilters()">✕ 清除所有筛选</button>
     </div>
-    <button class="col-toggle-btn" id="btnColToggle" onclick="toggleTableCols()" title="默认只显示 11 项核心列，点击可临时展开全部 20 列">👁 显示全部列</button>
+    <button class="col-toggle-btn" id="btnColToggle" onclick="toggleTableCols()" title="默认只显示 11 项核心列，点击可临时展开全部 17 列">👁 显示全部列</button>
   </div>
 
   <!-- Main Table -->
@@ -1163,14 +1157,11 @@
             <th data-filter="changePct" onclick="toggleFilter(event,'changePct')">涨跌幅<span class="th-filter-icon">▼</span></th>
             <th data-filter="turnover" onclick="toggleFilter(event,'turnover')">换手率<span class="th-filter-icon">▼</span></th>
             <th data-filter="pe" onclick="toggleFilter(event,'pe')">PE/PB<span class="th-filter-icon">▼</span></th>
-            <th class="left-align" data-filter="fundamental" onclick="toggleFilter(event,'fundamental')">基本面<span class="th-filter-icon">▼</span></th>
             <th data-filter="kd30" onclick="toggleFilter(event,'kd30')">30分钟KD<span class="th-filter-icon">▼</span></th>
             <th data-filter="macd" onclick="toggleFilter(event,'macd')" title="30分钟口径 MACD（2026-11-02 起停用日线口径）。末根为盘中未走完的实时K">30分MACD<span class="th-filter-icon">▼</span></th>
             <th data-filter="ma" onclick="toggleFilter(event,'ma')">均线<span class="th-filter-icon">▼</span></th>
-            <th data-filter="trend" onclick="toggleFilter(event,'trend')">趋势<span class="th-filter-icon">▼</span></th>
             <th data-filter="volSignal" onclick="toggleFilter(event,'volSignal')">量价信号<span class="th-filter-icon">▼</span></th>
             <th data-filter="mainFlow" onclick="toggleFilter(event,'mainFlow')">主力资金<span class="th-filter-icon">▼</span></th>
-            <th data-filter="blockFlow" onclick="toggleFilter(event,'blockFlow')">暗盘资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="flow5d" onclick="toggleFilter(event,'flow5d')">5日/10日资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="resonance" onclick="toggleFilter(event,'resonance')">板块共振<span class="th-filter-icon">▼</span></th>
           </tr>
@@ -4091,17 +4082,12 @@ const STAT_FILTERS = {
     const chg = quoteData[s.code] ? quoteData[s.code].changePct : s.changePct;
     return chg === 0 || chg === undefined || chg === null;
   }},
-  kd5Oversold: { label: '5分钟KD超卖', cls: 'yellow', predicate: s => {
-    const _k = s.kd5_k !== undefined ? s.kd5_k : (KDJ_PRECOMPUTED[extractNum(s.code)] || {}).k;
-    return _k !== undefined && (_k < 20 || s.rsi < 30);
-  }},
   kd30Oversold: { label: '30分钟KD超卖', cls: 'yellow', predicate: s => s.kd30_k !== undefined && (s.kd30_k < 20 || s.rsi < 30) },
   wash: { label: '洗盘信号', cls: 'orange', predicate: s => s.volSignal && (s.volSignal.indexOf('吸筹') >= 0 || s.volSignal.indexOf('缩量止跌') >= 0) },
   aboveMA20: { label: '站上20日线', cls: 'red', predicate: s => {
     const _p = quoteData[s.code] ? quoteData[s.code].price : s.price;
     return s.ma20 !== undefined && _p !== undefined && _p !== null && _p > s.ma20;
   }},
-  ship: { label: '出货警告', cls: 'red', predicate: s => s.volSignal && s.volSignal.indexOf('出货') >= 0 },
   launch: { label: '启动段', cls: 'blue', predicate: s => {
     const _p = s.preLaunchPhase || '';
     // 综合最优池模式：启动段=启动系列（启动在即+接近启动+启动段），不含加速/回落/KD高位
@@ -4109,26 +4095,9 @@ const STAT_FILTERS = {
   }},
   accel: { label: '加速段', cls: 'purple', predicate: s => s.preLaunchPhase === 'accelerating' },
   tail: { label: '尾部段', cls: 'gray', predicate: s => s.preLaunchPhase === 'tail' },
-  onDeck: { label: '启动在即', cls: 'red', predicate: s => s.preLaunchPhase === 'on_deck' },
-  approachingPhase: { label: '接近启动', cls: 'yellow', predicate: s => s.preLaunchPhase === 'approaching' },
   launchedPhase: { label: '启动段', cls: 'blue', predicate: s => {
     const p = s.preLaunchPhase || '';
     return p === 'building' || p === 'launching';
-  }},
-  kdEarlySignal: { label: 'KD低位预警', cls: 'red', predicate: s => {
-    var k30 = s.kd30_k, d30 = s.kd30_d, k5 = s.kd5_k, d5 = s.kd5_d;
-    if (k30 === undefined) return false;
-    var k5Up = (k5 !== undefined && d5 !== undefined && k5 > d5);
-    var k30Approaching = (k30 < 35 && d30 !== undefined && Math.abs(k30 - d30) < 5);
-    var k30Low = k30 < 25;
-    return k30Low || (k30Approaching && k5Up) || (k30 < 35 && k5Up && k5 < 30);
-  }},
-  kdHighWarn: { label: 'KD高位警告', cls: 'purple', predicate: s => {
-    return s.kd30_k !== undefined && s.kd30_k >= 75;
-  }},
-  kdHighPhase: { label: 'KD高位', cls: 'orange', predicate: s => {
-    const p = s.preLaunchPhase || '';
-    return p === 'overbought_wait' || p === 'high_caution';
   }},
   preBreakout: { label: '即将启动', cls: 'teal', predicate: s => {
     var sc = s.preBreakoutScore || 0;
@@ -4407,7 +4376,7 @@ function compareSort(a, b, dir) {
 }
 
 // ============================================
-// 选股表列显隐（默认精简 11 列，可临时展开全部 20 列）
+// 选股表列显隐（默认精简 11 列，可临时展开全部 17 列）
 // ============================================
 function toggleTableCols() {
   var t = document.getElementById('stockTable');
@@ -4417,8 +4386,8 @@ function toggleTableCols() {
   b.classList.toggle('all', !isMin);
   b.textContent = isMin ? '👁 显示全部列' : '👁 只显示核心列';
   b.title = isMin
-    ? '当前只显示 11 项核心列（代码/名称/驱动方向/今日动作/涨跌幅/换手率/MACD/均线/量价信号/主力资金/板块共振），点击展开全部 20 列'
-    : '当前显示全部 20 列，点击回到 11 项核心列';
+    ? '当前只显示 11 项核心列（代码/名称/驱动方向/今日动作/涨跌幅/换手率/MACD/均线/量价信号/主力资金/板块共振），点击展开全部 17 列'
+    : '当前显示全部 17 列，点击回到 11 项核心列';
   try { localStorage.setItem('dashColsMin', isMin ? '1' : '0'); } catch (e) {}
 }
 // 恢复上次选择；无记录时默认精简
@@ -4701,12 +4670,11 @@ function renderStats() {
 
   // 计算各统计项
   let upCount = 0, downCount = 0, flatCount = 0;
-    let kd5Oversold = 0, kd30Oversold = 0;
-    let washCount = 0, shipCount = 0;
+    let kd30Oversold = 0;
+    let washCount = 0;
     let aboveMA20Count = 0;
-    let launchCount = 0, accelCount = 0, tailCount = 0, kdHighPhaseCount = 0;
-    let onDeckCount = 0, approachingCount = 0, launchedCount = 0;
-    let kdEarlyCount = 0, kdHighCount = 0;
+    let launchCount = 0, accelCount = 0, tailCount = 0;
+    let launchedCount = 0;
     let lowVolAccumCount = 0;
     let preBreakoutCount = 0;
 
@@ -4723,22 +4691,12 @@ function renderStats() {
     else flatCount++;
 
     // KD超卖 (K<20 或 RSI<30)
-    if (_k !== undefined && (_k < 20 || s.rsi < 30)) kd5Oversold++;
     if (s.kd30_k !== undefined && (s.kd30_k < 20 || s.rsi < 30)) kd30Oversold++;
 
-    // KD低位预警 + KD高位警告
-    var _k30 = s.kd30_k, _d30 = s.kd30_d, _k5 = s.kd5_k, _d5 = s.kd5_d;
-    if (_k30 !== undefined) {
-      var _k5Up = (_k5 !== undefined && _d5 !== undefined && _k5 > _d5);
-      var _k30Appr = (_d30 !== undefined && Math.abs(_k30 - _d30) < 5);
-      if (_k30 < 25 || (_k30 < 35 && _k30Appr && _k5Up) || (_k30 < 35 && _k5Up && _k5 < 30)) kdEarlyCount++;
-      if (_k30 >= 75) kdHighCount++;
-    }
 
     // 量价信号
     if (s.volSignal) {
       if (s.volSignal.indexOf('吸筹') >= 0 || s.volSignal.indexOf('缩量止跌') >= 0) washCount++;
-      if (s.volSignal.indexOf('出货') >= 0) shipCount++;
     }
 
     // 收盘价>20日线
@@ -4747,12 +4705,9 @@ function renderStats() {
 
     // 阶段（统一用 preLaunchPhase 英文代码判断）
     const _phase = s.preLaunchPhase || '';
-    if (_phase === 'on_deck') { onDeckCount++; }
-    else if (_phase === 'approaching') { approachingCount++; }
-    else if (_phase === 'building' || _phase === 'launching') { launchedCount++; }
+    if (_phase === 'building' || _phase === 'launching') { launchedCount++; }
     else if (_phase === 'accelerating') { accelCount++; }
     else if (_phase === 'tail') { tailCount++; }
-    else if (_phase === 'overbought_wait' || _phase === 'high_caution') { kdHighPhaseCount++; }
 
     // 综合最优池模式：启动段=启动系列（启动在即+接近启动+启动段），与launch筛选器口径一致
     if (_phase === 'on_deck' || _phase === 'approaching' || _phase === 'building' || _phase === 'launching') launchCount++;
@@ -4791,21 +4746,9 @@ function renderStats() {
       <div class="stat-mini-label">平盘</div>
       <div class="stat-mini-value gray">${flatCount}</div>
     </div>
-    <div class="stat-mini yellow ${activeStatFilter === 'kd5Oversold' ? 'active' : ''}" onclick="setStatFilter('kd5Oversold')">
-      <div class="stat-mini-label">5分钟KD超卖</div>
-      <div class="stat-mini-value yellow">${kd5Oversold}</div>
-    </div>
     <div class="stat-mini yellow ${activeStatFilter === 'kd30Oversold' ? 'active' : ''}" onclick="setStatFilter('kd30Oversold')">
       <div class="stat-mini-label">30分钟KD超卖</div>
       <div class="stat-mini-value yellow">${kd30Oversold}</div>
-    </div>
-    <div class="stat-mini red ${activeStatFilter === 'kdEarlySignal' ? 'active' : ''}" onclick="setStatFilter('kdEarlySignal')">
-      <div class="stat-mini-label">KD低位预警</div>
-      <div class="stat-mini-value red">${kdEarlyCount}</div>
-    </div>
-    <div class="stat-mini purple ${activeStatFilter === 'kdHighWarn' ? 'active' : ''}" onclick="setStatFilter('kdHighWarn')">
-      <div class="stat-mini-label">KD高位警告</div>
-      <div class="stat-mini-value purple">${kdHighCount}</div>
     </div>
     <div class="stat-mini orange ${activeStatFilter === 'wash' ? 'active' : ''}" onclick="setStatFilter('wash')">
       <div class="stat-mini-label">洗盘信号</div>
@@ -4814,10 +4757,6 @@ function renderStats() {
     <div class="stat-mini red ${activeStatFilter === 'aboveMA20' ? 'active' : ''}" onclick="setStatFilter('aboveMA20')">
       <div class="stat-mini-label">站上20日线</div>
       <div class="stat-mini-value red">${aboveMA20Count}</div>
-    </div>
-    <div class="stat-mini red ${activeStatFilter === 'ship' ? 'active' : ''}" onclick="setStatFilter('ship')">
-      <div class="stat-mini-label">出货警告</div>
-      <div class="stat-mini-value red">${shipCount}</div>
     </div>
     <div class="stat-mini ${activeStatFilter === 'preBreakout' ? 'active' : ''}" style="background:rgba(29,158,117,0.12);border:1px solid rgba(29,158,117,0.3)" onclick="setStatFilter('preBreakout')">
       <div class="stat-mini-label" style="color:#0F6E56">即将启动</div>
@@ -4828,14 +4767,6 @@ function renderStats() {
       <div class="stat-mini-value" style="color:#0096C7">${lowVolAccumCount}</div>
     </div>
     ${currentPool === 'launch' ? `
-    <div class="stat-mini red ${activeStatFilter === 'onDeck' ? 'active' : ''}" onclick="setStatFilter('onDeck')">
-      <div class="stat-mini-label">⏳ 启动在即</div>
-      <div class="stat-mini-value red">${onDeckCount}</div>
-    </div>
-    <div class="stat-mini yellow ${activeStatFilter === 'approachingPhase' ? 'active' : ''}" onclick="setStatFilter('approachingPhase')">
-      <div class="stat-mini-label">🔍 接近启动</div>
-      <div class="stat-mini-value yellow">${approachingCount}</div>
-    </div>
     <div class="stat-mini blue ${activeStatFilter === 'launchedPhase' ? 'active' : ''}" onclick="setStatFilter('launchedPhase')">
       <div class="stat-mini-label">🚀 启动段</div>
       <div class="stat-mini-value blue">${launchedCount}</div>
@@ -4847,10 +4778,6 @@ function renderStats() {
     <div class="stat-mini gray ${activeStatFilter === 'tail' ? 'active' : ''}" onclick="setStatFilter('tail')">
       <div class="stat-mini-label">📉 回落段</div>
       <div class="stat-mini-value gray">${tailCount}</div>
-    </div>
-    <div class="stat-mini orange ${activeStatFilter === 'kdHighPhase' ? 'active' : ''}" onclick="setStatFilter('kdHighPhase')">
-      <div class="stat-mini-label">🌡️ KD高位</div>
-      <div class="stat-mini-value orange">${kdHighPhaseCount}</div>
     </div>
     ` : `
     <div class="stat-mini blue ${activeStatFilter === 'launch' ? 'active' : ''}" onclick="setStatFilter('launch')">
@@ -4945,28 +4872,6 @@ function renderStockRow(stock, index) {
     ? `<span class="turnover-text ${turnoverCls}">${turnover.toFixed(2)}%</span>`
     : '<span class="turnover-text">--</span>';
 
-  // 基本面（ROE/毛利率/增速）
-  const roe = stock.roe;
-  const grossMargin = stock.grossMargin;
-  const revGrowth = stock.revGrowth;
-  const profitGrowth = stock.profitGrowth;
-  let fundHtml = '';
-  if (roe !== undefined && roe !== null) {
-    let roeCls = roe >= 10 ? 'good' : (roe >= 0 ? 'normal' : 'bad');
-    fundHtml += `<span class="fund-roe ${roeCls}">ROE ${roe.toFixed(1)}%</span>`;
-  }
-  if (grossMargin !== undefined && grossMargin !== null) {
-    fundHtml += `<div class="fund-sub">毛利${grossMargin.toFixed(0)}%`;
-    if (revGrowth !== undefined && revGrowth !== null) {
-      fundHtml += ` 营收${revGrowth >= 0 ? '+' : ''}${revGrowth.toFixed(0)}%`;
-    }
-    if (profitGrowth !== undefined && profitGrowth !== null) {
-      let pgCls = profitGrowth >= 30 ? 'good' : (profitGrowth >= 0 ? '' : 'bad');
-      fundHtml += ` <span class="${pgCls}">净利${profitGrowth >= 0 ? '+' : ''}${profitGrowth.toFixed(0)}%</span>`;
-    }
-    fundHtml += `</div>`;
-  }
-  if (!fundHtml) fundHtml = '<span class="fund-roe">--</span>';
 
   // 5分钟KD（优先用stock字段，回退到KDJ_PRECOMPUTED缓存）
   const kd5k = stock.kd5_k !== undefined ? stock.kd5_k : kdj.k;
@@ -5037,14 +4942,6 @@ function renderStockRow(stock, index) {
   }
 
   // 趋势
-  const trend = stock.trend || '';
-  const tCls = trendClass(trend);
-  const trendPct = stock.trendPct;
-  let trendStr = escapeHtml(trend || '--');
-  if (trendPct !== undefined && trendPct !== null && trendPct !== 0) {
-    trendStr += ` <span class="trend-pct">(${trendPct >= 0 ? '+' : ''}${trendPct.toFixed(1)}%)</span>`;
-  }
-  const trendHtml = `<span class="trend-text ${tCls}">${trendStr}</span>`;
 
   // 量价信号
   const volHtml = stock.volSignal
@@ -5069,32 +4966,6 @@ function renderStockRow(stock, index) {
     flowHtml = '<span class="flow-main">--</span>';
   }
 
-  // 暗盘资金（大宗交易机构净买入，单位万元；2026-10-14 接入 block_trade 全市场报表）
-  // 语义（10/14 修订）：主标=今日净额（blockFlowNetWan 只反映 T 日）；
-  //   今日无数据 → 主标灰"--"，副标给"近4日累计"参考（blockFlowRecentNetWan）
-  const blockW = stock.blockFlowNetWan;
-  const blockDate = stock.blockFlowDate || '';
-  const recentW = stock.blockFlowRecentNetWan;
-  const recentCnt = stock.blockFlowRecentCount;
-  const latestD = stock.blockFlowLatestDate || '';
-  let blockFlowHtml = '<span class="block-flow-main">--</span><div class="block-flow-sub">今日无大宗</div>';
-  if (blockW !== undefined && blockW !== null) {
-    // 今日有大宗：主标红/绿 + 副标总额/笔数
-    const blockCls = blockW >= 0 ? 'pos' : 'neg';
-    const blockSign = blockW >= 0 ? '+' : '';
-    blockFlowHtml = `<span class="block-flow-main ${blockCls}">今日${blockSign}${Math.round(blockW)}万</span>`;
-    if (stock.blockFlowTotalWan !== undefined && stock.blockFlowTotalWan !== null) {
-      blockFlowHtml += `<div class="block-flow-sub">总额${Math.round(stock.blockFlowTotalWan)}万 · ${stock.blockFlowCount || 0}笔</div>`;
-    }
-  } else if (recentW !== undefined && recentW !== null) {
-    // 今日无大宗但近4日有：主标灰 + 副标近4日累计
-    const recentCls = recentW >= 0 ? 'pos' : 'neg';
-    const recentSign = recentW >= 0 ? '+' : '';
-    const latestShort = latestD ? latestD.slice(5).replace('-', '/') : '';
-    blockFlowHtml = `<span class="block-flow-main">--</span>` +
-      `<div class="block-flow-sub ${recentCls}">近4日${recentSign}${Math.round(recentW)}万 · ${recentCnt || 0}笔</div>` +
-      (latestShort ? `<div class="block-flow-sub">最新${latestShort}</div>` : '');
-  }
 
   // 30日高开率
   const openRate = stock.openRate30d;
@@ -5179,14 +5050,11 @@ function renderStockRow(stock, index) {
       <td><span class="chg-pct ${priceCls}">${chgStr}</span></td>
       <td>${turnoverHtml}</td>
       <td>${pePbHtml}</td>
-      <td class="left-align">${fundHtml}</td>
       <td>${kd30Html}</td>
       <td>${macdHtml}</td>
       <td>${maHtml}</td>
-      <td>${trendHtml}</td>
       <td>${volHtml}</td>
       <td>${flowHtml}</td>
-      <td>${blockFlowHtml}</td>
       <td>${flowDualHtml}</td>
       <td>${resonHtml}</td>
     </tr>
@@ -5362,7 +5230,7 @@ function renderStocks() {
 
   if (pool.length === 0) {
     body.innerHTML = `
-      <tr><td colspan="20">
+      <tr><td colspan="17">
         <div class="empty-state">
           <div class="empty-state-icon">📭</div>
           <div class="empty-state-text">暂无选股数据</div>
@@ -5412,7 +5280,7 @@ function renderStocks() {
       const maxS = Math.max(...scores);
       const minS = Math.min(...scores);
 
-      html += `<tr class="phase-section-header ${g.cls}"><td colspan="20">`;
+      html += `<tr class="phase-section-header ${g.cls}"><td colspan="17">`;
       html += `<span class="phase-header-icon">${g.label}</span>`;
       html += `<span class="phase-header-count">${groupStocks.length} 只</span>`;
       html += `<span class="phase-header-score">预启动分 ${minS}~${maxS}</span>`;
@@ -5424,7 +5292,7 @@ function renderStocks() {
           html += renderStockRow(s, globalIdx++);
         } catch(e) {
           console.error('[renderStockRow error]', s.code, e);
-          html += '<tr><td colspan="20" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+          html += '<tr><td colspan="17" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
         }
       });
     });
@@ -5440,14 +5308,14 @@ function renderStocks() {
       return renderStockRow(s, i);
     } catch(e) {
       console.error('[renderStockRow error]', s.code, e);
-      return '<tr><td colspan="20" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+      return '<tr><td colspan="17" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
     }
   }).join('');
   renderMobileCards(pool);
   } catch(e) {
     console.error('[renderStocks error]', e);
     const body = document.getElementById('stockBody');
-    if (body) body.innerHTML = '<tr><td colspan="20" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
+    if (body) body.innerHTML = '<tr><td colspan="17" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
   }
 }
 
@@ -8108,7 +7976,7 @@ function renderDataVersion() {
     // 显示错误在页面上
     const body = document.getElementById('stockBody');
     if (body) {
-      body.innerHTML = '<tr><td colspan="20" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
+      body.innerHTML = '<tr><td colspan="17" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
     }
   }
 })();
