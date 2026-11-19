@@ -4870,10 +4870,10 @@ function renderMultiKdTiles() {
 
 // ============================================
 // 大盘实时动态（2026-11-19 新增）：30分实时动态(上升/下跌) + 两市实时资金量，每分钟刷新
-// 30分动态 = 最新30分K收盘 vs 前一根收盘，只有两个状态；资金量 = 上证实时成交额(腾讯s_sh000001字段[7])
+// 30分动态 = 最新30分K收盘 vs 前一根收盘，只有两个状态；上证净流入 = 当日主力净流入净额(东财f62，JSONP走FLOW_HOSTS，对齐App「净流入」列，可正可负)
 // ============================================
 var INDEX_RT30 = null;      // { dir: '上升'|'下跌', pct: x.x }
-var INDEX_FUND_AMT = null;  // { amount: 亿元 }
+var INDEX_FUND_AMT = null;  // { net: 当日主力净流入净额(亿元,可负), pct: 主力净占比% }
 
 function fetchIndexRealtime30() {
   return fetchKlineTencent('sh000001', 'm30', 60).then(function(d) {
@@ -4888,15 +4888,20 @@ function fetchIndexRealtime30() {
 }
 
 function fetchIndexFundAmount() {
-  // 腾讯简版行情（CORS开放，与页面其他源一致）；字段[7]=成交额(万元)，负数/异常也照样更新
-  var url = 'https://qt.gtimg.cn/q=s_sh000001&r=' + Date.now();
-  return fetch(url).then(function(r) { return r.text(); }).then(function(t) {
-    var m = t.match(/v_s_sh000001="([^"]*)"/);
-    if (!m) return;
-    var f = m[1].split('~');
-    var amt = parseFloat(f[7]) / 10000; // 万元 → 亿元
-    if (!isNaN(amt)) INDEX_FUND_AMT = { amount: amt };
-    if (typeof renderStats === 'function') renderStats();
+  // 上证主力净流入净额（对齐东财App「净流入」列，可正可负）：JSONP走FLOW_HOSTS ulist，f62=当日主力净额(元) f184=净占比
+  var urls = FLOW_HOSTS.map(function(h) {
+    return 'https://' + h + '/api/qt/ulist.np/get?secids=1.000001&fields=f62,f184&fltt=2&invt=2';
+  });
+  return jsonpMulti(urls, 8000).then(function(res) {
+    try {
+      var d = ((res || {}).data || {}).data || {};
+      var diff = d.diff || [];
+      var item = Array.isArray(diff) ? diff[0] : diff[Object.keys(diff)[0]];
+      if (item && item.f62 != null && item.f62 !== '-') {
+        INDEX_FUND_AMT = { net: item.f62 / 1e8, pct: (item.f184 != null && item.f184 !== '-') ? item.f184 : null };
+        if (typeof renderStats === 'function') renderStats();
+      }
+    } catch (e) { console.error('[IndexFund]', e); }
   }).catch(function() {});
 }
 
@@ -4907,11 +4912,17 @@ function renderRealtimeTiles() {
       '</div><div class="stat-mini-state ' + (INDEX_RT30.dir === '上升' ? 'st-up' : 'st-down') + '">' +
       (INDEX_RT30.pct >= 0 ? '+' : '') + INDEX_RT30.pct.toFixed(2) + '%</div></div>'
     : '<div class="stat-mini gray"><div class="stat-mini-label">30分动态</div><div class="stat-mini-value">--</div><div class="stat-mini-state st-flat">--</div></div>';
-  var amt = INDEX_FUND_AMT
-    ? (INDEX_FUND_AMT.amount >= 10000 ? (INDEX_FUND_AMT.amount / 10000).toFixed(2) + '万亿' : INDEX_FUND_AMT.amount.toFixed(0) + '亿')
-    : '--';
-  var t2 = '<div class="stat-mini"><div class="stat-mini-label">上证资金</div><div class="stat-mini-value orange">' + amt +
-    '</div><div class="stat-mini-state st-flat">实时成交额</div></div>';
+  var t2;
+  if (INDEX_FUND_AMT) {
+    var nv = INDEX_FUND_AMT.net;
+    var amt = (nv >= 0 ? '+' : '') + nv.toFixed(1) + '亿';
+    var cls = nv >= 0 ? 'red' : 'green';
+    var sub = INDEX_FUND_AMT.pct != null ? '净占比 ' + (INDEX_FUND_AMT.pct >= 0 ? '+' : '') + INDEX_FUND_AMT.pct.toFixed(1) + '%' : '当日主力净额';
+    t2 = '<div class="stat-mini"><div class="stat-mini-label">上证净流入</div><div class="stat-mini-value ' + cls + '">' + amt +
+      '</div><div class="stat-mini-state ' + (nv >= 0 ? 'st-up' : 'st-down') + '">' + sub + '</div></div>';
+  } else {
+    t2 = '<div class="stat-mini gray"><div class="stat-mini-label">上证净流入</div><div class="stat-mini-value">--</div><div class="stat-mini-state st-flat">--</div></div>';
+  }
   return t1 + t2;
 }
 
