@@ -4389,6 +4389,7 @@ function renderStats() {
       <div class="stat-mini-value green">${downCount}</div>
     </div>
     ${renderMultiKdTiles()}
+    ${renderRealtimeTiles()}
   `;
   document.getElementById('statsRow').innerHTML = html;
 }
@@ -7323,6 +7324,61 @@ function renderMultiKdTiles() {
       '</div><div class="stat-mini-state ' + st.cls + '">' + st.state + '</div></div>';
   }).join('');
 }
+
+// ============================================
+// 大盘实时动态（2026-11-19 新增）：30分实时动态(上升/下跌) + 两市实时资金量，每分钟刷新
+// 30分动态 = 最新30分K收盘 vs 前一根收盘，只有两个状态；资金量 = 沪+深两市实时成交额(东财f48)
+// ============================================
+var INDEX_RT30 = null;      // { dir: '上升'|'下跌', pct: x.x }
+var INDEX_FUND_AMT = null;  // { amount: 亿元 }
+
+function fetchIndexRealtime30() {
+  return fetchKlineTencent('sh000001', 'm30', 60).then(function(d) {
+    var kl = ((d || {}).data || {}).klines || [];
+    if (kl.length < 2) return;
+    var parse = function(s) { var p = s.split(','); return { open: +p[1], close: +p[2] }; };
+    var cur = parse(kl[kl.length - 1]), prev = parse(kl[kl.length - 2]);
+    var pct = prev.close ? (cur.close / prev.close - 1) * 100 : 0;
+    INDEX_RT30 = { dir: cur.close >= prev.close ? '上升' : '下跌', pct: pct };
+    if (typeof renderStats === 'function') renderStats();
+  }).catch(function() {});
+}
+
+function fetchIndexFundAmount() {
+  var get = function(secid) {
+    var url = 'https://push2.eastmoney.com/api/qt/stock/get?secid=' + secid + '&fields=f48&invt=2&fltt=2';
+    return fetch(url).then(function(r) { return r.json(); }).then(function(d) {
+      return ((d || {}).data || {}).f48 || 0; // 元
+    }).catch(function() { return 0; });
+  };
+  return Promise.all([get('1.000001'), get('0.399001')]).then(function(v) {
+    var sum = (v[0] + v[1]) / 1e8; // 亿元
+    if (sum > 0) INDEX_FUND_AMT = { amount: sum };
+    if (typeof renderStats === 'function') renderStats();
+  }).catch(function() {});
+}
+
+function renderRealtimeTiles() {
+  var t1 = INDEX_RT30
+    ? '<div class="stat-mini"><div class="stat-mini-label">30分动态</div><div class="stat-mini-value ' +
+      (INDEX_RT30.dir === '上升' ? 'red' : 'green') + '">' + INDEX_RT30.dir +
+      '</div><div class="stat-mini-state ' + (INDEX_RT30.dir === '上升' ? 'st-up' : 'st-down') + '">' +
+      (INDEX_RT30.pct >= 0 ? '+' : '') + INDEX_RT30.pct.toFixed(2) + '%</div></div>'
+    : '<div class="stat-mini gray"><div class="stat-mini-label">30分动态</div><div class="stat-mini-value">--</div><div class="stat-mini-state st-flat">--</div></div>';
+  var amt = INDEX_FUND_AMT
+    ? (INDEX_FUND_AMT.amount >= 10000 ? (INDEX_FUND_AMT.amount / 10000).toFixed(2) + '万亿' : INDEX_FUND_AMT.amount.toFixed(0) + '亿')
+    : '--';
+  var t2 = '<div class="stat-mini"><div class="stat-mini-label">两市资金</div><div class="stat-mini-value orange">' + amt +
+    '</div><div class="stat-mini-state st-flat">实时成交额</div></div>';
+  return t1 + t2;
+}
+
+// 实时动态每分钟刷新（独立于5分钟30K通道）
+(function() {
+  fetchIndexRealtime30();
+  fetchIndexFundAmount();
+  setInterval(function() { fetchIndexRealtime30(); fetchIndexFundAmount(); }, 60 * 1000);
+})();
 
 // 大盘30K三态（2026-09-13 新增）
 // 数据源：腾讯ifzq.gtimg.cn m30，复用 fetchKlineTencent（@3159）
