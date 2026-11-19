@@ -5263,14 +5263,14 @@ function renderDataVersion() {
       renderIndexBanner();
       if (typeof renderStocks === 'function') renderStocks();
       if (typeof renderAll === 'function') renderAll();
-      // 每5分钟刷新一次大盘KDJ（盘中变化慢）
+      // 每60秒刷新一次大盘KDJ+多周期KD（2026-11-19 用户要求提速：5分钟太慢错过机会）
       window._indexKdj30Timer = setInterval(function() {
         fetchIndexKDJ30().then(function() {
       fetchIndexMultiKD();
           renderIndexBanner();
           if (typeof renderStocks === 'function') renderStocks();
         });
-      }, 5 * 60 * 1000);
+      }, 60 * 1000);
     });
   } catch(e) {
     console.error('[Init] FATAL ERROR:', e);
