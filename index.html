@@ -1041,47 +1041,29 @@
   .mc-section-header.building .mc-count { background: rgba(88,166,255,0.15); }
 
   /* ===== 选股表列显隐：默认精简为 11 列 =====
-     保留：代码(3) 名称(4) 驱动方向(6) 今日动作(8) 涨跌幅(10) 换手率(11) 30分MACD(16) 均线(18) 量价信号(20) 主力资金(21) 板块共振(25)
-     其余列不删除，仅 CSS 隐藏；点表格上方「👁 显示全部列」可临时恢复全部 28 列 */
-  table.stock-table.cols-min thead th:nth-child(1),
-  table.stock-table.cols-min tbody td:nth-child(1),   /* 评分 */
-  table.stock-table.cols-min thead th:nth-child(2),
-  table.stock-table.cols-min tbody td:nth-child(2),   /* 梯队 */
+     保留：代码(1) 名称(2) 驱动方向(4) 今日动作(6) 涨跌幅(8) 换手率(9) 30分MACD(13) 均线(14) 量价信号(16) 主力资金(17) 板块共振(20)
+     其余列不删除，仅 CSS 隐藏；点表格上方「👁 显示全部列」可临时恢复全部 20 列 */
+  table.stock-table.cols-min thead th:nth-child(3),
+  table.stock-table.cols-min tbody td:nth-child(3),
   table.stock-table.cols-min thead th:nth-child(5),
-  table.stock-table.cols-min tbody td:nth-child(5),   /* 赛道 */
+  table.stock-table.cols-min tbody td:nth-child(5),
   table.stock-table.cols-min thead th:nth-child(7),
-  table.stock-table.cols-min tbody td:nth-child(7),   /* 阶段 */
-  table.stock-table.cols-min thead th:nth-child(9),
-  table.stock-table.cols-min tbody td:nth-child(9),   /* 现价 */
+  table.stock-table.cols-min tbody td:nth-child(7),
+  table.stock-table.cols-min thead th:nth-child(10),
+  table.stock-table.cols-min tbody td:nth-child(10),
+  table.stock-table.cols-min thead th:nth-child(11),
+  table.stock-table.cols-min tbody td:nth-child(11),
   table.stock-table.cols-min thead th:nth-child(12),
-  table.stock-table.cols-min tbody td:nth-child(12),  /* PE/PB */
-  table.stock-table.cols-min thead th:nth-child(13),
-  table.stock-table.cols-min tbody td:nth-child(13),  /* 基本面 */
-  table.stock-table.cols-min thead th:nth-child(14),
-  table.stock-table.cols-min tbody td:nth-child(14),  /* 5分钟KD */
+  table.stock-table.cols-min tbody td:nth-child(12),
   table.stock-table.cols-min thead th:nth-child(15),
-  table.stock-table.cols-min tbody td:nth-child(15),  /* 30分钟KD */
-  table.stock-table.cols-min thead th:nth-child(17),
-  table.stock-table.cols-min tbody td:nth-child(17),  /* RSI */
+  table.stock-table.cols-min tbody td:nth-child(15),
+  table.stock-table.cols-min thead th:nth-child(18),
+  table.stock-table.cols-min tbody td:nth-child(18),
   table.stock-table.cols-min thead th:nth-child(19),
-  table.stock-table.cols-min tbody td:nth-child(19),  /* 趋势 */
-  table.stock-table.cols-min thead th:nth-child(22),
-  table.stock-table.cols-min tbody td:nth-child(22),  /* 暗盘资金 */
-  table.stock-table.cols-min thead th:nth-child(23),
-  table.stock-table.cols-min tbody td:nth-child(23),  /* 30日高开率 */
-  table.stock-table.cols-min thead th:nth-child(24),
-  table.stock-table.cols-min tbody td:nth-child(24),  /* 5日/10日资金 */
-  table.stock-table.cols-min thead th:nth-child(26),
-  table.stock-table.cols-min tbody td:nth-child(26),  /* 大盘β */
-  table.stock-table.cols-min thead th:nth-child(27),
-  table.stock-table.cols-min tbody td:nth-child(27),  /* 支撑价 */
-  table.stock-table.cols-min thead th:nth-child(28),
-  table.stock-table.cols-min tbody td:nth-child(28) { /* 逻辑 */
-    display: none;
-  }
-  /* 精简模式下可见的最后一列是「板块共振」(25)，去掉它的右边框 */
-  table.stock-table.cols-min thead th:nth-child(25),
-  table.stock-table.cols-min tbody td:nth-child(25) { border-right: none; }
+  table.stock-table.cols-min tbody td:nth-child(19) { display: none; }
+  /* 精简模式下可见的最后一列是「板块共振」，去掉它的右边框 */
+  table.stock-table.cols-min thead th:nth-child(20),
+  table.stock-table.cols-min tbody td:nth-child(20) { border-right: none; }
   /* 列显隐切换按钮 */
   .col-toggle-btn {
     margin-left: auto;
@@ -1162,7 +1144,7 @@
       <span class="fs-text" id="filterStatusText"></span>
       <button class="fs-clear-btn" onclick="clearAllFilters()">✕ 清除所有筛选</button>
     </div>
-    <button class="col-toggle-btn" id="btnColToggle" onclick="toggleTableCols()" title="默认只显示 11 项核心列，点击可临时展开全部 28 列">👁 显示全部列</button>
+    <button class="col-toggle-btn" id="btnColToggle" onclick="toggleTableCols()" title="默认只显示 11 项核心列，点击可临时展开全部 20 列">👁 显示全部列</button>
   </div>
 
   <!-- Main Table -->
@@ -1171,8 +1153,6 @@
       <table class="stock-table cols-min" id="stockTable">
         <thead>
           <tr>
-            <th data-filter="score" onclick="toggleFilter(event,'score')">评分<span class="th-filter-icon">▼</span></th>
-            <th data-filter="tier" onclick="toggleFilter(event,'tier')">梯队<span class="th-filter-icon">▼</span></th>
             <th data-filter="code" onclick="toggleFilter(event,'code')">代码<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="name" onclick="toggleFilter(event,'name')">名称<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="sector" onclick="toggleFilter(event,'sector')">赛道<span class="th-filter-icon">▼</span></th>
@@ -1184,21 +1164,15 @@
             <th data-filter="turnover" onclick="toggleFilter(event,'turnover')">换手率<span class="th-filter-icon">▼</span></th>
             <th data-filter="pe" onclick="toggleFilter(event,'pe')">PE/PB<span class="th-filter-icon">▼</span></th>
             <th class="left-align" data-filter="fundamental" onclick="toggleFilter(event,'fundamental')">基本面<span class="th-filter-icon">▼</span></th>
-            <th data-filter="kd5" onclick="toggleFilter(event,'kd5')">5分钟KD<span class="th-filter-icon">▼</span></th>
             <th data-filter="kd30" onclick="toggleFilter(event,'kd30')">30分钟KD<span class="th-filter-icon">▼</span></th>
             <th data-filter="macd" onclick="toggleFilter(event,'macd')" title="30分钟口径 MACD（2026-11-02 起停用日线口径）。末根为盘中未走完的实时K">30分MACD<span class="th-filter-icon">▼</span></th>
-            <th data-filter="rsi" onclick="toggleFilter(event,'rsi')">RSI<span class="th-filter-icon">▼</span></th>
             <th data-filter="ma" onclick="toggleFilter(event,'ma')">均线<span class="th-filter-icon">▼</span></th>
             <th data-filter="trend" onclick="toggleFilter(event,'trend')">趋势<span class="th-filter-icon">▼</span></th>
             <th data-filter="volSignal" onclick="toggleFilter(event,'volSignal')">量价信号<span class="th-filter-icon">▼</span></th>
             <th data-filter="mainFlow" onclick="toggleFilter(event,'mainFlow')">主力资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="blockFlow" onclick="toggleFilter(event,'blockFlow')">暗盘资金<span class="th-filter-icon">▼</span></th>
-            <th data-filter="openRate" onclick="toggleFilter(event,'openRate')">30日高开率<span class="th-filter-icon">▼</span></th>
             <th data-filter="flow5d" onclick="toggleFilter(event,'flow5d')">5日/10日资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="resonance" onclick="toggleFilter(event,'resonance')">板块共振<span class="th-filter-icon">▼</span></th>
-            <th data-filter="beta" onclick="toggleFilter(event,'beta')">大盘β<span class="th-filter-icon">▼</span></th>
-            <th data-filter="support" onclick="toggleFilter(event,'support')">支撑价<span class="th-filter-icon">▼</span></th>
-            <th class="left-align" data-filter="logic" onclick="toggleFilter(event,'logic')">逻辑<span class="th-filter-icon">▼</span></th>
           </tr>
         </thead>
         <tbody id="stockBody"></tbody>
@@ -4433,7 +4407,7 @@ function compareSort(a, b, dir) {
 }
 
 // ============================================
-// 选股表列显隐（默认精简 11 列，可临时展开全部 28 列）
+// 选股表列显隐（默认精简 11 列，可临时展开全部 20 列）
 // ============================================
 function toggleTableCols() {
   var t = document.getElementById('stockTable');
@@ -4443,8 +4417,8 @@ function toggleTableCols() {
   b.classList.toggle('all', !isMin);
   b.textContent = isMin ? '👁 显示全部列' : '👁 只显示核心列';
   b.title = isMin
-    ? '当前只显示 11 项核心列（代码/名称/驱动方向/今日动作/涨跌幅/换手率/MACD/均线/量价信号/主力资金/板块共振），点击展开全部 28 列'
-    : '当前显示全部 28 列，点击回到 11 项核心列';
+    ? '当前只显示 11 项核心列（代码/名称/驱动方向/今日动作/涨跌幅/换手率/MACD/均线/量价信号/主力资金/板块共振），点击展开全部 20 列'
+    : '当前显示全部 20 列，点击回到 11 项核心列';
   try { localStorage.setItem('dashColsMin', isMin ? '1' : '0'); } catch (e) {}
 }
 // 恢复上次选择；无记录时默认精简
@@ -4910,14 +4884,7 @@ function renderStockRow(stock, index) {
   const price = q.price !== undefined ? q.price : stock.price;
   const changePct = q.changePct !== undefined ? q.changePct : stock.changePct;
 
-  // 评分（启动段模式优先显示预启动分）
-  const score = currentPool === 'launch'
-    ? (stock.preLaunchScore !== undefined ? stock.preLaunchScore : stock.healthScore || 0)
-    : (stock.healthScore || 0);
-  const sCls = scoreClass(score);
 
-  // 梯队
-  const tier = stock.tier || 'C';
 
   // 名称（热门标的加警告，龙虎榜加标记）
   const isHot = stock.sector && stock.sector.indexOf('热门') >= 0;
@@ -5006,10 +4973,6 @@ function renderStockRow(stock, index) {
   const kd5d = stock.kd5_d !== undefined ? stock.kd5_d : kdj.d;
   const kd5Cross = stock.kd5_cross || (kdj.direction === '上升' ? '金叉' : (kdj.direction === '下降' ? '死叉' : ''));
   const kd5Cls = kd5Cross === '金叉' ? 'gold' : 'dead';
-  const kd5Html = kd5k !== undefined
-    ? `<span class="kd-cell ${kd5Cls}">${kd5k.toFixed(1)} / ${kd5d !== undefined ? kd5d.toFixed(1) : '--'}</span>` +
-      `<div class="kd-sub">${kd5Cross}</div>`
-    : '<span class="kd-cell">--</span>';
 
   // 30分钟KD（带水位标签 + 预警标记）
   const kd30Cross = stock.kd30_cross || '';
@@ -5061,9 +5024,6 @@ function renderStockRow(stock, index) {
   let rsiCls = '';
   if (rsi !== undefined && rsi !== null && rsi < 30) rsiCls = 'oversold';
   else if (rsi !== undefined && rsi !== null && rsi > 70) rsiCls = 'overbought';
-  const rsiHtml = rsi !== undefined && rsi !== null
-    ? `<span class="rsi-text ${rsiCls}">${rsi.toFixed(1)}</span>`
-    : '<span class="rsi-text">--</span>';
 
   // 均线 + 收盘价>20日线条件
   const ma = stock.ma || '';
@@ -5138,12 +5098,6 @@ function renderStockRow(stock, index) {
 
   // 30日高开率
   const openRate = stock.openRate30d;
-  const openRateHtml = openRate !== undefined
-    ? `<span class="open-rate-main">${openRate}%</span>` +
-      (stock.openRateTotal !== undefined || stock.openRateScore !== undefined
-        ? `<div class="open-rate-sub">全程${stock.openRateTotal !== undefined ? stock.openRateTotal + '%' : '--'} 评${stock.openRateScore !== undefined ? stock.openRateScore : '--'}</div>`
-        : '')
-    : '<span class="open-rate-main">--</span>';
 
   // 5日/10日资金
   const f5d = String(stock.flow5d || flow.flow_5d_str || '');
@@ -5169,27 +5123,14 @@ function renderStockRow(stock, index) {
   const beta = stock.beta !== undefined ? stock.beta : (corr.beta !== undefined ? corr.beta : null);
   const betaCat = stock.betaCategory || corr.category || '--';
   const syncRate = stock.syncRate || (corr.sync_5d !== undefined ? corr.sync_5d + '/5' : '--');
-  const betaHtml = beta !== null
-    ? `<span class="beta-main">β${beta.toFixed(2)}</span> <span class="beta-cat">${escapeHtml(betaCat)}</span>` +
-      `<div class="beta-sub">同步 ${syncRate}</div>`
-    : '<span class="beta-main">--</span>';
 
   // 支撑价
   const support = stock.supportPrice;
   const supportDist = stock.supportDist;
   const isNear = supportDist !== undefined && supportDist < 5;
-  const supportHtml = support !== undefined
-    ? `<span class="support-main ${isNear ? 'near' : ''}">${support.toFixed(2)}</span>` +
-      (supportDist !== undefined
-        ? `<div class="support-dist">(距${supportDist.toFixed(1)}%)</div>`
-        : '')
-    : '<span class="support-main">--</span>';
 
   // 逻辑（兼容 reason 字段）
   const logicText = stock.logic || stock.reason || '';
-  const logicHtml = logicText
-    ? `<span class="logic-text">${escapeHtml(logicText)}</span>`
-    : '<span class="logic-text">--</span>';
 
   // KD超卖闪烁判断 + KD水位行高亮
   const _kd5k = stock.kd5_k !== undefined ? stock.kd5_k : kdj.k;
@@ -5228,8 +5169,6 @@ function renderStockRow(stock, index) {
   // 行
   return `
     <tr id="row-${stock.code}" class="${_rowCls}">
-      <td class="col-score"><span class="score-val ${sCls}">${score}</span></td>
-      <td><span class="tier-badge tier-${tier}">${tier}</span></td>
       <td><span class="code-text">${num}</span></td>
       <td class="left-align">${nameHtml}${pinTag}${newTag}</td>
       <td class="left-align">${sectorHtml}</td>
@@ -5241,21 +5180,15 @@ function renderStockRow(stock, index) {
       <td>${turnoverHtml}</td>
       <td>${pePbHtml}</td>
       <td class="left-align">${fundHtml}</td>
-      <td>${kd5Html}</td>
       <td>${kd30Html}</td>
       <td>${macdHtml}</td>
-      <td>${rsiHtml}</td>
       <td>${maHtml}</td>
       <td>${trendHtml}</td>
       <td>${volHtml}</td>
       <td>${flowHtml}</td>
       <td>${blockFlowHtml}</td>
-      <td>${openRateHtml}</td>
       <td>${flowDualHtml}</td>
       <td>${resonHtml}</td>
-      <td>${betaHtml}</td>
-      <td>${supportHtml}</td>
-      <td class="col-logic">${logicHtml}</td>
     </tr>
   `;
 }
@@ -5429,7 +5362,7 @@ function renderStocks() {
 
   if (pool.length === 0) {
     body.innerHTML = `
-      <tr><td colspan="28">
+      <tr><td colspan="20">
         <div class="empty-state">
           <div class="empty-state-icon">📭</div>
           <div class="empty-state-text">暂无选股数据</div>
@@ -5479,7 +5412,7 @@ function renderStocks() {
       const maxS = Math.max(...scores);
       const minS = Math.min(...scores);
 
-      html += `<tr class="phase-section-header ${g.cls}"><td colspan="28">`;
+      html += `<tr class="phase-section-header ${g.cls}"><td colspan="20">`;
       html += `<span class="phase-header-icon">${g.label}</span>`;
       html += `<span class="phase-header-count">${groupStocks.length} 只</span>`;
       html += `<span class="phase-header-score">预启动分 ${minS}~${maxS}</span>`;
@@ -5491,7 +5424,7 @@ function renderStocks() {
           html += renderStockRow(s, globalIdx++);
         } catch(e) {
           console.error('[renderStockRow error]', s.code, e);
-          html += '<tr><td colspan="28" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+          html += '<tr><td colspan="20" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
         }
       });
     });
@@ -5507,14 +5440,14 @@ function renderStocks() {
       return renderStockRow(s, i);
     } catch(e) {
       console.error('[renderStockRow error]', s.code, e);
-      return '<tr><td colspan="28" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+      return '<tr><td colspan="20" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
     }
   }).join('');
   renderMobileCards(pool);
   } catch(e) {
     console.error('[renderStocks error]', e);
     const body = document.getElementById('stockBody');
-    if (body) body.innerHTML = '<tr><td colspan="28" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
+    if (body) body.innerHTML = '<tr><td colspan="20" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
   }
 }
 
@@ -8175,7 +8108,7 @@ function renderDataVersion() {
     // 显示错误在页面上
     const body = document.getElementById('stockBody');
     if (body) {
-      body.innerHTML = '<tr><td colspan="28" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
+      body.innerHTML = '<tr><td colspan="20" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
     }
   }
 })();
