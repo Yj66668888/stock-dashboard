@@ -1189,13 +1189,15 @@
     .wl-banner h2 { margin: 0 0 6px; font-size: 17px; color: #e6edf3; display: flex; align-items: center; flex-wrap: wrap; }
     .wl-sub { font-size: 12px; color: #8b949e; line-height: 1.8; }
     .wl-sum { display: flex; gap: 10px; margin: 10px 0 12px; flex-wrap: wrap; }
-    .wl-chip { background: rgba(110,118,130,0.12); border-radius: 8px; padding: 7px 14px; font-size: 13px; color: #c9d1d9; }
+    .wl-chip { background: rgba(110,118,130,0.12); border-radius: 8px; padding: 7px 14px; font-size: 13px; color: #c9d1d9; cursor: pointer; user-select: none; border: 1px solid transparent; transition: background .15s, border-color .15s; }
+    .wl-chip:hover { background: rgba(110,118,130,0.22); }
+    .wl-chip.on { border-color: #e3b341; background: rgba(227,179,65,0.14); }
     .wl-chip b { color: #e3b341; font-size: 15px; }
     .wl-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
     .wl-tbl th { position: sticky; top: 0; background: #161b22; color: #8b949e; padding: 8px 8px; text-align: right; border-bottom: 1px solid #30363d; font-weight: 600; white-space: nowrap; }
-    .wl-tbl th:first-child, .wl-tbl th:nth-child(2) { text-align: left; }
+    .wl-tbl th:first-child { text-align: left; }
     .wl-tbl td { padding: 7px 8px; text-align: right; border-bottom: 1px solid #21262d; color: #e6edf3; white-space: nowrap; }
-    .wl-tbl td:first-child, .wl-tbl td:nth-child(2) { text-align: left; }
+    .wl-tbl td:first-child { text-align: left; }
     .wl-tbl tr.wl-hit td { background: rgba(227,179,65,0.10); }
     .wl-k30 { font-weight: 700; font-size: 14px; }
     .wl-upc { color: #f85149; } .wl-dnc { color: #56d364; }
@@ -1212,8 +1214,8 @@
   <div class="wl-sum" id="wlSum"></div>
   <div style="overflow-x:auto">
     <table class="wl-tbl">
-      <thead><tr><th>股票</th><th>收录日</th><th>周K</th><th>日K</th><th>30分K</th><th>今日%</th><th>20日%</th></tr></thead>
-      <tbody id="wlBody"><tr><td colspan="7" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
+      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>30分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>今日%</th><th>20日%</th></tr></thead>
+      <tbody id="wlBody"><tr><td colspan="10" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -6614,7 +6616,7 @@ function renderDataVersion() {
 // 30分K: fetchKline(klt=30) 腾讯m30实时 → calcKDJ；K<20 到位自动置顶金色
 // 行情: qt.gtimg.cn JSONP 批量（60只/批）
 // ============================================
-var WL_STATE = { data: null, k30: {}, chg1: {}, busy: false, timer: null };
+var WL_STATE = { data: null, k30: {}, q: {}, flow: {}, filter: '', busy: false, timer: null };
 
 function wlSecid(code) { return (code.indexOf('sh') === 0 ? '1.' : '0.') + code.slice(2); }
 
@@ -6635,6 +6637,8 @@ function wlLoadData() {
 }
 
 // 30分K批量拉取（worker池并发6）
+// ★ 2026-11-20 修复：fetchKline 返回 {data:{klines}}（腾讯主源）或 {klines}（东财降级），
+//   原来只判 d.klines 导致 30分K 全空
 function wlFetch30(stocks, onDone) {
   var res = {}, idx = 0, fin = 0, total = stocks.length;
   if (!total) { onDone(res); return; }
@@ -6642,7 +6646,8 @@ function wlFetch30(stocks, onDone) {
     if (idx >= total) return;
     var st = stocks[idx++];
     fetchKline(wlSecid(st.code), 30, 120).then(function(d) {
-      var kd = d && d.klines ? calcKDJ(d.klines, 9) : null;
+      var kl = d ? ((d.data && d.data.klines) || d.klines || null) : null;
+      var kd = kl ? calcKDJ(kl, 9) : null;
       if (kd) res[st.code] = { k: kd.k, d: kd.d, cross: kd.cross };
     }).catch(function() {}).then(function() {
       fin++;
@@ -6669,23 +6674,75 @@ function wlFetchQuotes(stocks, cb) {
 }
 
 function wlParseQuotes() {
+  // 腾讯字段: 3现价 4昨收 32涨跌% 37成交额(万) 38换手率% 49量比
   var out = {};
   ((WL_STATE.data && WL_STATE.data.stocks) || []).forEach(function(st) {
     var raw = window['v_' + st.code];
     if (!raw || typeof raw !== 'string') return;
     var f = raw.split('~');
-    if (f.length < 5) return;
+    if (f.length < 50) return;
     var p = parseFloat(f[3]), yc = parseFloat(f[4]);
-    if (p > 0 && yc > 0) out[st.code] = (p / yc - 1) * 100;
+    if (p > 0 && yc > 0) {
+      out[st.code] = {
+        chg: (p / yc - 1) * 100,
+        turn: parseFloat(f[38]) || null,
+        vr: parseFloat(f[49]) || null,
+        amt: parseFloat(f[37]) || null
+      };
+    }
     try { delete window['v_' + st.code]; } catch (e) {}
   });
   return out;
 }
 
+// 主力净流入批量（东财 ulist.np JSONP 走 FLOW_HOSTS，一次请求全池）
+function wlFetchFlow(stocks, cb) {
+  var secids = stocks.map(function(s) { return wlSecid(s.code); }).join(',');
+  var path = '/api/qt/ulist.np/get?secids=' + secids + '&fields=f12,f62,f184&fltt=2&invt=2';
+  var urls = FLOW_HOSTS.map(function(h) { return 'https://' + h + path; });
+  return jsonpMulti(urls, 10000).then(function(result) {
+    try {
+      var diff = ((result || {}).data || {}).data || {};
+      diff = diff.diff || [];
+      if (!Array.isArray(diff)) diff = Object.keys(diff).map(function(k) { return diff[k]; });
+      diff.forEach(function(item) {
+        var num = String(item.f12 || '');
+        if (!num) return;
+        var code = (num.charAt(0) === '6' || num.charAt(0) === '9') ? 'sh' + num : 'sz' + num;
+        if (item.f62 != null && item.f62 !== '-') {
+          WL_STATE.flow[code] = {
+            net: parseFloat(item.f62),
+            pct: (item.f184 != null && item.f184 !== '-') ? parseFloat(item.f184) : null
+          };
+        }
+      });
+    } catch (e) { console.error('[wlFlow]', e); }
+  }).catch(function() {}).then(cb || function() {});
+}
+
+function wlSetFilter(mode) {
+  WL_STATE.filter = (WL_STATE.filter === mode) ? '' : mode;
+  wlRender();
+}
+
+// 共振 = 30分(实时) / 日K / 周K 三周期同向计数；全向上=多头共振(红)、全向下=空头共振(绿)
+function wlResonance(st) {
+  var dup = (st.dup != null) ? st.dup : (st.dkp != null && st.dk != null ? st.dk > st.dkp : false);
+  var k30 = WL_STATE.k30[st.code];
+  var up30 = k30 ? (k30.k > k30.d) : null;
+  var upD = (st.dc === 0 || st.dc === 1 || dup === true);
+  var upW = (st.wc === 0 || st.wc === 1 || st.wup === true);
+  var n = 0, known = 0;
+  [[up30, '30分'], [upD, '日K'], [upW, '周K']].forEach(function(pair) {
+    if (pair[0] != null) { known++; if (pair[0]) n++; }
+  });
+  return { up: n, total: known };
+}
+
 function wlRender() {
   var d = WL_STATE.data;
   var body = document.getElementById('wlBody');
-  if (!d) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
+  if (!d) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
   var stocks = d.stocks || [];
   var hit = [], rest = [];
   stocks.forEach(function(st) {
@@ -6698,31 +6755,60 @@ function wlRender() {
     return (ka ? ka.k : (a.kw != null ? a.kw : 99)) - (kb ? kb.k : (b.kw != null ? b.kw : 99));
   });
   var ncross = stocks.filter(function(s) { var k = WL_STATE.k30[s.code]; return k && k.cross === '金叉'; }).length;
+  var f = WL_STATE.filter;
+  var rows = (f === 'hit') ? hit : (f === 'cross'
+    ? stocks.filter(function(s) { var k = WL_STATE.k30[s.code]; return k && k.cross === '金叉'; })
+    : hit.concat(rest));
   document.getElementById('wlSum').innerHTML =
-    '<div class="wl-chip">池内 <b>' + stocks.length + '</b> 只</div>' +
-    '<div class="wl-chip">★ 30分K到位 <b>' + hit.length + '</b> 只' + (hit.length ? '（已置顶）' : '') + '</div>' +
-    '<div class="wl-chip">30分K金叉 <b>' + ncross + '</b> 只</div>';
+    '<div class="wl-chip' + (!f ? ' on' : '') + '" onclick="wlSetFilter(\'\')">池内 <b>' + stocks.length + '</b> 只</div>' +
+    '<div class="wl-chip' + (f === 'hit' ? ' on' : '') + '" onclick="wlSetFilter(\'hit\')" title="点击只看30分K<20的票">★ 30分K到位 <b>' + hit.length + '</b> 只' + (hit.length ? '（置顶）' : '') + '</div>' +
+    '<div class="wl-chip' + (f === 'cross' ? ' on' : '') + '" onclick="wlSetFilter(\'cross\')" title="点击只看30分K刚金叉的票">30分K金叉 <b>' + ncross + '</b> 只</div>' +
+    '<div class="wl-chip" style="cursor:default">共振 = 30分/日K/周K 同向</div>';
   function row(st, isHit) {
     var k30 = WL_STATE.k30[st.code];
-    var chg = WL_STATE.chg1[st.code];
+    var q = WL_STATE.q[st.code];
+    var chg = q ? q.chg : null;
     var kc = k30 && k30.k < 20 ? 'wl-gold' : '';
     var crossTxt = k30 ? (k30.cross === '金叉' ? ' <span class="wl-gold">↑金叉</span>'
       : k30.cross === '上升' ? ' <span class="wl-upc">↑</span>'
       : k30.cross === '死叉' ? ' <span class="wl-dnc">↓死叉</span>'
       : k30.cross === '下降' ? ' <span class="wl-dnc">↓</span>' : '') : '';
     var dup = (st.dup != null) ? st.dup : (st.dkp != null && st.dk != null ? st.dk > st.dkp : false);
+    // 共振
+    var rs = wlResonance(st);
+    var rsHtml;
+    if (rs.total === 3 && rs.up === 3) rsHtml = '<span class="wl-upc" style="font-weight:700">3/3 共振</span>';
+    else if (rs.total === 3 && rs.up === 0) rsHtml = '<span class="wl-dnc">0/3 ↓共振</span>';
+    else rsHtml = '<span style="color:#6e7681">' + rs.up + '/' + rs.total + '</span>';
+    // 量价：量比 + 放/缩量标记
+    var vqHtml = '—';
+    if (q && q.vr != null) {
+      var tag = q.vr >= 1.5 ? ' <span class="wl-upc">放量</span>' : (q.vr <= 0.7 && q.vr > 0 ? ' <span class="wl-dnc">缩量</span>' : '');
+      vqHtml = q.vr.toFixed(2) + tag;
+    }
+    // 主力净流入（亿）
+    var fl = WL_STATE.flow[st.code];
+    var flHtml = '—';
+    if (fl && fl.net != null) {
+      var yi = fl.net / 1e8;
+      flHtml = '<span class="' + (yi >= 0 ? 'wl-upc' : 'wl-dnc') + '">' + (yi >= 0 ? '+' : '') + yi.toFixed(2) + '亿</span>' +
+        (fl.pct != null ? ' <span style="color:#6e7681;font-size:11px">' + (fl.pct >= 0 ? '+' : '') + fl.pct.toFixed(1) + '%</span>' : '');
+    }
     return '<tr class="' + (isHit ? 'wl-hit' : '') + '">' +
-      '<td>' + (isHit ? '<span class="wl-hit-mark">★</span> ' : '') + '<b>' + st.name + '</b> <span style="color:#6e7681">' + st.code.slice(2) + '</span></td>' +
-      '<td style="color:#6e7681">' + String(st.added || '').slice(5) + '</td>' +
+      '<td title="收录 ' + (st.added || '') + '">' + (isHit ? '<span class="wl-hit-mark">★</span> ' : '') + '<b>' + st.name + '</b> <span style="color:#6e7681">' + st.code.slice(2) + '</span></td>' +
       '<td>' + (st.kw != null ? st.kw.toFixed(1) : '—') + ' ' + wlStTag(st.wc, st.wup) + '</td>' +
       '<td>' + (st.dk != null ? st.dk.toFixed(1) : '—') + ' ' + wlStTag(st.dc, dup) + '</td>' +
       '<td class="wl-k30 ' + kc + '">' + (k30 ? k30.k.toFixed(1) + crossTxt : '<span style="color:#484f58">…</span>') + '</td>' +
+      '<td>' + rsHtml + '</td>' +
+      '<td>' + (q && q.turn != null ? q.turn.toFixed(2) : '—') + '</td>' +
+      '<td>' + vqHtml + '</td>' +
+      '<td>' + flHtml + '</td>' +
       '<td class="' + (chg == null ? '' : chg > 0 ? 'wl-upc' : chg < 0 ? 'wl-dnc' : '') + '">' + (chg == null ? '—' : (chg > 0 ? '+' : '') + chg.toFixed(2)) + '</td>' +
       '<td class="' + (st.pct20 > 0 ? 'wl-upc' : st.pct20 < 0 ? 'wl-dnc' : '') + '">' + (st.pct20 == null ? '—' : (st.pct20 > 0 ? '+' : '') + st.pct20.toFixed(1)) + '</td>' +
       '</tr>';
   }
-  var html = hit.map(function(s) { return row(s, true); }).join('') + rest.map(function(s) { return row(s, false); }).join('');
-  if (!html) html = '<tr><td colspan="7" style="text-align:center;color:#6e7681">池内暂无股票</td></tr>';
+  var html = rows.map(function(s) { return row(s, WL_STATE.k30[s.code] && WL_STATE.k30[s.code].k < 20); }).join('');
+  if (!html) html = '<tr><td colspan="10" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
   body.innerHTML = html;
 }
 
@@ -6735,7 +6821,10 @@ function wlRefresh(force) {
   chain.then(function(d) {
     if (!d || !(d.stocks || []).length) { WL_STATE.busy = false; wlRender(); return; }
     wlFetchQuotes(d.stocks, function() {
-      WL_STATE.chg1 = wlParseQuotes();
+      WL_STATE.q = wlParseQuotes();
+      wlRender();
+      // 主力净流入异步并行（不阻塞30分K），回来即重渲染
+      wlFetchFlow(d.stocks, function() { wlRender(); });
       // 30分K只在页面活跃/强制/首次时拉（30分钟粒度，省请求）
       var need30 = force || active || !Object.keys(WL_STATE.k30).length;
       if (!need30) { WL_STATE.busy = false; wlRender(); return; }
