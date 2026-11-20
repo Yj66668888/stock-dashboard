@@ -6695,10 +6695,10 @@ function wlParseQuotes() {
   return out;
 }
 
-// 主力净流入批量（东财 ulist.np JSONP 走 FLOW_HOSTS，一次请求全池）
+// 主力净流入批量（东财 ulist.np JSONP 走 FLOW_HOSTS，一次请求全池；f100=所属行业板块，供板块共振用）
 function wlFetchFlow(stocks, cb) {
   var secids = stocks.map(function(s) { return wlSecid(s.code); }).join(',');
-  var path = '/api/qt/ulist.np/get?secids=' + secids + '&fields=f12,f62,f184&fltt=2&invt=2';
+  var path = '/api/qt/ulist.np/get?secids=' + secids + '&fields=f12,f62,f184,f100&fltt=2&invt=2';
   var urls = FLOW_HOSTS.map(function(h) { return 'https://' + h + path; });
   return jsonpMulti(urls, 10000).then(function(result) {
     try {
@@ -6709,12 +6709,12 @@ function wlFetchFlow(stocks, cb) {
         var num = String(item.f12 || '');
         if (!num) return;
         var code = (num.charAt(0) === '6' || num.charAt(0) === '9') ? 'sh' + num : 'sz' + num;
+        WL_STATE.flow[code] = WL_STATE.flow[code] || {};
         if (item.f62 != null && item.f62 !== '-') {
-          WL_STATE.flow[code] = {
-            net: parseFloat(item.f62),
-            pct: (item.f184 != null && item.f184 !== '-') ? parseFloat(item.f184) : null
-          };
+          WL_STATE.flow[code].net = parseFloat(item.f62);
+          WL_STATE.flow[code].pct = (item.f184 != null && item.f184 !== '-') ? parseFloat(item.f184) : null;
         }
+        if (item.f100 && item.f100 !== '-') WL_STATE.flow[code].sector = item.f100;
       });
     } catch (e) { console.error('[wlFlow]', e); }
   }).catch(function() {}).then(cb || function() {});
@@ -6725,18 +6725,12 @@ function wlSetFilter(mode) {
   wlRender();
 }
 
-// 共振 = 30分(实时) / 日K / 周K 三周期同向计数；全向上=多头共振(红)、全向下=空头共振(绿)
+// 板块共振：与选股仪表盘同款 calcSectorResonance——个股所属板块(东财f100)匹配
+// 当日行业板块涨幅榜(liveHotSectors，fetchHotSectors实时拉)：前5=板块启动、前15=部分共振
 function wlResonance(st) {
-  var dup = (st.dup != null) ? st.dup : (st.dkp != null && st.dk != null ? st.dk > st.dkp : false);
-  var k30 = WL_STATE.k30[st.code];
-  var up30 = k30 ? (k30.k > k30.d) : null;
-  var upD = (st.dc === 0 || st.dc === 1 || dup === true);
-  var upW = (st.wc === 0 || st.wc === 1 || st.wup === true);
-  var n = 0, known = 0;
-  [[up30, '30分'], [upD, '日K'], [upW, '周K']].forEach(function(pair) {
-    if (pair[0] != null) { known++; if (pair[0]) n++; }
-  });
-  return { up: n, total: known };
+  var fl = WL_STATE.flow[st.code];
+  if (!fl || !fl.sector) return null;
+  return calcSectorResonance({ sector: fl.sector });
 }
 
 function wlRender() {
@@ -6763,7 +6757,7 @@ function wlRender() {
     '<div class="wl-chip' + (!f ? ' on' : '') + '" onclick="wlSetFilter(\'\')">池内 <b>' + stocks.length + '</b> 只</div>' +
     '<div class="wl-chip' + (f === 'hit' ? ' on' : '') + '" onclick="wlSetFilter(\'hit\')" title="点击只看30分K<20的票">★ 30分K到位 <b>' + hit.length + '</b> 只' + (hit.length ? '（置顶）' : '') + '</div>' +
     '<div class="wl-chip' + (f === 'cross' ? ' on' : '') + '" onclick="wlSetFilter(\'cross\')" title="点击只看30分K刚金叉的票">30分K金叉 <b>' + ncross + '</b> 只</div>' +
-    '<div class="wl-chip" style="cursor:default">共振 = 30分/日K/周K 同向</div>';
+    '<div class="wl-chip" style="cursor:default">共振 = 所属板块进当日涨幅榜前列</div>';
   function row(st, isHit) {
     var k30 = WL_STATE.k30[st.code];
     var q = WL_STATE.q[st.code];
@@ -6774,12 +6768,13 @@ function wlRender() {
       : k30.cross === '死叉' ? ' <span class="wl-dnc">↓死叉</span>'
       : k30.cross === '下降' ? ' <span class="wl-dnc">↓</span>' : '') : '';
     var dup = (st.dup != null) ? st.dup : (st.dkp != null && st.dk != null ? st.dk > st.dkp : false);
-    // 共振
+    // 共振（板块共振，与选股仪表盘同款）
     var rs = wlResonance(st);
-    var rsHtml;
-    if (rs.total === 3 && rs.up === 3) rsHtml = '<span class="wl-upc" style="font-weight:700">3/3 共振</span>';
-    else if (rs.total === 3 && rs.up === 0) rsHtml = '<span class="wl-dnc">0/3 ↓共振</span>';
-    else rsHtml = '<span style="color:#6e7681">' + rs.up + '/' + rs.total + '</span>';
+    var rsHtml = '--';
+    if (rs) {
+      var cls = rs.resonance.indexOf('板块启动') >= 0 ? 'wl-gold' : 'wl-upc';
+      rsHtml = '<span class="' + cls + '" title="' + (rs.detail || '') + '">' + rs.resonance + '</span>';
+    }
     // 量价：量比 + 放/缩量标记
     var vqHtml = '—';
     if (q && q.vr != null) {
@@ -6825,6 +6820,10 @@ function wlRefresh(force) {
       wlRender();
       // 主力净流入异步并行（不阻塞30分K），回来即重渲染
       wlFetchFlow(d.stocks, function() { wlRender(); });
+      // 板块行情（板块共振用，与仪表盘共用 liveHotSectors）：没有就拉一次，回来重渲染
+      if (typeof fetchHotSectors === 'function' && (!liveHotSectors || !liveHotSectors.length)) {
+        Promise.resolve(fetchHotSectors()).then(function() { wlRender(); }).catch(function() {});
+      }
       // 30分K只在页面活跃/强制/首次时拉（30分钟粒度，省请求）
       var need30 = force || active || !Object.keys(WL_STATE.k30).length;
       if (!need30) { WL_STATE.busy = false; wlRender(); return; }
