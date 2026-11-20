@@ -1214,8 +1214,8 @@
   <div class="wl-sum" id="wlSum"></div>
   <div style="overflow-x:auto">
     <table class="wl-tbl">
-      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>30分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>今日%</th><th>20日%</th></tr></thead>
-      <tbody id="wlBody"><tr><td colspan="10" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
+      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>今日%</th><th>20日%</th></tr></thead>
+      <tbody id="wlBody"><tr><td colspan="12" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -6616,7 +6616,7 @@ function renderDataVersion() {
 // 30分K: fetchKline(klt=30) 腾讯m30实时 → calcKDJ；K<20 到位自动置顶金色
 // 行情: qt.gtimg.cn JSONP 批量（60只/批）
 // ============================================
-var WL_STATE = { data: null, k30: {}, q: {}, flow: {}, filter: '', busy: false, timer: null };
+var WL_STATE = { data: null, k5: {}, k30: {}, k60: {}, q: {}, flow: {}, filter: '', busy: false, timer: null };
 
 function wlSecid(code) { return (code.indexOf('sh') === 0 ? '1.' : '0.') + code.slice(2); }
 
@@ -6636,22 +6636,29 @@ function wlLoadData() {
   }).catch(function() { return null; });
 }
 
-// 30分K批量拉取（worker池并发6）
+// 5/30/60分K批量拉取（worker池并发6，每股3周期并行）
 // ★ 2026-11-20 修复：fetchKline 返回 {data:{klines}}（腾讯主源）或 {klines}（东财降级），
 //   原来只判 d.klines 导致 30分K 全空
-function wlFetch30(stocks, onDone) {
-  var res = {}, idx = 0, fin = 0, total = stocks.length;
-  if (!total) { onDone(res); return; }
+function wlFetchK(stocks, onDone) {
+  var r5 = {}, r30 = {}, r60 = {};
+  var idx = 0, fin = 0, total = stocks.length;
+  if (!total) { onDone(r5, r30, r60); return; }
   function worker() {
     if (idx >= total) return;
     var st = stocks[idx++];
-    fetchKline(wlSecid(st.code), 30, 120).then(function(d) {
-      var kl = d ? ((d.data && d.data.klines) || d.klines || null) : null;
-      var kd = kl ? calcKDJ(kl, 9) : null;
-      if (kd) res[st.code] = { k: kd.k, d: kd.d, cross: kd.cross };
+    var secid = wlSecid(st.code);
+    Promise.all([5, 30, 60].map(function(klt) {
+      return fetchKline(secid, klt, 120).then(function(d) {
+        var kl = d ? ((d.data && d.data.klines) || d.klines || null) : null;
+        return kl ? calcKDJ(kl, 9) : null;
+      }).catch(function() { return null; });
+    })).then(function(r) {
+      if (r[0]) r5[st.code] = { k: r[0].k, d: r[0].d, cross: r[0].cross };
+      if (r[1]) r30[st.code] = { k: r[1].k, d: r[1].d, cross: r[1].cross };
+      if (r[2]) r60[st.code] = { k: r[2].k, d: r[2].d, cross: r[2].cross };
     }).catch(function() {}).then(function() {
       fin++;
-      if (fin === total) onDone(res); else worker();
+      if (fin === total) onDone(r5, r30, r60); else worker();
     });
   }
   for (var i = 0; i < Math.min(6, total); i++) worker();
@@ -6733,10 +6740,21 @@ function wlResonance(st) {
   return calcSectorResonance({ sector: fl.sector });
 }
 
+// 分钟K单元格：K值+状态标记，K<20 金色（到位）
+function wlKCell(k) {
+  if (!k) return '<span style="color:#484f58">…</span>';
+  var kc = k.k < 20 ? 'wl-gold' : '';
+  var crossTxt = k.cross === '金叉' ? ' <span class="wl-gold">↑金叉</span>'
+    : k.cross === '上升' ? ' <span class="wl-upc">↑</span>'
+    : k.cross === '死叉' ? ' <span class="wl-dnc">↓死叉</span>'
+    : k.cross === '下降' ? ' <span class="wl-dnc">↓</span>' : '';
+  return '<span class="' + kc + '">' + k.k.toFixed(1) + '</span>' + crossTxt;
+}
+
 function wlRender() {
   var d = WL_STATE.data;
   var body = document.getElementById('wlBody');
-  if (!d) { body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
+  if (!d) { body.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
   var stocks = d.stocks || [];
   var hit = [], rest = [];
   stocks.forEach(function(st) {
@@ -6793,7 +6811,9 @@ function wlRender() {
       '<td title="收录 ' + (st.added || '') + '">' + (isHit ? '<span class="wl-hit-mark">★</span> ' : '') + '<b>' + st.name + '</b> <span style="color:#6e7681">' + st.code.slice(2) + '</span></td>' +
       '<td>' + (st.kw != null ? st.kw.toFixed(1) : '—') + ' ' + wlStTag(st.wc, st.wup) + '</td>' +
       '<td>' + (st.dk != null ? st.dk.toFixed(1) : '—') + ' ' + wlStTag(st.dc, dup) + '</td>' +
-      '<td class="wl-k30 ' + kc + '">' + (k30 ? k30.k.toFixed(1) + crossTxt : '<span style="color:#484f58">…</span>') + '</td>' +
+      '<td>' + wlKCell(WL_STATE.k60[st.code]) + '</td>' +
+      '<td class="wl-k30 ' + kc + '">' + (k30 ? k30.k.toFixed(1) + crossTxt : wlKCell(null)) + '</td>' +
+      '<td>' + wlKCell(WL_STATE.k5[st.code]) + '</td>' +
       '<td>' + rsHtml + '</td>' +
       '<td>' + (q && q.turn != null ? q.turn.toFixed(2) : '—') + '</td>' +
       '<td>' + vqHtml + '</td>' +
@@ -6803,7 +6823,7 @@ function wlRender() {
       '</tr>';
   }
   var html = rows.map(function(s) { return row(s, WL_STATE.k30[s.code] && WL_STATE.k30[s.code].k < 20); }).join('');
-  if (!html) html = '<tr><td colspan="10" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
+  if (!html) html = '<tr><td colspan="12" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
   body.innerHTML = html;
 }
 
@@ -6824,11 +6844,13 @@ function wlRefresh(force) {
       if (typeof fetchHotSectors === 'function' && (!liveHotSectors || !liveHotSectors.length)) {
         Promise.resolve(fetchHotSectors()).then(function() { wlRender(); }).catch(function() {});
       }
-      // 30分K只在页面活跃/强制/首次时拉（30分钟粒度，省请求）
-      var need30 = force || active || !Object.keys(WL_STATE.k30).length;
-      if (!need30) { WL_STATE.busy = false; wlRender(); return; }
-      wlFetch30(d.stocks, function(res) {
-        WL_STATE.k30 = res;
+      // 5/30/60分K只在页面活跃/强制/首次时拉（分钟级粒度省请求）
+      var needK = force || active || !Object.keys(WL_STATE.k30).length;
+      if (!needK) { WL_STATE.busy = false; wlRender(); return; }
+      wlFetchK(d.stocks, function(r5, r30, r60) {
+        WL_STATE.k5 = r5;
+        WL_STATE.k30 = r30;
+        WL_STATE.k60 = r60;
         WL_STATE.busy = false;
         wlRender();
       });
