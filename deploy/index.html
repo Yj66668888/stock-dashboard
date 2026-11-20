@@ -1061,8 +1061,8 @@
   table.stock-table.cols-min thead th:nth-child(14),
   table.stock-table.cols-min tbody td:nth-child(14) { display: none; }
   /* 精简模式下可见的最后一列是「板块共振」，去掉它的右边框 */
-  table.stock-table.cols-min thead th:nth-child(15),
-  table.stock-table.cols-min tbody td:nth-child(15) { border-right: none; }
+  table.stock-table.cols-min thead th:nth-child(16),
+  table.stock-table.cols-min tbody td:nth-child(16) { border-right: none; }
   /* 列显隐切换按钮 */
   .col-toggle-btn {
     margin-left: auto;
@@ -1167,6 +1167,7 @@
             <th data-filter="volSignal" onclick="toggleFilter(event,'volSignal')">量价信号<span class="th-filter-icon">▼</span></th>
             <th data-filter="mainFlow" onclick="toggleFilter(event,'mainFlow')">主力资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="flow5d" onclick="toggleFilter(event,'flow5d')">5日/10日资金<span class="th-filter-icon">▼</span></th>
+            <th data-filter="flowState" onclick="toggleFilter(event,'flowState')" title="资金状态：当日主力×5日主力组合判断——回流=双正(金)、试探流入=今日正/5日负、回落=今日负/5日正、流出=双负">资金状态<span class="th-filter-icon">▼</span></th>
             <th data-filter="resonance" onclick="toggleFilter(event,'resonance')">板块共振<span class="th-filter-icon">▼</span></th>
           </tr>
         </thead>
@@ -1214,8 +1215,8 @@
   <div class="wl-sum" id="wlSum"></div>
   <div style="overflow-x:auto">
     <table class="wl-tbl">
-      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>今日%</th><th>20日%</th></tr></thead>
-      <tbody id="wlBody"><tr><td colspan="12" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
+      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>资金状态</th><th>今日%</th><th>20日%</th></tr></thead>
+      <tbody id="wlBody"><tr><td colspan="13" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -2784,6 +2785,15 @@ function getSortValue(stock, field) {
       if (flow.flow_5d_wan !== undefined) return flow.flow_5d_wan;
       return -Infinity;
     }
+    case 'flowState': {
+      const tv = (stock.mainFlowToday !== undefined && stock.mainFlowToday !== null) ? stock.mainFlowToday : parseMoneyText(stock.mainFlow);
+      const v5 = parseMoneyText(stock.flow5d);
+      if (tv === null || tv === undefined || v5 === null || v5 === undefined || tv === 0 || v5 === 0) return -Infinity;
+      if (tv > 0 && v5 > 0) return 3;
+      if (tv > 0) return 2;
+      if (v5 > 0) return 1;
+      return 0;
+    }
     case 'resonance': return stock.sectorTier !== undefined ? stock.sectorTier : 99;
     case 'beta': return stock.beta !== undefined ? stock.beta : (corr.beta !== undefined ? corr.beta : -Infinity);
     case 'support': return stock.supportPrice !== undefined ? stock.supportPrice : Infinity;
@@ -2914,6 +2924,15 @@ function getFilterValue(stock, field) {
       else if (flow.flow_5d_wan !== undefined) v = flow.flow_5d_wan;
       if (v !== null && v !== undefined && !isNaN(v)) return v >= 0 ? '5日流入' : '5日流出';
       return '--';
+    }
+    case 'flowState': {
+      const tv = (stock.mainFlowToday !== undefined && stock.mainFlowToday !== null) ? stock.mainFlowToday : parseMoneyText(stock.mainFlow);
+      const v5 = parseMoneyText(stock.flow5d);
+      if (tv === null || tv === undefined || v5 === null || v5 === undefined || tv === 0 || v5 === 0) return '--';
+      if (tv > 0 && v5 > 0) return '回流';
+      if (tv > 0) return '试探流入';
+      if (v5 > 0) return '回落';
+      return '流出';
     }
     case 'resonance': return stock.sectorResonance || stock.sector || '--';
     case 'beta': {
@@ -3442,6 +3461,17 @@ function renderStockRow(stock, index) {
     `<span class="flow-line ${f5dPos ? 'pos' : (f5d && f5d.indexOf('-') >= 0 ? 'neg' : 'neutral')}">5日 ${escapeHtml(f5d || '--')}</span>` +
     `<span class="flow-line ${f10dPos ? 'pos' : (f10d && f10d.indexOf('-') >= 0 ? 'neg' : 'neutral')}">10日 ${escapeHtml(f10d || '--')}</span>`;
 
+  // 资金状态：当日主力 × 5日主力 组合判断
+  const _fsToday = (mainFlowToday !== undefined && mainFlowToday !== null) ? mainFlowToday : parseMoneyText(mainFlow);
+  const _fsV5 = parseMoneyText(f5d);
+  let flowStateHtml = '<span class="flow-main">--</span>';
+  if (_fsToday != null && _fsV5 != null && _fsToday !== 0 && _fsV5 !== 0) {
+    if (_fsToday > 0 && _fsV5 > 0) flowStateHtml = '<span class="flow-main pos" style="color:#e3b341;font-weight:700" title="当日与5日主力均为净流入">回流</span>';
+    else if (_fsToday > 0) flowStateHtml = '<span class="flow-main pos" title="当日净流入但5日仍净流出">试探流入</span>';
+    else if (_fsV5 > 0) flowStateHtml = '<span class="flow-main" style="color:#6e7681" title="5日净流入但当日转流出">回落</span>';
+    else flowStateHtml = '<span class="flow-main neg" title="当日与5日主力均为净流出">流出</span>';
+  }
+
   // 板块共振
   const resonance = stock.sectorResonance || '';
   let resonCls = 'none';
@@ -3518,6 +3548,7 @@ function renderStockRow(stock, index) {
       <td>${volHtml}</td>
       <td>${flowHtml}</td>
       <td>${flowDualHtml}</td>
+      <td>${flowStateHtml}</td>
       <td>${resonHtml}</td>
     </tr>
   `;
@@ -3628,6 +3659,7 @@ function renderMobileCard(stock) {
       <span class="mc-info-item"><span class="mc-info-label">量价</span><span class="mc-info-val">${escapeHtml(volSignal)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">主力</span><span class="mc-info-val ${flowCls}">${escapeHtml(flowStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">5日</span><span class="mc-info-val ${flow5dCls}">${escapeHtml(flow5dStr)}</span></span>
+      <span class="mc-info-item"><span class="mc-info-label">资金</span><span class="mc-info-val">${escapeHtml((function(){ const tv = (stock.mainFlowToday !== undefined && stock.mainFlowToday !== null) ? stock.mainFlowToday : parseMoneyText(stock.mainFlow); const v5 = parseMoneyText(flow5d); if (tv == null || v5 == null || tv === 0 || v5 === 0) return '--'; return (tv > 0 && v5 > 0) ? '回流' : (tv > 0 ? '试探流入' : (v5 > 0 ? '回落' : '流出')); })())}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">10日</span><span class="mc-info-val ${flow10dCls}">${escapeHtml(flow10dStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">暗盘</span><span class="mc-info-val ${blockCls}">${escapeHtml(blockStr)}</span></span>
       <span class="mc-info-item"><span class="mc-info-label">共振</span><span class="mc-info-val">${escapeHtml(resonShort)}</span></span>
@@ -6702,10 +6734,10 @@ function wlParseQuotes() {
   return out;
 }
 
-// 主力净流入批量（东财 ulist.np JSONP 走 FLOW_HOSTS，一次请求全池；f100=所属行业板块，供板块共振用）
+// 主力净流入批量（东财 ulist.np JSONP 走 FLOW_HOSTS，一次请求全池；f100=所属行业板块共振用、f164=5日主力净额资金状态用）
 function wlFetchFlow(stocks, cb) {
   var secids = stocks.map(function(s) { return wlSecid(s.code); }).join(',');
-  var path = '/api/qt/ulist.np/get?secids=' + secids + '&fields=f12,f62,f184,f100&fltt=2&invt=2';
+  var path = '/api/qt/ulist.np/get?secids=' + secids + '&fields=f12,f62,f184,f100,f164&fltt=2&invt=2';
   var urls = FLOW_HOSTS.map(function(h) { return 'https://' + h + path; });
   return jsonpMulti(urls, 10000).then(function(result) {
     try {
@@ -6721,10 +6753,20 @@ function wlFetchFlow(stocks, cb) {
           WL_STATE.flow[code].net = parseFloat(item.f62);
           WL_STATE.flow[code].pct = (item.f184 != null && item.f184 !== '-') ? parseFloat(item.f184) : null;
         }
+        if (item.f164 != null && item.f164 !== '-') WL_STATE.flow[code].d5 = parseFloat(item.f164);
         if (item.f100 && item.f100 !== '-') WL_STATE.flow[code].sector = item.f100;
       });
     } catch (e) { console.error('[wlFlow]', e); }
   }).catch(function() {}).then(cb || function() {});
+}
+
+// 资金状态：当日主力(f62) × 5日主力(f164) 组合判断——与选股仪表盘同口径
+function wlFlowState(fl) {
+  if (!fl || fl.net == null || fl.d5 == null || fl.net === 0 || fl.d5 === 0) return '--';
+  if (fl.net > 0 && fl.d5 > 0) return '<span class="wl-gold" style="font-weight:700" title="当日与5日主力均为净流入">回流</span>';
+  if (fl.net > 0) return '<span class="wl-upc" title="当日净流入但5日仍净流出">试探流入</span>';
+  if (fl.d5 > 0) return '<span style="color:#6e7681" title="5日净流入但当日转流出">回落</span>';
+  return '<span class="wl-dnc" title="当日与5日主力均为净流出">流出</span>';
 }
 
 function wlSetFilter(mode) {
@@ -6754,7 +6796,7 @@ function wlKCell(k) {
 function wlRender() {
   var d = WL_STATE.data;
   var body = document.getElementById('wlBody');
-  if (!d) { body.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
+  if (!d) { body.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
   var stocks = d.stocks || [];
   var hit = [], rest = [];
   stocks.forEach(function(st) {
@@ -6818,12 +6860,13 @@ function wlRender() {
       '<td>' + (q && q.turn != null ? q.turn.toFixed(2) : '—') + '</td>' +
       '<td>' + vqHtml + '</td>' +
       '<td>' + flHtml + '</td>' +
+      '<td>' + wlFlowState(fl) + '</td>' +
       '<td class="' + (chg == null ? '' : chg > 0 ? 'wl-upc' : chg < 0 ? 'wl-dnc' : '') + '">' + (chg == null ? '—' : (chg > 0 ? '+' : '') + chg.toFixed(2)) + '</td>' +
       '<td class="' + (st.pct20 > 0 ? 'wl-upc' : st.pct20 < 0 ? 'wl-dnc' : '') + '">' + (st.pct20 == null ? '—' : (st.pct20 > 0 ? '+' : '') + st.pct20.toFixed(1)) + '</td>' +
       '</tr>';
   }
   var html = rows.map(function(s) { return row(s, WL_STATE.k30[s.code] && WL_STATE.k30[s.code].k < 20); }).join('');
-  if (!html) html = '<tr><td colspan="12" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
+  if (!html) html = '<tr><td colspan="13" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
   body.innerHTML = html;
 }
 
