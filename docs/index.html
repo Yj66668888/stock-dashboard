@@ -1186,25 +1186,25 @@
   <!-- Page: Watchlist 金叉候选池 (2026-11-19 新增：watchlist_scan.py 每日收盘后全盘扫描收录/移出；30分K到位自动置顶) -->
   <div class="page" id="page-watchlist">
   <style>
-    .wl-banner { background: rgba(110,118,130,0.08); border: 1px solid rgba(110,118,130,0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 12px; }
-    .wl-banner h2 { margin: 0 0 6px; font-size: 17px; color: #e6edf3; display: flex; align-items: center; flex-wrap: wrap; }
-    .wl-sub { font-size: 12px; color: #8b949e; line-height: 1.8; }
-    .wl-sum { display: flex; gap: 10px; margin: 10px 0 12px; flex-wrap: wrap; }
-    .wl-chip { background: rgba(110,118,130,0.12); border-radius: 8px; padding: 7px 14px; font-size: 13px; color: #c9d1d9; cursor: pointer; user-select: none; border: 1px solid transparent; transition: background .15s, border-color .15s; }
-    .wl-chip:hover { background: rgba(110,118,130,0.22); }
-    .wl-chip.on { border-color: #e3b341; background: rgba(227,179,65,0.14); }
-    .wl-chip b { color: #e3b341; font-size: 15px; }
-    .wl-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .wl-tbl th { position: sticky; top: 0; background: #161b22; color: #8b949e; padding: 8px 8px; text-align: right; border-bottom: 1px solid #30363d; font-weight: 600; white-space: nowrap; }
-    .wl-tbl th:first-child { text-align: left; }
-    .wl-tbl td { padding: 7px 8px; text-align: right; border-bottom: 1px solid #21262d; color: #e6edf3; white-space: nowrap; }
-    .wl-tbl td:first-child { text-align: left; }
-    .wl-tbl tr.wl-hit td { background: rgba(227,179,65,0.10); }
-    .wl-k30 { font-weight: 700; font-size: 14px; }
+    /* 2026-11-20 样式对齐选股仪表盘：同一套设计令牌与控件外观，内容不变 */
+    .wl-banner { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin-bottom: 10px; }
+    .wl-banner h2 { margin: 0 0 6px; font-size: 15px; color: var(--text); display: flex; align-items: center; flex-wrap: wrap; }
+    .wl-sub { font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+    .wl-sum { display: flex; gap: 8px; margin: 10px 0 12px; flex-wrap: wrap; }
+    .wl-chip { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; transition: all 0.15s; font-family: inherit; }
+    .wl-chip:hover { border-color: var(--blue); color: var(--text); }
+    .wl-chip.on { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 0 10px rgba(88,166,255,0.25); }
+    .wl-chip b { color: var(--blue); font-size: 13px; }
+    .wl-chip.on b { color: #fff; }
+    /* 表格复用选股仪表盘 stock-table 样式，仅保留本页特有高亮 */
+    table.wl-tbl th:first-child, table.wl-tbl td:first-child { text-align: left; }
+    table.wl-tbl tr.wl-hit td { background: rgba(227,179,65,0.10); }
+    .wl-k30 { font-weight: 700; font-size: 13px; }
     .wl-upc { color: #f85149; } .wl-dnc { color: #56d364; }
     .wl-gold { color: #e3b341; font-weight: 600; }
-    .wl-btn { background: #238636; color: #fff; border: none; border-radius: 8px; padding: 5px 14px; font-size: 12px; cursor: pointer; margin-left: 10px; }
-    .wl-meta { font-size: 12px; color: #8b949e; font-weight: 400; margin-left: 6px; }
+    .wl-btn { background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; margin-left: 10px; transition: all 0.15s; font-family: inherit; }
+    .wl-btn:hover { border-color: var(--blue); color: var(--text); }
+    .wl-meta { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-left: 6px; }
     .wl-hit-mark { color: #e3b341; font-size: 12px; }
   </style>
   <div class="wl-banner">
@@ -1213,11 +1213,13 @@
     <div class="wl-sub"><span class="wl-gold">★ 30分K&lt;20 到位自动置顶金色高亮</span>｜本页每分钟自动刷新（30分K线+实时行情），买不买自己定</div>
   </div>
   <div class="wl-sum" id="wlSum"></div>
-  <div style="overflow-x:auto">
-    <table class="wl-tbl">
+  <div class="table-container">
+    <div class="table-scroll">
+      <table class="wl-tbl stock-table">
       <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>资金状态</th><th>今日%</th><th>20日%</th></tr></thead>
       <tbody id="wlBody"><tr><td colspan="13" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </div>
 
