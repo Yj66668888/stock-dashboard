@@ -26,13 +26,9 @@ TARGET_POOL_SIZE = 30
 PROTECTED_CODES = {}  # 白名单（用户指定做T关注票，不在STOCKS中）
 
 # 🔥 固定票：用户指定永远保留在仪表盘的票，不受选股算法筛选影响
-PINNED_STOCKS = [
-    {'code': 'sh603067', 'name': '振华股份', 'sector': '化工'},
-    {'code': 'sh600105', 'name': '永鼎股份', 'sector': '通信'},
-    {'code': 'sh601126', 'name': '四方股份', 'sector': '电力设备'},
-    {'code': 'sz000688', 'name': '国城矿业', 'sector': '有色金属'},
-]
-
+# 2026-11-19 用户拍板：删除固定票机制（振华/永鼎/四方/国城 已全部取消固定）
+# 永鼎股份当日恰为 scan_macd 出票，以普通池成员身份保留；其余 3 只已从 STOCKS 删除
+PINNED_STOCKS = []  # 2026-11-19 固定票机制已删除（2026-11-20 修复：昨晚清空时漏了闭合括号）
 def load_json(path):
     if not os.path.exists(path):
         return {}
@@ -105,6 +101,16 @@ KDJ30_PENALTY_HI = 60  # 60<=K<70 扣-4
 KDJ30_PENALTY_MID = 45 # 45<=K<60 扣-2
 KDJ30_SWEET_LO = 25    # 25<=K<45 最佳区间 +3
 
+# ---- 四周期KDJ门槛（2026-11-20 用户拍板：综合池按 周/日/60分/30分 低位口径选票）----
+# 条件：周K<25 且 日K<45 且 30分K<20 且 (60分K<20 或 60分K上行且K≤60)
+# 30分K复用上面 fetch_30min_kdj_batch 的 kdj30_k；周/日/60分现拉腾讯K线现算 KDJ(9,3,3)
+# 数据缺失 fail-open 不拦截（与 h60 排除层同哲学）；QUAD_GATE=0 环境变量可整体关闭
+QUAD_GATE = os.environ.get('QUAD_GATE', '1') != '0'
+QUAD_W_MAX = 25.0    # 周K上限
+QUAD_D_MAX = 45.0    # 日K上限
+QUAD_30_MAX = 20.0   # 30分K到位线（也用作60分K低位线）
+QUAD_60_MAX = 60.0   # 60分K上行保护线
+
 def fetch_30min_kdj_batch(codes):
     """
     从新浪K线API批量获取30分钟KDJ(9,3,3)。
@@ -168,6 +174,105 @@ def fetch_30min_kdj_batch(codes):
 # 四层漏斗选股框架
 # 逻辑：①资金推动 → ②推动理由 → ③核心壁垒 → ④股性好
 # =====================================================================
+
+def _quad_fetch_bars(prefixed, period, mkline=False):
+    """腾讯K线：日/周=web.ifzq kline/kline，分钟=ifzq kline/mkline（2026-11-19 实测可用端点）
+    返回 [(close, high, low), ...] 或 None"""
+    import urllib.request as _ur, json as _j, time as _t
+    if mkline:
+        url = f'https://ifzq.gtimg.cn/appstock/app/kline/mkline?param={prefixed},{period},,320'
+    else:
+        url = f'https://web.ifzq.gtimg.cn/appstock/app/kline/kline?param={prefixed},{period},,,320'
+    op = _ur.build_opener(_ur.ProxyHandler({}))
+    for i in range(2):
+        try:
+            with op.open(_ur.Request(url, headers={'User-Agent': 'Mozilla/5.0'}), timeout=12) as r:
+                d = _j.loads(r.read().decode())
+            node = (d.get('data') or {}).get(prefixed) or {}
+            kl = node.get(period) or []
+            bars = []
+            for s in kl:
+                f = s.split(',') if isinstance(s, str) else s
+                if len(f) < 5:
+                    continue
+                bars.append((float(f[2]), float(f[3]), float(f[4])))
+            return bars or None
+        except Exception:
+            _t.sleep(0.4 * (i + 1))
+    return None
+
+
+def _quad_kdj_k(bars):
+    """KDJ(9,3,3) 标准口径（与 scan_macd/watchlist_scan 一致），返回 (K最新, K前一根)"""
+    k = d = 50.0
+    prev_k = 50.0
+    for i in range(len(bars)):
+        s = max(0, i - 8)
+        hh = max(b[1] for b in bars[s:i + 1])
+        ll = min(b[2] for b in bars[s:i + 1])
+        rsv = (bars[i][0] - ll) / (hh - ll) * 100 if hh > ll else 50.0
+        prev_k = k
+        k = (2 * k + rsv) / 3
+        d = (2 * d + k) / 3
+    return k, prev_k
+
+
+def apply_quad_kdj_gate(candidates, label=''):
+    """四周期KDJ门槛：周K<25 且 日K<45 且 30分K<20 且 (60分K<20 或 60分K上行且K≤60)
+    30分K 用候选上已有的 kdj30_k；周/日/60分 现拉腾讯现算。
+    数据缺失（含 kdj30_k=None）fail-open 保留。"""
+    if not candidates:
+        return candidates
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _one(c):
+        pf = to_prefixed_code(c['code'])
+        bd = _quad_fetch_bars(pf, 'day')
+        bw = _quad_fetch_bars(pf, 'week')
+        b60 = _quad_fetch_bars(pf, 'm60', mkline=True)
+        if not bd or len(bd) < 30 or not bw or len(bw) < 10 or not b60 or len(b60) < 10:
+            return c['code'], None
+        dk, _ = _quad_kdj_k(bd)
+        kw, _ = _quad_kdj_k(bw)
+        k60, k60p = _quad_kdj_k(b60)
+        return c['code'], dict(kw=kw, dk=dk, k60=k60, k60_up=k60 > k60p)
+
+    results = {}
+    with ThreadPoolExecutor(12) as ex:
+        futs = [ex.submit(_one, c) for c in candidates]
+        done = 0
+        for fu in as_completed(futs):
+            try:
+                code, r = fu.result()
+                if r:
+                    results[code] = r
+            except Exception:
+                pass
+            done += 1
+            if done % 200 == 0:
+                print(f"    四周期门槛进度 {done}/{len(candidates)}", flush=True)
+
+    kept, kicked, failed = [], [], 0
+    for c in candidates:
+        r = results.get(c['code'])
+        k30 = c.get('kdj30_k')
+        if r is None or k30 is None:
+            kept.append(c)   # fail-open
+            failed += 1
+            continue
+        ok = (r['kw'] < QUAD_W_MAX and r['dk'] < QUAD_D_MAX and k30 < QUAD_30_MAX
+              and (r['k60'] < QUAD_30_MAX or (r['k60_up'] and r['k60'] <= QUAD_60_MAX)))
+        (kept if ok else kicked).append(c)
+    print(f"  🎯 四周期KDJ门槛[{label}]: 保留{len(kept)}/{len(candidates)}"
+          + (f"（数据缺失fail-open {failed}只）" if failed else ""))
+    for c in kicked[:15]:
+        r = results.get(c['code'], {})
+        print(f"     ✗ {c['name']:6s} 周{r.get('kw', 0):.0f} 日{r.get('dk', 0):.0f} "
+              f"30分{c.get('kdj30_k') or 0:.0f} 60分{r.get('k60', 0):.0f}{'↑' if r.get('k60_up') else '↓'}")
+    if len(kicked) > 15:
+        print(f"     … 另 {len(kicked) - 15} 只略")
+    return kept
+
 
 def calc_capital_quality(flow_5d, flow_10d, daily=None, drop_20d=None, latest_chg=None, avg_vol_up=None, consecutive=None):
     """
@@ -1653,6 +1758,12 @@ def main():
         # 重新排序（扣分后排名变化）
         sector_candidates.sort(key=lambda x: x['health'], reverse=True)
         fallback_candidates.sort(key=lambda x: x['health'], reverse=True)
+
+    # ★ 四周期KDJ门槛（2026-11-20 用户拍板：综合池按 周/日/60分/30分 低位口径选票）
+    # 必须在 KDJ30 扣分/排序之后、取Top30 之前；QUAD_GATE=0 可整体关闭
+    if QUAD_GATE:
+        sector_candidates = apply_quad_kdj_gate(sector_candidates, '板块池')
+        fallback_candidates = apply_quad_kdj_gate(fallback_candidates, '兜底池')
 
     # 取Top30：板块票优先
     final_picks = sector_candidates[:TARGET_POOL_SIZE]
