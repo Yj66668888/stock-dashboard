@@ -2218,14 +2218,14 @@ function renderStockRow(stock, index) {
     _rowCls = 'kd-high-row';
   }
 
-  // 跌透判断（2026-09-08 回测: 中期趋势%-10~0 + 当日跌≥1% + 30分K<30 三条全中，次日胜率70%）
+  // 低位候选判断（原「跌透」，2026-11-21 校准改名: 低位信号80.9%三日内仍创新低，候选≠跌透；条件不变: 中期趋势%-10~0 + 当日跌≥1% + 30分K<30）
   var _dipTrend = stock.trendPct;
   var _dipK = stock.kdj30 !== undefined && stock.kdj30 !== null ? stock.kdj30 : stock.kd30_k;
   var _dipTrendOk = _dipTrend !== undefined && _dipTrend !== null && _dipTrend > -10 && _dipTrend <= 0;
   var _dipChgOk = changePct !== undefined && changePct !== null && changePct <= -1;
   var _dipKOk = _dipK !== undefined && _dipK !== null && _dipK < 30;
   var dipBadgeHtml = (_dipTrendOk && _dipChgOk && _dipKOk)
-    ? `<span class="dip-badge" title="跌透三条件（9月回测n=50，次日胜率70%）: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓">✓跌透</span>`
+    ? `<span class="dip-badge" title="低位候选三条件: 中期趋势${_dipTrend.toFixed(1)}%∈(-10,0] ✓ | 当日${chgStr}≤-1% ✓ | 30分K${_dipK.toFixed(0)}<30 ✓｜11-21全市场校准: 低位信号80.9%三日内仍创新低，候选≠跌透，等大盘确认+当天不创新低再考虑">✓低位候选</span>`
     : '';
 
   // 大盘30K综合建议动作（2026-10-14 升级双提示：基础 chip1 + S4+B1 chip2）
