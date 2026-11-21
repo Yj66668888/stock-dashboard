@@ -1061,8 +1061,8 @@
   table.stock-table.cols-min thead th:nth-child(14),
   table.stock-table.cols-min tbody td:nth-child(14) { display: none; }
   /* 精简模式下可见的最后一列是「板块共振」，去掉它的右边框 */
-  table.stock-table.cols-min thead th:nth-child(16),
-  table.stock-table.cols-min tbody td:nth-child(16) { border-right: none; }
+  table.stock-table.cols-min thead th:nth-child(18),
+  table.stock-table.cols-min tbody td:nth-child(18) { border-right: none; }
   /* 列显隐切换按钮 */
   .col-toggle-btn {
     margin-left: auto;
@@ -1169,6 +1169,8 @@
             <th data-filter="flow5d" onclick="toggleFilter(event,'flow5d')">5日/10日资金<span class="th-filter-icon">▼</span></th>
             <th data-filter="flowState" onclick="toggleFilter(event,'flowState')" title="资金状态：当日主力×5日主力组合判断——回流=双正(金)、试探流入=今日正/5日负、回落=今日负/5日正、流出=双负">资金状态<span class="th-filter-icon">▼</span></th>
             <th data-filter="resonance" onclick="toggleFilter(event,'resonance')">板块共振<span class="th-filter-icon">▼</span></th>
+            <th title="昨日最低价（日线）；结合现价看「未破昨低=企稳」">昨低</th>
+            <th title="今日盘中最低价（实时）；跌破昨低标红=破低（低点线止损/否决参考，2026-11-21回测: 破低胜率29% vs 未破+2.45%）">今低</th>
           </tr>
         </thead>
         <tbody id="stockBody"></tbody>
@@ -1216,8 +1218,8 @@
   <div class="table-container">
     <div class="table-scroll">
       <table class="wl-tbl stock-table">
-      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>资金状态</th><th>今日%</th><th>20日%</th></tr></thead>
-      <tbody id="wlBody"><tr><td colspan="13" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
+      <thead><tr><th>股票</th><th>周K</th><th>日K</th><th>60分K</th><th>30分K</th><th>5分K</th><th>共振</th><th>换手%</th><th>量价</th><th>主力净流入</th><th>资金状态</th><th>今日%</th><th>20日%</th><th title="昨日最低价（日线）">昨低</th><th title="今日盘中最低价（实时）；跌破昨低标红=破低，低点线止损参考">今低</th></tr></thead>
+      <tbody id="wlBody"><tr><td colspan="15" style="text-align:center;color:#6e7681">加载中…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -4554,6 +4556,16 @@ function renderStockRow(stock, index) {
     '<span class="action-tag ' + (_sgEnh.cls || 'hold-star') + ' s4b1' + (_sgEnh.star ? '' : ' s4b1-wait') + '" title="' + escapeHtml(_sgEnh.reason || '') + '">' + escapeHtml(_sgEnh.label || '观望·持有') + (_sgEnh.star ? '⭐⭐' : '') + '</span>';
 
   const _pbBadge = stock.preBreakoutScore && stock.preBreakoutScore >= 15 ? `<span class="pre-breakout-badge" title="${escapeHtml((stock.preBreakoutSignals||[]).map(function(s){return s.signal+'(+'+s.score+'): '+s.detail}).join('; '))}" style="display:inline-block;background:rgba(29,158,117,0.15);color:#0F6E56;font-size:11px;padding:1px 5px;border-radius:4px;margin-left:4px;font-weight:500">🟢${stock.preBreakoutScore}</span>` : '';
+
+  // 昨低/今低（2026-11-22：低点线止损参考。昨低=日线倒数第2根low；今低=qt实时p[34]→pipeline注入dayLow→日线末根low 三级回退。今低<昨低=破低标红）
+  const _dlc = DAILY_LOW_CACHE[stock.code] || {};
+  const _prevLow = _dlc.prevLow !== undefined && _dlc.prevLow !== null && !isNaN(_dlc.prevLow) ? _dlc.prevLow : null;
+  const _todayLow = q.dayLow !== undefined && q.dayLow !== null ? q.dayLow
+    : (stock.dayLow !== undefined && stock.dayLow !== null ? stock.dayLow
+      : (_dlc.lastLow !== undefined && _dlc.lastLow !== null && !isNaN(_dlc.lastLow) ? _dlc.lastLow : null));
+  const _lowBroken = _prevLow !== null && _todayLow !== null && _todayLow < _prevLow;
+  const _prevLowHtml = `<td>${_prevLow !== null ? _prevLow.toFixed(2) : '--'}</td>`;
+  const _todayLowHtml = `<td${_lowBroken ? ' style="color:#f85149;font-weight:600"' : ''}>${_todayLow !== null ? _todayLow.toFixed(2) : '--'}${_lowBroken ? ' ⚠️' : ''}</td>`;
   // 行
   return `
     <tr id="row-${stock.code}" class="${_rowCls}">
@@ -4573,6 +4585,8 @@ function renderStockRow(stock, index) {
       <td>${flowDualHtml}</td>
       <td>${flowStateHtml}</td>
       <td>${resonHtml}</td>
+      ${_prevLowHtml}
+      ${_todayLowHtml}
     </tr>
   `;
 }
@@ -4747,7 +4761,7 @@ function renderStocks() {
 
   if (pool.length === 0) {
     body.innerHTML = `
-      <tr><td colspan="15">
+      <tr><td colspan="17">
         <div class="empty-state">
           <div class="empty-state-icon">📭</div>
           <div class="empty-state-text">暂无选股数据</div>
@@ -4797,7 +4811,7 @@ function renderStocks() {
       const maxS = Math.max(...scores);
       const minS = Math.min(...scores);
 
-      html += `<tr class="phase-section-header ${g.cls}"><td colspan="15">`;
+      html += `<tr class="phase-section-header ${g.cls}"><td colspan="17">`;
       html += `<span class="phase-header-icon">${g.label}</span>`;
       html += `<span class="phase-header-count">${groupStocks.length} 只</span>`;
       html += `<span class="phase-header-score">预启动分 ${minS}~${maxS}</span>`;
@@ -4809,7 +4823,7 @@ function renderStocks() {
           html += renderStockRow(s, globalIdx++);
         } catch(e) {
           console.error('[renderStockRow error]', s.code, e);
-          html += '<tr><td colspan="15" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+          html += '<tr><td colspan="17" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
         }
       });
     });
@@ -4825,14 +4839,14 @@ function renderStocks() {
       return renderStockRow(s, i);
     } catch(e) {
       console.error('[renderStockRow error]', s.code, e);
-      return '<tr><td colspan="15" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
+      return '<tr><td colspan="17" style="color:orange;">⚠️ ' + s.code + ' 渲染错误: ' + e.message + '</td></tr>';
     }
   }).join('');
   renderMobileCards(pool);
   } catch(e) {
     console.error('[renderStocks error]', e);
     const body = document.getElementById('stockBody');
-    if (body) body.innerHTML = '<tr><td colspan="15" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
+    if (body) body.innerHTML = '<tr><td colspan="17" style="color:red;padding:20px;">⚠️ renderStocks 错误: ' + e.message + '</td></tr>';
   }
 }
 
@@ -5043,6 +5057,7 @@ function formatFlowAmt(val) {
           if (fields[39]) { const p = parseFloat(fields[39]); if (!isNaN(p) && p > 0) quote.pe = p; }
           if (fields[46]) { const p = parseFloat(fields[46]); if (!isNaN(p) && p > 0) quote.pb = p; }
           if (fields[49]) { const v = parseFloat(fields[49]); if (!isNaN(v) && v > 0) quote.volRatio = v; }
+          if (fields[34]) { const lw = parseFloat(fields[34]); if (!isNaN(lw) && lw > 0) quote.dayLow = lw; }
 
           quoteData[code] = quote;
 
@@ -5055,6 +5070,7 @@ function formatFlowAmt(val) {
             if (quote.pe !== undefined) stock.pe = quote.pe;
             if (quote.pb !== undefined) stock.pb = quote.pb;
             if (quote.volRatio !== undefined) stock.volRatio = quote.volRatio;
+            if (quote.dayLow !== undefined) stock.dayLow = quote.dayLow;
 
             // 实时更新量价信号
             var vr = quote.volRatio;
@@ -5370,6 +5386,7 @@ function fetchKline(secid, klt, lmt) {
 // 数据源：东方财富日线K线（klt=101）+ 指数日线 + 实时行情
 // ============================================
 var INDEX_CLOSES = null;  // 指数日线缓存（Beta计算用）
+var DAILY_LOW_CACHE = {}; // 昨低/今低缓存（2026-11-22 新增）：fetchAllKDJ 拉日线时顺手填充 {prevLow, lastLow}
 
 // RSI(14) — Wilder平滑法
 function calcRSI(klines, period) {
@@ -5770,6 +5787,16 @@ function fetchAllKDJ() {
         // 日线指标：RSI / MA / 趋势 / 支撑价 / Beta / 高开率
         if (results[1] && results[1].data && results[1].data.klines && results[1].data.klines.length > 5) {
           var dklines = results[1].data.klines;
+
+          // 昨低/今低缓存（2026-11-22）：倒数第2根low=昨低，末根low=今日最低兜底
+          if (dklines.length >= 2) {
+            try {
+              DAILY_LOW_CACHE[stock.code] = {
+                prevLow: parseFloat(dklines[dklines.length - 2].split(',')[4]),
+                lastLow: parseFloat(dklines[dklines.length - 1].split(',')[4])
+              };
+            } catch (e) {}
+          }
 
           // RSI(14)
           var rsi = calcRSI(dklines);
@@ -7658,7 +7685,7 @@ function renderDataVersion() {
     // 显示错误在页面上
     const body = document.getElementById('stockBody');
     if (body) {
-      body.innerHTML = '<tr><td colspan="15" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
+      body.innerHTML = '<tr><td colspan="17" style="color:red;padding:20px;text-align:center;">⚠️ 初始化错误: ' + e.message + '<br><pre style="text-align:left;font-size:11px;">' + (e.stack||'').substring(0,500) + '</pre></td></tr>';
     }
   }
 })();
@@ -7671,7 +7698,7 @@ function renderDataVersion() {
 // 30分K: fetchKline(klt=30) 腾讯m30实时 → calcKDJ；K<20 到位自动置顶金色
 // 行情: qt.gtimg.cn JSONP 批量（60只/批）
 // ============================================
-var WL_STATE = { data: null, k5: {}, k30: {}, k60: {}, q: {}, flow: {}, filter: '', busy: false, timer: null };
+var WL_STATE = { data: null, k5: {}, k30: {}, k60: {}, dl: {}, q: {}, flow: {}, filter: '', busy: false, timer: null };
 
 function wlSecid(code) { return (code.indexOf('sh') === 0 ? '1.' : '0.') + code.slice(2); }
 
@@ -7702,15 +7729,24 @@ function wlFetchK(stocks, onDone) {
     if (idx >= total) return;
     var st = stocks[idx++];
     var secid = wlSecid(st.code);
-    Promise.all([5, 30, 60].map(function(klt) {
-      return fetchKline(secid, klt, 120).then(function(d) {
+    Promise.all([5, 30, 60, 101].map(function(klt) {
+      return fetchKline(secid, klt, klt === 101 ? 2 : 120).then(function(d) {
         var kl = d ? ((d.data && d.data.klines) || d.klines || null) : null;
+        if (klt === 101) return kl;   // 日线只拉2根：直接回传K线串（昨低/今低用，2026-11-22）
         return kl ? calcKDJ(kl, 9) : null;
       }).catch(function() { return null; });
     })).then(function(r) {
       if (r[0]) r5[st.code] = { k: r[0].k, d: r[0].d, cross: r[0].cross };
       if (r[1]) r30[st.code] = { k: r[1].k, d: r[1].d, cross: r[1].cross };
       if (r[2]) r60[st.code] = { k: r[2].k, d: r[2].d, cross: r[2].cross };
+      if (r[3] && r[3].length >= 2) {
+        try {
+          WL_STATE.dl[st.code] = {
+            prevLow: parseFloat(r[3][r[3].length - 2].split(',')[4]),
+            lastLow: parseFloat(r[3][r[3].length - 1].split(',')[4])
+          };
+        } catch (e) {}
+      }
     }).catch(function() {}).then(function() {
       fin++;
       if (fin === total) onDone(r5, r30, r60); else worker();
@@ -7749,7 +7785,8 @@ function wlParseQuotes() {
         chg: (p / yc - 1) * 100,
         turn: parseFloat(f[38]) || null,
         vr: parseFloat(f[49]) || null,
-        amt: parseFloat(f[37]) || null
+        amt: parseFloat(f[37]) || null,
+        low: (function() { var lw = parseFloat(f[34]); return isNaN(lw) ? null : lw; })()
       };
     }
     try { delete window['v_' + st.code]; } catch (e) {}
@@ -7819,7 +7856,7 @@ function wlKCell(k) {
 function wlRender() {
   var d = WL_STATE.data;
   var body = document.getElementById('wlBody');
-  if (!d) { body.innerHTML = '<tr><td colspan="13" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
+  if (!d) { body.innerHTML = '<tr><td colspan="15" style="text-align:center;color:#f85149">watchlist.json 加载失败</td></tr>'; return; }
   var stocks = d.stocks || [];
   var hit = [], rest = [];
   stocks.forEach(function(st) {
@@ -7872,6 +7909,14 @@ function wlRender() {
       flHtml = '<span class="' + (yi >= 0 ? 'wl-upc' : 'wl-dnc') + '">' + (yi >= 0 ? '+' : '') + yi.toFixed(2) + '亿</span>' +
         (fl.pct != null ? ' <span style="color:#6e7681;font-size:11px">' + (fl.pct >= 0 ? '+' : '') + fl.pct.toFixed(1) + '%</span>' : '');
     }
+    // 昨低/今低（2026-11-22：今低=qt实时p[34]→日线末根low兜底；今低<昨低=破低标红）
+    var dl = WL_STATE.dl[st.code];
+    var prevLow = dl ? dl.prevLow : null;
+    var todayLow = (q && q.low != null) ? q.low : (dl ? dl.lastLow : null);
+    var lowBroken = (prevLow != null && todayLow != null && todayLow < prevLow);
+    var lowCells = '<td>' + (prevLow != null ? prevLow.toFixed(2) : '—') + '</td>' +
+      '<td' + (lowBroken ? ' class="wl-dnc" style="font-weight:600"' : '') + '>' +
+      (todayLow != null ? todayLow.toFixed(2) : '—') + (lowBroken ? '⚠' : '') + '</td>';
     return '<tr class="' + (isHit ? 'wl-hit' : '') + '">' +
       '<td title="收录 ' + (st.added || '') + '">' + (isHit ? '<span class="wl-hit-mark">★</span> ' : '') + '<b>' + st.name + '</b> <span style="color:#6e7681">' + st.code.slice(2) + '</span></td>' +
       '<td>' + (st.kw != null ? st.kw.toFixed(1) : '—') + ' ' + wlStTag(st.wc, st.wup) + '</td>' +
@@ -7886,10 +7931,11 @@ function wlRender() {
       '<td>' + wlFlowState(fl) + '</td>' +
       '<td class="' + (chg == null ? '' : chg > 0 ? 'wl-upc' : chg < 0 ? 'wl-dnc' : '') + '">' + (chg == null ? '—' : (chg > 0 ? '+' : '') + chg.toFixed(2)) + '</td>' +
       '<td class="' + (st.pct20 > 0 ? 'wl-upc' : st.pct20 < 0 ? 'wl-dnc' : '') + '">' + (st.pct20 == null ? '—' : (st.pct20 > 0 ? '+' : '') + st.pct20.toFixed(1)) + '</td>' +
+      lowCells +
       '</tr>';
   }
   var html = rows.map(function(s) { return row(s, WL_STATE.k30[s.code] && WL_STATE.k30[s.code].k < 20); }).join('');
-  if (!html) html = '<tr><td colspan="13" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
+  if (!html) html = '<tr><td colspan="15" style="text-align:center;color:#6e7681">' + (f ? '当前筛选下暂无股票（点「池内」恢复全部）' : '池内暂无股票') + '</td></tr>';
   body.innerHTML = html;
 }
 
